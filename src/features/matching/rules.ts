@@ -7,6 +7,8 @@
  *   + 0-15 documents already available + 0-10 amount + 0-10 deadline & territory = 0-100.
  */
 import type { Call, MatchResult, Profile } from "@/contracts";
+import { disciplineLabel, isDisciplineId } from "@/features/normalize";
+import { daysUntil } from "./labels";
 
 export interface MatchContext {
   now?: Date;
@@ -28,10 +30,7 @@ export interface RuleResult {
   excluded: boolean; // closed / past deadline: never shown in the feed
 }
 
-export type FitLabel = "alto" | "medio" | "bajo";
-export function fitLabel(score: number): FitLabel {
-  return score >= 75 ? "alto" : score >= 60 ? "medio" : "bajo";
-}
+export { fitLabel, daysLeft, type FitLabel } from "./labels";
 
 // ---------- text helpers ----------
 export const norm = (s: string) =>
@@ -57,11 +56,6 @@ export function tokens(text: string): Set<string> {
 }
 const overlap = (a: Set<string>, b: Set<string>) => [...a].filter((x) => b.has(x));
 
-/** Calendar days from today (Spain) to the deadline: 0 = closes today, -1 = closed yesterday. */
-function daysUntil(deadlineIso: string, now: Date): number {
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now); // YYYY-MM-DD
-  return Math.round((Date.parse(deadlineIso) - Date.parse(today)) / 864e5);
-}
 
 function profileAreas(p: Profile): string[] {
   return [p.city, p.province, p.region].filter((x): x is string => Boolean(x)).map(norm);
@@ -190,7 +184,8 @@ function affinity(p: Profile, c: Call, why: string[]): number {
     const hits = theirs.filter((t) => overlap(tokens(t), mineTok).length > 0);
     if (hits.length) {
       pts += 15;
-      why.push(`Encaja con tu ${p.kind === "creator" ? "disciplina" : "sector"}: ${hits.slice(0, 3).join(", ")}`);
+      const shown = hits.slice(0, 3).map((h) => (isDisciplineId(h) ? disciplineLabel(h).toLowerCase() : h));
+      why.push(`Encaja con tu ${p.kind === "creator" ? "disciplina" : "sector"}: ${shown.join(", ")}`);
     }
   }
   const profileText = [p.statement, p.bio, p.projectIdea ?? "", ...p.fundingNeeds, ...p.achievements, ...mine].join(" ");
@@ -254,3 +249,12 @@ function timing(p: Profile, c: Call, daysLeft: number | undefined, why: string[]
   }
   return Math.min(10, pts);
 }
+
+/** Required documents as a checklist, ticking what the user already has in Mecena (same rules as the score). */
+export function checklistFor(p: Profile, c: Call, ctx: MatchContext = {}): { item: string; done: boolean }[] {
+  return c.requiredDocuments.map((item) => {
+    const rule = DOC_RULES.find((r) => r.test.test(norm(item)));
+    return { item, done: rule ? rule.has(p, ctx) : false };
+  });
+}
+
