@@ -14,11 +14,6 @@ export const STYLE_LABELS: Record<DossierStyle, string> = {
   galeria: "Galería",
 };
 
-export const STYLE_DESCRIPTIONS: Record<DossierStyle, string> = {
-  sobrio: "Pizarra y papel, letra de palo. Claro y ordenado.",
-  editorial: "Papel cálido y títulos con serifa, como un libro.",
-  galeria: "Fondo blanco y la obra grande, como en una sala.",
-};
 
 export function isDossierStyle(v: unknown): v is DossierStyle {
   return typeof v === "string" && (DOSSIER_STYLES as readonly string[]).includes(v);
@@ -173,4 +168,26 @@ export function accentFromPixels(pixels: ArrayLike<number>, step = 4): string | 
   const top = bins.reduce((a, b) => (b.w > a.w ? b : a));
   if (!total || top.w / total < 0.03) return undefined;
   return rgbToHex([top.r / top.w, top.g / top.w, top.b / top.w]);
+}
+
+/** Up to `n` distinct dominant colours of the work (one per hue family), strongest first. */
+export function paletteFromPixels(pixels: ArrayLike<number>, n = 3, step = 1): string[] {
+  const bins = Array.from({ length: 12 }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
+  for (let i = 0; i + 3 < pixels.length; i += 4 * step) {
+    if (pixels[i + 3] < 128) continue;
+    const rgb: Rgb = [pixels[i], pixels[i + 1], pixels[i + 2]];
+    const [h, s, l] = rgbToHsl(rgb);
+    if (s < 0.12 || l < 0.08 || l > 0.94) continue;
+    const w = s * (1 - Math.abs(l - 0.5));
+    const bin = bins[Math.floor(h / 30) % 12];
+    bin.w += w;
+    bin.r += rgb[0] * w;
+    bin.g += rgb[1] * w;
+    bin.b += rgb[2] * w;
+  }
+  return bins
+    .filter((b) => b.w > 0)
+    .sort((a, b) => b.w - a.w)
+    .slice(0, n)
+    .map((b) => rgbToHex([b.r / b.w, b.g / b.w, b.b / b.w]));
 }

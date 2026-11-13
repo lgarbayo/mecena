@@ -5,9 +5,9 @@
  * (pass `progressive` and the per-section states; empty slots render as skeletons, never as placeholder text).
  * Styles live in ./dossier.css, scoped under .dossier-wall.
  */
-import type { CSSProperties, ReactNode } from "react";
+import { createContext, useContext, type CSSProperties, type ReactNode } from "react";
 import type { BusinessView, CreatorView, DossierView, FactRow, SectionState, WorkView } from "../model";
-import { styleTokens, type DossierStyle } from "../style";
+import { DEFAULT_TITLES, designTokens, fontStack, type DossierDesign, type SectionTitleKey } from "../design";
 import "./dossier.css";
 
 type Slot = CSSProperties & { "--lines"?: number; "--skw"?: string };
@@ -17,21 +17,70 @@ export interface DossierDocumentProps {
   /** Show pending sections as skeletons with hints (progressive build). Otherwise empty sections are hidden. */
   progressive?: boolean;
   className?: string;
-  /** Look of the dossier (style.ts). Omit to keep the stylesheet defaults ("sobrio"). */
-  style?: DossierStyle;
-  /** Accent colour taken from the artist's own photos; tamed before use. */
-  accent?: string;
+  /** The design the artist asked for (design.ts). Omit to keep the stylesheet defaults. */
+  design?: DossierDesign;
 }
 
 type Vars = CSSProperties & Record<`--${string}`, string>;
 
-/** Style tokens as CSS custom properties, so the page and the PDF share one palette (style.ts). */
-function styleVars(view: DossierView, style?: DossierStyle, accent?: string): { wall?: Vars; sheet?: Vars } {
-  if (!style && !accent) return {};
-  const t = styleTokens(style ?? "sobrio", view.kind, accent);
+/** A design as CSS custom properties + data attributes, so the page and the PDF share one description. */
+function designProps(design?: DossierDesign): { wall?: Vars; sheet?: Vars; attrs: Record<string, string> } {
+  if (!design) return { attrs: {} };
+  const t = designTokens(design);
+  const { display, body, labels } = design.type;
   const sheet: Vars = { "--accent": t.accent, "--accent-soft": t.accentSoft };
-  const wall: Vars = { ...sheet, "--paper": t.paper, "--ink": t.ink, "--granite": t.granite, "--hair": t.hair, "--wall": t.wall, "--ground": t.ground, "--on-ink": t.onInk, "--ink-rule": t.inkRule };
-  return { wall, sheet };
+  const bodyStack = fontStack(body.family, body.category);
+  const displayStack = fontStack(display.family, display.category);
+  const wall: Vars = {
+    ...sheet,
+    "--paper": t.paper,
+    "--ink": t.ink,
+    "--granite": t.granite,
+    "--hair": t.hair,
+    "--skel": t.hair,
+    "--wall": t.wall,
+    "--ground": t.ground,
+    "--on-ink": t.onInk,
+    "--ink-rule": t.inkRule,
+    "--back-paper": design.palette.backPaper,
+    "--back-ink": design.palette.backInk,
+    "--serif": bodyStack,
+    "--sans": labels === "display" ? displayStack : bodyStack,
+    "--display-font": displayStack,
+    "--display-weight": String(display.weight),
+    "--display-tracking": `${display.tracking}em`,
+    "--display-case": display.uppercase ? "uppercase" : "none",
+    "--display-style": display.italic ? "italic" : "normal",
+    "--body-scale": String(body.scale),
+    "--name-scale": String(design.cover.nameScale),
+    "--radius": `${design.rhythm.corners}px`,
+  };
+  return {
+    wall,
+    sheet,
+    attrs: {
+      "data-design": "",
+      "data-cover": design.cover.layout,
+      "data-works": design.works.layout,
+      "data-frame": design.works.frame,
+      "data-density": design.rhythm.density,
+      "data-rules": design.rhythm.rules,
+      "data-texture": design.rhythm.texture,
+    },
+  };
+}
+
+/** Section names in the artist's own voice (design.titles), keyed by the default Spanish name. */
+const TitlesContext = createContext<Record<string, string>>({});
+const KEY_BY_DEFAULT = Object.fromEntries(Object.entries(DEFAULT_TITLES).map(([k, v]) => [v, k])) as Record<string, SectionTitleKey>;
+
+function titlesFor(design?: DossierDesign): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [name, key] of Object.entries(KEY_BY_DEFAULT)) {
+    const t = design?.titles?.[key];
+    if (t) out[name] = t;
+  }
+  return out;
 }
 
 const HINTS: Record<string, string> = {
@@ -71,9 +120,10 @@ function Section({
 }
 
 function Rail({ name, sub }: { name: string; sub?: string }) {
+  const titles = useContext(TitlesContext);
   return (
     <h2 className="rail">
-      <span className="rail__name">{name}</span>
+      <span className="rail__name">{titles[name] ?? name}</span>
       {sub}
     </h2>
   );
@@ -486,13 +536,15 @@ function BusinessDossier({ view, progressive }: { view: BusinessView; progressiv
   );
 }
 
-export function DossierDocument({ view, progressive, className = "", style, accent }: DossierDocumentProps) {
-  const vars = styleVars(view, style, accent);
+export function DossierDocument({ view, progressive, className = "", design }: DossierDocumentProps) {
+  const props = designProps(design);
   return (
-    <div className={`dossier-wall ${className}`.trim()} data-style={style ?? "sobrio"} style={vars.wall}>
-      <article className="dossier" data-kind={view.kind} lang="es" style={vars.sheet}>
-        {view.kind === "creator" ? <CreatorDossier view={view} progressive={progressive} /> : <BusinessDossier view={view} progressive={progressive} />}
-      </article>
-    </div>
+    <TitlesContext.Provider value={titlesFor(design)}>
+      <div className={`dossier-wall ${className}`.trim()} style={props.wall} {...props.attrs}>
+        <article className="dossier" data-kind={view.kind} lang="es" style={props.sheet}>
+          {view.kind === "creator" ? <CreatorDossier view={view} progressive={progressive} /> : <BusinessDossier view={view} progressive={progressive} />}
+        </article>
+      </div>
+    </TitlesContext.Provider>
   );
 }

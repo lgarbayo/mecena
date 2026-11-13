@@ -11,7 +11,10 @@ import { serverEnv } from "@/contracts";
 import { exportsDir, getCall, getDossier, getProfile, listWorks, nowIso } from "@/server/store";
 import { orderWorks, toDossierView, type DossierView } from "./model";
 import { planVariant } from "./variant";
-import { resolveStyle, styleTokens, type StyleTokens } from "./style";
+import { designTokens } from "./design";
+import { currentDesign } from "./designs";
+import type { PdfTokens } from "./pdf/DossierPdf";
+import type { PdfFaces } from "./pdf/fonts";
 
 export interface DossierData {
   dossier: Dossier;
@@ -106,7 +109,7 @@ export function renderFallbackPdf(name: string): Buffer {
 
 /** Test seam: lets tests force the renderer to throw. */
 export const pdfRenderer = {
-  async render(data: DossierData, tokens?: StyleTokens): Promise<Buffer> {
+  async render(data: DossierData, tokens?: PdfTokens, faces?: PdfFaces): Promise<Buffer> {
     const [{ renderToBuffer }, { DossierPdf }, { loadPdfImage }, { createElement }] = await Promise.all([
       import("@react-pdf/renderer"),
       import("./pdf/DossierPdf"),
@@ -116,29 +119,29 @@ export const pdfRenderer = {
     const view = dossierView(data);
     const images = Object.fromEntries(data.works.map((w) => [w.imageUrl, loadPdfImage(w.imageUrl)]));
     // DossierPdf returns a <Document>; renderToBuffer's type wants the Document element itself.
-    const el = createElement(DossierPdf, { view, images, tokens }) as unknown as Parameters<typeof renderToBuffer>[0];
+    const el = createElement(DossierPdf, { view, images, tokens, faces }) as unknown as Parameters<typeof renderToBuffer>[0];
     return renderToBuffer(el);
   },
 };
 
 export interface PdfLook {
-  /** "sobrio" | "editorial" | "galeria"; anything else falls back to the look that suits the call/profile. */
+  /** A starting point ("sobrio" | "editorial" | "galeria") to use instead of the saved design. */
   style?: string | null;
-  /** Accent sampled from the artist's photos on the page (hex). */
-  accent?: string | null;
 }
 
-/** Style tokens for this PDF: the requested look, or the one the call (or profile) suggests. */
-export function pdfTokens(data: DossierData, look: PdfLook = {}): StyleTokens {
-  const style = resolveStyle({ requested: look.style, call: data.call, profile: data.profile });
-  return styleTokens(style, data.profile.kind, look.accent ?? undefined);
+/** The design for this PDF: the one the artist made with the design agent, or the starting point that suits the call. */
+export function pdfTokens(data: DossierData, look: PdfLook = {}): PdfTokens {
+  return designTokens(currentDesign({ profile: data.profile, call: data.call, preset: look.style }).design);
 }
 
 /** Returns PDF bytes. Never throws for a known profile: renderer errors fall back to a minimal PDF. */
 export async function renderDossierPdf(input: { profileId?: string; callId?: string; adapt?: boolean } & PdfLook): Promise<Buffer> {
   const data = await loadDossierData(input);
   try {
-    return await pdfRenderer.render(data, pdfTokens(data, input));
+    const tokens = pdfTokens(data, input);
+    const { loadDesignFonts } = await import("./pdf/fonts");
+    const faces = await loadDesignFonts(tokens.design).catch(() => ({}));
+    return await pdfRenderer.render(data, tokens, faces);
   } catch (e) {
     console.error("[dossier] PDF renderer failed, serving the fallback PDF", e);
     return renderFallbackPdf(data.profile.displayName);

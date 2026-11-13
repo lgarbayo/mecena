@@ -20,21 +20,36 @@
   .dossier-screen { display: block; }
   .dossier-bleed { width: auto; margin: 0; }
 }
-/* Style picker: three looks for one dossier (style.ts). */
-.dossier-style { border: 0; margin: 0; padding: 0; min-width: 0; }
-.dossier-style legend { padding: 0; margin-bottom: 8px; font-weight: 600; }
-.dossier-style__options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.dossier-style__option {
-  display: flex; flex-direction: column; gap: 2px; cursor: pointer;
-  padding: 10px 12px; border: 1px solid color-mix(in srgb, currentColor 22%, transparent); border-radius: 6px;
+/* Design panel: the artist asks, the design agent redraws (DesignPanel.tsx). */
+.design-panel { display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); border-radius: 8px; }
+.design-panel__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.design-panel__head h2 { margin: 0; font-size: 1.15rem; }
+.design-panel__current { margin: 0; font-size: 0.95rem; }
+.design-panel__why { margin: 0; max-width: 62ch; line-height: 1.5; }
+.design-panel__adjust { margin: 0; padding-left: 1.1em; font-size: 0.9rem; opacity: 0.85; }
+.design-panel__ask { display: flex; flex-direction: column; gap: 8px; }
+.design-panel__label { font-weight: 600; font-size: 0.95rem; }
+.design-panel__ask textarea {
+  width: 100%; min-height: 4.2em; resize: vertical; padding: 10px 12px;
+  font: inherit; line-height: 1.45; color: inherit; background: color-mix(in srgb, currentColor 3%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent); border-radius: 6px;
 }
-.dossier-style__option[data-active="true"] { border-color: currentColor; box-shadow: inset 0 0 0 1px currentColor; }
-.dossier-style__option input { position: absolute; opacity: 0; pointer-events: none; }
-.dossier-style__option:has(input:focus-visible) { outline: 2px solid currentColor; outline-offset: 2px; }
-.dossier-style__name { font-weight: 600; display: flex; align-items: baseline; gap: 6px; }
-.dossier-style__tag { font-weight: 400; font-size: 0.8rem; opacity: 0.75; }
-.dossier-style__desc { font-size: 0.85rem; line-height: 1.35; opacity: 0.8; }
-.dossier-style__why { margin: 8px 0 0; font-size: 0.9rem; }
-.dossier-style__colour { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.9rem; cursor: pointer; }
-.dossier-style__swatch { width: 16px; height: 16px; border-radius: 3px; display: inline-block; }
-@media (max-width: 560px) { .dossier-style__options { grid-template-columns: minmax(0, 1fr); } }
+.design-panel__ask textarea:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+.design-panel__ask textarea::placeholder { color: inherit; opacity: 0.55; }
+.design-panel__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.design-panel__error { margin: 0; font-size: 0.9rem; }
+.design-panel__ideas { display: flex; flex-wrap: wrap; gap: 6px; }
+.design-chip {
+  font: inherit; font-size: 0.875rem; color: inherit; cursor: pointer;
+  padding: 6px 12px; border-radius: 999px; background: transparent;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+.design-chip:hover:not(:disabled) { border-color: currentColor; }
+.design-chip:focus-visible, .design-link:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.design-chip:disabled, .design-link:disabled { opacity: 0.5; cursor: progress; }
+.design-panel__start { margin: 0; font-size: 0.9rem; line-height: 1.5; }
+.design-link {
+  font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 0.18em; text-decoration-thickness: 1px; font-weight: 600;
+}
+.design-panel__tag { opacity: 0.75; }

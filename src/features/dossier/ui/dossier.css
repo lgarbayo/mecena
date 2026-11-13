@@ -464,27 +464,84 @@ html, body { background: #fff; }
   .dossier-wall .dossier > .sheet.contact { background: var(--ink); }
 }
 
-/* ---- Styles (style.ts). Colours arrive as inline custom properties from DossierDocument; these rules only
-   change what a palette cannot: the display face and how the work hangs. */
+/* ---- Design (design.ts). Colours and faces arrive as custom properties from DossierDocument; these rules
+   turn the design's choices (cover, works, frame, rhythm, texture) into layout. Only active with [data-design]. */
 .dossier-wall ::selection { background: var(--accent-soft); color: var(--ink); }
-.dossier-wall[data-style="editorial"] .cover__name,
-.dossier-wall[data-style="editorial"] .section-title,
-.dossier-wall[data-style="editorial"] .contact__name {
-  font-family: var(--serif);
-  font-weight: 400;
-  letter-spacing: -0.02em;
+.dossier-wall[data-design] { font-size: calc(var(--fs-body) * var(--body-scale, 1)); }
+.dossier-wall[data-design] .cover__name,
+.dossier-wall[data-design] .section-title,
+.dossier-wall[data-design] .contact__name {
+  font-family: var(--display-font);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  text-transform: var(--display-case);
+  font-style: var(--display-style);
 }
-.dossier-wall[data-style="editorial"] .cover__name { line-height: 0.95; }
-.dossier-wall[data-style="editorial"] .series__head .section-title { font-style: italic; }
-.dossier-wall[data-style="editorial"] .rail { font-family: var(--serif); font-size: 0.9375rem; letter-spacing: 0; }
-.dossier-wall[data-style="galeria"] .frame { background: transparent; padding: 0; }
-.dossier-wall[data-style="galeria"] .frame > img,
-.dossier-wall[data-style="galeria"] .frame > svg { filter: none; }
-.dossier-wall[data-style="galeria"] .work .frame > img { object-position: left bottom; }
-.dossier-wall[data-style="galeria"] .cover__work .frame { background: var(--ground); padding: clamp(14px, 4%, 32px); }
-.dossier-wall[data-style="galeria"] .cover__name { font-weight: 600; }
-.dossier-wall[data-style="galeria"] .section-title { font-weight: 600; letter-spacing: -0.03em; }
-.dossier-wall[data-style="galeria"] .work { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); }
+.dossier-wall[data-design] .cover__name { font-size: calc(var(--fs-name) * var(--name-scale, 1)); }
+.dossier-wall[data-design] .dossier > .sheet.contact,
+.dossier-wall[data-design] .contact { --ink: var(--back-paper); --paper: var(--back-ink); }
+
+/* cover */
+.dossier-wall[data-cover="nombre-primero"] .cover__text { order: 1; border-top: 0; padding-top: 0; }
+.dossier-wall[data-cover="nombre-primero"] .cover__work { order: 2; }
+.dossier-wall[data-cover="obra-a-sangre"] .cover__work .frame {
+  margin: 0 calc(var(--pad) * -1);
+  padding: 0;
+  height: clamp(360px, 74vh, 780px);
+}
+.dossier-wall[data-cover="obra-a-sangre"] .cover__work .frame > img { filter: none; }
+.dossier-wall[data-cover="obra-a-sangre"] .cover__caption { padding-right: 0; }
+.dossier-wall[data-cover="partida"] .cover { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: auto minmax(0, 1fr); column-gap: 2rem; }
+.dossier-wall[data-cover="partida"] .cover__head,
+.dossier-wall[data-cover="partida"] .call-header { grid-column: 1 / -1; }
+.dossier-wall[data-cover="partida"] .cover__work { grid-column: 2; grid-row: 2; }
+.dossier-wall[data-cover="partida"] .cover__text { grid-column: 1; grid-row: 2; align-self: end; grid-template-columns: minmax(0, 1fr); }
+
+/* works */
+.dossier-wall[data-works="cartela-debajo"] .work { grid-template-columns: minmax(0, 1fr); row-gap: 1rem; }
+.dossier-wall[data-works="cartela-debajo"] .label { max-width: 34em; }
+.dossier-wall[data-works="rejilla"] .works { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.75rem 2rem; }
+.dossier-wall[data-works="rejilla"] .work { grid-template-columns: minmax(0, 1fr); row-gap: 0.8rem; align-items: start; }
+.dossier-wall[data-works="rejilla"] .work .frame { height: calc(var(--frame-h) * 0.62); }
+.dossier-wall[data-works="rejilla"] .label__concept { display: none; }
+
+/* frame */
+.dossier-wall[data-frame] .frame { border-radius: var(--radius, 0); }
+.dossier-wall[data-frame="paspartu"] .frame > img { filter: none; }
+.dossier-wall[data-frame="plana"] .work .frame { background: transparent; padding: 0; }
+.dossier-wall[data-frame="plana"] .work .frame > img { filter: none; object-position: left bottom; }
+.dossier-wall[data-frame="marco-fino"] .work .frame { background: transparent; }
+.dossier-wall[data-frame="marco-fino"] .work .frame > img {
+  filter: drop-shadow(1px 0 0 var(--ink)) drop-shadow(-1px 0 0 var(--ink)) drop-shadow(0 1px 0 var(--ink)) drop-shadow(0 -1px 0 var(--ink));
+}
+
+/* rhythm */
+.dossier-wall[data-density="aireada"] { --pad: clamp(24px, 8vw, 92px); }
+.dossier-wall[data-density="aireada"] .works { gap: 4.5rem; }
+.dossier-wall[data-density="aireada"] .dossier { gap: 40px; }
+.dossier-wall[data-density="compacta"] { --pad: clamp(16px, 4.5vw, 44px); }
+.dossier-wall[data-density="compacta"] .works { gap: 1.75rem; }
+.dossier-wall[data-density="compacta"] .series__head { margin-bottom: 1.5rem; }
+.dossier-wall[data-rules="gruesas"] .rail,
+.dossier-wall[data-rules="gruesas"] .cover__text { border-top-width: 5px; }
+.dossier-wall[data-rules="gruesas"] .main { border-top: 2px solid var(--ink); }
+.dossier-wall[data-rules="ninguna"] .rail,
+.dossier-wall[data-rules="ninguna"] .main,
+.dossier-wall[data-rules="ninguna"] .cover__text { border-top-color: transparent; }
+.dossier-wall[data-texture="grano"] .dossier > .sheet,
+.dossier-wall[data-texture="papel"] .dossier > .sheet {
+  background-image: var(--texture);
+  background-blend-mode: multiply;
+}
+.dossier-wall[data-texture="grano"] {
+  --texture: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.22 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+.dossier-wall[data-texture="papel"] {
+  --texture: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.02 0.35' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0 0.35  0 0 0 0.12 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");
+}
 @media (max-width: 720px) {
-  .dossier-wall[data-style="galeria"] .work { grid-template-columns: minmax(0, 1fr); }
+  .dossier-wall[data-works="rejilla"] .works { grid-template-columns: minmax(0, 1fr); }
+  .dossier-wall[data-cover="partida"] .cover { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; }
+  .dossier-wall[data-cover="partida"] .cover__work,
+  .dossier-wall[data-cover="partida"] .cover__text { grid-column: 1; grid-row: auto; }
 }

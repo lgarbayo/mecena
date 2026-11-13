@@ -11,6 +11,10 @@ import { Document, Font, Image, Link, Page, StyleSheet, Text, View } from "@reac
 import type { BusinessView, CreatorView, CvGroup, DossierView, FactRow, WorkView } from "../model";
 import type { PdfImage } from "./images";
 import { styleTokens, type StyleTokens } from "../style";
+import { DEFAULT_TITLES, type DossierDesign } from "../design";
+import type { PdfFaces } from "./fonts";
+
+export type PdfTokens = StyleTokens & { design?: DossierDesign };
 
 // ---------------------------------------------------------------- fonts
 
@@ -55,17 +59,36 @@ const mm = (n: number) => n * 2.8346;
 const SOBRIO = styleTokens("sobrio", "creator");
 const M = { top: mm(18), side: mm(17), bottom: mm(20) };
 
-function makeStyles(fonts: boolean, C: StyleTokens = SOBRIO) {
+function makeStyles(fonts: boolean, C: PdfTokens = SOBRIO, faces: PdfFaces = {}) {
   const sans = fonts ? "Sans" : "Helvetica";
   const serif = fonts ? "Serif" : "Times-Roman";
-  const display = C.display === "serif" ? serif : sans;
+  const display = faces.display ?? (C.display === "serif" ? serif : sans);
+  const custom = !!faces.display;
+  const dt = C.design?.type.display;
+  // A downloaded face is registered as a single weight/style: ask for exactly that, never a synthetic variant.
+  const displayFace = (size: number, bundledWeight: number, bundledTracking: number) => ({
+    fontFamily: display,
+    fontWeight: custom ? 400 : C.display === "serif" ? 400 : dt ? Math.min(700, Math.max(400, dt.weight)) : bundledWeight,
+    letterSpacing: dt ? dt.tracking * size : bundledTracking,
+    textTransform: (dt?.uppercase ? "uppercase" : "none") as "uppercase" | "none",
+  });
+  const back = { paper: C.design?.palette.backPaper ?? C.ink, ink: C.design?.palette.backInk ?? C.paper };
+  const titles: Record<string, string> = {};
+  for (const [k, v] of Object.entries(DEFAULT_TITLES)) {
+    const t = C.design?.titles?.[k as keyof typeof DEFAULT_TITLES];
+    if (t) titles[v] = t;
+  }
   return {
     sans,
     serif,
     display,
+    back,
+    titles,
+    worksBelow: !!C.design && C.design.works.layout !== "cartela-lateral",
+    nameFirst: C.design?.cover.layout === "nombre-primero",
     t: C,
     s: StyleSheet.create({
-      page: { backgroundColor: "#ffffff", color: C.ink, fontFamily: serif, fontSize: 9.5, lineHeight: 1.55, paddingTop: M.top, paddingBottom: M.bottom, paddingHorizontal: M.side },
+      page: { backgroundColor: C.design ? C.paper : "#ffffff", color: C.ink, fontFamily: serif, fontSize: 9.5, lineHeight: 1.55, paddingTop: M.top, paddingBottom: M.bottom, paddingHorizontal: M.side },
       full: { backgroundColor: C.paper, color: C.ink, fontFamily: serif, fontSize: 9.5, padding: `${M.top} ${M.side}`, display: "flex", flexDirection: "column" },
       folio: { position: "absolute", bottom: mm(9), right: M.side, fontFamily: sans, fontSize: 7.5, color: C.granite },
       // rail layout
@@ -73,7 +96,7 @@ function makeStyles(fonts: boolean, C: StyleTokens = SOBRIO) {
       rail: { width: mm(34), marginRight: mm(7), borderTopWidth: 2, borderTopColor: C.ink, paddingTop: 4, fontFamily: sans, fontSize: 7.5, fontWeight: 500, color: C.granite, lineHeight: 1.35 },
       railName: { color: C.ink },
       main: { flex: 1, borderTopWidth: 0.6, borderTopColor: C.hair, paddingTop: 4 },
-      sectionTitle: { fontFamily: display, fontWeight: C.display === "serif" ? 400 : 500, fontSize: 24, lineHeight: 1.05, letterSpacing: C.display === "serif" ? -0.3 : -0.6, marginBottom: 6 },
+      sectionTitle: { ...displayFace(24, 500, -0.6), fontSize: 24, lineHeight: 1.05, marginBottom: 6 },
       // cover
       coverHead: { flexDirection: "row", justifyContent: "space-between", fontFamily: sans, fontSize: 7.5, color: C.granite },
       callHeader: { flexDirection: "row", justifyContent: "space-between", fontFamily: sans, fontSize: 7.5, marginTop: -M.top, marginHorizontal: -M.side, marginBottom: mm(10), paddingVertical: mm(4), paddingHorizontal: M.side, borderBottomWidth: 0.8 },
@@ -83,7 +106,7 @@ function makeStyles(fonts: boolean, C: StyleTokens = SOBRIO) {
       frameEmpty: { fontFamily: serif, fontStyle: "italic", fontSize: 10, color: C.granite, textAlign: "center", paddingHorizontal: 20 },
       caption: { fontSize: 7.5, color: C.granite, textAlign: "right", marginTop: 5 },
       coverText: { borderTopWidth: 2, borderTopColor: C.ink, paddingTop: 10 },
-      coverName: { fontFamily: display, fontWeight: C.display === "serif" ? 400 : 500, fontSize: 50, lineHeight: 0.95, letterSpacing: C.display === "serif" ? -1 : -2, marginBottom: 14 },
+      coverName: { ...displayFace(50 * (C.design?.cover.nameScale ?? 1), 500, -2), fontSize: 50 * Math.min(1.15, C.design?.cover.nameScale ?? 1), lineHeight: 0.95, marginBottom: 14 },
       coverRow: { flexDirection: "row" },
       coverMeta: { flex: 1, marginRight: mm(7), fontFamily: sans, fontSize: 10, lineHeight: 1.35 },
       coverLine: { flex: 1, fontStyle: "italic", fontSize: 12.5, lineHeight: 1.3 },
@@ -119,8 +142,8 @@ function makeStyles(fonts: boolean, C: StyleTokens = SOBRIO) {
       personName: { fontFamily: sans, fontWeight: 500, fontSize: 10 },
       personRole: { fontFamily: sans, fontSize: 7.5, color: C.granite, marginBottom: 3 },
       // contact
-      contact: { backgroundColor: C.ink, color: C.paper, fontFamily: serif, fontSize: 9.5, padding: `${M.top} ${M.side}`, display: "flex", flexDirection: "column", justifyContent: "space-between" },
-      contactName: { fontFamily: display, fontWeight: C.display === "serif" ? 400 : 500, fontSize: 32, lineHeight: 1, letterSpacing: C.display === "serif" ? -0.5 : -1.1, marginBottom: 20 },
+      contact: { backgroundColor: C.design?.palette.backPaper ?? C.ink, color: C.design?.palette.backInk ?? C.paper, fontFamily: serif, fontSize: 9.5, padding: `${M.top} ${M.side}`, display: "flex", flexDirection: "column", justifyContent: "space-between" },
+      contactName: { ...displayFace(32, 500, -1.1), fontSize: 32, lineHeight: 1, marginBottom: 20 },
       colophon: { fontFamily: sans, fontSize: 7, color: C.onInk, maxWidth: 330 },
       block: { marginTop: mm(12) },
     }),
@@ -138,8 +161,8 @@ function Folio({ st }: { st: S }) {
 
 function Rail({ st, name, sub, onInk }: { st: S; name: string; sub?: string; onInk?: boolean }) {
   return (
-    <View style={[st.s.rail, onInk ? { borderTopColor: st.t.paper, color: st.t.onInk } : {}]}>
-      <Text style={onInk ? { color: st.t.paper } : st.s.railName}>{name}</Text>
+    <View style={[st.s.rail, onInk ? { borderTopColor: st.back.ink, color: st.t.onInk } : {}]}>
+      <Text style={onInk ? { color: st.back.ink } : st.s.railName}>{st.titles[name] ?? name}</Text>
       {sub ? <Text>{sub}</Text> : null}
     </View>
   );
@@ -177,7 +200,7 @@ function Frame({ st, work, images, style }: { st: S; work?: WorkView; images: Im
 
 function Label({ st, work, cat }: { st: S; work: WorkView; cat: string }) {
   return (
-    <View style={st.s.label}>
+    <View style={st.worksBelow ? [st.s.label, { flexGrow: 0, flexShrink: 0, flexBasis: "auto", maxWidth: 360, paddingBottom: 0 }] : st.s.label}>
       <Text style={st.s.labelTitle}>
         <Text style={st.s.cite}>{work.title}</Text>
         {work.year ? `, ${work.year}` : ""}
@@ -192,8 +215,8 @@ function Label({ st, work, cat }: { st: S; work: WorkView; cat: string }) {
 
 function WorkRow({ st, work, images, cat }: { st: S; work: WorkView; images: ImageMap; cat: string }) {
   return (
-    <View style={st.s.work} wrap={false}>
-      <Frame st={st} work={work} images={images} style={st.s.workFrame} />
+    <View style={st.worksBelow ? { marginBottom: mm(9) } : st.s.work} wrap={false}>
+      <Frame st={st} work={work} images={images} style={st.worksBelow ? { height: mm(92), marginBottom: mm(4) } : st.s.workFrame} />
       <Label st={st} work={work} cat={cat} />
     </View>
   );
@@ -206,7 +229,7 @@ function Facts({ st, rows, onInk }: { st: S; rows: FactRow[]; onInk?: boolean })
         <View key={i} style={[st.s.factRow, onInk ? { borderTopColor: st.t.inkRule } : {}]} wrap={false}>
           <Text style={[st.s.factLabel, onInk ? { color: st.t.onInk } : {}]}>{r.label}</Text>
           {r.href ? (
-            <Link src={r.href} style={[st.s.factValue, { color: onInk ? st.t.paper : st.t.ink, textDecoration: "none" }]}>
+            <Link src={r.href} style={[st.s.factValue, { color: onInk ? st.back.ink : st.t.ink, textDecoration: "none" }]}>
               {r.value}
             </Link>
           ) : (
@@ -244,6 +267,7 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
         <Text>{kicker}</Text>
         <Text>{view.date}</Text>
       </View>
+      {st.nameFirst ? <CoverText st={st} view={view} meta={meta} first /> : null}
       <View style={st.s.coverFigure}>
         {w && images[w.imageUrl] ? (
           <>
@@ -255,20 +279,26 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
           </>
         ) : null}
       </View>
-      <View style={[st.s.coverText, { marginTop: "auto" }]}>
-        <Text style={st.s.coverName}>{view.name || "Dossier"}</Text>
-        <View style={st.s.coverRow}>
-          <View style={st.s.coverMeta}>
-            {meta.filter(Boolean).map((m, i) => (
-              <Text key={i} style={i ? st.s.muted : undefined}>
-                {m}
-              </Text>
-            ))}
-          </View>
-          <Text style={st.s.coverLine}>{view.tagline}</Text>
-        </View>
-      </View>
+      {st.nameFirst ? null : <CoverText st={st} view={view} meta={meta} />}
     </Page>
+  );
+}
+
+function CoverText({ st, view, meta, first }: { st: S; view: DossierView; meta: string[]; first?: boolean }) {
+  return (
+    <View style={first ? { marginTop: mm(6) } : [st.s.coverText, { marginTop: "auto" }]}>
+      <Text style={st.s.coverName}>{view.name || "Dossier"}</Text>
+      <View style={st.s.coverRow}>
+        <View style={st.s.coverMeta}>
+          {meta.filter(Boolean).map((m, i) => (
+            <Text key={i} style={i ? st.s.muted : undefined}>
+              {m}
+            </Text>
+          ))}
+        </View>
+        <Text style={st.s.coverLine}>{view.tagline}</Text>
+      </View>
+    </View>
   );
 }
 
@@ -466,8 +496,8 @@ export function BusinessPdf({ view, images, st }: { view: BusinessView; images: 
   );
 }
 
-export function DossierPdf({ view, images, tokens }: { view: DossierView; images: ImageMap; tokens?: StyleTokens }) {
-  const st = makeStyles(registerFonts(), tokens);
+export function DossierPdf({ view, images, tokens, faces }: { view: DossierView; images: ImageMap; tokens?: PdfTokens; faces?: PdfFaces }) {
+  const st = makeStyles(registerFonts(), tokens, faces);
   const title = `Dossier${view.name ? ` · ${view.name}` : ""}${view.variant ? ` · ${view.variant.callName}` : ""}`;
   return (
     <Document title={title} author={view.name || "Mecena"} creator="Mecena" producer="Mecena" language="es-ES">

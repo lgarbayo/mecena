@@ -5,15 +5,17 @@
  * the call-adapted variant is Pro (non-Pro users see the notes as a preview and the Paywall).
  */
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { API, ROUTES, type Call, type Dossier, type Profile, type Work } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
 import { Button, Spinner } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
-import { apiGet } from "@/lib/api-client";
+import { apiGet, apiSend } from "@/lib/api-client";
 import { isBlank, toDossierView } from "../model";
-import { accentFromPixels, DOSSIER_STYLES, resolveStyle, STYLE_DESCRIPTIONS, STYLE_LABELS, suggestStyle, type DossierStyle } from "../style";
+import { googleFontUrls, type DossierDesign } from "../design";
+import { paletteFromPixels, suggestStyle } from "../style";
+import { DESIGN_API, DesignPanel } from "./DesignPanel";
 import { DossierDocument } from "./DossierDocument";
 import "./screen.css";
 
@@ -25,13 +27,11 @@ interface DossierPayload {
   adapted: boolean;
 }
 
-export function dossierQuery(p: { profileId?: string; callId?: string; appUserId?: string; estilo?: string; accent?: string }): string {
+export function dossierQuery(p: { profileId?: string; callId?: string; appUserId?: string }): string {
   const q = new URLSearchParams();
   if (p.profileId) q.set("profileId", p.profileId);
   if (p.callId) q.set("callId", p.callId);
   if (p.appUserId) q.set("appUserId", p.appUserId);
-  if (p.estilo) q.set("estilo", p.estilo);
-  if (p.accent) q.set("accent", p.accent);
   const s = q.toString();
   return s ? `?${s}` : "";
 }
@@ -41,11 +41,8 @@ export function DossierScreen() {
   const { profile: active, appUserId } = useApp();
   const profileId = sp.get("profileId") || active?.id || undefined;
   const callId = sp.get("callId") || undefined;
-  const requestedStyle = sp.get("estilo");
-  const router = useRouter();
-  const pathname = usePathname();
-  const [useWorkColour, setUseWorkColour] = useState(true);
-  const [workAccent, setWorkAccent] = useState<string | undefined>();
+  const [design, setDesign] = useState<DossierDesign | undefined>();
+  const [workColors, setWorkColors] = useState<string[]>([]);
   const [data, setData] = useState<DossierPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paywall, setPaywall] = useState(false);
@@ -71,13 +68,23 @@ export function DossierScreen() {
     return data.adapted ? v : { ...v, variant: undefined };
   }, [data]);
 
-  // Accent from the artist's own photos: a few small samples on a canvas, never a change to the work.
+  // The design on file (or the starting point that suits the call). Separate from the dossier data so a
+  // redesign never reloads the content.
+  const loadDesign = useCallback(async () => {
+    const q = dossierQuery({ profileId, callId });
+    const res = await apiGet<{ design: DossierDesign }>(`${DESIGN_API}${q}`).catch(() => undefined);
+    if (res) setDesign(res.design);
+  }, [profileId, callId]);
+  useEffect(() => {
+    loadDesign();
+  }, [loadDesign]);
+
+  // Colours of the artist's own photos, for the design agent: a few small samples, never a change to the work.
   const imageKey = data ? data.works.slice(0, 6).map((w) => w.imageUrl).join("|") : "";
   useEffect(() => {
-    if (!imageKey) return setWorkAccent(undefined);
+    if (!imageKey) return;
     let cancelled = false;
-    const urls = imageKey.split("|");
-    Promise.all(urls.map(samplePixels)).then((chunks) => {
+    Promise.all(imageKey.split("|").map(samplePixels)).then((chunks) => {
       if (cancelled) return;
       const all = chunks.filter((c): c is Uint8ClampedArray => !!c);
       const merged = new Uint8ClampedArray(all.reduce((n, c) => n + c.length, 0));
@@ -86,7 +93,7 @@ export function DossierScreen() {
         merged.set(c, at);
         at += c.length;
       }
-      setWorkAccent(merged.length ? accentFromPixels(merged, 1) : undefined);
+      setWorkColors(merged.length ? paletteFromPixels(merged, 3) : []);
     });
     return () => {
       cancelled = true;
@@ -94,13 +101,7 @@ export function DossierScreen() {
   }, [imageKey]);
 
   const suggestion = data ? suggestStyle({ call: data.call, profile: data.profile }) : undefined;
-  const style: DossierStyle = data ? resolveStyle({ requested: requestedStyle, call: data.call, profile: data.profile }) : "sobrio";
-  const accent = useWorkColour ? workAccent : undefined;
-  const chooseStyle = (next: DossierStyle) => {
-    const q = new URLSearchParams(sp.toString());
-    q.set("estilo", next);
-    router.replace(`${pathname}?${q}`, { scroll: false });
-  };
+  const fontUrls = design ? googleFontUrls(design) : [];
 
   // Progressive build: while sections are still pending (the user is talking), refresh quietly.
   const pending = view ? Object.values(view.states).some((s) => s !== "ready") : false;
@@ -125,9 +126,9 @@ export function DossierScreen() {
   if (!data || !view) return <Spinner label="Preparando tu dossier…" />;
 
   const blank = isBlank(view);
-  // The style note is already told by the picker above; keep it for MCP and the PDF flow only.
+  // The style note is already told by the design panel above; keep it for MCP and the PDF flow only.
   const notes = (data.dossier.variant?.notes ?? []).filter((n) => !n.startsWith("Estilo sugerido"));
-  const pdfHref = `${API.dossierPdf}${dossierQuery({ profileId: data.profile.id, callId: data.adapted ? callId : undefined, appUserId, estilo: style, accent })}`;
+  const pdfHref = `${API.dossierPdf}${dossierQuery({ profileId: data.profile.id, callId: data.adapted ? callId : undefined, appUserId })}`;
   const kindLabel = view.kind === "creator" ? "Dossier artístico" : "Dossier de empresa";
 
   return (
@@ -147,33 +148,22 @@ export function DossierScreen() {
         </div>
       </header>
 
-      <fieldset className="dossier-style no-print">
-        <legend>Estilo del dossier</legend>
-        <div className="dossier-style__options" role="radiogroup">
-          {DOSSIER_STYLES.map((s) => (
-            <label key={s} className="dossier-style__option" data-active={s === style}>
-              <input type="radio" name="dossier-style" value={s} checked={s === style} onChange={() => chooseStyle(s)} />
-              <span className="dossier-style__name">
-                {STYLE_LABELS[s]}
-                {suggestion?.style === s ? <span className="dossier-style__tag">sugerido</span> : null}
-              </span>
-              <span className="dossier-style__desc">{STYLE_DESCRIPTIONS[s]}</span>
-            </label>
-          ))}
-        </div>
-        {suggestion ? (
-          <p className="dossier-style__why">
-            {data.call ? "Para esta convocatoria" : "Para tu perfil"} te sugerimos «{STYLE_LABELS[suggestion.style]}», porque {suggestion.reason}.
-          </p>
-        ) : null}
-        {workAccent ? (
-          <label className="dossier-style__colour">
-            <input type="checkbox" checked={useWorkColour} onChange={(e) => setUseWorkColour(e.target.checked)} />
-            <span className="dossier-style__swatch" style={{ background: workAccent }} aria-hidden="true" />
-            Usar el color de tu obra
-          </label>
-        ) : null}
-      </fieldset>
+      {suggestion ? (
+        <DesignPanel
+          design={design}
+          suggested={suggestion.style}
+          suggestedReason={suggestion.reason}
+          forCall={!!data.call}
+          workColors={workColors}
+          profileId={data.profile.id}
+          callId={callId}
+          onChange={(c) => setDesign(c.design)}
+          onUndo={async () => {
+            const res = await apiSend<{ design: DossierDesign }>(DESIGN_API, { undo: true, profileId: data.profile.id, callId }).catch(() => undefined);
+            if (res) setDesign(res.design);
+          }}
+        />
+      ) : null}
 
       {callId && data.call ? (
         <aside className="dossier-variant no-print" aria-label="Adaptación a la convocatoria">
@@ -201,7 +191,11 @@ export function DossierScreen() {
         </p>
       ) : null}
 
-      <DossierDocument view={view} progressive={blank} className="dossier-bleed" style={style} accent={accent} />
+      {fontUrls.map((href) => (
+        // eslint-disable-next-line @next/next/no-page-custom-font -- fonts chosen at runtime by the design agent
+        <link key={href} rel="stylesheet" href={href} />
+      ))}
+      <DossierDocument view={view} progressive={blank} className="dossier-bleed" design={design} />
 
       <Paywall
         open={paywall}
@@ -232,7 +226,7 @@ function samplePixels(url: string): Promise<Uint8ClampedArray | undefined> {
         ctx.drawImage(img, 0, 0, size, size);
         resolve(ctx.getImageData(0, 0, size, size).data);
       } catch {
-        resolve(undefined); // tainted canvas or decode error: keep the style's own accent
+        resolve(undefined); // tainted canvas or decode error: the agent just works without these colours
       }
     };
     img.onerror = () => resolve(undefined);
