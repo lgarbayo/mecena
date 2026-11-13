@@ -1,18 +1,28 @@
-// STUB (scaffold). Owned by WP-04: Claude tool-use loop over src/tools/registry (real) + keyword router (mock).
+/**
+ * In-app agent over the shared tools module (WP-04). Same 8 tools as the MCP server.
+ * Real mode: Claude tool-use loop (./real.ts). Mock mode (no ANTHROPIC_API_KEY / MECENA_AI_MOCK=1): keyword router (./mock.ts).
+ */
+import type { ToolContext } from "@/contracts";
+import { isMockAi } from "@/server/ai/llm";
 import { runTool } from "@/tools/registry";
+import { runMockAgent } from "./mock";
+import { runRealAgent, type AgentLlmClient } from "./real";
+import type { AgentHistory, AgentTurn, RunToolFn } from "./types";
 
-export interface AgentTurn {
-  reply: string;
-  toolCalls: { name: string; input: unknown; ok: boolean }[];
+export type { AgentTurn, AgentToolCall, AgentHistory } from "./types";
+
+export interface AgentOptions {
+  /** RevenueCat app user id of the caller; omitted = the store's meta.appUserId. */
+  appUserId?: string;
+  /** Force mock/real mode (defaults to isMockAi()). */
+  mock?: boolean;
+  run?: RunToolFn;
+  client?: AgentLlmClient;
 }
 
-export async function runAgent(message: string, _history: { role: "user" | "assistant"; content: string }[] = []): Promise<AgentTurn> {
-  if (/convocatoria|beca|ayuda|premio/i.test(message)) {
-    const { results } = await runTool("search_calls", { limit: 3 }, { caller: "app" });
-    return {
-      reply: results.length ? `He encontrado ${results.length} convocatorias: ${results.map((r) => r.call.title).join("; ")}` : "No he encontrado convocatorias.",
-      toolCalls: [{ name: "search_calls", input: { limit: 3 }, ok: true }],
-    };
-  }
-  return { reply: "Puedo buscar convocatorias, preparar tu dossier o tu solicitud.", toolCalls: [] };
+export async function runAgent(message: string, history: AgentHistory = [], opts: AgentOptions = {}): Promise<AgentTurn> {
+  const run = opts.run ?? runTool;
+  const ctx: ToolContext = { caller: "app", ...(opts.appUserId ? { appUserId: opts.appUserId } : {}) };
+  if (opts.mock ?? (isMockAi() && !opts.client)) return runMockAgent(message, run, ctx);
+  return runRealAgent(message, history, { run, ctx, client: opts.client });
 }
