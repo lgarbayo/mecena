@@ -49,4 +49,9 @@ A8 (MCP en Claude Desktop) → A6 (variantes por convocatoria) → A4 se queda c
 ## 7. Tabla WP → bloque *(rellenar cuando el arquitecto entregue los WPs)*
 | WP | Título | Bloques | Estado |
 |---|---|---|---|
-| | | | |
+| WP-01 | Alta por voz: perfil + dossier en vivo, pantalla de datos, confianza | A1, A2, A3 | pending |
+| WP-02 | Fotos de obras + fichas técnicas con visión | A4 | pending |
+| WP-03 | Dossier editorial + PDF + variantes por convocatoria | A5, A6 | pending |
+| WP-04 | Tools compartidas, servidor MCP, agente, config Claude Desktop | A7, A8 | pending |
+| WP-09 | Datos de demo, reset, guion de demo, README + túnel | A9, A10 (apoya A11, A13) | pending |
+| WP-11 | Kit de pitch y tracción (solo documentos, con `hk-pitch`) | A11, A12, A13 (compartido con B) | pending |

@@ -88,6 +88,7 @@ flowchart LR
 - **Stack:** TypeScript, Node ≥ 22.12, Next.js 16 App Router (Turbopack), React 19, zod 4, Vitest 5, npm. Persistence: one JSON file, read-through on every call (so the MCP process and the web app see each other's writes), serialised atomic writes.
 - **Deploy:** local `npm run dev:phone` + HTTPS tunnel (`cloudflared tunnel --url http://localhost:3000`) so the phone gets the mic (Web Speech needs HTTPS) and RevenueCat checkout. No cloud deploy needed.
 - **Platform APIs used:** Web Speech API (`webkitSpeechRecognition`, es-ES) for dictation; `<input type="file" accept="image/*" capture="environment">` for photos; RevenueCat Web SDK for checkout; BDNS public API for live calls (spike).
+- **Data pipeline:** see `fleet/DATA-PIPELINE.md` (team design doc, binding for WP-05/WP-06): hybrid, code decides eligibility and fit score, Claude structures the bases and explains. Its `Call`/`Profile` sketches are mapped onto the contracts in `src/contracts/domain.ts` (the contract wins; mapping in WP-05).
 - **AI components (real work each does):**
   - *Onboarding turn* (fast): incremental structured extraction from each spoken chunk → `ProfilePatch` + changed `DossierSection`s with `sourceSegmentIds`, plus one follow-up question.
   - *Describe work* (fast, vision): technical sheet from photo + the user's voice note; crop/rotation suggestion (never alters the artwork).
@@ -155,7 +156,7 @@ Launch order with 7 builders: wave 1 = WP-01, WP-02, WP-03, WP-05, WP-06, WP-07,
 | RevenueCat Web Billing setup (Stripe test account, products, offering) takes longer than expected | WP-07 starts the dashboard setup first; mock adapter behind the same `PurchasesAdapter` keeps the demo working; sandbox key only |
 | RevenueCat one-off "Solicitud premium" crediting is subtle (non-subscription transactions) | Server counts unique non-subscription transactions of `mecena_solicitud_premium` minus used credits; without secret key, trust client sync (sandbox demo only) |
 | `@revenuecat/purchases-js` 1.74 API: verified `Purchases.configure({apiKey, appUserId})`, `getOfferings`, `purchase({rcPackage, htmlTarget, customerEmail})`, `presentPaywall`, `getCustomerInfo`, `changeUser` in the installed d.ts | Uncertain: whether `presentPaywall` needs a dashboard-configured paywall; use our own paywall UI + `purchase()` |
-| BDNS API shape/availability unknown (`infosubvenciones.es/bdnstrans/api`, needs verification) | Spike time-boxed to 1 h inside WP-05; curated seed is the source of truth; cache fallback; never blocks the app |
+| BDNS API: endpoints verified by the team (`fleet/DATA-PIPELINE.md`), but criteria/requirements only exist in the bases PDFs, deadlines are often free text, and abusive access may be throttled | Ingest time-boxed inside WP-05, cached by codigoBDNS; curated seed is the demo source of truth; never call BDNS live on stage |
 | Real calls go stale or have no published criteria | `verifiedAt` per call; prefer calls with criteria in the bases for the demo; `criteriaSource: "estimated"` flagged in UI |
 | Judges ask "is 84 real?" | Disclaimer on every score; scores use the call's official criteria; mock is deterministic only for offline mode |
 | AI invents facts in drafts (trust!) | Prompts forbid it; sections carry `sourceSegmentIds`; gaps rendered as "[Completa: …]"; user edits every text |

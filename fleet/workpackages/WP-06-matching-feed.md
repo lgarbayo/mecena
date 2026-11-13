@@ -35,6 +35,7 @@ criteria: [Live demo wow, Applied AI depth, Sponsor fit (RevenueCat)]
 - [ ] `ModeSwitch` switches the active profile and the feed refetches without reload; the feed shows the mode ("Para artistas" / "Para pymes y autónomos"). Mobile cards are thumb-friendly; `npm test` + `npm run build` green.
 
 ## Notes
+- **Follow `fleet/DATA-PIPELINE.md` §4**: code decides eligibility and score, Claude only explains. Use its Phase B score (40 base for passing hard filters + 0-25 discipline/sector + 0-15 documents already available + 0-10 amount relevance + 0-10 deadline preparability), show it as a label **alto / medio / bajo** with the visible breakdown, never as a win probability. Rules whose profile field is unknown (e.g. no `birthYear`) do **not** discard the call: surface "Confírmalo: …" in *qué te falta*.
 - Calls come from `MECENA_CALLS_DIR` (tests use the 3 fixture calls; the real ~25 land via WP-05). Don't hardcode ids.
 
 ## Contract change requests

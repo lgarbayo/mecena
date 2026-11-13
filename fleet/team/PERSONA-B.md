@@ -52,7 +52,12 @@ B10 (justificación) → B3 (ganadores parecidos) → B2 se queda solo con la ca
 ## 7. Tabla WP → bloque *(rellenar cuando el arquitecto entregue los WPs)*
 | WP | Título | Bloques | Estado |
 |---|---|---|---|
-| | | | |
+| WP-05 | ~25 convocatorias reales + ingesta BDNS + concesiones | B1, B2, B3 (datos) | pending |
+| WP-06 | Matching + feed de convocatorias + cambio creador/pyme | B4, B5, B11 (`search_calls`, `explain_call`), B3 (vista) | pending |
+| WP-07 | RevenueCat: paywall, entitlements, oferta Hormozi | B6, B7 | pending |
+| WP-08 | Solicitud con tus palabras + tribunal simulado 61 → 84 | B8, B9, B11 (`draft_application`, `score_application`) | pending |
+| WP-10 | STRETCH: justificación con facturas + panel B2B | B10 | pending |
+| WP-11 | Kit de pitch y tracción (solo documentos, con `hk-pitch`) | B12, B13, B14, B15, B16 (compartido con A) | pending |
 
 ## Anexo: encuesta y LOI
 **Encuesta (6 preguntas):**
