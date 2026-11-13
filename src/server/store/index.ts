@@ -25,6 +25,7 @@ import {
 } from "@/contracts";
 import { DEMO_BUSINESS_ID, DEMO_CREATOR_ID, defaultDb, fixtureCalls } from "@/fixtures";
 import { profileBeneficiaryTypes, profileTerritory, withCanonicalCallFields } from "@/features/normalize";
+import { CallHistory } from "@/features/history/history";
 
 export const nowIso = () => new Date().toISOString();
 export const newId = (prefix: string) => `${prefix}-${randomUUID().slice(0, 8)}`;
@@ -265,6 +266,14 @@ export function listAwards(): PastAward[] {
     const r = PastAward.safeParse(x);
     return r.success ? [r.data] : [];
   });
+}
+
+/** <callsDir>/history.json (B3, optional): past-editions evidence for one call, or undefined. */
+export function getCallHistory(callId: string): CallHistory | undefined {
+  const f = path.join(callsDir(), "history.json");
+  if (!fs.existsSync(f)) return undefined;
+  const r = CallHistory.safeParse((JSON.parse(fs.readFileSync(f, "utf8")) as Record<string, unknown>)[callId]);
+  return r.success ? r.data : undefined;
 }
 
 export function getCall(id: string): Call {

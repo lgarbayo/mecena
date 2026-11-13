@@ -1,9 +1,10 @@
 // Owned by WP-06. Eligibility and score are deterministic (./rules); Claude only explains (./ai), cached in matchCache.
 import { FREE_MATCHES_PER_MONTH, type Call, type MatchResult, type PastAward, type Profile, type ProfileKind } from "@/contracts";
 import { resolveEntitlement } from "@/features/purchases/server";
-import { normalizeDiscipline } from "@/features/normalize";
+import { winnerShareFor } from "@/features/history/history";
+import { normalizeDiscipline, profileBeneficiaryTypes } from "@/features/normalize";
 import { getAi } from "@/server/ai";
-import { getCall, getDossier, getProfile, listAwards, listCalls, listWorks, readDb, updateDb } from "@/server/store";
+import { getCall, getCallHistory, getDossier, getProfile, listAwards, listCalls, listWorks, readDb, updateDb } from "@/server/store";
 import { checklistFor, evaluate, type MatchContext, type ScoreBreakdown } from "./rules";
 
 export { fitLabel, evaluate, daysLeft, type ScoreBreakdown, type FitLabel } from "./rules";
@@ -74,9 +75,12 @@ export async function callsFeed(input: { profileId?: string; appUserId?: string;
   return { results, lockedCount: all.length - results.length, mode: profile.kind, pro };
 }
 
-/** Past awards similar to this call: same call first, then same discipline family / sector. Orientative only. */
-export function similarAwards(call: Call, max = 3): PastAward[] {
-  const awards = listAwards();
+/**
+ * Past awards similar to this call: same call first, then same discipline family / sector. Orientative only.
+ * With a profile kind, only winners of that kind ("parecidos a ti": a creator is not shown production companies).
+ */
+export function similarAwards(call: Call, max = 3, kind?: ProfileKind): PastAward[] {
+  const awards = listAwards().filter((a) => !kind || a.beneficiaryKind === kind);
   const same = awards.filter((a) => a.callId === call.id);
   const disc = new Set(call.disciplines);
   const related = awards.filter((a) => a.callId !== call.id && a.discipline && normalizeDiscipline(a.discipline).ids.some((d) => disc.has(d)));
@@ -89,5 +93,14 @@ export async function callDetail(input: { callId: string; profileId?: string }) 
   const base = await explainCall({ callId: input.callId, profileId: profile.id });
   const ctx = contextFor(profile);
   const breakdown: ScoreBreakdown = evaluate(profile, base.call, ctx).breakdown;
-  return { ...base, breakdown, checklistItems: checklistFor(profile, base.call, ctx), similarAwards: similarAwards(base.call) };
+  const history = getCallHistory(base.call.id) ?? null;
+  const types = profile.beneficiaryTypes.length ? profile.beneficiaryTypes : profileBeneficiaryTypes(profile);
+  return {
+    ...base,
+    breakdown,
+    checklistItems: checklistFor(profile, base.call, ctx),
+    similarAwards: similarAwards(base.call, 3, profile.kind),
+    history, // B3: past editions, success rate and cutoff when published
+    winnerShare: history ? (winnerShareFor(history, types) ?? null) : null, // share of past winners of the profile's type
+  };
 }

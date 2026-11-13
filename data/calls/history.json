@@ -1,0 +1,546 @@
+{
+  "igape-re-acciona-2026": {
+    "callId": "igape-re-acciona-2026",
+    "bdnsId": "880749",
+    "editionsFound": 0,
+    "editionsWithAwards": 0,
+    "editions": [],
+    "evidence": "No hay ediciones anteriores en la BDNS.",
+    "builtAt": "2026-11-13"
+  },
+  "a-laracha-concurso-fotografia-2026": {
+    "callId": "a-laracha-concurso-fotografia-2026",
+    "bdnsId": "939879",
+    "editionsFound": 0,
+    "editionsWithAwards": 0,
+    "editions": [],
+    "evidence": "No hay ediciones anteriores en la BDNS.",
+    "builtAt": "2026-11-13"
+  },
+  "calahorra-cartel-jornadas-verdura-2027": {
+    "callId": "calahorra-cartel-jornadas-verdura-2027",
+    "bdnsId": "939239",
+    "editionsFound": 1,
+    "editionsWithAwards": 1,
+    "editions": [
+      {
+        "bdnsId": "863759",
+        "date": "2025-10-22",
+        "title": "BASES DEL CONCURSO DE DISEÑO DEL CARTELES ANUNCIADOR DE LAS JORNADAS GASTRONÓMICAS DE LA VERDURA DE 2026",
+        "awards": 1,
+        "amountTotalEur": 800,
+        "amountMinEur": 800,
+        "amountMaxEur": 800,
+        "winners": {
+          "persona": 1
+        }
+      }
+    ],
+    "evidence": "1 edición anterior en la BDNS; 1 con premiados publicados. 1 premiado por edición. 100 % de los premiados son personas físicas. Importes entre 800 € y 800 €. Muestra pequeña: tómalo como orientación.",
+    "builtAt": "2026-11-13",
+    "awardsPerEdition": 1,
+    "amountRangeEur": {
+      "min": 800,
+      "max": 800
+    },
+    "winners": {
+      "persona": 1
+    }
+  },
+  "turismo-galicia-eficiencia-energetica-tu986b-2026": {
+    "callId": "turismo-galicia-eficiencia-energetica-tu986b-2026",
+    "bdnsId": "926278",
+    "editionsFound": 0,
+    "editionsWithAwards": 0,
+    "editions": [],
+    "evidence": "No hay ediciones anteriores en la BDNS.",
+    "builtAt": "2026-11-13"
+  },
+  "cabra-cartel-carnaval-2027": {
+    "callId": "cabra-cartel-carnaval-2027",
+    "bdnsId": "939684",
+    "editionsFound": 2,
+    "editionsWithAwards": 0,
+    "editions": [
+      {
+        "bdnsId": "866594",
+        "date": "2025-11-04",
+        "title": "CONVOCATORIA CONCURSO DE CARTELES PARA EL CARNAVAL 2026",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "795941",
+        "date": "2024-11-11",
+        "title": "CONCURSO CARTELES CARNAVAL 2025",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      }
+    ],
+    "evidence": "2 ediciones anteriores en la BDNS; 0 con premiados publicados. Muestra pequeña: tómalo como orientación.",
+    "builtAt": "2026-11-13"
+  },
+  "fornelos-premio-poesia-lueiro-rey-2026": {
+    "callId": "fornelos-premio-poesia-lueiro-rey-2026",
+    "bdnsId": "935589",
+    "editionsFound": 5,
+    "editionsWithAwards": 0,
+    "editions": [
+      {
+        "bdnsId": "854794",
+        "date": "2025-09-03",
+        "title": "XIV edición de Premio del Poesía Manuel Lueiro Rey",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "783480",
+        "date": "2024-09-03",
+        "title": "XIII edición del premio de poesía Manuel Lueiro Rey",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "724391",
+        "date": "2023-10-31",
+        "title": "XII edición del premio de poesía Manuel Lueiro Rey",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "651565",
+        "date": "2022-10-03",
+        "title": "XI edición del premio de poesía Manuel Lueiro Rey",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "580932",
+        "date": "2021-08-24",
+        "title": "Acuerdo de 20 de agosto de 2021 de la Junta de Gobierno Local del Ayuntamiento de Fornelos de Montes por el que se convoca la X Edición del Premio de Poesía Manuel Lueiro Rey",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      }
+    ],
+    "evidence": "5 ediciones anteriores en la BDNS; 0 con premiados publicados. Muestra pequeña: tómalo como orientación.",
+    "builtAt": "2026-11-13"
+  },
+  "ua-bienal-pluri-identitats-2027": {
+    "callId": "ua-bienal-pluri-identitats-2027",
+    "bdnsId": "934864",
+    "editionsFound": 1,
+    "editionsWithAwards": 0,
+    "editions": [
+      {
+        "bdnsId": "541433",
+        "date": "2020-12-23",
+        "title": "PLURI-IDENTITATS  2021.  CONVOCATORIA  BIENAL  DE ARTES VISUALES",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      }
+    ],
+    "evidence": "1 edición anterior en la BDNS; 0 con premiados publicados. Muestra pequeña: tómalo como orientación.",
+    "builtAt": "2026-11-13"
+  },
+  "cabra-premio-novela-juan-valera-2027": {
+    "callId": "cabra-premio-novela-juan-valera-2027",
+    "bdnsId": "938125",
+    "editionsFound": 0,
+    "editionsWithAwards": 0,
+    "editions": [],
+    "evidence": "No hay ediciones anteriores en la BDNS.",
+    "builtAt": "2026-11-13"
+  },
+  "carballino-premio-anton-losada-dieguez-2026": {
+    "callId": "carballino-premio-anton-losada-dieguez-2026",
+    "bdnsId": "941499",
+    "editionsFound": 5,
+    "editionsWithAwards": 1,
+    "editions": [
+      {
+        "bdnsId": "791915",
+        "date": "2024-10-21",
+        "title": "Bases y convocatoria de la XL EDICIÓN PREMIO “ANTÓN LOSADA DIÉGUEZ”",
+        "awards": 2,
+        "amountTotalEur": 12000,
+        "amountMinEur": 6000,
+        "amountMaxEur": 6000,
+        "winners": {
+          "persona": 2
+        }
+      },
+      {
+        "bdnsId": "664366",
+        "date": "2022-12-16",
+        "title": "Bases y convocatoria de XXXVIII Edición Premio Antón Losada Diéguez",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "534962",
+        "date": "2020-11-23",
+        "title": "Bases y convocatoria XXXVI EDICIÓN PREMIO \"ANTÓN LOSADA DIÉGUEZ\"",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "424349",
+        "date": "2018-11-19",
+        "title": "Bases y convocatoria XXXIV Edición Premios \"Antón Losada Diéguez\"",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "322812",
+        "date": "2016-11-17",
+        "title": "Premio Antón Losada Diéguez",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      }
+    ],
+    "evidence": "5 ediciones anteriores en la BDNS; 1 con premiados publicados. Unos 2 premiados por edición. 100 % de los premiados son personas físicas. Importes entre 6000 € y 6000 €. Muestra pequeña: tómalo como orientación.",
+    "builtAt": "2026-11-13",
+    "awardsPerEdition": 2,
+    "amountRangeEur": {
+      "min": 6000,
+      "max": 6000
+    },
+    "winners": {
+      "persona": 2
+    }
+  },
+  "sant-joan-festival-cine-cortometrajes-2027": {
+    "callId": "sant-joan-festival-cine-cortometrajes-2027",
+    "bdnsId": "939355",
+    "editionsFound": 1,
+    "editionsWithAwards": 1,
+    "editions": [
+      {
+        "bdnsId": "868890",
+        "date": "2025-11-17",
+        "title": "APROBACIÓN DE BASES XXVI FESTIVAL DE CINE DE SANT JOAN D’ALACANT. CONVOCATORIA 2026",
+        "awards": 4,
+        "amountTotalEur": 3600,
+        "amountMinEur": 500,
+        "amountMaxEur": 2000,
+        "winners": {
+          "persona": 3,
+          "pyme": 1
+        }
+      }
+    ],
+    "evidence": "1 edición anterior en la BDNS; 1 con premiados publicados. Unos 4 premiados por edición. 75 % de los premiados son personas físicas. Importes entre 500 € y 2000 €. Muestra pequeña: tómalo como orientación.",
+    "builtAt": "2026-11-13",
+    "awardsPerEdition": 4,
+    "amountRangeEur": {
+      "min": 500,
+      "max": 2000
+    },
+    "winners": {
+      "persona": 3,
+      "pyme": 1
+    }
+  },
+  "getxo-novela-corta-ramiro-pinilla-2027": {
+    "callId": "getxo-novela-corta-ramiro-pinilla-2027",
+    "bdnsId": "936011",
+    "editionsFound": 9,
+    "editionsWithAwards": 1,
+    "editions": [
+      {
+        "bdnsId": "868658",
+        "date": "2025-11-14",
+        "title": "Convocatoria de la 9ª edición del Concurso de Novela Corta 'Ramiro Pinilla'",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "791024",
+        "date": "2024-10-15",
+        "title": "CONVOCATORIA DE LA 8ª EDICIÓN DEL CONCURSO DE NOVELA CORTA ‘RAMIRO PINILLA’",
+        "awards": 2,
+        "amountTotalEur": 12600,
+        "amountMinEur": 6300,
+        "amountMaxEur": 6300,
+        "winners": {
+          "persona": 2
+        }
+      },
+      {
+        "bdnsId": "717770",
+        "date": "2023-09-22",
+        "title": "CONVOCATORIA PARA LA 7ª EDICIÓN DEL CONCURSO DE NOVELA CORTA ‘RAMIRO PINILLA’",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "653203",
+        "date": "2022-10-11",
+        "title": "CONVOCATORIA DE LA 6ª EDICIÓN DEL CONCURSO DE NOVELA CORTA ‘RAMIRO PINILLA’",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "590796",
+        "date": "2021-10-20",
+        "title": "CONVOCATORIA DE LA 5ª EDICIÓN DEL CONCURSO DE NOVELA CORTA ‘RAMIRO PINILLA’",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "526008",
+        "date": "2020-09-30",
+        "title": "CONVOCATORIA DE LA 4ª EDICIÓN DEL CONCURSO DE NOVELA CORTA ‘RAMIRO PINILLA’",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "479693",
+        "date": "2019-10-29",
+        "title": "CONVOCATORIA DE LA 3ª EDICIÓN DEL CONCURSO DE NOVELA CORTA ‘RAMIRO PINILLA’",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "418613",
+        "date": "2018-10-09",
+        "title": "CONVOCATORIA DE LA II EDICION DEL CONCURSO DE NOVELA CORTA RAMIRO PINILLA 2019",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "383967",
+        "date": "2018-01-30",
+        "title": "CONVOCATORIA PARA LA I EDICIÓN DEL CONCURSO DE NOVELA CORTA \"RAMIRO PINILLA\" 2018",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      }
+    ],
+    "evidence": "9 ediciones anteriores en la BDNS; 1 con premiados publicados. Unos 2 premiados por edición. 100 % de los premiados son personas físicas. Importes entre 6300 € y 6300 €. Muestra pequeña: tómalo como orientación.",
+    "builtAt": "2026-11-13",
+    "awardsPerEdition": 2,
+    "amountRangeEur": {
+      "min": 6300,
+      "max": 6300
+    },
+    "winners": {
+      "persona": 2
+    }
+  },
+  "icaa-cortometrajes-realizados-2027": {
+    "callId": "icaa-cortometrajes-realizados-2027",
+    "bdnsId": "941955",
+    "editionsFound": 9,
+    "editionsWithAwards": 5,
+    "editions": [
+      {
+        "bdnsId": "892721",
+        "date": "2026-03-12",
+        "title": "Resolución de 11 de marzo de 2026 de la Dirección General del Instituto de la Cinematografía y de las Artes Audiovisuales, por la que se convocan para el año 2026 ayudas a la producción de cortometrajes realizados.",
+        "awards": 48,
+        "amountTotalEur": 800000,
+        "amountMinEur": 653.6,
+        "amountMaxEur": 68367,
+        "winners": {
+          "pyme": 41,
+          "persona": 7
+        }
+      },
+      {
+        "bdnsId": "832607",
+        "date": "2025-05-14",
+        "title": "Resolución de 14 de mayo de 2025 de la Dirección General del Instituto de la Cinematografía y de las Artes Audiovisuales, por la que se convocan para el año 2025 ayudas a la producción de cortometrajes realizados.",
+        "awards": 35,
+        "amountTotalEur": 784179.9599999998,
+        "amountMinEur": 1016.37,
+        "amountMaxEur": 119236.08,
+        "winners": {
+          "pyme": 32,
+          "persona": 3
+        }
+      },
+      {
+        "bdnsId": "763527",
+        "date": "2024-05-27",
+        "title": "Resolución de 21 de mayo de 2024 de la Dirección General del Instituto de la Cinematografía y de las Artes Audiovisuales, por la que se convocan para el año 2024 ayudas a la producción de cortometrajes realizados.",
+        "awards": 49,
+        "amountTotalEur": 690291.4400000001,
+        "amountMinEur": 1052.02,
+        "amountMaxEur": 51798.3,
+        "winners": {
+          "pyme": 49
+        }
+      },
+      {
+        "bdnsId": "708130",
+        "date": "2023-07-12",
+        "title": "Resolución de 12 de julio de 2023 de la Dirección General del Instituto de la Cinematografía y de las Artes Audiovisuales O.A., por la que se convocan para el año 2023 ayudas a la producción de cortometrajes realizados.",
+        "awards": 62,
+        "amountTotalEur": 711929.4199999998,
+        "amountMinEur": 37.09,
+        "amountMaxEur": 63845.1,
+        "winners": {
+          "pyme": 60,
+          "desconocido": 2
+        }
+      },
+      {
+        "bdnsId": "612265",
+        "date": "2022-02-25",
+        "title": "Resolución de 25 de febrero de 2022 de la Dirección General del Instituto de la Cinematografía y de las Artes Audiovisuales, por la que se convocan para el año 2022 ayudas a la producción de cortometrajes realizados.",
+        "awards": 22,
+        "amountTotalEur": 264114.99,
+        "amountMinEur": 49.64,
+        "amountMaxEur": 42550,
+        "winners": {
+          "pyme": 21,
+          "desconocido": 1
+        }
+      },
+      {
+        "bdnsId": "571194",
+        "date": "2021-06-21",
+        "title": "Resolución de 21 de junio de 2021 de la Dirección General del Instituto de la Cinematografía y de las Artes Audiovisuales por la que se convocan para el año 2021 ayudas a la producción de cortometrajes realizados.",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "519471",
+        "date": "2020-08-07",
+        "title": "Resolución de 3 de agosto de 2020 de la Dirección General del Instituto de la Cinematografía y de las Artes Audiovisuales, por la que se convocan para el año 2020 ayudas a la producción de cortometrajes realizados",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "465255",
+        "date": "2019-07-05",
+        "title": "Convocatoria de ayudas a la producción de cortometrajes realizados para el año 2019.",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "410414",
+        "date": "2018-07-30",
+        "title": "Ayudas a la producción de cortometrajes realizados año 2018.",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      }
+    ],
+    "evidence": "9 ediciones anteriores en la BDNS; 5 con premiados publicados. Unos 48 premiados por edición. 94 % de los premiados son empresas. Importes entre 37 € y 119.236 €. 21 % de los premiados repite. 29 de 100 solicitudes concedidas en la última edición con datos. Último concedido: 52,76/75 puntos. Nota de corte entre 52,76 y 60,83 en 3 ediciones.",
+    "builtAt": "2026-11-13",
+    "awardsPerEdition": 48,
+    "amountRangeEur": {
+      "min": 37.09,
+      "max": 119236.08
+    },
+    "winners": {
+      "pyme": 203,
+      "persona": 10,
+      "desconocido": 3
+    },
+    "repeatWinnerShare": 0.2111801242236025,
+    "successRate": {
+      "awarded": 29,
+      "applicants": 100,
+      "rate": 0.29,
+      "bdnsId": "892721"
+    },
+    "cutoff": {
+      "score": 52.76,
+      "maxScore": 75,
+      "bdnsId": "892721",
+      "sourceUrl": "https://www.cultura.gob.es/dam/jcr:e3a33459-27e4-4353-b19f-ff36f3514e25/resolucion--concesion--corto--realizado-2026.pdf"
+    },
+    "cutoffRange": {
+      "min": 52.76,
+      "max": 60.83,
+      "editions": 3
+    }
+  },
+  "xunta-xuventude-crea-2026": {
+    "callId": "xunta-xuventude-crea-2026",
+    "bdnsId": "926016",
+    "editionsFound": 3,
+    "editionsWithAwards": 2,
+    "editions": [
+      {
+        "bdnsId": "853424",
+        "date": "2025-08-26",
+        "title": "Orden de 14 de agosto de 2025 por la que se establecen las bases que rigen los premios del programa Xuventude Crea y se procede a su convocatoria para el año 2025 (código de procedimiento BS310Q)",
+        "awards": 95,
+        "amountTotalEur": 85525,
+        "amountMinEur": 75,
+        "amountMaxEur": 2000,
+        "winners": {
+          "persona": 88,
+          "entidad-sin-animo-lucro": 5,
+          "pyme": 2
+        }
+      },
+      {
+        "bdnsId": "817323",
+        "date": "2025-02-27",
+        "title": "ORDEN de 26 de agosto de 2024 por la que se establecen las bases que rigen los premios del programa Xuventude Crea y se procede a su convocatoria para el año 2024 (código de procedimiento BS310Q).",
+        "awards": 38,
+        "amountTotalEur": 11850,
+        "amountMinEur": 75,
+        "amountMaxEur": 1000,
+        "winners": {
+          "persona": 36,
+          "entidad-sin-animo-lucro": 2
+        }
+      },
+      {
+        "bdnsId": "714353",
+        "date": "2023-08-29",
+        "title": "Orden, del 25 de agosto de 2023, por la que se establecen las bases que rigen los premios del programa Xuventude Crea y se procede a su convocatoria para el año 2023 (código de procedimiento BS310Q)",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      }
+    ],
+    "evidence": "3 ediciones anteriores en la BDNS; 2 con premiados publicados. Unos 66,5 premiados por edición. 93 % de los premiados son personas físicas. Importes entre 75 € y 2000 €. 7 % de los premiados repite. 95 de 600 solicitudes concedidas en la última edición con datos.",
+    "builtAt": "2026-11-13",
+    "awardsPerEdition": 66.5,
+    "amountRangeEur": {
+      "min": 75,
+      "max": 2000
+    },
+    "winners": {
+      "persona": 124,
+      "entidad-sin-animo-lucro": 7,
+      "pyme": 2
+    },
+    "repeatWinnerShare": 0.0673076923076923,
+    "successRate": {
+      "awarded": 95,
+      "applicants": 600,
+      "rate": 0.15833333333333333,
+      "bdnsId": "853424"
+    }
+  }
+}

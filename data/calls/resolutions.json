@@ -1,0 +1,35 @@
+[
+  {
+    "bdnsId": "892721",
+    "applicants": 100,
+    "awarded": 29,
+    "cutoffScore": 52.76,
+    "maxScore": 75,
+    "sourceUrl": "https://www.cultura.gob.es/dam/jcr:e3a33459-27e4-4353-b19f-ff36f3514e25/resolucion--concesion--corto--realizado-2026.pdf",
+    "note": "ICAA cortometrajes realizados 2026, resolución de concesión. Anexo I 100 presentadas; II.A 29 concedidas (52,76-66,33); III 48 suplentes (máx. 52,59); IV 23 denegadas (<40). BDNS lista 48 concesiones: posible ampliación posterior a suplentes, sin verificar."
+  },
+  {
+    "bdnsId": "832607",
+    "applicants": 110,
+    "awarded": 25,
+    "cutoffScore": 60.83,
+    "maxScore": 75,
+    "sourceUrl": "https://www.cultura.gob.es/dam/jcr:8e6be9ec-2702-4926-abac-55957edace8e/resolucion-cortometrajes-realizados-2025.pdf",
+    "note": "ICAA cortometrajes realizados 2025, resolución definitiva. Anexo I 110 presentadas; II.A 25 concedidas (60,83-68,50); III 73 suplentes (41,15-60,41); IV 12 denegadas (<40)."
+  },
+  {
+    "bdnsId": "763527",
+    "applicants": 98,
+    "awarded": 38,
+    "cutoffScore": 55.33,
+    "maxScore": 75,
+    "sourceUrl": "https://www.cultura.gob.es/dam/jcr:d5137d51-23f9-459b-bac0-ab03fa80399c/report-resolucion-concesion-ayudas-corto-realizado-2024.pdf",
+    "note": "ICAA cortometrajes realizados 2024, resolución de concesión. Anexo I 98 presentadas; II.A 38 concedidas (55,33-72,16); III 41 suplentes; IV 12 denegadas (<40); V 7 excluidas."
+  },
+  {
+    "bdnsId": "853424",
+    "applicants": 600,
+    "sourceUrl": "https://www.xunta.gal/notas-de-prensa/-/nova/019622/lara-meneses-reafirma-alta-participacion-xuventude-crea-que-muestra-del-sello",
+    "note": "Xuventude Crea 2025 (16.ª edición, BS310Q). Nota de prensa de la Xunta del 09/12/2025: 'ao redor de 600 persoas inscritas' (cifra aproximada, no es una resolución). Premiados: concesiones BDNS de la edición. Sin puntuaciones publicadas."
+  }
+]
