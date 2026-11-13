@@ -57,6 +57,13 @@ const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
 const blank = (s: string | undefined) => (s && s.trim() ? s.trim() : undefined);
 
+/** "óleo" (said) + "óleo sobre lienzo" (seen) -> the more specific one; a different technique -> the artist's. */
+function mergeTechnique(said: string | undefined, seen: string | undefined): string | undefined {
+  if (!said) return seen;
+  if (seen && seen.toLocaleLowerCase("es-ES").startsWith(said.toLocaleLowerCase("es-ES"))) return seen;
+  return said;
+}
+
 /**
  * Merge the model's sheet with what the artist explicitly said. The artist's words win for every
  * factual field; measures are dropped unless the note mentions them (no hallucinated sizes).
@@ -67,7 +74,7 @@ export function guardSheet(model: Partial<TechnicalSheet>, voice: string | undef
   const sheet: TechnicalSheet = {
     title: said.title ?? blank(model.title) ?? UNTITLED,
     year: year && year >= 1900 && year <= now.getFullYear() + 1 && (said.year || voice?.includes(String(year))) ? year : undefined,
-    technique: said.technique ?? blank(model.technique),
+    technique: mergeTechnique(said.technique, blank(model.technique)),
     dimensions: said.dimensions ?? (mentionsDimensions(voice) ? blank(model.dimensions) : undefined),
     series: said.series ?? (voice && model.series && voice.toLowerCase().includes(model.series.toLowerCase()) ? blank(model.series) : undefined),
     concept: blank(model.concept) ?? said.concept,
