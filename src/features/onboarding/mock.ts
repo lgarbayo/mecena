@@ -1,11 +1,14 @@
 /**
  * Deterministic onboarding extraction (no AI). Used in tests, offline demo mode and as the per-turn
- * fallback when Claude fails. Spanish keyword rules: names after "me llamo/soy", cities, disciplines,
+ * fallback when Claude fails. Spanish keyword rules: names after "me llamo/soy", cities, disciplines of every art
+ * (visual arts, music, stage, film, literature, design, crafts),
  * years, "quiero…" -> fundingNeeds/projectIdea, business figures. Sentences are kept verbatim
  * (the user's own words) and routed to the dossier section keys of the profile kind.
  */
 import type { DossierSection, OnboardingTurnInput, OnboardingTurnResult, Profile, ProfileKind, ProfilePatch } from "@/contracts";
-import { sectionTitles } from "./copy";
+import { familyInterview, sectionTitles } from "./copy";
+import { onboardingFamily } from "./family";
+import { dossierLookQuestion, isDossierLookSentence } from "./interview";
 
 // ---------- text helpers ----------
 /** Lowercase, strip accents (keeps ñ distinct as "n" is fine for matching). */
@@ -96,17 +99,26 @@ const DISCIPLINES: [RegExp, string][] = [
   [/\b(escultor|escultora|escultura|esculturas)\b/, "escultura"],
   [/\b(grabador|grabadora|grabado|grabados)\b/, "grabado"],
   [/\b(ceramista|ceramica)\b/, "cerámica"],
-  [/\b(music[oa]|musica|compositor|compositora|cantante)\b/, "música"],
-  [/\b(bailarin|bailarina|danza|coreograf[oa])\b/, "danza"],
-  [/\b(actor|actriz|teatro|dramaturg[oa])\b/, "artes escénicas"],
-  [/\b(escritor|escritora|novelista|poeta|poesia)\b/, "escritura"],
+  [
+    /\b(music[oa]s?|musica|compositor|compositora|compongo|cantante|cantautor|cantautora|guitarrista|guitarra|pianista|piano|violinista|violin|violonchelista|chelista|baterista|bajista|saxofonista|trompetista|gaiteir[oa]|gaiter[oa]|dj|raper[oa]|toco (?:el|la|en)|mi banda|mi grupo|canciones)\b/,
+    "música",
+  ],
+  [/\b(bailarin|bailarina|bailarines|bailarinas|bailo|danza|coreograf[oa])\b/, "danza"],
+  [/\b(actor|actriz|teatro|dramaturg[oa]|dramaturgia|titiriter[oa]|titeres|marionetas)\b/, "teatro"],
+  [/\b(circo|circense|clown|payas[oa]|malabarista|malabares|acrobata|acrobacias?|trapecista)\b/, "circo"],
+  [/\b(escritor|escritora|escribo|literatura)\b/, "literatura"],
+  [/\b(poeta|poesia|poemas|poemario)\b/, "poesía"],
+  [/\b(novelista|novela|novelas|relatos|cuentos)\b/, "narrativa"],
   [/\b(comic|comics|historietista|novela grafica)\b/, "cómic"],
   [/\b(animacion|animador|animadora)\b/, "animación"],
   [/\b(muralista|muralismo|murales|arte urbano|grafiti)\b/, "arte urbano"],
-  [/\b(videoarte|videoartista|audiovisual|cineasta|documental)\b/, "audiovisual"],
+  [/\b(cine|cineasta|cortometraje|cortometrajes|largometraje|pelicula|peliculas|realizador|realizadora)\b/, "cine"],
+  [/\b(documental|documentales|documentalista)\b/, "documental"],
+  [/\b(videoarte|videoartista|audiovisual)\b/, "audiovisual"],
   [/\b(instalacion|instalaciones)\b/, "instalación"],
   [/\bperformance\b/, "performance"],
   [/\b(disenador|disenadora|diseno grafico)\b/, "diseño gráfico"],
+  [/\b(joyer[oa]|joyeria|orfebre)\b/, "joyería"],
   [/\b(textil|bordado|bordados)\b/, "arte textil"],
 ];
 
@@ -142,12 +154,12 @@ const LANGUAGES: [RegExp, string][] = [
 const NUMBER_WORDS: Record<string, number> = { un: 1, una: 1, uno: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11, doce: 12, quince: 15, veinte: 20 };
 
 const WANT = /\b(quiero|queria|quisiera|me gustaria|necesito|busco|queremos|necesitamos|buscamos|nos gustaria|mi idea es|el proyecto es)\b/;
-const ACHIEVEMENT = /\b(expuse|he expuesto|expuesto|exposicion|exposiciones|expongo|premio|premios|premiad[oa]|finalista|seleccionad[oa]|residencia|residencias|publique|he publicado|publicado|gane|ganamos|ganador|ganadora|mencion|festival|bienal|feria|ferias|carta artesana|clientes|colaboramos|colabore|encargo|encargos|pedidos)\b/;
-const EDUCATION = /\b(estudie|estudio bellas|grado en|graduad[oa]|licenciad[oa]|master|doctorad[oa]|bellas artes|escuela de arte|me forme|formacion en)\b/;
-const STATEMENT = /\b(porque|me interesa|me interesan|mi obra|mi trabajo|trabajo con|trabajo sobre|hablo de|exploro|investigo|retrato|pinto|dibujo|fotografio|me inspira|me inspiran|quiero que)\b/;
+const ACHIEVEMENT = /\b(expuse|he expuesto|expuesto|exposicion|exposiciones|expongo|premio|premios|premiad[oa]|finalista|seleccionad[oa]|residencia|residencias|publique|he publicado|publicado|gane|ganamos|ganador|ganadora|mencion|festival|bienal|feria|ferias|carta artesana|clientes|colaboramos|colabore|encargo|encargos|pedidos|concierto|conciertos|he tocado|hemos tocado|toque en|tocamos en|actuado|actuamos|actue|estrene|estrenamos|estreno|estrenado|estrenada|gira|giras|girado|editorial|sello|proyectado|proyectada|seleccion oficial|accesit|grabamos|grabe|he grabado|hemos grabado)\b/;
+const EDUCATION = /\b(estudie|estudio bellas|grado en|graduad[oa]|licenciad[oa]|master|doctorad[oa]|bellas artes|escuela de arte|me forme|formacion en|conservatorio|escuela de musica|arte dramatico|esad|resad|escuela de cine|escuela de circo|escuela de danza|filologia|taller de escritura)\b/;
+const STATEMENT = /\b(porque|me interesa|me interesan|mi obra|mi trabajo|trabajo con|trabajo sobre|hablo de|exploro|investigo|retrato|pinto|dibujo|fotografio|me inspira|me inspiran|quiero que|compongo|escribo sobre|mis canciones|mis poemas|mis piezas|hablan de|cuento historias|(?:piezas|canciones|poemas|obras|peliculas|libros) sobre)\b/;
 const IDENTITY = /\b(me llamo|soy|naci|vivo|tengo \d+ anos|desde hace)\b/;
-const WORKS = /\b(acuarela|acuarelas|oleo|oleos|tinta|lienzo|lienzos|cuadro|cuadros|pieza|piezas|obra|obras|serigrafia|dibujos)\b/;
-const SERIES = /\b(serie|series|proyecto|proyectos|coleccion|fanzine|libro ilustrado)\b/;
+const WORKS = /\b(acuarela|acuarelas|oleo|oleos|tinta|lienzo|lienzos|cuadro|cuadros|pieza|piezas|obra|obras|serigrafia|dibujos|cancion|canciones|disco|discos|album|ep|single|temas|repertorio|espectaculo|espectaculos|montaje|montajes|funcion|funciones|coreografia|coreografias|pelicula|peliculas|corto|cortos|cortometraje|cortometrajes|largometraje|libro|libros|poemario|poemarios|novela|novelas)\b/;
+const SERIES = /\b(serie|series|proyecto|proyectos|coleccion|fanzine|libro ilustrado|gira|residencia de creacion)\b/;
 const CONTACT = /(@[a-z0-9_.]{2,}|https?:\/\/|www\.|\.com\b|\.es\b|\.gal\b|telefono|correo|email|instagram)/;
 const FIGURES = /\b(factur\w*|euros|ventas|vendemos|ingresos|beneficio|presupuesto)\b|€/;
 const TEAM = /\b(somos \w+ personas?|empleados?|empleadas?|trabajadores|trabajadoras|equipo|socios?|socias?|contratar|plantilla|trabajo sol[oa])\b/;
@@ -207,8 +219,12 @@ function clauseAfter(re: RegExp, sentence: string): string | undefined {
   return after.length > 3 ? stripEnd(after) : undefined;
 }
 
-export function extractProfilePatch(text: string, kind: ProfileKind, current: Profile): ProfilePatch {
+export function extractProfilePatch(rawText: string, kind: ProfileKind, current: Profile): ProfilePatch {
   const patch: ProfilePatch = {};
+  // How they imagine their dossier is for the design agent (it reads the transcript), not for the profile.
+  const text = splitSentences(rawText)
+    .filter((s) => !isDossierLookSentence(s))
+    .join(" ");
   const n = norm(text);
   const sentences = splitSentences(text);
 
@@ -228,7 +244,9 @@ export function extractProfilePatch(text: string, kind: ProfileKind, current: Pr
   if (birth && kind === "creator") patch.birthYear = Number(birth[1]);
 
   if (kind === "creator") {
-    const ds = DISCIPLINES.filter(([re]) => re.test(n)).map(([, d]) => d);
+    // Venues ("Teatro Pradillo", "Sala Capitol") are places, not the creator's art.
+    const noVenues = norm(text.replace(/\b(?:Teatro|Sala|Auditorio|Cine|Festival)(?:\s+(?:de |del |da |do )?[A-ZÁÉÍÓÚÑ][\wáéíóúñü'-]*)+/g, " "));
+    const ds = DISCIPLINES.filter(([re]) => re.test(noVenues)).map(([, d]) => d);
     if (ds.length) patch.disciplines = ds;
   } else {
     // Sector: first mention fills it; later mentions ("tienda online") only override when explicit.
@@ -328,6 +346,7 @@ export function buildSectionUpdates(input: OnboardingTurnInput): DossierSection[
   const current = new Map(input.sections.map((s) => [s.key, s]));
   const changed = new Map<string, DossierSection>();
   for (const sentence of splitSentences(newSegment.text)) {
+    if (isDossierLookSentence(sentence)) continue; // stays in the transcript only
     for (const key of classifySentence(sentence, kind)) {
       const base = changed.get(key) ?? current.get(key as DossierSection["key"]);
       const body = appendParagraph(base?.body ?? "", sentence);
@@ -346,14 +365,19 @@ export function buildSectionUpdates(input: OnboardingTurnInput): DossierSection[
 }
 
 // ---------- follow-up ----------
-export function followUpFor(kind: ProfileKind, p: Pick<Profile, "displayName" | "city" | "disciplines" | "projectIdea" | "fundingNeeds" | "achievements" | "education" | "sector" | "employees" | "annualRevenueEur">): string {
+type FollowUpProfile = Pick<Profile, "displayName" | "city" | "disciplines" | "projectIdea" | "fundingNeeds" | "achievements" | "education" | "sector" | "employees" | "annualRevenueEur">;
+
+/** Next question about what is still missing, in the words of the creator's art (family from their disciplines). */
+export function followUpFor(kind: ProfileKind, p: FollowUpProfile, opts: { hasWorks?: boolean } = {}): string {
   if (kind === "creator") {
+    const q = familyInterview(onboardingFamily(p.disciplines));
     if (!p.displayName) return "¿Cómo te llamas y desde dónde trabajas?";
-    if (!p.disciplines.length) return "¿Qué haces: ilustración, pintura, fotografía…? ¿Con qué técnica?";
+    if (!p.disciplines.length) return "¿Qué haces: artes visuales, música, teatro, danza, cine, escritura, diseño…?";
     if (!p.city) return "¿En qué ciudad vives y trabajas?";
-    if (!p.projectIdea && !p.fundingNeeds.length) return "¿Qué proyecto te gustaría sacar adelante si tuvieras financiación?";
-    if (!p.achievements.length) return "¿Has expuesto, publicado o ganado algún premio? Cuéntame lo más reciente.";
-    if (!p.education.length) return "¿Dónde te formaste?";
+    if (!p.projectIdea && !p.fundingNeeds.length) return q.project;
+    if (!opts.hasWorks) return q.work;
+    if (!p.achievements.length) return q.track;
+    if (!p.education.length) return q.education;
     return "¿Qué te gustaría que un jurado supiera de ti que aún no me hayas contado?";
   }
   if (!p.displayName) return "¿Cómo se llama tu negocio y a qué os dedicáis?";
@@ -377,5 +401,9 @@ export function mockOnboardingTurn(input: OnboardingTurnInput): OnboardingTurnRe
     achievements: [...input.profile.achievements, ...(profilePatch.achievements ?? [])],
     education: [...input.profile.education, ...(profilePatch.education ?? [])],
   };
-  return { profilePatch, sectionUpdates, followUpQuestion: followUpFor(input.kind, merged) };
+  const sectionKeys = new Set([...input.sections, ...sectionUpdates].map((s) => s.key));
+  const followUpQuestion =
+    dossierLookQuestion(input.kind, input.profile, merged, input.transcript) ??
+    followUpFor(input.kind, merged, { hasWorks: sectionKeys.has("works") || sectionKeys.has("series") });
+  return { profilePatch, sectionUpdates, followUpQuestion };
 }
