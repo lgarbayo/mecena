@@ -1,0 +1,479 @@
+{
+ "source": "https://www.infosubvenciones.es/bdnstrans/api/regiones?vpd=GE",
+ "fetchedAt": "2026-11-13",
+ "note": "Spain subtree + world entries only; other EU countries omitted.",
+ "items": [
+  {
+   "descripcion": "ES - ESPAÑA",
+   "id": 1,
+   "children": [
+    {
+     "descripcion": "ES2 - NORESTE",
+     "id": 12,
+     "children": [
+      {
+       "descripcion": "ES21 - PAIS VASCO",
+       "id": 13,
+       "children": [
+        {
+         "descripcion": "ES211 - Araba/Álava",
+         "id": 14,
+         "children": []
+        },
+        {
+         "descripcion": "ES213 - Bizkaia",
+         "id": 16,
+         "children": []
+        },
+        {
+         "descripcion": "ES212 - Gipuzkoa",
+         "id": 15,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES22 - COMUNIDAD FORAL DE NAVARRA",
+       "id": 17,
+       "children": [
+        {
+         "descripcion": "ES220 - Navarra",
+         "id": 18,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES23 - LA RIOJA",
+       "id": 19,
+       "children": [
+        {
+         "descripcion": "ES230 - La Rioja",
+         "id": 20,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES24 - ARAGON",
+       "id": 21,
+       "children": [
+        {
+         "descripcion": "ES241 - Huesca",
+         "id": 22,
+         "children": []
+        },
+        {
+         "descripcion": "ES242 - Teruel",
+         "id": 23,
+         "children": []
+        },
+        {
+         "descripcion": "ES243 - Zaragoza",
+         "id": 24,
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "descripcion": "ES4 - CENTRO (ES)",
+     "id": 28,
+     "children": [
+      {
+       "descripcion": "ES41 - CASTILLA Y LEON",
+       "id": 29,
+       "children": [
+        {
+         "descripcion": "ES412 - Burgos",
+         "id": 31,
+         "children": []
+        },
+        {
+         "descripcion": "ES414 - Palencia",
+         "id": 33,
+         "children": []
+        },
+        {
+         "descripcion": "ES417 - Soria",
+         "id": 36,
+         "children": []
+        },
+        {
+         "descripcion": "ES411 - Ávila",
+         "id": 30,
+         "children": []
+        },
+        {
+         "descripcion": "ES413 - León",
+         "id": 32,
+         "children": []
+        },
+        {
+         "descripcion": "ES415 - Salamanca",
+         "id": 34,
+         "children": []
+        },
+        {
+         "descripcion": "ES416 - Segovia",
+         "id": 35,
+         "children": []
+        },
+        {
+         "descripcion": "ES418 - Valladolid",
+         "id": 37,
+         "children": []
+        },
+        {
+         "descripcion": "ES419 - Zamora",
+         "id": 38,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES42 - CASTILLA LA MANCHA",
+       "id": 39,
+       "children": [
+        {
+         "descripcion": "ES421 - Albacete",
+         "id": 40,
+         "children": []
+        },
+        {
+         "descripcion": "ES424 - Guadalajara",
+         "id": 43,
+         "children": []
+        },
+        {
+         "descripcion": "ES425 - Toledo",
+         "id": 44,
+         "children": []
+        },
+        {
+         "descripcion": "ES422 - Ciudad Real",
+         "id": 41,
+         "children": []
+        },
+        {
+         "descripcion": "ES423 - Cuenca",
+         "id": 42,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES43 - EXTREMADURA",
+       "id": 45,
+       "children": [
+        {
+         "descripcion": "ES432 - Cáceres",
+         "id": 47,
+         "children": []
+        },
+        {
+         "descripcion": "ES431 - Badajoz",
+         "id": 46,
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "descripcion": "ES7 - CANARIAS",
+     "id": 78,
+     "children": [
+      {
+       "descripcion": "ES70 - CANARIAS",
+       "id": 79,
+       "children": [
+        {
+         "descripcion": "ES704 - Fuerteventura",
+         "id": 81,
+         "children": []
+        },
+        {
+         "descripcion": "ES707 - La Palma",
+         "id": 84,
+         "children": []
+        },
+        {
+         "descripcion": "ES709 - Tenerife",
+         "id": 86,
+         "children": []
+        },
+        {
+         "descripcion": "ES703 - El Hierro",
+         "id": 80,
+         "children": []
+        },
+        {
+         "descripcion": "ES705 - Gran Canaria",
+         "id": 82,
+         "children": []
+        },
+        {
+         "descripcion": "ES706 - La Gomera",
+         "id": 83,
+         "children": []
+        },
+        {
+         "descripcion": "ES708 - Lanzarote",
+         "id": 85,
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "descripcion": "ES1 - NOROESTE",
+     "id": 2,
+     "children": [
+      {
+       "descripcion": "ES11 - GALICIA",
+       "id": 3,
+       "children": [
+        {
+         "descripcion": "ES111 - A Coruña",
+         "id": 4,
+         "children": []
+        },
+        {
+         "descripcion": "ES113 - Ourense",
+         "id": 6,
+         "children": []
+        },
+        {
+         "descripcion": "ES112 - Lugo",
+         "id": 5,
+         "children": []
+        },
+        {
+         "descripcion": "ES114 - Pontevedra",
+         "id": 7,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES13 - CANTABRIA",
+       "id": 10,
+       "children": [
+        {
+         "descripcion": "ES130 - Cantabria",
+         "id": 11,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES12 - PRINCIPADO DE ASTURIAS",
+       "id": 8,
+       "children": [
+        {
+         "descripcion": "ES120 - Asturias",
+         "id": 9,
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "descripcion": "ES3 - COMUNIDAD DE MADRID",
+     "id": 25,
+     "children": [
+      {
+       "descripcion": "ES30 - COMUNIDAD DE MADRID",
+       "id": 26,
+       "children": [
+        {
+         "descripcion": "ES300 - Madrid",
+         "id": 27,
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "descripcion": "ES5 - ESTE",
+     "id": 48,
+     "children": [
+      {
+       "descripcion": "ES51 - CATALUÑA",
+       "id": 49,
+       "children": [
+        {
+         "descripcion": "ES514 - Tarragona",
+         "id": 53,
+         "children": []
+        },
+        {
+         "descripcion": "ES511 - Barcelona",
+         "id": 50,
+         "children": []
+        },
+        {
+         "descripcion": "ES512 - Girona",
+         "id": 51,
+         "children": []
+        },
+        {
+         "descripcion": "ES513 - Lleida",
+         "id": 52,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES53 - ILLES BALEARS",
+       "id": 58,
+       "children": [
+        {
+         "descripcion": "ES531 - Eivissa y Formentera",
+         "id": 59,
+         "children": []
+        },
+        {
+         "descripcion": "ES532 - Mallorca",
+         "id": 60,
+         "children": []
+        },
+        {
+         "descripcion": "ES533 - Menorca",
+         "id": 61,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES52 - COMUNIDAD VALENCIANA",
+       "id": 54,
+       "children": [
+        {
+         "descripcion": "ES522 - Castellón / Castelló",
+         "id": 56,
+         "children": []
+        },
+        {
+         "descripcion": "ES521 - Alicante / Alacant",
+         "id": 55,
+         "children": []
+        },
+        {
+         "descripcion": "ES523 - Valencia / València",
+         "id": 57,
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "descripcion": "ES6 - SUR",
+     "id": 62,
+     "children": [
+      {
+       "descripcion": "ES62 - REGION DE MURCIA",
+       "id": 72,
+       "children": [
+        {
+         "descripcion": "ES620 - Murcia",
+         "id": 73,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES63 - CIUDAD AUTONOMA DE CEUTA",
+       "id": 74,
+       "children": [
+        {
+         "descripcion": "ES630 - Ceuta",
+         "id": 75,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES64 - CIUDAD AUTONOMA DE MELILLA",
+       "id": 76,
+       "children": [
+        {
+         "descripcion": "ES640 - Melilla",
+         "id": 77,
+         "children": []
+        }
+       ]
+      },
+      {
+       "descripcion": "ES61 - ANDALUCIA",
+       "id": 63,
+       "children": [
+        {
+         "descripcion": "ES611 - Almería",
+         "id": 64,
+         "children": []
+        },
+        {
+         "descripcion": "ES612 - Cádiz",
+         "id": 65,
+         "children": []
+        },
+        {
+         "descripcion": "ES613 - Córdoba",
+         "id": 66,
+         "children": []
+        },
+        {
+         "descripcion": "ES617 - Málaga",
+         "id": 70,
+         "children": []
+        },
+        {
+         "descripcion": "ES614 - Granada",
+         "id": 67,
+         "children": []
+        },
+        {
+         "descripcion": "ES615 - Huelva",
+         "id": 68,
+         "children": []
+        },
+        {
+         "descripcion": "ES616 - Jaén",
+         "id": 69,
+         "children": []
+        },
+        {
+         "descripcion": "ES618 - Sevilla",
+         "id": 71,
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "descripcion": "ESZ - EXTRA-REGIO NUTS 1",
+     "id": 87,
+     "children": []
+    }
+   ]
+  },
+  {
+   "descripcion": "XXX - Regiones o países no europeos, no contemplados en NUTS",
+   "id": 520,
+   "children": []
+  },
+  {
+   "descripcion": "XXXX - TODO EL MUNDO",
+   "id": 521,
+   "children": []
+  }
+ ]
+}
