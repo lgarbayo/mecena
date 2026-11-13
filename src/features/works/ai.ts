@@ -5,21 +5,24 @@
  * the image may only add technique/support when evident. Measures are never inferred from pixels.
  */
 import { z } from "zod";
-import { CropSuggestion, DescribeWorkResult, TechnicalSheet, type AiSlice, type DescribeWorkInput } from "@/contracts";
+import { artFamily, CropSuggestion, DescribeWorkResult, foldText, TechnicalSheet, type AiSlice, type DescribeWorkInput } from "@/contracts";
 import { imageBlock, structured } from "@/server/ai/llm";
 import { IDENTITY_CROP } from "./crop";
-import { mentionsDimensions, parseVoiceSheet, sheetFromVoice, UNTITLED } from "./parse";
+import { FAMILY_PROMPT } from "./arts";
+import { mentionsDimensions, mentionsDuration, parseVoiceSheet, sheetFromVoice, UNTITLED } from "./parse";
 
 export { IDENTITY_CROP };
 
 export const DESCRIBE_WORK_SYSTEM = [
-  "Ficha técnica de una obra. Toma título/serie/concepto de lo que dice el autor; deduce técnica y soporte de la imagen solo si es evidente; medidas solo si las dice. Sugiere recorte del marco de la obra dentro de la foto (0..1) y rotación; si dudas, recorte identidad. Nunca describas cambios a la obra.",
+  "Ficha técnica de una obra de cualquier arte: artes visuales, música, artes escénicas (teatro, danza, circo), audiovisual, literatura, diseño o artesanía. Toma título/serie/concepto/duración/créditos/lugar de lo que dice el autor; deduce técnica y soporte de la imagen solo si es evidente; medidas solo si las dice. La foto puede ser la obra, la portada, el cartel, un fotograma o una foto de la función: no la confundas con la obra. Sugiere recorte del marco de la obra dentro de la foto (0..1) y rotación; si dudas, recorte identidad. Nunca describas cambios a la obra.",
   "",
   "Reglas:",
   "- Escribe en español de España. El concepto, en primera persona y con las palabras del autor (1-3 frases); si no dice nada sobre el sentido de la pieza, deja concept vacío.",
   "- Campo que el autor no dice y la imagen no muestra con claridad: déjalo vacío (cadena vacía o ausente). Nunca inventes año, medidas, serie ni título.",
   '- Si no hay título, usa "Sin título".',
-  "- dimensions con formato \"50 x 70 cm\" (alto x ancho, unidad incluida).",
+  "- dimensions con formato \"50 x 70 cm\" (alto x ancho, unidad incluida); solo artes visuales, diseño y artesanía. En literatura, las páginas (\"240 páginas\").",
+  "- technique es la técnica, el medio o el formato: \"óleo sobre lino\", \"cuarteto de cuerda\", \"danza contemporánea\", \"cortometraje documental\", \"novela\".",
+  "- duration (\"6 min\", \"3:45\", \"90 min\"), credits (formación, intérpretes, compañía, editorial o equipo, texto libre) y venue (dónde se estrenó, publicó o proyectó): solo si el autor lo dice. Nunca los deduzcas de la imagen, ni siquiera de un cartel.",
   "- crop: rectángulo normalizado (x, y, width, height en 0..1 respecto a la foto original) que encuadra solo la obra, quitando fondo, pared o mesa. rotationDeg entre -10 y 10 para enderezar. Si la obra ya ocupa la foto o dudas, devuelve {x:0,y:0,width:1,height:1,rotationDeg:0}.",
   "- Solo recortamos y enderezamos la foto: nunca propongas retocar, repintar, limpiar ni completar la obra.",
   "- confidence: 0..1, tu seguridad global en la ficha.",
@@ -34,6 +37,9 @@ const ModelSheet = z.object({
   dimensions: z.string().optional(),
   series: z.string().optional(),
   concept: z.string().optional(),
+  duration: z.string().optional(),
+  credits: z.string().optional(),
+  venue: z.string().optional(),
 });
 const ModelResult = z.object({
   sheet: ModelSheet,
@@ -65,6 +71,12 @@ function mergeTechnique(said: string | undefined, seen: string | undefined): str
   return said;
 }
 
+/** Keep a model value only when the artist actually said it (accent- and case-insensitive). */
+function saidIt(value: string | undefined, voice: string | undefined): string | undefined {
+  const v = blank(value);
+  return v && voice && foldText(voice).includes(foldText(v)) ? v : undefined;
+}
+
 /**
  * Merge the model's sheet with what the artist explicitly said. The artist's words win for every
  * factual field; measures are dropped unless the note mentions them (no hallucinated sizes).
@@ -79,6 +91,9 @@ export function guardSheet(model: Partial<TechnicalSheet>, voice: string | undef
     dimensions: said.dimensions ?? (mentionsDimensions(voice) ? blank(model.dimensions) : undefined),
     series: said.series ?? (voice && model.series && voice.toLowerCase().includes(model.series.toLowerCase()) ? blank(model.series) : undefined),
     concept: blank(model.concept) ?? said.concept,
+    duration: said.duration ?? (mentionsDuration(voice) ? blank(model.duration) : undefined),
+    credits: said.credits ?? saidIt(model.credits, voice),
+    venue: said.venue ?? saidIt(model.venue, voice),
   };
   return TechnicalSheet.parse(Object.fromEntries(Object.entries(sheet).filter(([, v]) => v !== undefined)));
 }
@@ -87,10 +102,11 @@ function userPrompt(input: DescribeWorkInput): string {
   const who = input.profile
     ? `Autor/a: ${input.profile.displayName || "(sin nombre)"}${input.profile.disciplines?.length ? ` · disciplinas: ${input.profile.disciplines.join(", ")}` : ""}`
     : "";
+  const family = artFamily(input.profile?.disciplines);
   return [
-    `Tipo de perfil: ${input.kind === "business" ? "pyme / autónomo (producto, taller o local)" : "creador/a (obra artística)"}`,
+    `Tipo de perfil: ${input.kind === "business" ? "pyme / autónomo (producto, taller o local)" : `creador/a (obra artística) · ${FAMILY_PROMPT[family]}`}`,
     who,
-    input.voiceDescription?.trim() ? `Lo que dice el autor sobre esta pieza: «${input.voiceDescription.trim()}»` : "El autor no ha dicho nada sobre esta pieza: no inventes título, año, medidas, serie ni concepto.",
+    input.voiceDescription?.trim() ? `Lo que dice el autor sobre esta pieza: «${input.voiceDescription.trim()}»` : "El autor no ha dicho nada sobre esta pieza: no inventes título, año, medidas, duración, créditos, lugar, serie ni concepto.",
     "Devuelve la ficha técnica y el recorte sugerido.",
   ]
     .filter(Boolean)
