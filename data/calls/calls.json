@@ -20,9 +20,7 @@
         "pyme"
       ],
       "other": [
-        "Mínimo 3 personas trabajadoras en 2025",
-        "Concurrencia no competitiva: se concede por orden de entrada hasta agotar el crédito",
-        "La solicitud la tramita la entidad colaboradora que elijas en reacciona.igape.es"
+        "Mínimo 3 personas trabajadoras en 2025"
       ]
     },
     "amountEur": {
@@ -76,8 +74,7 @@
       "other": [
         "El lugar fotografiado debe ser del municipio de A Laracha y reconocible",
         "Fotografías inéditas y no premiadas",
-        "Menores de edad con autorización del tutor (Anexo 2)",
-        "Las bases puntúan sobre 30; aquí se reescala a 100"
+        "Menores de edad con autorización del tutor (Anexo 2)"
       ]
     },
     "amountEur": {
@@ -236,12 +233,11 @@
         "autonomo"
       ],
       "other": [
-        "Si te seleccionan: cuota de participación de 25 € (IVA incluido)",
         "Obras de 20×20 a 100×100 cm"
       ]
     },
     "amountEur": {},
-    "amountText": "Sin premio en metálico: exposición colectiva del 18/12/2026 al 13/01/2027 y venta sin comisión",
+    "amountText": "Sin premio en metálico: exposición colectiva del 18/12/2026 al 13/01/2027 y venta sin comisión · Cuota: Solo si te seleccionan: cuota de participación de 25 € (IVA incluido)",
     "opensAt": "2026-09-14",
     "deadline": "2026-12-06",
     "deadlineText": "Del 14 de septiembre al 6 de diciembre de 2026",
@@ -295,8 +291,7 @@
       ],
       "other": [
         "Pyme titular de un alojamiento o restaurante inscrito en el REAT",
-        "Auditoría energética previa y ahorro mínimo del 30 %",
-        "Concurrencia no competitiva: por orden de entrada hasta agotar 9 M€"
+        "Auditoría energética previa y ahorro mínimo del 30 %"
       ]
     },
     "amountEur": {
@@ -405,12 +400,10 @@
         "persona-fisica",
         "autonomo"
       ],
-      "other": [
-        "Preinscripción 10 € (no reembolsable); inscripción final 300 € si te seleccionan"
-      ]
+      "other": []
     },
     "amountEur": {},
-    "amountText": "Sin dotación económica: el ganador expone individualmente en el siguiente PHotoESPAÑA; revisiones de portfolio de febrero a mayo de 2027",
+    "amountText": "Sin dotación económica: el ganador expone individualmente en el siguiente PHotoESPAÑA; revisiones de portfolio de febrero a mayo de 2027 · Cuota: Preinscripción 10 € (no reembolsable); inscripción final 300 € si te seleccionan",
     "opensAt": "2026-10-26",
     "deadline": "2026-12-15",
     "deadlineText": "Preinscripción hasta el 15 de diciembre de 2026; selección el 16/12; pago final hasta el 18/12",
@@ -466,9 +459,7 @@
         "autonomo",
         "colectivo"
       ],
-      "other": [
-        "Sin dotación económica: montaje y transporte a cargo del artista"
-      ]
+      "other": []
     },
     "amountEur": {},
     "amountText": "Sin dotación económica: cesión del espacio expositivo del vestíbulo; montaje y transporte a cargo del artista",
@@ -622,12 +613,11 @@
         "autonomo"
       ],
       "other": [
-        "Cuota por obra con descuento progresivo",
         "Hasta 5 obras de los últimos 3 años"
       ]
     },
     "amountEur": {},
-    "amountText": "Sin premio en metálico publicado: diploma verificable, difusión, portfolio público y comentarios del jurado",
+    "amountText": "Sin premio en metálico publicado: diploma verificable, difusión, portfolio público y comentarios del jurado · Cuota: Cuota por obra con descuento progresivo (importe no publicado en la ficha)",
     "opensAt": "2026-06-15",
     "deadline": "2026-12-21",
     "deadlineText": "Hasta el 21 de diciembre de 2026 a las 23:59 (hora peninsular)",
@@ -1033,8 +1023,7 @@
         "persona-fisica"
       ],
       "other": [
-        "Novela corta inédita de 80 a 120 páginas DIN A4, en castellano o euskera",
-        "Las bases puntúan sobre 10; aquí se reescala a 100"
+        "Novela corta inédita de 80 a 120 páginas DIN A4, en castellano o euskera"
       ]
     },
     "amountEur": {
@@ -1111,8 +1100,7 @@
       ],
       "other": [
         "Empresa productora independiente (art. 4.n Ley 55/2007)",
-        "Puntuación mínima de 40 puntos para acceder a la ayuda",
-        "Las bases puntúan sobre 75; aquí se reescala a 100"
+        "Puntuación mínima de 40 puntos para acceder a la ayuda"
       ]
     },
     "amountEur": {
@@ -1297,7 +1285,6 @@
         "persona-fisica"
       ],
       "other": [
-        "Las bases puntúan sobre 10 (área de artes, 23-35 años); aquí se reescala a 100",
         "Tener menos de 36 años al acabar el plazo de solicitud",
         "Empadronamiento en la provincia de A Coruña con al menos un año de antigüedad",
         "Estudios presenciales o semipresenciales fuera de Galicia"
@@ -1419,8 +1406,7 @@
       ],
       "other": [
         "Pyme constituida como sociedad mercantil con centro de trabajo en Galicia (no autónomos)",
-        "Una solicitud por empresa",
-        "Concurrencia no competitiva: hasta agotar 1.000.000 €"
+        "Una solicitud por empresa"
       ]
     },
     "amountEur": {
@@ -1475,8 +1461,7 @@
       "other": [
         "Más de 42 meses seguidos de actividad",
         "Rendimiento neto reducido (IRPF 2024) inferior a 50.000 € y facturación anual de al menos 12.000 €",
-        "No haberla recibido en las convocatorias 2021-2025",
-        "Concurrencia no competitiva: por orden de entrada"
+        "No haberla recibido en las convocatorias 2021-2025"
       ]
     },
     "amountEur": {
@@ -1525,8 +1510,7 @@
       "other": [
         "Negocio con al menos 5 años seguidos de actividad, inscrito en la bolsa de relevo de la Red de polos de emprendimiento",
         "Persona cedente de 62 años o más, con incapacidad reconocida o heredera",
-        "Traspaso formalizado en escritura pública o contrato firmado",
-        "Concurrencia no competitiva: por orden de entrada"
+        "Traspaso formalizado en escritura pública o contrato firmado"
       ]
     },
     "amountEur": {
@@ -1575,8 +1559,7 @@
       ],
       "other": [
         "Estar en paro e inscrito/a como demandante de empleo antes de darte de alta como autónomo/a",
-        "Iniciar la actividad en Galicia",
-        "Concurrencia no competitiva: por orden de entrada"
+        "Iniciar la actividad en Galicia"
       ]
     },
     "amountEur": {

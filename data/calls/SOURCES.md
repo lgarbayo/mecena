@@ -8,6 +8,8 @@
 - **Business (Galicia):** `igape-re-acciona-2026`. IGAPE consultancy for autónomos and pymes (80 % paid). It closes **16/11/2026**, so it shows as "cierra en 2 días" on demo day. It is non-competitive, so it has **no scored criteria**: for the jury beat use a creator call, or treat it as a completeness check.
 - No Galician digitalisation or crafts call is open in November 2026. Ticket Innova, the autónomo programmes and the Premios de Artesanía are included as `recurring`, with their 2026 data.
 
+- `eligibility.other` holds **only requirements** (shown as "Confírmalo" by matching). Fees and "no cash prize" notes are in `amountText`; "first-come" (no competitiva) is in `summary`.
+
 ## How the data was obtained
 - **BDNS API** (`https://www.infosubvenciones.es/bdnstrans/api`, public, no key, always `vpd=GE`), verified 2026-11-13:
   - `GET /convocatorias/busqueda?descripcion=…&finalidad=…&regiones=…&fechaDesde=dd/mm/yyyy&page&pageSize`: search. Useful filter ids: finalidad 11 cultura, 14 comercio/turismo/pymes, 6 empleo, 17 I+D+i; regiones 1 España, 3 Galicia.
@@ -21,7 +23,7 @@
   - **BDNS `regiones` is the impact area, not a residence requirement.** Most municipal contests (A Laracha, Calahorra, Cabra…) accept anyone, so `eligibility.residence` follows the bases, not BDNS.
 - **Raw records** for the BDNS-sourced calls are in `raw/<codigoBDNS>.json` (offline re-runs).
 - **Live ingest:** `npm run calls:ingest` writes `bdns-cache.json` (`source: "bdns"`, structured by `getAi().structureCall`). It keeps the previous cache on any failure. Curated `calls.json` wins on id clashes. Its output is unreviewed: don't use it for the demo without checking it.
-- **Criteria:** `criteriaSource: "bases"` = points published in the bases, rescaled to 100 (largest remainder; the original total is noted in `eligibility.other`). `"estimated"` = the bases list no points (weights split evenly) or the call has none (non-competitive).
+- **Criteria:** `criteriaSource: "bases"` = points published in the bases, rescaled to 100 (largest remainder). Rescaled from another total: `a-laracha-concurso-fotografia-2026` (30), `getxo-novela-corta-ramiro-pinilla-2027` (10), `icaa-cortometrajes-realizados-2027` (75) and `deputacion-coruna-bolsas-perfeccionamento-artistico-2026` (10, arts area, applicants 23-35). `"estimated"` = the bases list no points (weights split evenly) or the call has none (non-competitive).
 - **Recurring calls** (`status: "recurring"`, `deadline: null`): annual programmes whose 2026 edition has closed; amounts and requirements are from the 2026 edition. Their `deadlineText` deliberately contains no date, so the data standard does not read last year's date as this year's deadline.
 
 ## Calls
