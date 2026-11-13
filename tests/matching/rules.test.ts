@@ -116,3 +116,12 @@ describe("service", () => {
     expect(readDb().matchCache).toHaveLength(1);
   });
 });
+
+describe("documents wording", () => {
+  it("a declaración responsable is not a certificate", () => {
+    const c = { ...beca(), requiredDocuments: ["Declaración responsable de estar al corriente con Hacienda y Seguridad Social"] };
+    const r = evaluate(creator(), c, { now });
+    expect(r.match.whatYouMiss).toContain("Te falta: declaración responsable firmada");
+    expect(r.match.whatYouMiss.join(" ")).not.toMatch(/certificado/);
+  });
+});

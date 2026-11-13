@@ -199,6 +199,8 @@ const DOC_RULES: { test: RegExp; has: (p: Profile, ctx: MatchContext) => boolean
   { test: /dossier|portfolio|porfolio|imagenes|fotografias|obras/, has: (_p, ctx) => Boolean(ctx.hasDossier) || (ctx.worksCount ?? 0) > 0, label: "dossier con tus obras" },
   { test: /\bcv\b|curriculum|trayectoria|biografia/, has: (p) => p.achievements.length + p.education.length > 0 || p.bio.length > 0, label: "currículum" },
   { test: /memoria|proyecto|sinopsis/, has: (p) => Boolean(p.projectIdea), label: "idea del proyecto para la memoria" },
+  // a self-declaration is just signed (checked before the certificate rule, which shares its wording)
+  { test: /declaracion responsable|declaracion jurada/, has: () => false, label: "declaración responsable firmada" },
   { test: /hacienda|seguridad social|al corriente|certificad/, has: () => false, label: "certificado de estar al corriente con Hacienda y la Seguridad Social" },
 ];
 
