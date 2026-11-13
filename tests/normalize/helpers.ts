@@ -11,6 +11,8 @@ export function makeCall(over: Omit<Partial<Call>, "eligibility"> & { eligibilit
     type: "subvencion",
     scope: "estatal",
     beneficiaryKinds: ["creator"],
+    beneficiaryTypes: [],
+    territories: [],
     disciplines: [],
     sectors: [],
     eligibility: { residence: [], legalForms: [], other: [], ...eligibility },

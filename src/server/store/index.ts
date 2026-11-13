@@ -24,6 +24,7 @@ import {
   serverEnv,
 } from "@/contracts";
 import { DEMO_BUSINESS_ID, DEMO_CREATOR_ID, defaultDb, fixtureCalls } from "@/fixtures";
+import { profileBeneficiaryTypes, profileTerritory, withCanonicalCallFields } from "@/features/normalize";
 
 export const nowIso = () => new Date().toISOString();
 export const newId = (prefix: string) => `${prefix}-${randomUUID().slice(0, 8)}`;
@@ -142,6 +143,18 @@ export function mergeProfile(p: Profile, patch: ProfilePatch): Profile {
     }
   }
   next.updatedAt = nowIso();
+  return withCanonicalFields(next);
+}
+
+/**
+ * CCR-1 / CCR-3: keep the canonical territory and beneficiary types in sync with the display fields
+ * (city/province/region, kind/legalForm/size), so matching compares ids instead of free text.
+ */
+export function withCanonicalFields(p: Profile): Profile {
+  const territory = profileTerritory(p).value;
+  const next: Profile = { ...p, beneficiaryTypes: profileBeneficiaryTypes(p) };
+  if (territory) next.territory = territory;
+  else delete next.territory;
   return next;
 }
 
@@ -155,7 +168,8 @@ export function patchProfile(id: string | undefined, patch: ProfilePatch): Promi
   });
 }
 
-export function saveProfile(p: Profile): Promise<Profile> {
+export function saveProfile(input: Profile): Promise<Profile> {
+  const p = withCanonicalFields(input);
   return updateDb((db) => {
     const i = db.profiles.findIndex((x) => x.id === p.id);
     if (i < 0) db.profiles.push(p);
@@ -237,7 +251,7 @@ export function listCalls(): Call[] {
       }
       if (seen.has(parsed.data.id)) continue;
       seen.add(parsed.data.id);
-      out.push(parsed.data);
+      out.push(withCanonicalCallFields(parsed.data));
     }
   }
   // Until WP-05 lands data/calls/calls.json the app runs on clearly-labelled fictional fixtures.
