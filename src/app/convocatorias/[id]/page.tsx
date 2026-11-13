@@ -1,12 +1,7 @@
-// STUB (scaffold). Owned by WP-06.
-import { PageTitle, Pending } from "@/components/ui";
+// Owned by WP-06. Call detail: bases in plain Spanish, fit breakdown, checklist, criteria, CTA.
+import { CallDetail } from "@/features/matching/ui/CallDetail";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return (
-    <>
-      <PageTitle kicker="Convocatoria">Detalle</PageTitle>
-      <Pending wp="WP-06" what={`Bases en lenguaje claro, checklist y ganadores parecidos. (${decodeURIComponent(id)})`} />
-    </>
-  );
+  return <CallDetail id={decodeURIComponent(id)} />;
 }

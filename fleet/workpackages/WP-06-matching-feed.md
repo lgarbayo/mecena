@@ -7,7 +7,7 @@ owns:
   - src/app/api/calls/**
   - src/features/matching/**
   - tests/matching/**
-status: pending
+status: review
 hours: 3
 criteria: [Live demo wow, Applied AI depth, Sponsor fit (RevenueCat)]
 ---
