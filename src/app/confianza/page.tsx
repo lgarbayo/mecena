@@ -1,11 +1,8 @@
-// STUB (scaffold). Owned by WP-01.
-import { PageTitle, Pending } from "@/components/ui";
+// Owned by WP-01: expanded trust promise.
+import { TrustPage } from "@/features/onboarding/ui/TrustPage";
+
+export const metadata = { title: "Confianza · Mecena" };
 
 export default function Page() {
-  return (
-    <>
-      <PageTitle kicker="Confianza">El arte es tuyo</PageTitle>
-      <Pending wp="WP-01" what="Nosotros hacemos el papeleo. No entrenamos con tu obra." />
-    </>
-  );
+  return <TrustPage />;
 }
