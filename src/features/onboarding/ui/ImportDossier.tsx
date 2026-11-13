@@ -8,10 +8,39 @@ import { useRef, useState } from "react";
 import { API, ROUTES, type ProfileKind } from "@/contracts";
 import type { ImportDossierResponse } from "@/contracts/api";
 import { apiSend, fileToDataUrl } from "@/lib/api-client";
+import { fieldLabel } from "../copy";
 import s from "./onboarding.module.css";
 
 const MAX_MB = 20;
 const ACCEPT = "application/pdf,image/jpeg,image/png,image/webp";
+
+const COPY = {
+  creator: {
+    question: "¿Ya tienes un dossier?",
+    lede: "Súbelo y lo usamos de base. Solo te preguntaremos lo que falte.",
+    reading: "Leyendo tu dossier…",
+    placeholder: "O pega aquí el texto de tu dossier",
+    textLabel: "Texto de tu dossier",
+    failed: "No hemos podido leer tu dossier.",
+    done: (r: ImportDossierResponse) =>
+      `Listo: hemos rellenado ${r.changedSectionKeys.length} ${r.changedSectionKeys.length === 1 ? "sección" : "secciones"} de tu dossier con tus textos. Revísalas abajo y cuéntanos lo que falte.`,
+  },
+  // A pyme does not build a dossier: any document about the company only fills its card, to find aid faster.
+  business: {
+    question: "¿Tienes algo escrito sobre tu empresa?",
+    lede: "Una presentación, el texto de tu web o una memoria. Lo leemos, rellenamos la ficha y solo te preguntamos lo que falte.",
+    reading: "Leyendo el documento…",
+    placeholder: "O pega aquí el texto (tu web, una presentación…)",
+    textLabel: "Texto sobre tu empresa",
+    failed: "No hemos podido leer el documento.",
+    done: (r: ImportDossierResponse) => {
+      const n = r.changedProfileFields.filter((f) => fieldLabel("business", f)).length; // derived ids (territory…) are not "datos"
+      return n
+        ? `Listo: hemos rellenado ${n} ${n === 1 ? "dato" : "datos"} de la ficha de tu empresa. Revísalos abajo y cuéntanos lo que falte.`
+        : "Listo: lo guardamos para tus solicitudes. Cuéntanos lo que falte de la ficha.";
+    },
+  },
+} satisfies Record<ProfileKind, { question: string; lede: string; reading: string; placeholder: string; textLabel: string; failed: string; done: (r: ImportDossierResponse) => string }>;
 
 export function ImportDossier({ kind, profileId, onImported, defaultOpen }: { kind: ProfileKind; profileId?: string; onImported: (res: ImportDossierResponse) => void; defaultOpen?: boolean }) {
   const [busy, setBusy] = useState(false);
@@ -19,7 +48,7 @@ export function ImportDossier({ kind, profileId, onImported, defaultOpen }: { ki
   const [done, setDone] = useState<ImportDossierResponse | null>(null);
   const [text, setText] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const noun = kind === "creator" ? "dossier" : "dossier o memoria de empresa";
+  const c = COPY[kind];
 
   async function send(payload: { fileDataUrl?: string; fileName?: string; text?: string }) {
     setBusy(true);
@@ -30,7 +59,7 @@ export function ImportDossier({ kind, profileId, onImported, defaultOpen }: { ki
       setText("");
       onImported(res);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No hemos podido leer tu dossier.");
+      setError(e instanceof Error ? e.message : c.failed);
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -47,12 +76,12 @@ export function ImportDossier({ kind, profileId, onImported, defaultOpen }: { ki
   return (
     <details className={`${s.panel} ${s.importBox}`} open={defaultOpen || undefined} data-testid="import-dossier">
       <summary className={s.importSummary}>
-        <strong>¿Ya tienes {kind === "creator" ? "un dossier" : "un dossier o una memoria"}?</strong>
-        <span className={s.muted}>Súbelo y lo usamos de base. Solo te preguntaremos lo que falte.</span>
+        <strong>{c.question}</strong>
+        <span className={s.muted}>{c.lede}</span>
       </summary>
       <div className={s.importBody}>
         <label className={`btn btn-primary ${busy ? s.importBusy : ""}`} aria-disabled={busy}>
-          {busy ? "Leyendo tu dossier…" : "Subir PDF o foto"}
+          {busy ? c.reading : "Subir PDF o foto"}
           <input
             ref={fileRef}
             type="file"
@@ -70,15 +99,15 @@ export function ImportDossier({ kind, profileId, onImported, defaultOpen }: { ki
             if (text.trim()) send({ text });
           }}
         >
-          <textarea value={text} rows={3} placeholder={`O pega aquí el texto de tu ${noun}`} onChange={(e) => setText(e.target.value)} disabled={busy} aria-label={`Texto de tu ${noun}`} />
+          <textarea value={text} rows={3} placeholder={c.placeholder} onChange={(e) => setText(e.target.value)} disabled={busy} aria-label={c.textLabel} />
           <button type="submit" className="btn btn-ghost" disabled={busy || !text.trim()}>
             Usar este texto
           </button>
         </form>
-        <p className={s.muted}>Copiamos tus textos tal cual, sin reescribirlos. El archivo es tuyo: no entrenamos con él.</p>
+        <p className={s.muted}>Copiamos tus textos sin reescribirlos; solo corregimos erratas y tildes. El archivo es tuyo: no entrenamos con él.</p>
         {busy && (
           <p className={s.sending} role="status">
-            Leyendo tu dossier: tarda unos segundos…
+            {c.reading.replace("…", "")}: tarda unos segundos…
           </p>
         )}
         {error && (
@@ -88,13 +117,11 @@ export function ImportDossier({ kind, profileId, onImported, defaultOpen }: { ki
         )}
         {done && !busy && (
           <div className={s.note} role="status" data-testid="import-done">
-            {done.changedSectionKeys.length || done.changedProfileFields.length
-              ? `Listo: hemos rellenado ${done.changedSectionKeys.length} ${done.changedSectionKeys.length === 1 ? "sección" : "secciones"} de tu dossier con tus textos. Revísalas abajo y cuéntanos lo que falte.`
-              : "No hemos encontrado nada nuevo en este documento."}
+            {done.changedSectionKeys.length || done.changedProfileFields.length ? c.done(done) : "No hemos encontrado nada nuevo en este documento."}
             {done.worksFound.length > 0 && kind === "creator" ? (
               <>
                 {" "}
-                {done.worksFound.length === 1 ? "Aparece 1 obra" : `Aparecen ${done.worksFound.length} obras`}: <Link href={ROUTES.works}>{done.worksFound.length === 1 ? "fotografíala" : "fotografíalas"}</Link> para que{" "}
+                {done.worksFound.length === 1 ? "Aparece 1 obra" : `Aparecen ${done.worksFound.length} obras`}: <Link href={ROUTES.works}>{done.worksFound.length === 1 ? "añade una imagen" : "añade sus imágenes"}</Link> para que{" "}
                 {done.worksFound.length === 1 ? "salga" : "salgan"} con su ficha.
               </>
             ) : null}

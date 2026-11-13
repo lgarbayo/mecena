@@ -11,6 +11,8 @@
   --ground: #e6e7e3;     
   --accent: #a3a05a;     
   --accent-soft: #e4e3c7;
+  --on-ink: #a9aeb2;
+  --ink-rule: #4a5157;
   --skel: #dfe0dc;
 
   
@@ -22,7 +24,7 @@
   --fs-small: 0.8125rem;
   --fs-lead: 1.375rem;
   --fs-h2: 2.5rem;
-  --fs-name: clamp(3rem, 10.5vw, 6.75rem);
+  --fs-name: clamp(3rem, 10.5vw, 6rem);
 
   --sheet-w: 940px;     
   --pad: clamp(20px, 6vw, 64px);
@@ -87,11 +89,11 @@
   font-weight: 500;
   letter-spacing: 0.01em;
   color: var(--granite);
-  padding-top: 0.35rem;
+  padding-top: 0.75rem;
   border-top: 2px solid var(--ink);
 }
 .dossier-wall .rail__name { color: var(--ink); display: block; }
-.dossier-wall .main { min-width: 0; padding-top: 0.35rem; border-top: 1px solid var(--hair); }
+.dossier-wall .main { min-width: 0; padding-top: 0.75rem; border-top: 1px solid var(--hair); }
 .dossier-wall .section-title {
   font-family: var(--sans);
   font-weight: 500;
@@ -151,7 +153,7 @@
   font-weight: 500;
   font-size: var(--fs-name);
   line-height: 0.9;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.04em;
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
@@ -219,7 +221,7 @@
   font-family: var(--sans);
   font-size: var(--fs-small);
   color: var(--granite);
-  margin-bottom: 0.6rem;
+  margin-top: 0.35rem;
 }
 .dossier-wall .label__title { font-weight: 400; font-size: 1.1875rem; line-height: 1.25; }
 .dossier-wall .label__title cite { font-weight: 500; }
@@ -288,9 +290,9 @@
   min-height: min(150mm, 120vw);
   row-gap: 3rem;
 }
-.dossier-wall .contact .rail { border-top-color: var(--paper); color: #a9aeb2; }
+.dossier-wall .contact .rail { border-top-color: var(--paper); color: var(--on-ink); }
 .dossier-wall .contact .rail__name { color: var(--paper); }
-.dossier-wall .contact .main { border-top-color: #4a5157; }
+.dossier-wall .contact .main { border-top-color: var(--ink-rule); }
 .dossier-wall .contact__name {
   font-family: var(--sans);
   font-weight: 500;
@@ -299,10 +301,10 @@
   letter-spacing: -0.035em;
   margin-bottom: 2rem;
 }
-.dossier-wall .contact .facts dt { color: #a9aeb2; }
+.dossier-wall .contact .facts dt { color: var(--on-ink); }
 .dossier-wall .contact .facts dt,
-.dossier-wall .contact .facts dd { border-top-color: #4a5157; }
-.dossier-wall .colophon { font-family: var(--sans); font-size: 0.75rem; color: #a9aeb2; max-width: 40em; }
+.dossier-wall .contact .facts dd { border-top-color: var(--ink-rule); }
+.dossier-wall .colophon { font-family: var(--sans); font-size: 0.75rem; color: var(--on-ink); max-width: 40em; }
 .dossier-wall [data-slot]:empty {
   display: inline-block;
   vertical-align: middle;
@@ -318,7 +320,7 @@
   display: block;
   width: var(--skw, 100%);
   height: calc(var(--lines, 1) * 1lh);
-  background: repeating-linear-gradient(to bottom, var(--skel) 0 0.62lh, transparent 0.62lh 1lh);
+  background: linear-gradient(var(--skel) 62%, transparent 0) 0 0 / 100% 1lh repeat-y;
 }
 .dossier-wall h1[data-slot]:empty { --skw: 70%; --lines: 2; }
 .dossier-wall .frame:empty::after,
@@ -338,16 +340,16 @@
 @keyframes dos-arrive { from { background-color: var(--accent-soft); } to { background-color: transparent; } }
 .dossier-wall .hint {
   display: none;
-  font-family: var(--sans);
-  font-size: var(--fs-small);
+  font-family: var(--serif);
+  font-style: italic;
   color: var(--granite);
-  margin-top: 1.5rem;
-  padding-left: 0.8rem;
-  border-left: 2px solid var(--accent);
+  margin-top: 1.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--hair);
+  max-width: 36em;
 }
 .dossier-wall [data-state="pending"] .hint,
 .dossier-wall [data-state="filling"] .hint { display: block; }
-.dossier-wall [data-state="pending"] { opacity: 0.72; }
 .dossier-wall [data-state="ready"] [data-slot]:empty { display: none; }
 @media (max-width: 720px) {
 .dossier-wall { --fs-h2: 2rem; --fs-lead: 1.2rem; --fs-body: 1rem; }
@@ -461,3 +463,110 @@ html, body { background: #fff; }
   .dossier-wall .dossier > .sheet.cover { background: var(--paper); }
   .dossier-wall .dossier > .sheet.contact { background: var(--ink); }
 }
+
+.dossier-wall .label__links { margin-top: 0.6rem; font-family: var(--sans); font-size: var(--fs-small); }
+.dossier-wall .label__links a { color: var(--ink); text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+@media print { .dossier-wall .label__links a::after { content: " " attr(href); color: var(--granite); word-break: break-all; } }
+
+/* ---- Design (design.ts). Colours and faces arrive as custom properties from DossierDocument; these rules
+   turn the design's choices (cover, works, frame, rhythm, texture) into layout. Only active with [data-design]. */
+.dossier-wall ::selection { background: var(--accent-soft); color: var(--ink); }
+.dossier-wall[data-design] { font-size: calc(var(--fs-body) * var(--body-scale, 1)); }
+.dossier-wall[data-design] .cover__name,
+.dossier-wall[data-design] .section-title,
+.dossier-wall[data-design] .contact__name {
+  font-family: var(--display-font);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  text-transform: var(--display-case);
+  font-style: var(--display-style);
+}
+.dossier-wall[data-design] .cover__name { font-size: calc(var(--fs-name) * var(--name-scale, 1)); }
+.dossier-wall[data-design] .dossier > .sheet.contact,
+.dossier-wall[data-design] .contact { --ink: var(--back-paper); --paper: var(--back-ink); }
+
+/* cover */
+.dossier-wall[data-cover="nombre-primero"] .cover__text { order: 1; border-top: 0; padding-top: 0; }
+.dossier-wall[data-cover="nombre-primero"] .cover__work { order: 2; }
+.dossier-wall[data-cover="obra-a-sangre"] .cover__work .frame {
+  margin: 0 calc(var(--pad) * -1);
+  padding: 0;
+  height: clamp(360px, 74vh, 780px);
+}
+.dossier-wall[data-cover="obra-a-sangre"] .cover__work .frame > img { filter: none; }
+.dossier-wall[data-cover="obra-a-sangre"] .cover__caption { padding-right: 0; }
+.dossier-wall[data-cover="partida"] .cover { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: auto minmax(0, 1fr); column-gap: 2rem; }
+.dossier-wall[data-cover="partida"] .cover__head,
+.dossier-wall[data-cover="partida"] .call-header { grid-column: 1 / -1; }
+.dossier-wall[data-cover="partida"] .cover__work { grid-column: 2; grid-row: 2; }
+.dossier-wall[data-cover="partida"] .cover__text { grid-column: 1; grid-row: 2; align-self: end; grid-template-columns: minmax(0, 1fr); }
+
+/* works */
+.dossier-wall[data-works="cartela-debajo"] .work { grid-template-columns: minmax(0, 1fr); row-gap: 1rem; }
+.dossier-wall[data-works="cartela-debajo"] .label { max-width: 34em; }
+.dossier-wall[data-works="rejilla"] .works { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.75rem 2rem; }
+.dossier-wall[data-works="rejilla"] .work { grid-template-columns: minmax(0, 1fr); row-gap: 0.8rem; align-items: start; }
+.dossier-wall[data-works="rejilla"] .work .frame { height: calc(var(--frame-h) * 0.62); }
+.dossier-wall[data-works="rejilla"] .label__concept { display: none; }
+
+/* frame */
+.dossier-wall[data-frame] .frame { border-radius: var(--radius, 0); }
+.dossier-wall[data-frame="paspartu"] .frame > img { filter: none; }
+.dossier-wall[data-frame="plana"] .work .frame { background: transparent; padding: 0; }
+.dossier-wall[data-frame="plana"] .work .frame > img { filter: none; object-position: left bottom; }
+.dossier-wall[data-frame="marco-fino"] .work .frame { background: transparent; }
+.dossier-wall[data-frame="marco-fino"] .work .frame > img {
+  filter: drop-shadow(1px 0 0 var(--ink)) drop-shadow(-1px 0 0 var(--ink)) drop-shadow(0 1px 0 var(--ink)) drop-shadow(0 -1px 0 var(--ink));
+}
+
+/* rhythm */
+.dossier-wall[data-density="aireada"] { --pad: clamp(24px, 8vw, 92px); }
+.dossier-wall[data-density="aireada"] .works { gap: 4.5rem; }
+.dossier-wall[data-density="aireada"] .dossier { gap: 40px; }
+.dossier-wall[data-density="compacta"] { --pad: clamp(16px, 4.5vw, 44px); }
+.dossier-wall[data-density="compacta"] .works { gap: 1.75rem; }
+.dossier-wall[data-density="compacta"] .series__head { margin-bottom: 1.5rem; }
+.dossier-wall[data-rules="gruesas"] .rail,
+.dossier-wall[data-rules="gruesas"] .cover__text { border-top-width: 5px; }
+.dossier-wall[data-rules="gruesas"] .main { border-top: 2px solid var(--ink); }
+.dossier-wall[data-rules="ninguna"] .rail,
+.dossier-wall[data-rules="ninguna"] .main,
+.dossier-wall[data-rules="ninguna"] .cover__text { border-top-color: transparent; }
+.dossier-wall[data-texture="grano"] .dossier > .sheet,
+.dossier-wall[data-texture="papel"] .dossier > .sheet {
+  background-image: var(--texture);
+  background-blend-mode: multiply;
+}
+.dossier-wall[data-texture="grano"] {
+  --texture: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.22 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+.dossier-wall[data-texture="papel"] {
+  --texture: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.02 0.35' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0 0.35  0 0 0 0.12 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");
+}
+@media (max-width: 720px) {
+  .dossier-wall[data-works="rejilla"] .works { grid-template-columns: minmax(0, 1fr); }
+  .dossier-wall[data-cover="partida"] .cover { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; }
+  .dossier-wall[data-cover="partida"] .cover__work,
+  .dossier-wall[data-cover="partida"] .cover__text { grid-column: 1; grid-row: auto; }
+}
+
+/* Call-adapted sections (CCR-7): criteria they serve and the gaps the user must fill. */
+.dossier-wall .variant-criteria { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.dossier-wall .variant-criteria li {
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  line-height: 1.3;
+  padding: 0.15rem 0.5rem;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.dossier-wall .pending-gap {
+  font-family: var(--sans);
+  font-size: 0.85em;
+  background: none;
+  color: var(--ink);
+  border-bottom: 1.5px dashed var(--accent);
+  padding: 0 0.1em;
+}
+.dossier-wall .pending-gap::before { content: "Pendiente · "; color: var(--granite); }

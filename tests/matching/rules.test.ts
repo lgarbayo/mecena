@@ -125,3 +125,22 @@ describe("documents wording", () => {
     expect(r.match.whatYouMiss.join(" ")).not.toMatch(/certificado/);
   });
 });
+
+describe("pyme wording", () => {
+  const photosCall: Call = { ...fixtureCalls.find((c) => c.id === "fixture-digitalizacion-pymes")!, requiredDocuments: ["Fotografías de los productos", "Memoria técnica"] };
+
+  it("never asks a pyme for a 'dossier con tus obras', and counts what it wants to finance as the memoria idea", () => {
+    const r = evaluate({ ...fixtureBusiness, projectIdea: undefined }, photosCall, { hasDossier: true, worksCount: 0 });
+    const all = [...r.match.whyYouFit, ...r.match.whatYouMiss].join(" | ");
+    expect(all).not.toMatch(/dossier|obras/);
+    expect(r.match.whatYouMiss).toContain("Te falta: fotos de tus productos o tu actividad");
+    expect(r.match.whyYouFit).toContain("Ya tienes la idea de lo que queréis financiar, para la memoria");
+  });
+
+  it("creators keep their wording", () => {
+    const art: Call = { ...fixtureCalls.find((c) => c.beneficiaryKinds.includes("creator"))!, requiredDocuments: ["Dossier de obra"] };
+    const r = evaluate(fixtureCreator, art, { hasDossier: true });
+    expect(r.match.eligible).toBe(true);
+    expect(r.match.whyYouFit.join(" ")).toMatch(/dossier con tus obras/);
+  });
+});

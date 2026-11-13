@@ -4,6 +4,7 @@
  * No Node or browser APIs here, so it is safe to import from client components.
  */
 import type { Call, Dossier, DossierSection, Profile, Work } from "@/contracts";
+import { familyOf, vocabFor, type ArtFamily } from "./arts";
 
 export type SectionState = "pending" | "filling" | "ready";
 
@@ -17,6 +18,12 @@ export interface WorkView {
   concept: string;
   imageUrl: string;
   seriesId: string;
+  // Every art (CCR-arts): read when the work carries them, empty otherwise.
+  duration: string;
+  credits: string;
+  venue: string;
+  links: string[];
+  mediaKind: string;
 }
 
 export interface SeriesView {
@@ -44,11 +51,26 @@ export interface FactRow {
   href?: string;
 }
 
+export interface VariantSectionView {
+  id: string;
+  heading: string;
+  /** Paragraphs split into text and "[PENDIENTE: …]" gaps, so templates can highlight what the user must add. */
+  paras: { text: string; pending: boolean }[][];
+  criteria: string[]; // "Calidad artística · 40 ptos"
+}
+
 export interface VariantView {
   callId: string;
   callName: string;
   callRef?: string;
   notes: string[];
+  strategy?: string;
+  sections: VariantSectionView[]; // empty = order/limits only (no content adaptation)
+  questions: { criterion?: string; question: string }[];
+  formatChecks: { rule: string; status: "ok" | "riesgo" | "no_aplica"; note: string }[];
+  omitted: { what: string; why: string }[];
+  unsupportedNumbers: string[];
+  generatedBy?: "rules" | "ai" | "mock";
 }
 
 export interface Person {
@@ -62,6 +84,7 @@ export type BusinessSection = "cover" | "activity" | "team" | "projects" | "figu
 
 export interface CreatorView {
   kind: "creator";
+  family: ArtFamily;
   date: string;
   name: string;
   discipline: string;
@@ -170,8 +193,17 @@ const sectionBody = (sections: DossierSection[], key: string) => {
 
 // ---------------------------------------------------------------- works / series
 
+/** Fields added by CCR-arts (feat/arts-works); read loosely so the dossier works before and after the merge. */
+type ArtsWork = Work & { mediaKind?: string; links?: string[]; sheet: Work["sheet"] & { duration?: string; credits?: string; venue?: string } };
+
 export function toWorkView(w: Work, catNo: number): WorkView {
+  const a = w as ArtsWork;
   return {
+    duration: a.sheet.duration?.trim() ?? "",
+    credits: a.sheet.credits?.trim() ?? "",
+    venue: a.sheet.venue?.trim() ?? "",
+    links: (a.links ?? []).filter((l) => /^https?:\/\//.test(l)),
+    mediaKind: a.mediaKind ?? "image",
     id: w.id,
     catNo,
     title: w.sheet.title?.trim() || "Sin título",
@@ -197,7 +229,8 @@ function yearsOf(works: WorkView[]): string {
  * Series descriptions come from the "series" section (paragraphs that name the series) or from the
  * project idea when it names the series; with a single series the whole section text is used.
  */
-export function groupSeries(works: Work[], ctx: { seriesBody?: string; projectIdea?: string }): SeriesView[] {
+export function groupSeries(works: Work[], ctx: { seriesBody?: string; projectIdea?: string; worksTitle?: string }): SeriesView[] {
+  const fallback = ctx.worksTitle ?? "Obra";
   const groups = new Map<string, { title: string; works: Work[] }>();
   for (const w of works) {
     const title = w.sheet.series?.trim() || "";
@@ -220,9 +253,9 @@ export function groupSeries(works: Work[], ctx: { seriesBody?: string; projectId
     } else if (groups.size === 1) {
       description = paras;
     }
-    out.push({ id, title: g.title || (groups.size === 1 ? "Obra" : "Otras obras"), years: yearsOf(views), description, works: views });
+    out.push({ id, title: g.title || (groups.size === 1 ? fallback : `Otras ${fallback.toLowerCase() === "obra" ? "obras" : fallback.toLowerCase()}`), years: yearsOf(views), description, works: views });
   }
-  if (!out.length && paras.length) out.push({ id: "serie", title: "Obra", years: "", description: paras, works: [] });
+  if (!out.length && paras.length) out.push({ id: "serie", title: fallback, years: "", description: paras, works: [] });
   return out;
 }
 
@@ -244,7 +277,8 @@ const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 export function classifyAchievement(text: string): CvGroup["key"] {
   const t = norm(text);
   if (/residencia/.test(t)) return "residencies";
-  if (/coleccion|fondos de/.test(t)) return "collections";
+  if (/coleccion|fondos de|disco|album|\bep\b|single|discografia|publicad|editorial|libro|poemario|novela|cortometraje|largometraje|filmografia/.test(t)) return "collections";
+  if (/concierto|gira|recital|actuacion|funcion|estreno|festival|proyeccion|seleccion oficial|lectura|presentacion/.test(t)) return /gira|festival|seleccion/.test(t) ? "groupShows" : "soloShows";
   if (/premio|beca|finalista|mencion|ganador|ayuda|seleccionad|accesit/.test(t)) return "awards";
   if (/(exposicion|muestra)[^,.]*colectiva|colectiva/.test(t)) return "groupShows";
   if (/exposicion|muestra|individual/.test(t)) return "soloShows";
@@ -261,8 +295,12 @@ export function toCvItem(raw: string, group: CvGroup["key"]): CvItem {
     year = paren[1];
     text = text.replace(paren[0], " ").trim();
   } else {
-    const m = /(?:^|[\s,])((?:19|20)\d{2})(?=$|[\s,.;])/.exec(text);
-    if (m) {
+    const lead = /^((?:19|20)\d{2})\s*[:.\-–]\s*/.exec(text); // "2025: hicimos gira por Portugal"
+    const m = lead ?? /(?:^|[\s,])((?:19|20)\d{2})(?=$|[\s,.;:])/.exec(text);
+    if (lead) {
+      year = lead[1];
+      text = capitalize(text.slice(lead[0].length));
+    } else if (m) {
       year = m[1];
       text = text.replace(new RegExp(`[,\\s]*(en\\s+)?${m[1]}\\b`), "").trim();
     }
@@ -280,7 +318,8 @@ export function toCvItem(raw: string, group: CvGroup["key"]): CvItem {
   return { year, text: text.replace(/\s{2,}/g, " ").replace(/[,\s]+$/, ""), place };
 }
 
-export function buildCv(profile: Profile, cvBody?: string): CvGroup[] {
+export function buildCv(profile: Profile, cvBody?: string, family: ArtFamily = "artes-visuales"): CvGroup[] {
+  const titles = { ...CV_TITLES, ...vocabFor(family).cv };
   const groups = new Map<CvGroup["key"], CvItem[]>();
   const seen = new Set<string>();
   const add = (raw: string, forced?: CvGroup["key"]) => {
@@ -297,7 +336,7 @@ export function buildCv(profile: Profile, cvBody?: string): CvGroup[] {
   (bullets(cvBody).length ? bullets(cvBody) : []).forEach((b) => add(b));
   return CV_ORDER.filter((k) => groups.get(k)?.length).map((k) => ({
     key: k,
-    title: CV_TITLES[k],
+    title: titles[k],
     items: [...groups.get(k)!].sort((a, b) => Number(b.year || 0) - Number(a.year || 0)),
   }));
 }
@@ -346,15 +385,46 @@ export function buildContact(profile: Profile, contactBody?: string): FactRow[] 
 
 // ---------------------------------------------------------------- variant header
 
+const PENDING = /(\[PENDIENTE:[^\]]*\])/;
+
+/** "texto [PENDIENTE: x] más" -> [{text}, {text: "x", pending}, {text}] */
+export function splitPending(para: string): { text: string; pending: boolean }[] {
+  return para
+    .split(PENDING)
+    .filter(Boolean)
+    .map((t) => (PENDING.test(t) ? { text: t.slice(1, -1).replace(/^PENDIENTE:\s*/, "").trim(), pending: true } : { text: t, pending: false }));
+}
+
 export function toVariantView(dossier: Dossier, call?: Call): VariantView | undefined {
-  if (!dossier.variant) return undefined;
+  const v = dossier.variant;
+  if (!v) return undefined;
+  const crit = new Map((call?.criteria ?? []).map((c) => [c.id, c]));
+  const label = (id: string) => {
+    const c = crit.get(id);
+    return c ? `${c.name} · ${c.maxPoints} ${c.maxPoints === 1 ? "pto" : "ptos"}` : undefined;
+  };
   return {
-    callId: dossier.variant.callId,
-    callName: call ? `${call.title.replace(/^\[FIXTURE\]\s*/, "")}, ${call.organizer}` : dossier.variant.callId,
+    callId: v.callId,
+    callName: call ? `${call.title.replace(/^\[FIXTURE\]\s*/, "")}, ${call.organizer}` : v.callId,
     callRef: call?.bdnsId ? `BDNS ${call.bdnsId}` : undefined,
-    notes: dossier.variant.notes,
+    notes: v.notes,
+    strategy: v.strategy,
+    sections: (v.sections ?? []).map((s) => ({
+      id: s.id,
+      heading: s.heading,
+      paras: paragraphs(s.body).map(splitPending),
+      criteria: s.criteria.map(label).filter((x): x is string => !!x),
+    })),
+    questions: (v.questions ?? []).map((q) => ({ criterion: crit.get(q.criterionId)?.name, question: q.question })),
+    formatChecks: v.formatChecks ?? [],
+    omitted: v.omitted ?? [],
+    unsupportedNumbers: v.unsupportedNumbers ?? [],
+    generatedBy: v.generatedBy,
   };
 }
+
+/** True when the call variant rewrote the narrative sections (they replace statement/bio or activity/team). */
+export const isAdapted = (view: { variant?: VariantView }) => (view.variant?.sections.length ?? 0) > 0;
 
 // ---------------------------------------------------------------- main mappers
 
@@ -377,14 +447,16 @@ export function toCreatorView({ profile, dossier, works, call }: ViewInput): Cre
   const sec = (k: string) => sectionBody(dossier.sections, k);
   const statement = paragraphs(sec("statement") ?? profile.statement);
   const bio = paragraphs(sec("bio") ?? profile.bio);
-  const series = groupSeries(works, { seriesBody: sec("series"), projectIdea: profile.projectIdea });
-  const cv = buildCv(profile, sec("cv"));
+  const family = familyOf(profile.disciplines);
+  const series = groupSeries(works, { seriesBody: sec("series"), projectIdea: profile.projectIdea, worksTitle: vocabFor(family).works });
+  const cv = buildCv(profile, sec("cv"), family);
   const contact = buildContact(profile, sec("contact"));
   const name = profile.displayName.trim();
   const tagline = firstSentence(statement[0] ?? "");
   const allWorks = series.flatMap((s) => s.works);
   return {
     kind: "creator",
+    family,
     date: formatMonth(dossier.generatedAt),
     name,
     discipline: joinEs(profile.disciplines),

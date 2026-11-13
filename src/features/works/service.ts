@@ -4,9 +4,11 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import type { Work } from "@/contracts";
+import { mediaKindFromLink, type MediaKind, type Work } from "@/contracts";
 import { getAi } from "@/server/ai";
 import { getProfile, getWork, listWorks, newId, nowIso, saveWork, updateDb, uploadsDir } from "@/server/store";
+import { inferMediaKind, normalizeLinks } from "./links";
+import { extractLinks } from "./parse";
 
 const MEDIA = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" } as const;
 type Media = keyof typeof MEDIA;
@@ -35,7 +37,7 @@ function imagePath(id: string): { file: string; mediaType: Media } | undefined {
   return undefined;
 }
 
-export async function createWork(input: { profileId?: string; imageDataUrl: string; voiceDescription?: string }): Promise<Work> {
+export async function createWork(input: { profileId?: string; imageDataUrl: string; voiceDescription?: string; mediaKind?: MediaKind; links?: string[] }): Promise<Work> {
   const profile = getProfile(input.profileId);
   const { mediaType, base64 } = parseDataUrl(input.imageDataUrl);
   const bytes = Buffer.from(base64, "base64");
@@ -46,6 +48,7 @@ export async function createWork(input: { profileId?: string; imageDataUrl: stri
   const voice = input.voiceDescription?.trim() || undefined;
   const described = await getAi().describeWork({ kind: profile.kind, imageBase64: base64, mediaType, voiceDescription: voice, profile });
   const existing = listWorks(profile.id);
+  const links = normalizeLinks([...(input.links ?? []), ...extractLinks(voice)]);
   return saveWork({
     id,
     profileId: profile.id,
@@ -57,6 +60,8 @@ export async function createWork(input: { profileId?: string; imageDataUrl: stri
     confirmed: false,
     order: existing.length ? Math.max(...existing.map((w) => w.order)) + 1 : 0,
     createdAt: nowIso(),
+    mediaKind: inferMediaKind({ explicit: input.mediaKind, links, profile }),
+    links,
   });
 }
 
@@ -65,7 +70,7 @@ export async function createWork(input: { profileId?: string; imageDataUrl: stri
  * Fields the artist already edited by hand are kept unless the new note says something about them.
  */
 export async function describeWork(id: string, voiceDescription: string): Promise<Work> {
-  const w = getWork(id);
+  const w = withLinksFromVoice(getWork(id), voiceDescription);
   const img = imagePath(id);
   const profile = getProfile(w.profileId);
   if (!img) {
@@ -79,19 +84,40 @@ export async function describeWork(id: string, voiceDescription: string): Promis
   return saveWork({ ...w, sheet: { ...sheet, title: sheet.title || r.sheet.title }, crop: w.crop ?? r.crop, sheetSource: "voice", confirmed: false });
 }
 
+/** Links typed into the note join the work's links; a first media link can tell what the work is. */
+function withLinksFromVoice(w: Work, voice: string): Work {
+  const found = extractLinks(voice);
+  if (!found.length) return w;
+  const before = w.links ?? [];
+  const links = normalizeLinks([...before, ...found]);
+  return { ...w, links, mediaKind: before.length ? w.mediaKind : (mediaKindFromLink(links[0]) ?? w.mediaKind) };
+}
+
 function stripEmpty<T extends Record<string, unknown>>(o: T, dropUntitled = false): Partial<T> {
   return Object.fromEntries(Object.entries(o).filter(([k, v]) => v !== undefined && v !== "" && !(dropUntitled && k === "title" && v === "Sin título"))) as Partial<T>;
 }
 
-export async function updateWork(id: string, patch: Partial<Pick<Work, "crop" | "confirmed" | "order">> & { sheet?: Partial<Work["sheet"]> }): Promise<Work> {
+export async function updateWork(
+  id: string,
+  patch: Partial<Pick<Work, "crop" | "confirmed" | "order" | "mediaKind" | "links">> & { sheet?: Partial<Work["sheet"]> },
+): Promise<Work> {
   const w = getWork(id);
+  const extra: Partial<Work> = {};
+  if (patch.links) {
+    const links = normalizeLinks(patch.links);
+    extra.links = links;
+    // A newly added video/audio link says what the work is, unless the artist picked the kind themselves.
+    const added = links.filter((l) => !(w.links ?? []).includes(l));
+    const fromLink = added.map(mediaKindFromLink).find(Boolean);
+    if (fromLink && !patch.mediaKind) extra.mediaKind = fromLink;
+  }
   const sheetEdited = patch.sheet && Object.keys(patch.sheet).length > 0;
   const sheet = { ...w.sheet, ...patch.sheet };
   // Empty strings mean "the artist cleared this field": store as absent, not as "".
-  for (const k of ["technique", "dimensions", "series", "concept"] as const) if (sheet[k] === "") delete sheet[k];
+  for (const k of ["technique", "dimensions", "series", "concept", "duration", "credits", "venue"] as const) if (sheet[k] === "") delete sheet[k];
   if (!sheet.year) delete sheet.year; // 0 = cleared by the artist
   if (!sheet.title?.trim()) sheet.title = "Sin título";
-  return saveWork({ ...w, ...patch, sheet, sheetSource: sheetEdited ? "manual" : w.sheetSource });
+  return saveWork({ ...w, ...patch, ...extra, sheet, sheetSource: sheetEdited ? "manual" : w.sheetSource });
 }
 
 /** Move a work one place up (-1) or down (+1) in the profile's order; renumbers 0..n-1. */

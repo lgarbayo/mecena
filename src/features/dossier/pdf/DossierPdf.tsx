@@ -8,8 +8,15 @@ import path from "node:path";
 import fs from "node:fs";
 import type { ComponentProps, ReactNode } from "react";
 import { Document, Font, Image, Link, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
-import type { BusinessView, CreatorView, CvGroup, DossierView, FactRow, WorkView } from "../model";
+import { isAdapted, type BusinessView, type CreatorView, type CvGroup, type DossierView, type FactRow, type VariantView, type WorkView } from "../model";
 import type { PdfImage } from "./images";
+import { styleTokens, type StyleTokens } from "../style";
+import { DEFAULT_TITLES, type DossierDesign } from "../design";
+import { linkLabel, vocabFor } from "../arts";
+import { planCreator } from "../structure";
+import type { PdfFaces } from "./fonts";
+
+export type PdfTokens = StyleTokens & { design?: DossierDesign };
 
 // ---------------------------------------------------------------- fonts
 
@@ -50,28 +57,40 @@ export function registerFonts(): boolean {
 // ---------------------------------------------------------------- tokens
 
 const mm = (n: number) => n * 2.8346;
-const C = {
-  paper: "#f4f4f1",
-  ink: "#262b30",
-  granite: "#6b7075",
-  hair: "#c8cbc8",
-  ground: "#e6e7e3",
-  accent: "#a3a05a",
-  accentSoft: "#e4e3c7",
-  onInk: "#a9aeb2",
-  inkRule: "#4a5157",
-};
-const ACCENTS = { creator: { accent: C.accent, soft: C.accentSoft }, business: { accent: "#4f6e7d", soft: "#d3dee2" } };
+/** Default palette ("sobrio"); a render can pass other tokens from style.ts. */
+const SOBRIO = styleTokens("sobrio", "creator");
 const M = { top: mm(18), side: mm(17), bottom: mm(20) };
 
-function makeStyles(fonts: boolean) {
+function makeStyles(fonts: boolean, C: PdfTokens = SOBRIO, faces: PdfFaces = {}) {
   const sans = fonts ? "Sans" : "Helvetica";
   const serif = fonts ? "Serif" : "Times-Roman";
+  const display = faces.display ?? (C.display === "serif" ? serif : sans);
+  const custom = !!faces.display;
+  const dt = C.design?.type.display;
+  // A downloaded face is registered as a single weight/style: ask for exactly that, never a synthetic variant.
+  const displayFace = (size: number, bundledWeight: number, bundledTracking: number) => ({
+    fontFamily: display,
+    fontWeight: custom ? 400 : C.display === "serif" ? 400 : dt ? Math.min(700, Math.max(400, dt.weight)) : bundledWeight,
+    letterSpacing: dt ? dt.tracking * size : bundledTracking,
+    textTransform: (dt?.uppercase ? "uppercase" : "none") as "uppercase" | "none",
+  });
+  const back = { paper: C.design?.palette.backPaper ?? C.ink, ink: C.design?.palette.backInk ?? C.paper };
+  const titles: Record<string, string> = {};
+  for (const [k, v] of Object.entries(DEFAULT_TITLES)) {
+    const t = C.design?.titles?.[k as keyof typeof DEFAULT_TITLES];
+    if (t) titles[v] = t;
+  }
   return {
     sans,
     serif,
+    display,
+    back,
+    titles,
+    worksBelow: !!C.design && C.design.works.layout !== "cartela-lateral",
+    nameFirst: C.design?.cover.layout === "nombre-primero",
+    t: C,
     s: StyleSheet.create({
-      page: { backgroundColor: "#ffffff", color: C.ink, fontFamily: serif, fontSize: 9.5, lineHeight: 1.55, paddingTop: M.top, paddingBottom: M.bottom, paddingHorizontal: M.side },
+      page: { backgroundColor: C.design ? C.paper : "#ffffff", color: C.ink, fontFamily: serif, fontSize: 9.5, lineHeight: 1.55, paddingTop: M.top, paddingBottom: M.bottom, paddingHorizontal: M.side },
       full: { backgroundColor: C.paper, color: C.ink, fontFamily: serif, fontSize: 9.5, padding: `${M.top} ${M.side}`, display: "flex", flexDirection: "column" },
       folio: { position: "absolute", bottom: mm(9), right: M.side, fontFamily: sans, fontSize: 7.5, color: C.granite },
       // rail layout
@@ -79,17 +98,17 @@ function makeStyles(fonts: boolean) {
       rail: { width: mm(34), marginRight: mm(7), borderTopWidth: 2, borderTopColor: C.ink, paddingTop: 4, fontFamily: sans, fontSize: 7.5, fontWeight: 500, color: C.granite, lineHeight: 1.35 },
       railName: { color: C.ink },
       main: { flex: 1, borderTopWidth: 0.6, borderTopColor: C.hair, paddingTop: 4 },
-      sectionTitle: { fontFamily: sans, fontWeight: 500, fontSize: 24, lineHeight: 1.05, letterSpacing: -0.6, marginBottom: 6 },
+      sectionTitle: { ...displayFace(24, 500, -0.6), fontSize: 24, lineHeight: 1.05, marginBottom: 6 },
       // cover
       coverHead: { flexDirection: "row", justifyContent: "space-between", fontFamily: sans, fontSize: 7.5, color: C.granite },
       callHeader: { flexDirection: "row", justifyContent: "space-between", fontFamily: sans, fontSize: 7.5, marginTop: -M.top, marginHorizontal: -M.side, marginBottom: mm(10), paddingVertical: mm(4), paddingHorizontal: M.side, borderBottomWidth: 0.8 },
       coverFigure: { marginTop: mm(8), marginBottom: mm(7) },
-      frame: { backgroundColor: C.ground, alignItems: "center", justifyContent: "center", padding: 14 },
+      frame: { backgroundColor: C.flatFrames ? undefined : C.ground, alignItems: "center", justifyContent: "center", padding: C.flatFrames ? 0 : 14 },
       frameImg: { objectFit: "contain", width: "100%", height: "100%" },
       frameEmpty: { fontFamily: serif, fontStyle: "italic", fontSize: 10, color: C.granite, textAlign: "center", paddingHorizontal: 20 },
       caption: { fontSize: 7.5, color: C.granite, textAlign: "right", marginTop: 5 },
       coverText: { borderTopWidth: 2, borderTopColor: C.ink, paddingTop: 10 },
-      coverName: { fontFamily: sans, fontWeight: 500, fontSize: 50, lineHeight: 0.95, letterSpacing: -2.2, marginBottom: 14 },
+      coverName: { ...displayFace(50 * (C.design?.cover.nameScale ?? 1), 500, -2), fontSize: 50 * Math.min(1.15, C.design?.cover.nameScale ?? 1), lineHeight: 0.95, marginBottom: 14 },
       coverRow: { flexDirection: "row" },
       coverMeta: { flex: 1, marginRight: mm(7), fontFamily: sans, fontSize: 10, lineHeight: 1.35 },
       coverLine: { flex: 1, fontStyle: "italic", fontSize: 12.5, lineHeight: 1.3 },
@@ -103,7 +122,7 @@ function makeStyles(fonts: boolean) {
       work: { flexDirection: "row", alignItems: "flex-end", marginBottom: mm(9) },
       workFrame: { flex: 2.4, height: mm(98), marginRight: mm(7) },
       label: { flex: 1, fontSize: 8.5, lineHeight: 1.45, paddingBottom: 2 },
-      labelCat: { fontFamily: sans, fontSize: 7.5, color: C.granite, marginBottom: 5 },
+      labelCat: { fontFamily: sans, fontSize: 7.5, color: C.granite, marginTop: 3 },
       labelTitle: { fontSize: 10.5, lineHeight: 1.25, marginBottom: 2 },
       cite: { fontStyle: "italic", fontWeight: 500 },
       muted: { color: C.granite },
@@ -125,10 +144,14 @@ function makeStyles(fonts: boolean) {
       personName: { fontFamily: sans, fontWeight: 500, fontSize: 10 },
       personRole: { fontFamily: sans, fontSize: 7.5, color: C.granite, marginBottom: 3 },
       // contact
-      contact: { backgroundColor: C.ink, color: C.paper, fontFamily: serif, fontSize: 9.5, padding: `${M.top} ${M.side}`, display: "flex", flexDirection: "column", justifyContent: "space-between" },
-      contactName: { fontFamily: sans, fontWeight: 500, fontSize: 32, lineHeight: 1, letterSpacing: -1.1, marginBottom: 20 },
+      contact: { backgroundColor: C.design?.palette.backPaper ?? C.ink, color: C.design?.palette.backInk ?? C.paper, fontFamily: serif, fontSize: 9.5, padding: `${M.top} ${M.side}`, display: "flex", flexDirection: "column", justifyContent: "space-between" },
+      contactName: { ...displayFace(32, 500, -1.1), fontSize: 32, lineHeight: 1, marginBottom: 20 },
       colophon: { fontFamily: sans, fontSize: 7, color: C.onInk, maxWidth: 330 },
       block: { marginTop: mm(12) },
+      // call-adapted sections (CCR-7)
+      chips: { flexDirection: "row", flexWrap: "wrap", marginBottom: 8 },
+      chip: { fontFamily: sans, fontSize: 7, paddingVertical: 1.5, paddingHorizontal: 4, marginRight: 4, marginBottom: 3 },
+      gap: { fontFamily: sans, fontSize: 8.5, textDecoration: "underline", textDecorationStyle: "dashed" },
     }),
   };
 }
@@ -144,8 +167,8 @@ function Folio({ st }: { st: S }) {
 
 function Rail({ st, name, sub, onInk }: { st: S; name: string; sub?: string; onInk?: boolean }) {
   return (
-    <View style={[st.s.rail, onInk ? { borderTopColor: C.paper, color: C.onInk } : {}]}>
-      <Text style={onInk ? { color: C.paper } : st.s.railName}>{name}</Text>
+    <View style={[st.s.rail, onInk ? { borderTopColor: st.back.ink, color: st.t.onInk } : {}]}>
+      <Text style={onInk ? { color: st.back.ink } : st.s.railName}>{st.titles[name] ?? name}</Text>
       {sub ? <Text>{sub}</Text> : null}
     </View>
   );
@@ -155,7 +178,7 @@ function Ruled({ st, name, sub, children, onInk, wrap = true }: { st: S; name: s
   return (
     <View style={st.s.ruled} wrap={wrap}>
       <Rail st={st} name={name} sub={sub} onInk={onInk} />
-      <View style={[st.s.main, onInk ? { borderTopColor: C.inkRule } : {}]}>{children}</View>
+      <View style={[st.s.main, onInk ? { borderTopColor: st.t.inkRule } : {}]}>{children}</View>
     </View>
   );
 }
@@ -183,23 +206,31 @@ function Frame({ st, work, images, style }: { st: S; work?: WorkView; images: Im
 
 function Label({ st, work, cat }: { st: S; work: WorkView; cat: string }) {
   return (
-    <View style={st.s.label}>
-      <Text style={st.s.labelCat}>{cat}</Text>
+    <View style={st.worksBelow ? [st.s.label, { flexGrow: 0, flexShrink: 0, flexBasis: "auto", maxWidth: 360, paddingBottom: 0 }] : st.s.label}>
       <Text style={st.s.labelTitle}>
         <Text style={st.s.cite}>{work.title}</Text>
         {work.year ? `, ${work.year}` : ""}
       </Text>
       {work.technique ? <Text style={st.s.muted}>{work.technique}</Text> : null}
-      {work.size ? <Text style={st.s.muted}>{work.size}</Text> : null}
+      {work.size || work.duration ? <Text style={st.s.muted}>{work.size || work.duration}</Text> : null}
+      {work.credits ? <Text style={st.s.muted}>{work.credits}</Text> : null}
+      {work.venue ? <Text style={st.s.muted}>{work.venue}</Text> : null}
+      <Text style={st.s.labelCat}>{cat}</Text>
       {work.concept ? <Text style={st.s.concept}>{work.concept}</Text> : null}
+      {work.links.map((l) => (
+        // Clickable in the PDF, readable on paper.
+        <Link key={l} src={l} style={[st.s.labelCat, { color: st.t.ink, textDecoration: "none", marginTop: 4 }]}>
+          {linkLabel(l)}: {l.replace(/^https?:\/\/(www\.)?/, "")}
+        </Link>
+      ))}
     </View>
   );
 }
 
 function WorkRow({ st, work, images, cat }: { st: S; work: WorkView; images: ImageMap; cat: string }) {
   return (
-    <View style={st.s.work} wrap={false}>
-      <Frame st={st} work={work} images={images} style={st.s.workFrame} />
+    <View style={st.worksBelow ? { marginBottom: mm(9) } : st.s.work} wrap={false}>
+      <Frame st={st} work={work} images={images} style={st.worksBelow ? { height: mm(92), marginBottom: mm(4) } : st.s.workFrame} />
       <Label st={st} work={work} cat={cat} />
     </View>
   );
@@ -209,10 +240,10 @@ function Facts({ st, rows, onInk }: { st: S; rows: FactRow[]; onInk?: boolean })
   return (
     <View>
       {rows.map((r, i) => (
-        <View key={i} style={[st.s.factRow, onInk ? { borderTopColor: C.inkRule } : {}]} wrap={false}>
-          <Text style={[st.s.factLabel, onInk ? { color: C.onInk } : {}]}>{r.label}</Text>
+        <View key={i} style={[st.s.factRow, onInk ? { borderTopColor: st.t.inkRule } : {}]} wrap={false}>
+          <Text style={[st.s.factLabel, onInk ? { color: st.t.onInk } : {}]}>{r.label}</Text>
           {r.href ? (
-            <Link src={r.href} style={[st.s.factValue, { color: onInk ? C.paper : C.ink, textDecoration: "none" }]}>
+            <Link src={r.href} style={[st.s.factValue, { color: onInk ? st.back.ink : st.t.ink, textDecoration: "none" }]}>
               {r.value}
             </Link>
           ) : (
@@ -226,7 +257,7 @@ function Facts({ st, rows, onInk }: { st: S; rows: FactRow[]; onInk?: boolean })
 
 function CallHeader({ st, view, kind }: { st: S; view: DossierView; kind: "creator" | "business" }) {
   if (!view.variant) return null;
-  const a = ACCENTS[kind];
+  const a = { accent: st.t.accent, soft: st.t.accentSoft };
   return (
     <View style={[st.s.callHeader, { backgroundColor: a.soft, borderBottomColor: a.accent }]}>
       <Text>
@@ -250,6 +281,7 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
         <Text>{kicker}</Text>
         <Text>{view.date}</Text>
       </View>
+      {st.nameFirst ? <CoverText st={st} view={view} meta={meta} first /> : null}
       <View style={st.s.coverFigure}>
         {w && images[w.imageUrl] ? (
           <>
@@ -261,20 +293,26 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
           </>
         ) : null}
       </View>
-      <View style={[st.s.coverText, { marginTop: "auto" }]}>
-        <Text style={st.s.coverName}>{view.name || "Dossier"}</Text>
-        <View style={st.s.coverRow}>
-          <View style={st.s.coverMeta}>
-            {meta.filter(Boolean).map((m, i) => (
-              <Text key={i} style={i ? st.s.muted : undefined}>
-                {m}
-              </Text>
-            ))}
-          </View>
-          <Text style={st.s.coverLine}>{view.tagline}</Text>
-        </View>
-      </View>
+      {st.nameFirst ? null : <CoverText st={st} view={view} meta={meta} />}
     </Page>
+  );
+}
+
+function CoverText({ st, view, meta, first }: { st: S; view: DossierView; meta: string[]; first?: boolean }) {
+  return (
+    <View style={first ? { marginTop: mm(6) } : [st.s.coverText, { marginTop: "auto" }]}>
+      <Text style={st.s.coverName}>{view.name || "Dossier"}</Text>
+      <View style={st.s.coverRow}>
+        <View style={st.s.coverMeta}>
+          {meta.filter(Boolean).map((m, i) => (
+            <Text key={i} style={i ? st.s.muted : undefined}>
+              {m}
+            </Text>
+          ))}
+        </View>
+        <Text style={st.s.coverLine}>{view.tagline}</Text>
+      </View>
+    </View>
   );
 }
 
@@ -324,56 +362,128 @@ function CvColumn({ st, groups }: { st: S; groups: CvGroup[] }) {
   );
 }
 
-// ---------------------------------------------------------------- documents
-
-export function CreatorPdf({ view, images, st }: { view: CreatorView; images: ImageMap; st: S }) {
-  const year = view.date.split(" ").pop();
-  const [left, right] = splitColumns(view.cv);
+/** Call-adapted narrative: flows across pages, one ruled block per section, gaps marked "Pendiente". */
+function VariantPages({ st, variant, kind }: { st: S; variant: VariantView; kind: "creator" | "business" }) {
+  if (!variant.sections.length) return null;
+  // Colours come from the dossier's design tokens (feat/dossier-styles), like the rest of the PDF.
+  const a = { accent: st.t.accent, soft: st.t.accentSoft };
+  const n = variant.sections.length;
   return (
-    <>
-      <Cover st={st} view={view} images={images} kicker="Dossier artístico" meta={[view.discipline, view.city]} />
-      {view.statement.length || view.bio.length ? (
-        <Page size="A4" style={st.s.page}>
-          {view.statement.length ? (
-            <Ruled st={st} name="Declaración" sub="artística">
-              <Prose st={st} paras={view.statement} />
-              <Text style={st.s.signature}>{[view.name, view.city, year].filter(Boolean).join(", ")}</Text>
-            </Ruled>
-          ) : null}
-          {view.bio.length ? (
-            <View style={view.statement.length ? st.s.block : undefined}>
-              <Ruled st={st} name="Biografía">
-                <Prose st={st} paras={view.bio} leadFirst={false} />
-              </Ruled>
-            </View>
-          ) : null}
-          <Folio st={st} />
-        </Page>
-      ) : null}
-      {view.series.map((s, i) => (
-        <Page key={s.id} size="A4" style={st.s.page}>
-          <Ruled st={st} name="Obra" sub={view.series.length > 1 ? `Serie ${i + 1} de ${view.series.length}` : undefined}>
+    <Page size="A4" style={st.s.page}>
+      {variant.sections.map((sec, i) => (
+        <View key={sec.id} style={i ? st.s.block : undefined}>
+          <Ruled st={st} name="Para la convocatoria" sub={n > 1 ? `${i + 1} de ${n}` : undefined}>
             <View wrap={false}>
-              <Text style={st.s.sectionTitle}>{s.title}</Text>
-              {s.years ? <Text style={st.s.years}>{s.years}</Text> : null}
-              {s.description.length ? (
-                <View style={st.s.seriesText}>
-                  <Prose st={st} paras={s.description} leadFirst={false} />
+              <Text style={[st.s.sectionTitle, { fontSize: 17, letterSpacing: -0.3 }]}>{sec.heading}</Text>
+              {sec.criteria.length ? (
+                <View style={st.s.chips}>
+                  {sec.criteria.map((c) => (
+                    <Text key={c} style={[st.s.chip, { backgroundColor: a.soft }]}>
+                      {c}
+                    </Text>
+                  ))}
                 </View>
-              ) : (
-                <View style={{ height: 10 }} />
-              )}
+              ) : null}
             </View>
-            {s.works.map((w) => (
-              <WorkRow key={w.id} st={st} work={w} images={images} cat={`Cat. ${w.catNo}`} />
+            {sec.paras.map((parts, j) => (
+              <Text key={j} style={j === 0 ? st.s.lead : st.s.p} orphans={3} widows={3}>
+                {parts.map((part, k) =>
+                  part.pending ? (
+                    <Text key={k} style={[st.s.gap, { color: st.t.ink }]}>
+                      {`Pendiente: ${part.text}`}
+                    </Text>
+                  ) : (
+                    part.text
+                  ),
+                )}
+              </Text>
             ))}
           </Ruled>
-          <Folio st={st} />
-        </Page>
+        </View>
       ))}
-      {view.cv.length ? (
-        <Page size="A4" style={st.s.page}>
-          <Ruled st={st} name="Trayectoria">
+      <Folio st={st} />
+    </Page>
+  );
+}
+
+// ---------------------------------------------------------------- documents
+
+export function CreatorPdf({ view: full, images, st }: { view: CreatorView; images: ImageMap; st: S }) {
+  const { view, blocks } = planCreator(full, st.t.design);
+  const vocab = vocabFor(view.family);
+  const year = view.date.split(" ").pop();
+  const [left, right] = splitColumns(view.cv);
+  // CCR-7: when the dossier is adapted to a call, the rewritten sections replace statement and bio.
+  const adapted = isAdapted(view);
+
+  // Short text blocks (statement, bio, sections of their own) share a page until a long block breaks it.
+  const pages: ReactNode[] = [];
+  let text: ReactNode[] = [];
+  const flush = () => {
+    if (!text.length) return;
+    pages.push(
+      <Page key={`text-${pages.length}`} size="A4" style={st.s.page}>
+        {text}
+        <Folio st={st} />
+      </Page>,
+    );
+    text = [];
+  };
+  const addText = (key: string, node: ReactNode) => text.push(<View key={key} style={text.length ? st.s.block : undefined}>{node}</View>);
+
+  for (const b of blocks) {
+    if (b.kind === "statement" && !adapted && view.statement.length) {
+      addText(
+        "statement",
+        <Ruled st={st} name={b.title}>
+          <Prose st={st} paras={view.statement} />
+          <Text style={st.s.signature}>{[view.name, view.city, year].filter(Boolean).join(", ")}</Text>
+        </Ruled>,
+      );
+    } else if (b.kind === "bio" && !adapted && view.bio.length) {
+      addText(
+        "bio",
+        <Ruled st={st} name={b.title}>
+          <Prose st={st} paras={view.bio} leadFirst={false} />
+        </Ruled>,
+      );
+    } else if (b.kind === "custom") {
+      addText(
+        b.id,
+        <Ruled st={st} name={b.title}>
+          <Prose st={st} paras={b.paras} leadFirst={false} />
+        </Ruled>,
+      );
+    } else if (b.kind === "works") {
+      flush();
+      view.series.forEach((s, i) =>
+        pages.push(
+          <Page key={`series-${s.id}`} size="A4" style={st.s.page}>
+            <Ruled st={st} name={b.title} sub={view.series.length > 1 ? `${vocab.series} ${i + 1} de ${view.series.length}` : undefined}>
+              <View wrap={false}>
+                <Text style={st.s.sectionTitle}>{s.title}</Text>
+                {s.years ? <Text style={st.s.years}>{s.years}</Text> : null}
+                {s.description.length ? (
+                  <View style={st.s.seriesText}>
+                    <Prose st={st} paras={s.description} leadFirst={false} />
+                  </View>
+                ) : (
+                  <View style={{ height: 10 }} />
+                )}
+              </View>
+              {s.works.map((w) => (
+                <WorkRow key={w.id} st={st} work={w} images={images} cat={`${vocab.cat} ${w.catNo}`} />
+              ))}
+            </Ruled>
+            <Folio st={st} />
+          </Page>,
+        ),
+      );
+    } else if (b.kind === "cv" && view.cv.length) {
+      flush();
+      pages.push(
+        <Page key="cv" size="A4" style={st.s.page}>
+          <Ruled st={st} name={b.title}>
             <View style={st.s.cvCols}>
               <CvColumn st={st} groups={left} />
               <View style={{ width: mm(9) }} />
@@ -381,10 +491,19 @@ export function CreatorPdf({ view, images, st }: { view: CreatorView; images: Im
             </View>
           </Ruled>
           <Folio st={st} />
-        </Page>
-      ) : null}
+        </Page>,
+      );
+    }
+  }
+  flush();
+
+  return (
+    <>
+      <Cover st={st} view={view} images={images} kicker="Dossier artístico" meta={[view.discipline, view.city]} />
+      {adapted && view.variant ? <VariantPages st={st} variant={view.variant} kind="creator" /> : null}
+      {pages}
       {view.contact.length ? (
-        <Contact st={st} name={view.name} rows={view.contact} colophon={`Obras y textos de ${view.name || "la artista"}. Fotografías de la obra hechas por su autora o autor, sin retoques. Dossier maquetado con Mecena.`} />
+        <Contact st={st} name={view.name} rows={view.contact} colophon={`Obras y textos de ${view.name || "la artista"}. ${vocab.credit} Dossier maquetado con Mecena.`} />
       ) : null}
     </>
   );
@@ -392,12 +511,14 @@ export function CreatorPdf({ view, images, st }: { view: CreatorView; images: Im
 
 export function BusinessPdf({ view, images, st }: { view: BusinessView; images: ImageMap; st: S }) {
   const teamSub = view.team.size ? (view.team.size === 1 ? "1 persona" : `${view.team.size} personas`) : undefined;
-  const hasActivity = view.activity.length || view.plan.idea || view.plan.needs.length;
-  const hasTeam = view.team.people.length || view.team.text.length;
+  const adapted = isAdapted(view);
+  const hasActivity = !adapted && (view.activity.length || view.plan.idea || view.plan.needs.length);
+  const hasTeam = !adapted && (view.team.people.length || view.team.text.length);
   const p = view.projects;
   return (
     <>
       <Cover st={st} view={view} images={images} kicker="Dossier de empresa" meta={[view.activityShort, view.city]} />
+      {adapted && view.variant ? <VariantPages st={st} variant={view.variant} kind="business" /> : null}
       {hasActivity || hasTeam ? (
         <Page size="A4" style={st.s.page}>
           {hasActivity ? (
@@ -472,8 +593,8 @@ export function BusinessPdf({ view, images, st }: { view: BusinessView; images: 
   );
 }
 
-export function DossierPdf({ view, images }: { view: DossierView; images: ImageMap }) {
-  const st = makeStyles(registerFonts());
+export function DossierPdf({ view, images, tokens, faces }: { view: DossierView; images: ImageMap; tokens?: PdfTokens; faces?: PdfFaces }) {
+  const st = makeStyles(registerFonts(), tokens, faces);
   const title = `Dossier${view.name ? ` · ${view.name}` : ""}${view.variant ? ` · ${view.variant.callName}` : ""}`;
   return (
     <Document title={title} author={view.name || "Mecena"} creator="Mecena" producer="Mecena" language="es-ES">

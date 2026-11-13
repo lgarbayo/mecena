@@ -3,6 +3,7 @@
 import { ApplicationDraftContent, JudgeVerdict, type AiSlice, type Application, type ApplicationSection, type Call, type TranscriptSegment } from "@/contracts";
 import { enforce } from "@/features/drafting/rules";
 import { structured } from "@/server/ai/llm";
+import { polishProse, WORDING_RULE } from "@/server/ai/wording";
 import { allocate, fixesFor, mockTarget } from "./rules";
 
 const COMMENT: Record<string, [string, string]> = {
@@ -52,11 +53,11 @@ function mockRevise(application: Application, transcript: TranscriptSegment[], f
   }
   if (/territorio|lugares/.test(all)) {
     const place = transcript.filter((t) => /de [A-ZÁÉÍÓÚ]|en [A-ZÁÉÍÓÚ]|malpica|coruña|galicia/i.test(t.text));
-    if (place.length) add("memoria", `Vínculo con el territorio: ${place.map((p) => p.text.trim()).join(" ")}`, place.map((p) => p.id));
+    if (place.length) add("memoria", `Vínculo con el territorio: ${place.map((p) => polishProse(p.text)).join(" ")}`, place.map((p) => p.id));
   }
   if (/única|mirada|propias/.test(all)) {
     const voice = transcript.filter((t) => /porque/i.test(t.text));
-    if (voice.length) add("statement", `Lo que hace distinta mi mirada: ${voice.map((v) => v.text.trim()).join(" ")}`, voice.map((v) => v.id));
+    if (voice.length) add("statement", `Lo que hace distinta mi mirada: ${voice.map((v) => polishProse(v.text)).join(" ")}`, voice.map((v) => v.id));
   }
   if (/impacto|beneficia/.test(all)) add(sections.some((s) => s.key === "objetivos") ? "objetivos" : "memoria", "A quién llega: [Completa: público, clientes o colectivos que se benefician y cuántos]");
   return { sections, budget: application.budget, checklist: application.checklist };
@@ -67,8 +68,9 @@ Para cada criterio: puntos entre 0 y su máximo (sé exigente y realista: un bor
 Español de España. "overall": una frase de valoración global.`;
 
 const REVISE_SYSTEM = `Eres Mecena. Revisas una solicitud aplicando las mejoras aceptadas por la persona.
-Usa SOLO hechos presentes en la transcripción o en la solicitud actual; mantén su voz y sus frases. Si una mejora necesita un dato que no está, escribe "[Completa: qué falta]" en vez de inventarlo.
-Conserva las claves de sección y actualiza sourceSegmentIds con los fragmentos usados. Presupuesto solo con gastos admitidos. Español de España.`;
+Usa SOLO hechos presentes en la transcripción o en la solicitud actual; mantén su voz y sus frases, sin erratas. Si una mejora necesita un dato que no está, escribe "[Completa: qué falta]" en vez de inventarlo.
+Conserva las claves de sección y actualiza sourceSegmentIds con los fragmentos usados. Presupuesto solo con gastos admitidos. Español de España.
+${WORDING_RULE}`;
 
 export const juryAi: AiSlice<"judgeApplication" | "reviseApplication"> = {
   mock: {

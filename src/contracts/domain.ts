@@ -87,17 +87,28 @@ export type CropSuggestion = z.infer<typeof CropSuggestion>;
 export const TechnicalSheet = z.object({
   title: z.string(),
   year: z.number().int().optional(),
-  technique: z.string().optional(), // "acuarela sobre papel", "óleo sobre lienzo"
-  dimensions: z.string().optional(), // "50 x 70 cm"
+  // Technique / medium / format: "óleo sobre lino", "cuarteto de cuerda", "danza contemporánea", "novela".
+  technique: z.string().optional(),
+  dimensions: z.string().optional(), // "50 x 70 cm" (visual arts and objects only)
   series: z.string().optional(),
   concept: z.string().optional(), // 1-3 sentences, from the user's words
+  // CCR-arts: for music, performing arts, audiovisual, literature…
+  duration: z.string().optional(), // "12 min", "3:45", "90 min"
+  credits: z.string().optional(), // line-up / performers / publisher / crew, free text
+  venue: z.string().optional(), // where it premiered, was published or shown
 });
 export type TechnicalSheet = z.infer<typeof TechnicalSheet>;
+
+/** CCR-arts: what the work is, so the dossier can show a player, a link or a cover. */
+export const MediaKind = z.enum(["image", "video", "audio", "text", "performance", "object"]);
+export type MediaKind = z.infer<typeof MediaKind>;
 
 export const Work = z.object({
   id: z.string(),
   profileId: z.string(),
-  imageUrl: z.string(), // served URL (e.g. /api/works/<id>/image or /demo/...)
+  // Served URL (e.g. /api/works/<id>/image or /demo/...): the photo, still, cover, poster or stage photo
+  // that represents the work, whatever its art.
+  imageUrl: z.string(),
   originalImageUrl: z.string().optional(),
   crop: CropSuggestion.optional(),
   sheet: TechnicalSheet,
@@ -105,8 +116,15 @@ export const Work = z.object({
   confirmed: z.boolean().default(false), // user validated the sheet
   order: z.number().int().default(0),
   createdAt: z.string(),
+  // CCR-arts
+  mediaKind: MediaKind.default("image"),
+  links: z.array(z.string().url()).default([]), // YouTube, Vimeo, Bandcamp, SoundCloud, Spotify, publisher page…
 });
-export type Work = z.infer<typeof Work>;
+/**
+ * mediaKind/links are optional in the TS type so Work literals written before CCR-arts still compile;
+ * anything parsed with the schema has them filled. Read them as `w.mediaKind ?? "image"`, `w.links ?? []`.
+ */
+export type Work = Omit<z.infer<typeof Work>, "mediaKind" | "links"> & { mediaKind?: MediaKind; links?: string[] };
 
 export const CreatorSectionKey = z.enum(["statement", "bio", "series", "works", "cv", "contact"]);
 export const BusinessSectionKey = z.enum(["activity", "team", "projects", "figures", "location", "contact"]);
@@ -123,11 +141,33 @@ export const DossierSection = z.object({
 });
 export type DossierSection = z.infer<typeof DossierSection>;
 
+/** One section of a call-adapted dossier (CCR-7): rewritten for the call's criteria from the user's own facts. */
+export const VariantSection = z.object({
+  id: z.string(),
+  heading: z.string(), // mirrors the memoria structure the bases prescribe, if any
+  body: z.string(), // markdown-lite; gaps as "[PENDIENTE: …]", never invented
+  criteria: z.array(z.string()).default([]), // CallCriterion ids (or requirement labels) this section serves
+  from: z.array(z.string()).default([]), // base DossierSectionKeys, "profile" or "nuevo"
+});
+export type VariantSection = z.infer<typeof VariantSection>;
+
+export const VariantFormatCheck = z.object({ rule: z.string(), status: z.enum(["ok", "riesgo", "no_aplica"]), note: z.string() });
+export type VariantFormatCheck = z.infer<typeof VariantFormatCheck>;
+
 export const DossierVariant = z.object({
   callId: z.string(),
   notes: z.array(z.string()), // e.g. "La convocatoria pide máx. 10 imágenes; hemos puesto primero la serie social"
   maxImages: z.number().int().optional(),
   maxFileMb: z.number().optional(),
+  // CCR-7: content adaptation (layer 2). Absent = order/limits only (rules preview, non-Pro).
+  strategy: z.string().optional(), // 2-3 sentences: what goes first and why, in terms of the criteria
+  sections: z.array(VariantSection).optional(),
+  omitted: z.array(z.object({ what: z.string(), why: z.string() })).optional(),
+  questions: z.array(z.object({ criterionId: z.string(), question: z.string() })).optional(),
+  formatChecks: z.array(VariantFormatCheck).optional(),
+  unsupportedNumbers: z.array(z.string()).optional(), // code guard: numbers not found in profile/dossier/call
+  generatedBy: z.enum(["rules", "ai", "mock"]).optional(),
+  generatedAt: z.string().optional(),
 });
 export type DossierVariant = z.infer<typeof DossierVariant>;
 
@@ -322,5 +362,7 @@ export const Db = z.object({
   entitlements: z.array(EntitlementState),
   usage: z.array(Usage),
   matchCache: z.array(MatchResult.extend({ cacheKey: z.string() })),
+  // CCR-7: call-adapted dossier variants, keyed by profile/dossier/works/call version (generation takes ~20 s).
+  variantCache: z.array(DossierVariant.extend({ cacheKey: z.string() })).default([]),
 });
-export type Db = z.infer<typeof Db>;
+export type Db = Omit<z.infer<typeof Db>, "works"> & { works: Work[] };

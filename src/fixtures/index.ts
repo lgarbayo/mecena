@@ -238,5 +238,6 @@ export function defaultDb(): Db {
     entitlements: [],
     usage: [],
     matchCache: [],
+    variantCache: [],
   };
 }

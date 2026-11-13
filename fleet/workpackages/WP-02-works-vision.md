@@ -42,3 +42,11 @@ On `/obras` a creator photographs a work with the phone camera, says one sentenc
 - Body size: keep uploads small; `next.config.ts` allows 12 MB for server actions only.
 
 ## Contract change requests
+
+### CCR-arts (branch `feat/arts-works`, already applied in the branch)
+Works open to every art (music, performing arts, audiovisual, literature, design, crafts), not only painting. All additive; old data keeps parsing.
+- `TechnicalSheet`: new optional `duration` ("6 min", "3:45"), `credits` (line-up / company / publisher / crew) and `venue` (premiere, publication, screening). `technique` now means technique/medium/format ("cuarteto de cuerda", "danza contemporánea", "novela"); `dimensions` stays visual-arts only, except books, where WP-02 stores pages there ("240 páginas").
+- `Work`: new `mediaKind` (`MediaKind` = image | video | audio | text | performance | object, default "image") and `links` (URLs, default []). `imageUrl` stays required: photo, still, cover, poster or stage photo. The TS `Work` type keeps both optional so older literals compile; read them as `w.mediaKind ?? "image"` and `w.links ?? []`. `Db` type follows.
+- New `src/contracts/arts.ts` (exported from `@/contracts`, client-safe): `ArtFamily` (top-level ids of data/taxonomy/disciplines.json), `artFamily(disciplines)` (default "artes-visuales"), `disciplineFamily`, `defaultMediaKind(family)`, `mediaKindFromLink(url)`, `foldText`.
+- `api.ts`: `CreateWorkRequest` and `UpdateWorkRequest` accept optional `mediaKind` and `links` (PATCH `links` replaces the list).
+- For WP-03 (dossier): show `duration`/`credits`/`venue` in the sheet line when present and render `links` (a player or a link for video/audio); label fields by `artFamily(profile.disciplines)`.

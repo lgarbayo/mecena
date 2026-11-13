@@ -7,13 +7,14 @@ import { useRef, useState } from "react";
 import type { Work } from "@/contracts";
 import { Button } from "@/components/ui";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
+import type { ArtCopy } from "./arts";
 import { errorText, worksClient } from "./client";
 import { downscalePhoto } from "./image";
 import s from "./works.module.css";
 
 type Upload = { state: "uploading" } | { state: "done"; work: Work } | { state: "error"; message: string };
 
-export function CaptureWork({ business, profileId, onCreated }: { business?: boolean; profileId?: string; onCreated(work: Work): void }) {
+export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; profileId?: string; onCreated(work: Work): void }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [preparing, setPreparing] = useState(false);
   const [upload, setUpload] = useState<Upload | null>(null);
@@ -90,7 +91,7 @@ export function CaptureWork({ business, profileId, onCreated }: { business?: boo
   if (!preview) {
     return (
       <section className={`card ${s.capture}`} aria-busy={preparing}>
-        <p className={s.captureLead}>{business ? "Haz una foto de un producto, tu taller o tu local." : "Haz una foto a la obra y dinos una frase sobre ella."}</p>
+        <p className={s.captureLead}>{copy.captureLead}</p>
         <div className={s.captureButtons}>
           <label className={`btn btn-primary ${s.fileBtn} ${preparing ? s.disabled : ""}`}>
             <input type="file" accept="image/*" capture="environment" disabled={preparing} onChange={(e) => (void onFile(e.target.files?.[0]), (e.target.value = ""))} />
@@ -101,7 +102,7 @@ export function CaptureWork({ business, profileId, onCreated }: { business?: boo
             Elegir de la galería
           </label>
         </div>
-        <p className={s.hint}>Consejo: foto de frente, con luz natural y la obra entera en el encuadre.</p>
+        <p className={s.hint}>{copy.photoTip}</p>
         {error && <p className={s.error} role="alert">{error}</p>}
       </section>
     );
@@ -120,7 +121,7 @@ export function CaptureWork({ business, profileId, onCreated }: { business?: boo
         </div>
         <div className={s.voice}>
           <label htmlFor="work-note" className={s.voiceLabel}>
-            {business ? "Cuéntanos qué es" : "Cuéntanos la obra en una frase"}
+            {copy.noteLabel}
           </label>
           <textarea
             id="work-note"
@@ -128,7 +129,7 @@ export function CaptureWork({ business, profileId, onCreated }: { business?: boo
             value={speech.listening && speech.interim ? `${note} ${speech.interim}`.trim() : note}
             onChange={(e) => setNote(e.target.value)}
             readOnly={speech.listening}
-            placeholder={business ? "«Se llama Taza Mar, cerámica esmaltada, 10 por 8»" : "«Se llama Redeira II, acuarela sobre papel de 2025, 50 por 70, de la serie Redeiras»"}
+            placeholder={copy.notePlaceholder}
           />
           <div className={s.voiceActions}>
             {speech.supported && (

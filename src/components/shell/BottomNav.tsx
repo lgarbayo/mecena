@@ -2,24 +2,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ROUTES } from "@/contracts";
+import { NAV } from "@/features/onboarding/copy";
+import { useApp } from "./AppProvider";
 
-const ITEMS = [
-  { href: ROUTES.onboarding, label: "Hablar" },
-  { href: ROUTES.works, label: "Obras" },
-  { href: ROUTES.dossier, label: "Dossier" },
-  { href: ROUTES.calls, label: "Convocatorias" },
-  { href: ROUTES.pricing, label: "Pro" },
-];
-
+/** Main navigation. A pyme sees its company card and the aid it fits; works and dossier are for creators. */
 export function BottomNav() {
   const path = usePathname();
+  const { profile } = useApp();
+  const items = NAV[profile?.kind ?? "creator"];
   return (
     <nav className="bottom-nav" aria-label="Principal">
-      {ITEMS.map((i) => (
-        <Link key={i.href} href={i.href} className={path?.startsWith(i.href) ? "active" : ""}>
-          {i.label}
-        </Link>
-      ))}
+      {items.map((i) => {
+        const href = ROUTES[i.key];
+        return (
+          <Link key={i.key} href={href} className={path?.startsWith(href) ? "active" : ""}>
+            {i.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

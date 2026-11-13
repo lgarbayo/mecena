@@ -2,7 +2,7 @@
 import { FREE_MATCHES_PER_MONTH, type Call, type MatchResult, type PastAward, type Profile, type ProfileKind } from "@/contracts";
 import { resolveEntitlement } from "@/features/purchases/server";
 import { winnerShareFor } from "@/features/history/history";
-import { normalizeDiscipline, profileBeneficiaryTypes } from "@/features/normalize";
+import { mapProfileKind, normalizeCall, normalizeDiscipline, profileBeneficiaryTypes } from "@/features/normalize";
 import { getAi } from "@/server/ai";
 import { getCall, getCallHistory, getDossier, getProfile, listAwards, listCalls, listWorks, readDb, updateDb } from "@/server/store";
 import { checklistFor, evaluate, type MatchContext, type ScoreBreakdown } from "./rules";
@@ -22,8 +22,12 @@ export async function searchCalls(input: { profileId?: string; query?: string; k
   const profile = getProfile(input.profileId);
   const ctx = contextFor(profile);
   const q = input.query?.trim().toLowerCase();
+  // A pyme only sees aid open to businesses: artist becas/premios are for someone else. Creators keep business-tagged
+  // calls (an autónomo artist can apply for autónomo aid). An explicit `kind` (agent/MCP) still wins.
+  const forBusinessOnly = !input.kind && profile.kind === "business";
   return listCalls()
     .filter((c) => !input.kind || c.beneficiaryKinds.includes(input.kind))
+    .filter((c) => !forBusinessOnly || openToCompanies(c))
     .filter((c) => !q || `${c.title} ${c.summary} ${c.disciplines.join(" ")} ${c.sectors.join(" ")}`.toLowerCase().includes(q))
     .map((call) => ({ call, r: evaluate(profile, call, ctx) }))
     .filter(({ r }) => !r.excluded && r.match.eligible)
@@ -31,6 +35,19 @@ export async function searchCalls(input: { profileId?: string; query?: string; k
     .sort((a, b) => STATUS_RANK[a.call.status] - STATUS_RANK[b.call.status] || b.r.match.score - a.r.match.score || (a.call.deadline ?? "9999").localeCompare(b.call.deadline ?? "9999"))
     .slice(0, input.limit ?? 25)
     .map(({ call, r }) => ({ call, match: r.match }));
+}
+
+/**
+ * A call a company can apply for: tagged for businesses, or an artist-tagged call whose canonical beneficiary types
+ * also admit companies (e.g. a short-film festival open to production companies). "autonomo" alone does not count:
+ * it is shared with creators, and a natural-person beca that admits autónomos is still an artist's beca.
+ */
+function openToCompanies(c: Call): boolean {
+  if (c.beneficiaryKinds.includes("business")) return true;
+  return normalizeCall(c).value.beneficiaryTypes.some((t) => {
+    const kinds = mapProfileKind(t);
+    return kinds.includes("business") && !kinds.includes("creator");
+  });
 }
 
 const STATUS_RANK: Record<Call["status"], number> = { open: 0, upcoming: 1, recurring: 2, closed: 3 };

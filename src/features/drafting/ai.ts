@@ -1,11 +1,12 @@
 // Owned by WP-08. Drafts the application from the user's own words (transcript segment ids), criteria-aware.
-// Mock: deterministic, quotes the transcript verbatim. Real: Claude smart tier. Both pass through ./rules.enforce.
+// Mock: deterministic, quotes the transcript (typos fixed, words kept). Real: Claude smart tier. Both pass through ./rules.enforce.
 import { ApplicationDraftContent, type AiSlice, type ApplicationSection, type BudgetLine, type Call, type DraftApplicationInput, type Profile, type TranscriptSegment } from "@/contracts";
 import { structured } from "@/server/ai/llm";
+import { polishProse, WORDING_RULE } from "@/server/ai/wording";
 import { buildChecklist, enforce } from "./rules";
 
 const pick = (segs: TranscriptSegment[], re: RegExp) => segs.filter((s) => re.test(s.text.toLowerCase()));
-const quote = (segs: TranscriptSegment[]) => segs.map((s) => s.text.trim()).join(" ");
+const quote = (segs: TranscriptSegment[]) => segs.map((s) => polishProse(s.text)).join(" ");
 
 /** Funding needs → allowed expense types (first match wins). */
 const NEED_TO_EXPENSE: [RegExp, RegExp][] = [
@@ -84,7 +85,8 @@ export function mockDraft({ profile, call, transcript }: DraftApplicationInput) 
 }
 
 const SYSTEM = `Eres Mecena: preparas solicitudes de convocatorias (becas, premios, ayudas) para artistas, pymes y autónomos de España.
-Escribe en español de España y en primera persona, con la voz de la persona: usa sus frases y su vocabulario de la transcripción (cítalas o parafraséalas de cerca).
+Escribe en español de España y en primera persona, con la voz de la persona: usa sus frases y su vocabulario de la transcripción (cítalas o parafraséalas de cerca), pero bien escritas: la transcripción viene del dictado o del teclado y puede traer erratas que la solicitud no debe arrastrar.
+${WORDING_RULE}
 NUNCA inventes datos (fechas, cifras, exposiciones, clientes, premios) que no estén en la transcripción o el perfil. Si falta algo que las bases piden, escribe "[Completa: qué falta]".
 Organiza las secciones para responder a cada criterio de valoración de la convocatoria. Cada sección lista en sourceSegmentIds los ids de los fragmentos de la transcripción en los que se basa.
 Secciones: creador/a → "memoria", "statement" y, si hay datos, "cv"; pyme/autónomo → "company", "memoria", "objetivos".
