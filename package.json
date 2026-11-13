@@ -17,7 +17,8 @@
     "check": "npm run typecheck && npm test",
     "mcp": "tsx src/mcp/server.ts",
     "demo:reset": "tsx scripts/demo-reset.ts",
-    "calls:ingest": "tsx scripts/ingest-bdns.ts"
+    "calls:ingest": "tsx scripts/ingest-bdns.ts",
+    "calls:history": "tsx scripts/ingest-history.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
