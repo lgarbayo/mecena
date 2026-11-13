@@ -141,11 +141,33 @@ export const DossierSection = z.object({
 });
 export type DossierSection = z.infer<typeof DossierSection>;
 
+/** One section of a call-adapted dossier (CCR-7): rewritten for the call's criteria from the user's own facts. */
+export const VariantSection = z.object({
+  id: z.string(),
+  heading: z.string(), // mirrors the memoria structure the bases prescribe, if any
+  body: z.string(), // markdown-lite; gaps as "[PENDIENTE: …]", never invented
+  criteria: z.array(z.string()).default([]), // CallCriterion ids (or requirement labels) this section serves
+  from: z.array(z.string()).default([]), // base DossierSectionKeys, "profile" or "nuevo"
+});
+export type VariantSection = z.infer<typeof VariantSection>;
+
+export const VariantFormatCheck = z.object({ rule: z.string(), status: z.enum(["ok", "riesgo", "no_aplica"]), note: z.string() });
+export type VariantFormatCheck = z.infer<typeof VariantFormatCheck>;
+
 export const DossierVariant = z.object({
   callId: z.string(),
   notes: z.array(z.string()), // e.g. "La convocatoria pide máx. 10 imágenes; hemos puesto primero la serie social"
   maxImages: z.number().int().optional(),
   maxFileMb: z.number().optional(),
+  // CCR-7: content adaptation (layer 2). Absent = order/limits only (rules preview, non-Pro).
+  strategy: z.string().optional(), // 2-3 sentences: what goes first and why, in terms of the criteria
+  sections: z.array(VariantSection).optional(),
+  omitted: z.array(z.object({ what: z.string(), why: z.string() })).optional(),
+  questions: z.array(z.object({ criterionId: z.string(), question: z.string() })).optional(),
+  formatChecks: z.array(VariantFormatCheck).optional(),
+  unsupportedNumbers: z.array(z.string()).optional(), // code guard: numbers not found in profile/dossier/call
+  generatedBy: z.enum(["rules", "ai", "mock"]).optional(),
+  generatedAt: z.string().optional(),
 });
 export type DossierVariant = z.infer<typeof DossierVariant>;
 
@@ -340,5 +362,7 @@ export const Db = z.object({
   entitlements: z.array(EntitlementState),
   usage: z.array(Usage),
   matchCache: z.array(MatchResult.extend({ cacheKey: z.string() })),
+  // CCR-7: call-adapted dossier variants, keyed by profile/dossier/works/call version (generation takes ~20 s).
+  variantCache: z.array(DossierVariant.extend({ cacheKey: z.string() })).default([]),
 });
 export type Db = Omit<z.infer<typeof Db>, "works"> & { works: Work[] };

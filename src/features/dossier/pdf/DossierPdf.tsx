@@ -8,7 +8,7 @@ import path from "node:path";
 import fs from "node:fs";
 import type { ComponentProps, ReactNode } from "react";
 import { Document, Font, Image, Link, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
-import type { BusinessView, CreatorView, CvGroup, DossierView, FactRow, WorkView } from "../model";
+import { isAdapted, type BusinessView, type CreatorView, type CvGroup, type DossierView, type FactRow, type VariantView, type WorkView } from "../model";
 import type { PdfImage } from "./images";
 import { styleTokens, type StyleTokens } from "../style";
 import { DEFAULT_TITLES, type DossierDesign } from "../design";
@@ -148,6 +148,10 @@ function makeStyles(fonts: boolean, C: PdfTokens = SOBRIO, faces: PdfFaces = {})
       contactName: { ...displayFace(32, 500, -1.1), fontSize: 32, lineHeight: 1, marginBottom: 20 },
       colophon: { fontFamily: sans, fontSize: 7, color: C.onInk, maxWidth: 330 },
       block: { marginTop: mm(12) },
+      // call-adapted sections (CCR-7)
+      chips: { flexDirection: "row", flexWrap: "wrap", marginBottom: 8 },
+      chip: { fontFamily: sans, fontSize: 7, paddingVertical: 1.5, paddingHorizontal: 4, marginRight: 4, marginBottom: 3 },
+      gap: { fontFamily: sans, fontSize: 8.5, textDecoration: "underline", textDecorationStyle: "dashed" },
     }),
   };
 }
@@ -358,6 +362,50 @@ function CvColumn({ st, groups }: { st: S; groups: CvGroup[] }) {
   );
 }
 
+/** Call-adapted narrative: flows across pages, one ruled block per section, gaps marked "Pendiente". */
+function VariantPages({ st, variant, kind }: { st: S; variant: VariantView; kind: "creator" | "business" }) {
+  if (!variant.sections.length) return null;
+  // Colours come from the dossier's design tokens (feat/dossier-styles), like the rest of the PDF.
+  const a = { accent: st.t.accent, soft: st.t.accentSoft };
+  const n = variant.sections.length;
+  return (
+    <Page size="A4" style={st.s.page}>
+      {variant.sections.map((sec, i) => (
+        <View key={sec.id} style={i ? st.s.block : undefined}>
+          <Ruled st={st} name="Para la convocatoria" sub={n > 1 ? `${i + 1} de ${n}` : undefined}>
+            <View wrap={false}>
+              <Text style={[st.s.sectionTitle, { fontSize: 17, letterSpacing: -0.3 }]}>{sec.heading}</Text>
+              {sec.criteria.length ? (
+                <View style={st.s.chips}>
+                  {sec.criteria.map((c) => (
+                    <Text key={c} style={[st.s.chip, { backgroundColor: a.soft }]}>
+                      {c}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+            </View>
+            {sec.paras.map((parts, j) => (
+              <Text key={j} style={j === 0 ? st.s.lead : st.s.p} orphans={3} widows={3}>
+                {parts.map((part, k) =>
+                  part.pending ? (
+                    <Text key={k} style={[st.s.gap, { color: st.t.ink }]}>
+                      {`Pendiente: ${part.text}`}
+                    </Text>
+                  ) : (
+                    part.text
+                  ),
+                )}
+              </Text>
+            ))}
+          </Ruled>
+        </View>
+      ))}
+      <Folio st={st} />
+    </Page>
+  );
+}
+
 // ---------------------------------------------------------------- documents
 
 export function CreatorPdf({ view: full, images, st }: { view: CreatorView; images: ImageMap; st: S }) {
@@ -365,6 +413,8 @@ export function CreatorPdf({ view: full, images, st }: { view: CreatorView; imag
   const vocab = vocabFor(view.family);
   const year = view.date.split(" ").pop();
   const [left, right] = splitColumns(view.cv);
+  // CCR-7: when the dossier is adapted to a call, the rewritten sections replace statement and bio.
+  const adapted = isAdapted(view);
 
   // Short text blocks (statement, bio, sections of their own) share a page until a long block breaks it.
   const pages: ReactNode[] = [];
@@ -382,7 +432,7 @@ export function CreatorPdf({ view: full, images, st }: { view: CreatorView; imag
   const addText = (key: string, node: ReactNode) => text.push(<View key={key} style={text.length ? st.s.block : undefined}>{node}</View>);
 
   for (const b of blocks) {
-    if (b.kind === "statement" && view.statement.length) {
+    if (b.kind === "statement" && !adapted && view.statement.length) {
       addText(
         "statement",
         <Ruled st={st} name={b.title}>
@@ -390,7 +440,7 @@ export function CreatorPdf({ view: full, images, st }: { view: CreatorView; imag
           <Text style={st.s.signature}>{[view.name, view.city, year].filter(Boolean).join(", ")}</Text>
         </Ruled>,
       );
-    } else if (b.kind === "bio" && view.bio.length) {
+    } else if (b.kind === "bio" && !adapted && view.bio.length) {
       addText(
         "bio",
         <Ruled st={st} name={b.title}>
@@ -450,6 +500,7 @@ export function CreatorPdf({ view: full, images, st }: { view: CreatorView; imag
   return (
     <>
       <Cover st={st} view={view} images={images} kicker="Dossier artístico" meta={[view.discipline, view.city]} />
+      {adapted && view.variant ? <VariantPages st={st} variant={view.variant} kind="creator" /> : null}
       {pages}
       {view.contact.length ? (
         <Contact st={st} name={view.name} rows={view.contact} colophon={`Obras y textos de ${view.name || "la artista"}. ${vocab.credit} Dossier maquetado con Mecena.`} />
@@ -460,12 +511,14 @@ export function CreatorPdf({ view: full, images, st }: { view: CreatorView; imag
 
 export function BusinessPdf({ view, images, st }: { view: BusinessView; images: ImageMap; st: S }) {
   const teamSub = view.team.size ? (view.team.size === 1 ? "1 persona" : `${view.team.size} personas`) : undefined;
-  const hasActivity = view.activity.length || view.plan.idea || view.plan.needs.length;
-  const hasTeam = view.team.people.length || view.team.text.length;
+  const adapted = isAdapted(view);
+  const hasActivity = !adapted && (view.activity.length || view.plan.idea || view.plan.needs.length);
+  const hasTeam = !adapted && (view.team.people.length || view.team.text.length);
   const p = view.projects;
   return (
     <>
       <Cover st={st} view={view} images={images} kicker="Dossier de empresa" meta={[view.activityShort, view.city]} />
+      {adapted && view.variant ? <VariantPages st={st} variant={view.variant} kind="business" /> : null}
       {hasActivity || hasTeam ? (
         <Page size="A4" style={st.s.page}>
           {hasActivity ? (
