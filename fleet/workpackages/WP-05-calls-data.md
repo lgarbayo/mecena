@@ -7,7 +7,7 @@ owns:
   - scripts/ingest-bdns.ts
   - src/features/calls-ingest/**
   - tests/calls-ingest/**
-status: pending
+status: building
 hours: 3
 criteria: [Real problem and impact, Applied AI depth]
 ---
