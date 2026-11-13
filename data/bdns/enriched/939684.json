@@ -1,0 +1,102 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": 600,
+    "amountPerBeneficiaryMax": 600,
+    "amountText": "Premio único de 600 €",
+    "deadline": "2026-12-21",
+    "deadlineText": "Hasta el 21 de diciembre de 2026 a las 14:15 h",
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Obra sin firma ni signos que identifiquen al autor",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Uso de IA máximo 25 %, con declaración jurada",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Menores con autorización escrita del tutor",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Calidad artística",
+        "weight": 12.5,
+        "description": ""
+      },
+      {
+        "name": "Originalidad y creatividad",
+        "weight": 12.5,
+        "description": ""
+      },
+      {
+        "name": "Expresividad",
+        "weight": 12.5,
+        "description": ""
+      },
+      {
+        "name": "Impacto visual",
+        "weight": 12.5,
+        "description": ""
+      },
+      {
+        "name": "Innovación",
+        "weight": 12.5,
+        "description": ""
+      },
+      {
+        "name": "Diseño",
+        "weight": 12.5,
+        "description": ""
+      },
+      {
+        "name": "Facilidad de reproducción",
+        "weight": 12.5,
+        "description": ""
+      },
+      {
+        "name": "Identificación con los valores del Carnaval de Cabra",
+        "weight": 12.5,
+        "description": ""
+      }
+    ],
+    "criteriaWeightsStated": false,
+    "requiredDocs": [
+      "Cartel impreso (70×50 cm) y archivos originales si es digital",
+      "Plica con datos del autor (sobre n.º 1)",
+      "Declaración de uso de IA, si procede"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "Concurso de carteles para el Carnaval 2027 de Cabra (Córdoba). Abierto a cualquier persona; las obras se presentan sin firma. Se permite IA como apoyo hasta un 25 % si se declara.",
+    "disciplines": [
+      "ilustracion",
+      "diseno_grafico"
+    ],
+    "keywords": [
+      "cartel",
+      "carnaval",
+      "ilustración",
+      "diseño",
+      "Córdoba"
+    ]
+  }
+}

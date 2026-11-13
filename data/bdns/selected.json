@@ -1,0 +1,86 @@
+[
+  {
+    "codigoBDNS": "939879",
+    "audiences": [
+      "creador"
+    ],
+    "docId": 1549881,
+    "title": "V Concurso de fotografía «A Laracha en el objetivo»",
+    "url": "https://www.alaracha.gal/"
+  },
+  {
+    "codigoBDNS": "934864",
+    "audiences": [
+      "creador"
+    ],
+    "docId": 1535737,
+    "title": "Premios V Bienal de Artes Visuales Pluri-identitats 2027",
+    "url": "https://www.boua.ua.es/Acuerdos/DescargarAcuerdo/69981"
+  },
+  {
+    "codigoBDNS": "939239",
+    "audiences": [
+      "creador"
+    ],
+    "docId": 1548232,
+    "title": "Concurso de cartel de las XXXI Jornadas Gastronómicas de la Verdura (Calahorra)",
+    "url": "https://calahorra.es/convocado-el-concurso-para-el-diseno-del-cartel-de-las-xxxi-jornadas-gastronomicas-de-la-verdura/"
+  },
+  {
+    "codigoBDNS": "939684",
+    "audiences": [
+      "creador"
+    ],
+    "docId": 1549414,
+    "title": "Concurso de carteles del Carnaval 2027 de Cabra"
+  },
+  {
+    "codigoBDNS": "935589",
+    "audiences": [
+      "creador"
+    ],
+    "docId": 1537688,
+    "title": "XV Premio de Poesía Manuel Lueiro Rey"
+  },
+  {
+    "codigoBDNS": "941499",
+    "audiences": [
+      "creador"
+    ],
+    "docId": 1553947,
+    "title": "XLII Premio Antón Losada Diéguez"
+  },
+  {
+    "codigoBDNS": "938125",
+    "audiences": [
+      "creador"
+    ],
+    "docId": 1544862,
+    "title": "Premio Juan Valera 2027 de novela"
+  },
+  {
+    "codigoBDNS": "941955",
+    "audiences": [
+      "pyme"
+    ],
+    "docId": 1555365,
+    "title": "Ayudas ICAA para cortometrajes realizados 2027"
+  },
+  {
+    "codigoBDNS": "926278",
+    "audiences": [
+      "pyme"
+    ],
+    "docId": 1514639,
+    "title": "Ayudas de eficiencia energética para empresas turísticas de Galicia (TU986B)"
+  },
+  {
+    "codigoBDNS": "880749",
+    "audiences": [
+      "pyme"
+    ],
+    "docId": 1517961,
+    "title": "Programa Re-acciona 2026 (IGAPE): consultoría para pymes y autónomos",
+    "url": "https://reacciona.igape.es"
+  }
+]

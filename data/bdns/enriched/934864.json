@@ -1,0 +1,65 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": 500,
+    "amountPerBeneficiaryMax": 1000,
+    "amountText": "1 premio de 1.000 € y 2 accésits de 500 €",
+    "deadline": null,
+    "deadlineText": null,
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "age",
+        "text": "Mayores de 16 años",
+        "min": 16,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "A título individual o como colectivo; cualquier nacionalidad",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Calidad y originalidad de la propuesta artística",
+        "weight": 50,
+        "description": "Calidad artística, técnica y conceptual y originalidad."
+      },
+      {
+        "name": "Adecuación al tema de la convocatoria",
+        "weight": 50,
+        "description": "Ajuste al tema Pluri-identitats: cuestionar, desafiar y superar las identidades."
+      }
+    ],
+    "criteriaWeightsStated": true,
+    "requiredDocs": [
+      "Datos personales (NIF/NIE, dirección, contacto) de cada artista o integrante",
+      "Descripción y documentación de la obra propuesta",
+      "Declaración responsable de no estar incurso en el art. 13 de la Ley 38/2003 y de estar al corriente con Hacienda y Seguridad Social"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "Premios de la V Bienal de Artes Visuales Pluri-identitats de la Universidad de Alicante: propuestas artísticas multidisciplinares que cuestionen y desafíen las identidades. Abierta a cualquier persona mayor de 16 años, también colectivos; las obras seleccionadas se exponen.",
+    "disciplines": [
+      "artes_visuales",
+      "instalacion",
+      "fotografia",
+      "pintura"
+    ],
+    "keywords": [
+      "identidad",
+      "diversidad",
+      "bienal",
+      "artes visuales",
+      "exposición"
+    ]
+  }
+}

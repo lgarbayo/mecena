@@ -1,0 +1,334 @@
+[
+  {
+    "source": "private",
+    "beneficiaryTypes": [
+      "persona_fisica",
+      "autonomo_pyme"
+    ],
+    "audiences": [
+      "creador"
+    ],
+    "regions": [
+      "ES"
+    ],
+    "deadlineEstimated": false,
+    "procedure": "competitiva",
+    "criteriaWeightsStated": false,
+    "maxScore": 100,
+    "eligibleExpenses": [],
+    "verifiedAt": "2026-11-13",
+    "id": "priv-phe-descubrimientos-2027",
+    "url": "https://phe.es/programas/descubrimientos-photoespana-online/",
+    "title": "Descubrimientos PHotoEspaña 2027",
+    "issuer": "PHotoEspaña",
+    "disciplines": [
+      "fotografia"
+    ],
+    "opensAt": "2026-10-26",
+    "deadline": "2026-12-15",
+    "deadlineText": "Preinscripción hasta el 15 de diciembre de 2026; selección el 16/12; pago final hasta el 18/12",
+    "amountPerBeneficiary": {
+      "text": "Sin dotación económica: el ganador expone individualmente en el siguiente PHotoESPAÑA; revisiones de portfolio de febrero a mayo de 2027"
+    },
+    "fee": {
+      "amount": 10,
+      "text": "Preinscripción 10 € (no reembolsable); inscripción final 300 € si te seleccionan"
+    },
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Una sola serie fotográfica de hasta 15 imágenes; sin restricción de técnica, tema ni año"
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Valoración del jurado",
+        "weight": 100,
+        "description": "Un jurado selecciona hasta 70 participantes; los visionadores eligen al ganador. Las bases no publican criterios puntuados."
+      }
+    ],
+    "requiredDocs": [
+      "Dossier digital en PDF (máx. 10 MB) con hasta 15 fotografías de una serie",
+      "Texto de presentación de la serie",
+      "Biografía breve"
+    ],
+    "summaryPlain": "Programa de PHotoEspaña para descubrir fotógrafos: envías un dossier con una serie y, si te seleccionan, participas en revisiones de portfolio con profesionales. El ganador expone en el festival de 2027.",
+    "keywords": [
+      "fotografía",
+      "portfolio",
+      "festival",
+      "exposición",
+      "Madrid"
+    ]
+  },
+  {
+    "source": "private",
+    "beneficiaryTypes": [
+      "persona_fisica",
+      "autonomo_pyme"
+    ],
+    "audiences": [
+      "creador"
+    ],
+    "regions": [
+      "ES"
+    ],
+    "deadlineEstimated": false,
+    "procedure": "competitiva",
+    "criteriaWeightsStated": false,
+    "maxScore": 100,
+    "eligibleExpenses": [],
+    "verifiedAt": "2026-11-13",
+    "id": "priv-que-arte-2026",
+    "url": "https://premios.que.es/",
+    "basesUrl": "https://www.arteinformado.com/fichas/publicacion/bases-253562",
+    "title": "Premios Qué! Arte 2026",
+    "issuer": "Diario Qué!",
+    "disciplines": [
+      "artes_visuales",
+      "arte_urbano",
+      "pintura"
+    ],
+    "opensAt": "2026-11-06",
+    "deadline": "2026-12-10",
+    "deadlineText": "Del 6 de noviembre al 10 de diciembre de 2026",
+    "amountPerBeneficiary": {
+      "min": 3000,
+      "max": 3000,
+      "text": "Mejor Obra de Arte Urbano: 3.000 €"
+    },
+    "requirements": [
+      {
+        "kind": "age",
+        "min": 18,
+        "text": "Mayores de 18 años, cualquier nacionalidad"
+      },
+      {
+        "kind": "other",
+        "text": "Obra figurativa próxima al street art o pop art, de al menos 1,5 m de alto o largo"
+      },
+      {
+        "kind": "other",
+        "text": "Una obra original e inédita por autor, no premiada ni presentada a otros concursos"
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Valoración del jurado",
+        "weight": 100,
+        "description": "Las bases no publican criterios puntuados."
+      }
+    ],
+    "requiredDocs": [
+      "Imagen de la obra",
+      "Datos del autor",
+      "Aceptación de las bases"
+    ],
+    "summaryPlain": "Premio de arte urbano del diario Qué! para obras figurativas de estilo street art o pop art de gran formato (desde 1,5 m). Abierto a artistas mayores de edad de cualquier nacionalidad.",
+    "keywords": [
+      "arte urbano",
+      "street art",
+      "pop art",
+      "gran formato",
+      "Madrid"
+    ]
+  },
+  {
+    "source": "private",
+    "beneficiaryTypes": [
+      "persona_fisica",
+      "autonomo_pyme"
+    ],
+    "audiences": [
+      "creador"
+    ],
+    "regions": [
+      "ES"
+    ],
+    "deadlineEstimated": false,
+    "procedure": "competitiva",
+    "criteriaWeightsStated": false,
+    "maxScore": 100,
+    "eligibleExpenses": [],
+    "verifiedAt": "2026-11-13",
+    "id": "priv-cromawards-2026",
+    "url": "https://cromawards.com",
+    "title": "cromAwards 2026 · Concurso internacional de arte y diseño",
+    "issuer": "cromAwards (Gextiona Interproducción, S.L.)",
+    "disciplines": [
+      "ilustracion",
+      "diseno_grafico",
+      "pintura",
+      "fotografia",
+      "grabado"
+    ],
+    "opensAt": "2026-06-15",
+    "deadline": "2026-12-21",
+    "deadlineText": "Hasta el 21 de diciembre de 2026 a las 23:59 (hora peninsular)",
+    "amountPerBeneficiary": {
+      "text": "Sin premio en metálico publicado: diploma verificable, difusión, portfolio público y comentarios del jurado"
+    },
+    "fee": {
+      "text": "Cuota por obra con descuento progresivo (importe no publicado en la ficha)"
+    },
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Hasta 5 obras originales realizadas en los últimos 3 años, cada una en su categoría"
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Valoración del jurado",
+        "weight": 100,
+        "description": "Jurado internacional de ilustración, diseño y artes gráficas que evalúa a ciegas. Criterios puntuados no publicados."
+      }
+    ],
+    "requiredDocs": [
+      "Imágenes digitales de las obras",
+      "Inscripción online y pago de la cuota"
+    ],
+    "summaryPlain": "Concurso internacional online de ilustración, diseño, pintura, fotografía y grabado. Se valora a ciegas; los premios son de visibilidad, no económicos, y hay que pagar una cuota por obra.",
+    "keywords": [
+      "ilustración",
+      "diseño gráfico",
+      "concurso online",
+      "internacional",
+      "visibilidad"
+    ]
+  },
+  {
+    "source": "private",
+    "beneficiaryTypes": [
+      "persona_fisica",
+      "autonomo_pyme"
+    ],
+    "audiences": [
+      "creador"
+    ],
+    "regions": [
+      "ES"
+    ],
+    "deadlineEstimated": false,
+    "procedure": "competitiva",
+    "criteriaWeightsStated": false,
+    "maxScore": 100,
+    "eligibleExpenses": [],
+    "verifiedAt": "2026-11-13",
+    "id": "priv-lasalita-paisaje-2026",
+    "url": "https://lasalita.org/convocatoria-de-arte-plastica-tema-el-paisaje-lasalita",
+    "basesUrl": "https://www.arteinformado.com/fichas/publicacion/bases-252759",
+    "title": "Convocatoria de arte plástica «El Paisaje»",
+    "issuer": "Colectivo LaSalita (Gijón)",
+    "disciplines": [
+      "artes_visuales",
+      "pintura",
+      "fotografia"
+    ],
+    "opensAt": "2026-09-14",
+    "deadline": "2026-12-06",
+    "deadlineText": "Del 14 de septiembre al 6 de diciembre de 2026",
+    "amountPerBeneficiary": {
+      "text": "Sin premio en metálico: exposición colectiva del 18/12/2026 al 13/01/2027 y venta sin comisión"
+    },
+    "fee": {
+      "amount": 25,
+      "text": "Solo si te seleccionan: cuota de participación de 25 € (IVA incluido)"
+    },
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Hasta 3 obras sobre el paisaje, de 20×20 a 100×100 cm; técnica y soporte libres"
+      },
+      {
+        "kind": "other",
+        "text": "Sin límite de edad ni de trayectoria"
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Valoración del jurado",
+        "weight": 100,
+        "description": "Se seleccionan 12-15 obras para la exposición. Criterios no publicados."
+      }
+    ],
+    "requiredDocs": [
+      "1 foto por obra en JPG o TIF («Artista – Título»)",
+      "Correo con autor, título, técnica, medidas y precio (opcional)"
+    ],
+    "summaryPlain": "Convocatoria para exponer obra sobre el paisaje en LaSalita (Gijón). Envías fotos de hasta 3 obras; si te seleccionan, pagas 25 € y expones sin comisión por venta.",
+    "keywords": [
+      "paisaje",
+      "exposición colectiva",
+      "pintura",
+      "Gijón",
+      "Asturias"
+    ]
+  },
+  {
+    "id": "seed-benidorm-nuevos-creadores-2026",
+    "source": "seed",
+    "url": "https://benidorm.org/es/ayuntamiento/concejalias/juventud/actividades-juveniles/concurso-de-nuevos-creadores/xxxviii-concurso-nuevos-creadores-2026",
+    "basesUrl": "https://www.coruna.gal/descarga/1453928132968/bases_1.pdf",
+    "title": "XXXVIII Concurso Nuevos Creadores 2026 (pintura y escultura)",
+    "issuer": "Ayuntamiento de Benidorm · Concejalía de Juventud",
+    "audiences": [
+      "creador"
+    ],
+    "beneficiaryTypes": [
+      "persona_fisica"
+    ],
+    "regions": [
+      "ES"
+    ],
+    "disciplines": [
+      "pintura",
+      "escultura",
+      "artes_visuales"
+    ],
+    "amountPerBeneficiary": {
+      "min": 1000,
+      "max": 1000,
+      "text": "1.000 € en pintura y 1.000 € en escultura; exposición en el Espai d'Art (3-26 febrero 2027)"
+    },
+    "deadline": "2026-12-30",
+    "deadlineEstimated": false,
+    "deadlineText": "Inscripción hasta el 30/12/2026",
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "age",
+        "min": 14,
+        "max": 35,
+        "text": "Jóvenes de 14 a 35 años"
+      },
+      {
+        "kind": "other",
+        "text": "Hasta 2 obras originales e inéditas; técnica, tema y medidas libres; pintura lista para colgar"
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Valoración del jurado",
+        "weight": 100,
+        "description": "Las bases no publican criterios puntuados."
+      }
+    ],
+    "criteriaWeightsStated": false,
+    "maxScore": 100,
+    "requiredDocs": [
+      "Inscripción con datos del artista",
+      "Hasta 2 obras (entrega física para la exposición)"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "Concurso municipal de Benidorm para jóvenes creadores de 14 a 35 años en pintura y escultura, con un premio de 1.000 € por disciplina y exposición de las obras seleccionadas.",
+    "keywords": [
+      "jóvenes",
+      "pintura",
+      "escultura",
+      "exposición",
+      "Alicante"
+    ],
+    "verifiedAt": "2026-11-13"
+  }
+]

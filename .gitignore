@@ -11,3 +11,7 @@ __pycache__/
 *.log
 coverage/
 .claude/worktrees/
+
+# BDNS cache: raw records and PDFs are re-downloadable (selected raw records are force-added)
+data/bdns/raw/
+data/bdns/pdf/

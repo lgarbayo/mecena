@@ -1,0 +1,66 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": 6000,
+    "amountPerBeneficiaryMax": 6000,
+    "amountText": "6.000 € por modalidad (creación literaria e investigación/ensayo)",
+    "deadline": null,
+    "deadlineText": null,
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Obra escrita originalmente en gallego (no traducciones)",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Impresa entre el 1 de enero y el 31 de diciembre de 2026",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Excluidos textos escolares, recopilaciones de artículos y ediciones por fascículos",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Calidad y aportación de la obra a la cultura gallega",
+        "weight": 100,
+        "description": "El jurado valora las obras publicadas; las bases no detallan una puntuación por criterios."
+      }
+    ],
+    "criteriaWeightsStated": false,
+    "requiredDocs": [
+      "Ejemplares de la obra publicada",
+      "Datos de autoría y editorial"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "XLII Premio Antón Losada Diéguez de O Carballiño y Boborás: premia dos obras ya publicadas en gallego durante 2026, una de creación literaria y otra de investigación y ensayo.",
+    "disciplines": [
+      "literatura",
+      "ensayo"
+    ],
+    "keywords": [
+      "gallego",
+      "libro publicado",
+      "creación literaria",
+      "ensayo",
+      "Ourense"
+    ]
+  }
+}

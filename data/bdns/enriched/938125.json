@@ -1,0 +1,77 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": 600,
+    "amountPerBeneficiaryMax": 600,
+    "amountText": "600 € y publicación de la novela",
+    "deadline": "2027-01-08",
+    "deadlineText": "Hasta el 8 de enero de 2027",
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Novela original e inédita en español, no premiada",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Extensión de 100 folios a 250 páginas, interlineado 1,5, Times New Roman 12",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Calidad de la escritura",
+        "weight": 20,
+        "description": "Precisión y riqueza del lenguaje, dominio expresivo, adecuación del estilo."
+      },
+      {
+        "name": "Originalidad de la propuesta",
+        "weight": 20,
+        "description": "Singularidad de la mirada, personalidad de la voz narrativa, tratamiento de los temas."
+      },
+      {
+        "name": "Construcción de la novela",
+        "weight": 20,
+        "description": "Coherencia interna, estructura y articulación del relato."
+      },
+      {
+        "name": "Dominio de los recursos narrativos",
+        "weight": 20,
+        "description": "Punto de vista, tiempo y espacio, escenas, diálogos y ritmo."
+      },
+      {
+        "name": "Personajes y ambientes",
+        "weight": 20,
+        "description": "Consistencia y matización de los personajes y del mundo en que se mueven."
+      }
+    ],
+    "criteriaWeightsStated": false,
+    "requiredDocs": [
+      "Dos copias impresas firmadas con seudónimo",
+      "Plica cerrada con nombre, dirección y teléfono"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "Premio Juan Valera 2027 de novela del Ayuntamiento de Cabra: novelas inéditas en español de 100 a 250 páginas, firmadas con seudónimo. El premio incluye la publicación.",
+    "disciplines": [
+      "literatura",
+      "narrativa"
+    ],
+    "keywords": [
+      "novela",
+      "inédita",
+      "seudónimo",
+      "publicación",
+      "Córdoba"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "mecena",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ingest:bdns": "node scripts/ingest-bdns.ts",
+    "enrich:calls": "node scripts/enrich-calls.ts",
+    "test": "node --test 'src/**/*.test.ts'",
+    "typecheck": "tsc --noEmit --strict --target es2023 --module nodenext --moduleResolution nodenext --allowImportingTsExtensions --skipLibCheck --types node src/lib/calls/*.ts scripts/*.ts"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "^5.9.3"
+  }
+}

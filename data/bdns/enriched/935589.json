@@ -1,0 +1,68 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": 2500,
+    "amountPerBeneficiaryMax": 2500,
+    "amountText": "Premio único de 2.500 €",
+    "deadline": "2026-12-28",
+    "deadlineText": "Hasta el 28/12/2026",
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Poemario en lengua gallega, original e inédito, de 500 a 800 versos",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "No haber ganado el premio en los últimos cinco años",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Al corriente con Hacienda y Seguridad Social",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Calidad literaria del poemario",
+        "weight": 100,
+        "description": "Jurado de cinco especialistas en poesía y crítica literaria; las bases no detallan criterios puntuados."
+      }
+    ],
+    "criteriaWeightsStated": false,
+    "requiredDocs": [
+      "Poemario (6 copias en papel o en digital) con título y lema, sin identificar",
+      "Sobre cerrado con ficha de participación",
+      "Fotocopia del DNI",
+      "Breve currículo literario"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "XV Premio de Poesía Manuel Lueiro Rey del Concello de Fornelos de Montes para poemarios inéditos en gallego, de tema libre y entre 500 y 800 versos.",
+    "disciplines": [
+      "literatura",
+      "poesia"
+    ],
+    "keywords": [
+      "poesía",
+      "gallego",
+      "poemario",
+      "inédito",
+      "Pontevedra"
+    ]
+  }
+}

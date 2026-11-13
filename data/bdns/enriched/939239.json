@@ -1,0 +1,88 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": 800,
+    "amountPerBeneficiaryMax": 800,
+    "amountText": "Premio único de 800 € brutos",
+    "deadline": null,
+    "deadlineText": null,
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Obra original, no premiada ni difundida antes como cartel",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Debe incluir los textos obligatorios: «XXXI JORNADAS GASTRONÓMICAS DE LA VERDURA» y «CALAHORRA. FIESTA DE INTERÉS TURÍSTICO REGIONAL. Del 16 al 25 de abril de 2027»",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Menores de edad a través de su representante legal",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Originalidad y creatividad",
+        "weight": 30,
+        "description": ""
+      },
+      {
+        "name": "Calidad artística y composición gráfica",
+        "weight": 25,
+        "description": ""
+      },
+      {
+        "name": "Vinculación con las Jornadas y con Calahorra",
+        "weight": 25,
+        "description": ""
+      },
+      {
+        "name": "Impacto visual y eficacia comunicativa",
+        "weight": 10,
+        "description": ""
+      },
+      {
+        "name": "Adaptabilidad a diferentes soportes de difusión",
+        "weight": 10,
+        "description": ""
+      }
+    ],
+    "criteriaWeightsStated": true,
+    "requiredDocs": [
+      "Solicitud oficial",
+      "Cartel en JPG de alta resolución (300 ppp, 3-5 MB)",
+      "Copia del DNI",
+      "Declaración responsable de no estar incurso en el art. 13 de la Ley 38/2003 y de estar al corriente con Hacienda y Seguridad Social"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "Concurso para diseñar el cartel de las XXXI Jornadas Gastronómicas de la Verdura de Calahorra (abril de 2027). Técnica libre, formato vertical de 46,5×65 cm, en digital o en soporte físico.",
+    "disciplines": [
+      "ilustracion",
+      "diseno_grafico"
+    ],
+    "keywords": [
+      "cartel",
+      "ilustración",
+      "diseño gráfico",
+      "gastronomía",
+      "La Rioja"
+    ]
+  }
+}

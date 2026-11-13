@@ -1,0 +1,68 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (BDNS record + official IGAPE infographic IG285_REACCIONA_2026.pdf; bases PDF is a scan)",
+  "enrichment": {
+    "summaryPlain": "Programa Re-acciona del IGAPE: servicios de consultoría para autónomos y pymes gallegas (estrategia, finanzas, talento, ESG, innovación…). El IGAPE paga el 80 % del servicio directamente a la entidad colaboradora que elijas, que además tramita la solicitud. Se concede por orden de llegada.",
+    "disciplines": [
+      "consultoria",
+      "competitividad",
+      "innovacion"
+    ],
+    "keywords": [
+      "consultoría",
+      "estrategia",
+      "innovación",
+      "ESG",
+      "IGAPE",
+      "autónomos"
+    ],
+    "amountPerBeneficiaryMin": 3024,
+    "amountPerBeneficiaryMax": 5040,
+    "amountText": "80 % del servicio: 3.024 € (cat. 1), 4.284 € (cat. 2) o 5.040 € (cat. 3); hasta 2 servicios por pyme",
+    "deadline": "2026-11-16",
+    "deadlineText": "Ampliado hasta el 16/11/2026 (el plazo inicial terminaba el 30 de septiembre)",
+    "procedure": "no_competitiva",
+    "requirements": [
+      {
+        "kind": "residence",
+        "text": "Empresa o autónomo con centro de trabajo en Galicia",
+        "min": null,
+        "max": null,
+        "regions": [
+          "ES11"
+        ],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Autónomo o pyme (definición del anexo I del Reglamento UE 651/2014)",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Mínimo 3 personas trabajadoras en 2025",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [],
+    "criteriaWeightsStated": true,
+    "requiredDocs": [
+      "Solicitud presentada por la entidad colaboradora elegida en reacciona.igape.es",
+      "Datos de la empresa y plantilla de 2025",
+      "Declaración de ayudas de minimis recibidas"
+    ],
+    "eligibleExpenses": [
+      "Servicios de profesionalización y desarrollo estratégico",
+      "Servicios de innovación (diseño de productos, protección de la innovación, financiación de la innovación)"
+    ]
+  }
+}

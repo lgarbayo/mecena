@@ -1,0 +1,82 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": null,
+    "amountPerBeneficiaryMax": null,
+    "amountText": "50 %, 70 % o 90 % de la inversión subvencionable según el ahorro (30 %, 40 % o 50 %)",
+    "deadline": null,
+    "deadlineText": null,
+    "procedure": "no_competitiva",
+    "requirements": [
+      {
+        "kind": "residence",
+        "text": "Establecimiento turístico situado en Galicia",
+        "min": null,
+        "max": null,
+        "regions": [
+          "ES11"
+        ],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Pyme titular de un alojamiento o restaurante inscrito en el REAT",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Auditoría energética previa y ahorro mínimo del 30 % en energía primaria no renovable",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Proyecto integral: al menos 2 actuaciones de eficiencia energética + 1 de energías renovables",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [],
+    "criteriaWeightsStated": true,
+    "requiredDocs": [
+      "Solicitud en la sede de la Xunta (TU986B)",
+      "Auditoría energética previa",
+      "Certificados de eficiencia energética (antes y después)",
+      "Presupuestos o facturas proforma",
+      "Declaración de pyme",
+      "Declaración responsable de no estar incurso en el art. 13 de la Ley 38/2003 y de estar al corriente con Hacienda y Seguridad Social"
+    ],
+    "eligibleExpenses": [
+      "Auditoría energética, certificados, proyecto técnico y dirección facultativa (hasta 15 % y 25.000 €)",
+      "Mejora de la envolvente térmica",
+      "Iluminación eficiente",
+      "Sustitución de energía convencional por renovables (solar, biomasa, aerotermia…)"
+    ],
+    "summaryPlain": "Ayudas de la Agencia Turismo de Galicia (FEDER) para que alojamientos y restaurantes mejoren su eficiencia energética: combinan al menos dos actuaciones de eficiencia y una de renovables con un ahorro mínimo del 30 %. Se conceden por orden de llegada hasta agotar los 9 millones.",
+    "disciplines": [
+      "turismo",
+      "eficiencia_energetica",
+      "hosteleria"
+    ],
+    "keywords": [
+      "hostelería",
+      "alojamiento",
+      "restaurante",
+      "eficiencia energética",
+      "renovables",
+      "FEDER"
+    ]
+  }
+}

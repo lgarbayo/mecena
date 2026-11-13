@@ -1,0 +1,110 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": null,
+    "amountPerBeneficiaryMax": 70000,
+    "amountText": "Hasta 70.000 € por película (130.000 € en animación)",
+    "deadline": null,
+    "deadlineText": null,
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Empresa productora independiente (art. 4.n Ley 55/2007), incluidas AIE",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Residencia legal o establecimiento en España al cobrar la ayuda",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Cortometraje de nacionalidad española y con carácter cultural acreditado",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Puntuación mínima de 40 puntos para acceder a la ayuda",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Calidad y valor artístico de la película",
+        "weight": 45,
+        "description": "Guion, dirección, interpretación, aspectos técnicos, autores y equipo."
+      },
+      {
+        "name": "Adecuación del presupuesto o coste declarado",
+        "weight": 5,
+        "description": ""
+      },
+      {
+        "name": "Selección o premios en festivales (Anexo II)",
+        "weight": 8,
+        "description": ""
+      },
+      {
+        "name": "Ayudas autonómicas con ejecución de gasto",
+        "weight": 3,
+        "description": ""
+      },
+      {
+        "name": "Mujeres en puestos de responsabilidad",
+        "weight": 8,
+        "description": "Baremo del Anexo I."
+      },
+      {
+        "name": "Presencia de personas trans en el equipo",
+        "weight": 1,
+        "description": ""
+      },
+      {
+        "name": "Subtitulado especial y audiodescripción",
+        "weight": 5,
+        "description": "Medidas de accesibilidad universal."
+      }
+    ],
+    "criteriaWeightsStated": true,
+    "requiredDocs": [
+      "Solicitud por la sede electrónica del Ministerio de Cultura",
+      "Copia del cortometraje",
+      "Coste declarado de la película",
+      "Acreditación de nacionalidad española y carácter cultural",
+      "Acreditación de festivales y premios (Anexo II)"
+    ],
+    "eligibleExpenses": [
+      "Coste de producción del cortometraje reconocido por el ICAA"
+    ],
+    "summaryPlain": "Ayudas del ICAA (Ministerio de Cultura) para cortometrajes ya realizados. Las solicitan productoras independientes; la ayuda puede llegar a 70.000 € (130.000 € en animación). La solicitud abre el 29 de marzo de 2027.",
+    "disciplines": [
+      "audiovisual",
+      "cine"
+    ],
+    "keywords": [
+      "cortometraje",
+      "productora",
+      "cine",
+      "ICAA",
+      "animación"
+    ]
+  }
+}

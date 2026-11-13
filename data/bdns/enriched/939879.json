@@ -1,0 +1,86 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": 250,
+    "amountPerBeneficiaryMax": 600,
+    "amountText": "1.º 600 €, 2.º 400 €, 3.º 250 €",
+    "deadline": "2026-12-01",
+    "deadlineText": "25 días naturales desde la publicación del extracto en el BOP de A Coruña (fecha estimada)",
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Mayor de edad (menores con autorización del tutor, Anexo 2)",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "El lugar fotografiado debe ser del municipio de A Laracha y reconocible",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Máximo 3 fotografías inéditas, no premiadas; mínimo 3000×2000 px, JPG/TIFF/PNG",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Prohibido el uso de IA para añadir, eliminar o reconstruir elementos",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Impacto visual",
+        "weight": 10,
+        "description": "Sensación al ver la imagen por primera vez; capacidad de atraer la atención o evocar un sentimiento."
+      },
+      {
+        "name": "Calidad técnico-artística",
+        "weight": 10,
+        "description": "Foco, nitidez, balance de color, iluminación, composición, exposición y presentación."
+      },
+      {
+        "name": "Creatividad",
+        "weight": 10,
+        "description": "Originalidad en el modo de presentar el patrimonio, que debe seguir siendo reconocible."
+      }
+    ],
+    "criteriaWeightsStated": true,
+    "requiredDocs": [
+      "Anexo 1 (solicitud de participación)",
+      "Documento con título, lugar y fecha de cada fotografía",
+      "Anexo 4: Declaración responsable de no estar incurso en el art. 13 de la Ley 38/2003 y de estar al corriente con Hacienda y Seguridad Social",
+      "Archivos originales si la foto está retocada"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "Concurso de fotografía del Concello de A Laracha sobre su patrimonio natural y cultural. Puedes presentar hasta 3 fotos inéditas en digital; solo se admiten ajustes básicos y no se aceptan imágenes generadas o alteradas con IA.",
+    "disciplines": [
+      "fotografia"
+    ],
+    "keywords": [
+      "fotografía",
+      "patrimonio",
+      "paisaje",
+      "A Laracha",
+      "Galicia"
+    ]
+  }
+}
