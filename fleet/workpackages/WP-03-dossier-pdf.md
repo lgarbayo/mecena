@@ -41,3 +41,4 @@ criteria: [Live demo wow, Real problem and impact]
 - MCP calls `export_dossier_pdf`; the returned `url` uses `MECENA_PUBLIC_URL` so the link opens on the phone.
 
 ## Contract change requests
+- **CCR-dossier-style (open):** add `style?: "sobrio" | "editorial" | "galeria"` and `accent?: string` (hex) to `Dossier`, so the look the artist picks survives reloads and reaches `export_dossier_pdf` (MCP) and voice commands ("hazlo más sobrio"). Today the look lives in `?estilo=` / `?accent=` on `/dossier` and `/api/dossier/pdf`; without them `style.ts` suggests one from the call (`suggestStyle`) or the profile, so MCP exports already get a fitting look.

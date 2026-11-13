@@ -7,6 +7,7 @@
  */
 import type { CSSProperties, ReactNode } from "react";
 import type { BusinessView, CreatorView, DossierView, FactRow, SectionState, WorkView } from "../model";
+import { styleTokens, type DossierStyle } from "../style";
 import "./dossier.css";
 
 type Slot = CSSProperties & { "--lines"?: number; "--skw"?: string };
@@ -16,6 +17,21 @@ export interface DossierDocumentProps {
   /** Show pending sections as skeletons with hints (progressive build). Otherwise empty sections are hidden. */
   progressive?: boolean;
   className?: string;
+  /** Look of the dossier (style.ts). Omit to keep the stylesheet defaults ("sobrio"). */
+  style?: DossierStyle;
+  /** Accent colour taken from the artist's own photos; tamed before use. */
+  accent?: string;
+}
+
+type Vars = CSSProperties & Record<`--${string}`, string>;
+
+/** Style tokens as CSS custom properties, so the page and the PDF share one palette (style.ts). */
+function styleVars(view: DossierView, style?: DossierStyle, accent?: string): { wall?: Vars; sheet?: Vars } {
+  if (!style && !accent) return {};
+  const t = styleTokens(style ?? "sobrio", view.kind, accent);
+  const sheet: Vars = { "--accent": t.accent, "--accent-soft": t.accentSoft };
+  const wall: Vars = { ...sheet, "--paper": t.paper, "--ink": t.ink, "--granite": t.granite, "--hair": t.hair, "--wall": t.wall, "--ground": t.ground, "--on-ink": t.onInk, "--ink-rule": t.inkRule };
+  return { wall, sheet };
 }
 
 const HINTS: Record<string, string> = {
@@ -215,13 +231,13 @@ function Work({ w }: { w: WorkView }) {
     <li className="work" data-work-id={w.id}>
       <Frame work={w} hint="Foto de la obra" />
       <div className="label">
-        <p className="label__cat">Cat. {w.catNo}</p>
         <h4 className="label__title">
           <cite>{w.title || "Sin título"}</cite>
           {w.year ? <>, {w.year}</> : null}
         </h4>
         {w.technique ? <p className="label__tech">{w.technique}</p> : null}
         {w.size ? <p className="label__size">{w.size}</p> : null}
+        <p className="label__cat">Cat. {w.catNo}</p>
         {w.concept ? <p className="label__concept">{w.concept}</p> : null}
       </div>
     </li>
@@ -470,10 +486,11 @@ function BusinessDossier({ view, progressive }: { view: BusinessView; progressiv
   );
 }
 
-export function DossierDocument({ view, progressive, className = "" }: DossierDocumentProps) {
+export function DossierDocument({ view, progressive, className = "", style, accent }: DossierDocumentProps) {
+  const vars = styleVars(view, style, accent);
   return (
-    <div className={`dossier-wall ${className}`.trim()}>
-      <article className="dossier" data-kind={view.kind} lang="es">
+    <div className={`dossier-wall ${className}`.trim()} data-style={style ?? "sobrio"} style={vars.wall}>
+      <article className="dossier" data-kind={view.kind} lang="es" style={vars.sheet}>
         {view.kind === "creator" ? <CreatorDossier view={view} progressive={progressive} /> : <BusinessDossier view={view} progressive={progressive} />}
       </article>
     </div>

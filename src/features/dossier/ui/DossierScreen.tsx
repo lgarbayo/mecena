@@ -5,7 +5,7 @@
  * the call-adapted variant is Pro (non-Pro users see the notes as a preview and the Paywall).
  */
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { API, ROUTES, type Call, type Dossier, type Profile, type Work } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
@@ -13,6 +13,7 @@ import { Button, Spinner } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
 import { apiGet } from "@/lib/api-client";
 import { isBlank, toDossierView } from "../model";
+import { accentFromPixels, DOSSIER_STYLES, resolveStyle, STYLE_DESCRIPTIONS, STYLE_LABELS, suggestStyle, type DossierStyle } from "../style";
 import { DossierDocument } from "./DossierDocument";
 import "./screen.css";
 
@@ -24,11 +25,13 @@ interface DossierPayload {
   adapted: boolean;
 }
 
-export function dossierQuery(p: { profileId?: string; callId?: string; appUserId?: string }): string {
+export function dossierQuery(p: { profileId?: string; callId?: string; appUserId?: string; estilo?: string; accent?: string }): string {
   const q = new URLSearchParams();
   if (p.profileId) q.set("profileId", p.profileId);
   if (p.callId) q.set("callId", p.callId);
   if (p.appUserId) q.set("appUserId", p.appUserId);
+  if (p.estilo) q.set("estilo", p.estilo);
+  if (p.accent) q.set("accent", p.accent);
   const s = q.toString();
   return s ? `?${s}` : "";
 }
@@ -38,6 +41,11 @@ export function DossierScreen() {
   const { profile: active, appUserId } = useApp();
   const profileId = sp.get("profileId") || active?.id || undefined;
   const callId = sp.get("callId") || undefined;
+  const requestedStyle = sp.get("estilo");
+  const router = useRouter();
+  const pathname = usePathname();
+  const [useWorkColour, setUseWorkColour] = useState(true);
+  const [workAccent, setWorkAccent] = useState<string | undefined>();
   const [data, setData] = useState<DossierPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paywall, setPaywall] = useState(false);
@@ -63,6 +71,37 @@ export function DossierScreen() {
     return data.adapted ? v : { ...v, variant: undefined };
   }, [data]);
 
+  // Accent from the artist's own photos: a few small samples on a canvas, never a change to the work.
+  const imageKey = data ? data.works.slice(0, 6).map((w) => w.imageUrl).join("|") : "";
+  useEffect(() => {
+    if (!imageKey) return setWorkAccent(undefined);
+    let cancelled = false;
+    const urls = imageKey.split("|");
+    Promise.all(urls.map(samplePixels)).then((chunks) => {
+      if (cancelled) return;
+      const all = chunks.filter((c): c is Uint8ClampedArray => !!c);
+      const merged = new Uint8ClampedArray(all.reduce((n, c) => n + c.length, 0));
+      let at = 0;
+      for (const c of all) {
+        merged.set(c, at);
+        at += c.length;
+      }
+      setWorkAccent(merged.length ? accentFromPixels(merged, 1) : undefined);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [imageKey]);
+
+  const suggestion = data ? suggestStyle({ call: data.call, profile: data.profile }) : undefined;
+  const style: DossierStyle = data ? resolveStyle({ requested: requestedStyle, call: data.call, profile: data.profile }) : "sobrio";
+  const accent = useWorkColour ? workAccent : undefined;
+  const chooseStyle = (next: DossierStyle) => {
+    const q = new URLSearchParams(sp.toString());
+    q.set("estilo", next);
+    router.replace(`${pathname}?${q}`, { scroll: false });
+  };
+
   // Progressive build: while sections are still pending (the user is talking), refresh quietly.
   const pending = view ? Object.values(view.states).some((s) => s !== "ready") : false;
   useEffect(() => {
@@ -86,16 +125,17 @@ export function DossierScreen() {
   if (!data || !view) return <Spinner label="Preparando tu dossier…" />;
 
   const blank = isBlank(view);
-  const notes = data.dossier.variant?.notes ?? [];
-  const pdfHref = `${API.dossierPdf}${dossierQuery({ profileId: data.profile.id, callId: data.adapted ? callId : undefined, appUserId })}`;
+  // The style note is already told by the picker above; keep it for MCP and the PDF flow only.
+  const notes = (data.dossier.variant?.notes ?? []).filter((n) => !n.startsWith("Estilo sugerido"));
+  const pdfHref = `${API.dossierPdf}${dossierQuery({ profileId: data.profile.id, callId: data.adapted ? callId : undefined, appUserId, estilo: style, accent })}`;
   const kindLabel = view.kind === "creator" ? "Dossier artístico" : "Dossier de empresa";
 
   return (
     <div className="dossier-screen">
       <header className="dossier-bar no-print">
         <div className="dossier-bar__title">
-          <p className="dossier-bar__kicker">{kindLabel}</p>
           <h1>{view.name || "Tu dossier"}</h1>
+          <p className="dossier-bar__kicker">{kindLabel}</p>
         </div>
         <div className="dossier-bar__actions">
           <a className="btn btn-primary" href={pdfHref} target="_blank" rel="noopener" aria-disabled={blank} data-testid="dossier-pdf">
@@ -106,6 +146,34 @@ export function DossierScreen() {
           </Link>
         </div>
       </header>
+
+      <fieldset className="dossier-style no-print">
+        <legend>Estilo del dossier</legend>
+        <div className="dossier-style__options" role="radiogroup">
+          {DOSSIER_STYLES.map((s) => (
+            <label key={s} className="dossier-style__option" data-active={s === style}>
+              <input type="radio" name="dossier-style" value={s} checked={s === style} onChange={() => chooseStyle(s)} />
+              <span className="dossier-style__name">
+                {STYLE_LABELS[s]}
+                {suggestion?.style === s ? <span className="dossier-style__tag">sugerido</span> : null}
+              </span>
+              <span className="dossier-style__desc">{STYLE_DESCRIPTIONS[s]}</span>
+            </label>
+          ))}
+        </div>
+        {suggestion ? (
+          <p className="dossier-style__why">
+            {data.call ? "Para esta convocatoria" : "Para tu perfil"} te sugerimos «{STYLE_LABELS[suggestion.style]}», porque {suggestion.reason}.
+          </p>
+        ) : null}
+        {workAccent ? (
+          <label className="dossier-style__colour">
+            <input type="checkbox" checked={useWorkColour} onChange={(e) => setUseWorkColour(e.target.checked)} />
+            <span className="dossier-style__swatch" style={{ background: workAccent }} aria-hidden="true" />
+            Usar el color de tu obra
+          </label>
+        ) : null}
+      </fieldset>
 
       {callId && data.call ? (
         <aside className="dossier-variant no-print" aria-label="Adaptación a la convocatoria">
@@ -133,7 +201,7 @@ export function DossierScreen() {
         </p>
       ) : null}
 
-      <DossierDocument view={view} progressive={blank} className="dossier-bleed" />
+      <DossierDocument view={view} progressive={blank} className="dossier-bleed" style={style} accent={accent} />
 
       <Paywall
         open={paywall}
@@ -146,4 +214,28 @@ export function DossierScreen() {
       />
     </div>
   );
+}
+
+/** Reads a work image into a 48 px canvas and returns its RGBA pixels (same-origin images only). */
+function samplePixels(url: string): Promise<Uint8ClampedArray | undefined> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = () => {
+      try {
+        const size = 48;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return resolve(undefined);
+        ctx.drawImage(img, 0, 0, size, size);
+        resolve(ctx.getImageData(0, 0, size, size).data);
+      } catch {
+        resolve(undefined); // tainted canvas or decode error: keep the style's own accent
+      }
+    };
+    img.onerror = () => resolve(undefined);
+    img.src = url;
+  });
 }

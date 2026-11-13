@@ -11,6 +11,8 @@
   --ground: #e6e7e3;     
   --accent: #a3a05a;     
   --accent-soft: #e4e3c7;
+  --on-ink: #a9aeb2;
+  --ink-rule: #4a5157;
   --skel: #dfe0dc;
 
   
@@ -22,7 +24,7 @@
   --fs-small: 0.8125rem;
   --fs-lead: 1.375rem;
   --fs-h2: 2.5rem;
-  --fs-name: clamp(3rem, 10.5vw, 6.75rem);
+  --fs-name: clamp(3rem, 10.5vw, 6rem);
 
   --sheet-w: 940px;     
   --pad: clamp(20px, 6vw, 64px);
@@ -87,11 +89,11 @@
   font-weight: 500;
   letter-spacing: 0.01em;
   color: var(--granite);
-  padding-top: 0.35rem;
+  padding-top: 0.75rem;
   border-top: 2px solid var(--ink);
 }
 .dossier-wall .rail__name { color: var(--ink); display: block; }
-.dossier-wall .main { min-width: 0; padding-top: 0.35rem; border-top: 1px solid var(--hair); }
+.dossier-wall .main { min-width: 0; padding-top: 0.75rem; border-top: 1px solid var(--hair); }
 .dossier-wall .section-title {
   font-family: var(--sans);
   font-weight: 500;
@@ -151,7 +153,7 @@
   font-weight: 500;
   font-size: var(--fs-name);
   line-height: 0.9;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.04em;
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
@@ -219,7 +221,7 @@
   font-family: var(--sans);
   font-size: var(--fs-small);
   color: var(--granite);
-  margin-bottom: 0.6rem;
+  margin-top: 0.35rem;
 }
 .dossier-wall .label__title { font-weight: 400; font-size: 1.1875rem; line-height: 1.25; }
 .dossier-wall .label__title cite { font-weight: 500; }
@@ -288,9 +290,9 @@
   min-height: min(150mm, 120vw);
   row-gap: 3rem;
 }
-.dossier-wall .contact .rail { border-top-color: var(--paper); color: #a9aeb2; }
+.dossier-wall .contact .rail { border-top-color: var(--paper); color: var(--on-ink); }
 .dossier-wall .contact .rail__name { color: var(--paper); }
-.dossier-wall .contact .main { border-top-color: #4a5157; }
+.dossier-wall .contact .main { border-top-color: var(--ink-rule); }
 .dossier-wall .contact__name {
   font-family: var(--sans);
   font-weight: 500;
@@ -299,10 +301,10 @@
   letter-spacing: -0.035em;
   margin-bottom: 2rem;
 }
-.dossier-wall .contact .facts dt { color: #a9aeb2; }
+.dossier-wall .contact .facts dt { color: var(--on-ink); }
 .dossier-wall .contact .facts dt,
-.dossier-wall .contact .facts dd { border-top-color: #4a5157; }
-.dossier-wall .colophon { font-family: var(--sans); font-size: 0.75rem; color: #a9aeb2; max-width: 40em; }
+.dossier-wall .contact .facts dd { border-top-color: var(--ink-rule); }
+.dossier-wall .colophon { font-family: var(--sans); font-size: 0.75rem; color: var(--on-ink); max-width: 40em; }
 .dossier-wall [data-slot]:empty {
   display: inline-block;
   vertical-align: middle;
@@ -318,7 +320,7 @@
   display: block;
   width: var(--skw, 100%);
   height: calc(var(--lines, 1) * 1lh);
-  background: repeating-linear-gradient(to bottom, var(--skel) 0 0.62lh, transparent 0.62lh 1lh);
+  background: linear-gradient(var(--skel) 62%, transparent 0) 0 0 / 100% 1lh repeat-y;
 }
 .dossier-wall h1[data-slot]:empty { --skw: 70%; --lines: 2; }
 .dossier-wall .frame:empty::after,
@@ -338,16 +340,16 @@
 @keyframes dos-arrive { from { background-color: var(--accent-soft); } to { background-color: transparent; } }
 .dossier-wall .hint {
   display: none;
-  font-family: var(--sans);
-  font-size: var(--fs-small);
+  font-family: var(--serif);
+  font-style: italic;
   color: var(--granite);
-  margin-top: 1.5rem;
-  padding-left: 0.8rem;
-  border-left: 2px solid var(--accent);
+  margin-top: 1.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--hair);
+  max-width: 36em;
 }
 .dossier-wall [data-state="pending"] .hint,
 .dossier-wall [data-state="filling"] .hint { display: block; }
-.dossier-wall [data-state="pending"] { opacity: 0.72; }
 .dossier-wall [data-state="ready"] [data-slot]:empty { display: none; }
 @media (max-width: 720px) {
 .dossier-wall { --fs-h2: 2rem; --fs-lead: 1.2rem; --fs-body: 1rem; }
@@ -460,4 +462,29 @@ html, body { background: #fff; }
   .dossier-wall .dossier > .sheet.sheet { background: transparent; }
   .dossier-wall .dossier > .sheet.cover { background: var(--paper); }
   .dossier-wall .dossier > .sheet.contact { background: var(--ink); }
+}
+
+/* ---- Styles (style.ts). Colours arrive as inline custom properties from DossierDocument; these rules only
+   change what a palette cannot: the display face and how the work hangs. */
+.dossier-wall ::selection { background: var(--accent-soft); color: var(--ink); }
+.dossier-wall[data-style="editorial"] .cover__name,
+.dossier-wall[data-style="editorial"] .section-title,
+.dossier-wall[data-style="editorial"] .contact__name {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.dossier-wall[data-style="editorial"] .cover__name { line-height: 0.95; }
+.dossier-wall[data-style="editorial"] .series__head .section-title { font-style: italic; }
+.dossier-wall[data-style="editorial"] .rail { font-family: var(--serif); font-size: 0.9375rem; letter-spacing: 0; }
+.dossier-wall[data-style="galeria"] .frame { background: transparent; padding: 0; }
+.dossier-wall[data-style="galeria"] .frame > img,
+.dossier-wall[data-style="galeria"] .frame > svg { filter: none; }
+.dossier-wall[data-style="galeria"] .work .frame > img { object-position: left bottom; }
+.dossier-wall[data-style="galeria"] .cover__work .frame { background: var(--ground); padding: clamp(14px, 4%, 32px); }
+.dossier-wall[data-style="galeria"] .cover__name { font-weight: 600; }
+.dossier-wall[data-style="galeria"] .section-title { font-weight: 600; letter-spacing: -0.03em; }
+.dossier-wall[data-style="galeria"] .work { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); }
+@media (max-width: 720px) {
+  .dossier-wall[data-style="galeria"] .work { grid-template-columns: minmax(0, 1fr); }
 }
