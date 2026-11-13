@@ -89,6 +89,7 @@ export async function updateWork(id: string, patch: Partial<Pick<Work, "crop" | 
   const sheet = { ...w.sheet, ...patch.sheet };
   // Empty strings mean "the artist cleared this field": store as absent, not as "".
   for (const k of ["technique", "dimensions", "series", "concept"] as const) if (sheet[k] === "") delete sheet[k];
+  if (!sheet.year) delete sheet.year; // 0 = cleared by the artist
   if (!sheet.title?.trim()) sheet.title = "Sin título";
   return saveWork({ ...w, ...patch, sheet, sheetSource: sheetEdited ? "manual" : w.sheetSource });
 }

@@ -1,11 +1,8 @@
-// STUB (scaffold). Owned by WP-02.
-import { PageTitle, Pending } from "@/components/ui";
+// Owned by WP-02. Photo + voice -> technical sheets.
+import { WorksScreen } from "@/features/works/WorksScreen";
+
+export const metadata = { title: "Tus obras · Mecena" };
 
 export default function Page() {
-  return (
-    <>
-      <PageTitle kicker="Tus obras">Fotografía tus obras</PageTitle>
-      <Pending wp="WP-02" what="Foto + voz = ficha técnica." />
-    </>
-  );
+  return <WorksScreen />;
 }

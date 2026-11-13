@@ -7,9 +7,10 @@
 import { z } from "zod";
 import { CropSuggestion, DescribeWorkResult, TechnicalSheet, type AiSlice, type DescribeWorkInput } from "@/contracts";
 import { imageBlock, structured } from "@/server/ai/llm";
+import { IDENTITY_CROP } from "./crop";
 import { mentionsDimensions, parseVoiceSheet, sheetFromVoice, UNTITLED } from "./parse";
 
-export const IDENTITY_CROP: CropSuggestion = { x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 };
+export { IDENTITY_CROP };
 
 export const DESCRIBE_WORK_SYSTEM = [
   "Ficha técnica de una obra. Toma título/serie/concepto de lo que dice el autor; deduce técnica y soporte de la imagen solo si es evidente; medidas solo si las dice. Sugiere recorte del marco de la obra dentro de la foto (0..1) y rotación; si dudas, recorte identidad. Nunca describas cambios a la obra.",
