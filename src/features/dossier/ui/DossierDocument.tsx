@@ -6,7 +6,7 @@
  * Styles live in ./dossier.css, scoped under .dossier-wall.
  */
 import type { CSSProperties, ReactNode } from "react";
-import type { BusinessView, CreatorView, DossierView, FactRow, SectionState, WorkView } from "../model";
+import { isAdapted, type BusinessView, type CreatorView, type DossierView, type FactRow, type SectionState, type VariantView, type WorkView } from "../model";
 import "./dossier.css";
 
 type Slot = CSSProperties & { "--lines"?: number; "--skw"?: string };
@@ -107,6 +107,43 @@ function CallHeader({ view }: { view: DossierView }) {
       </span>
       {view.variant.callRef ? <span className="call-header__ref">{view.variant.callRef}</span> : null}
     </div>
+  );
+}
+
+/** The call-adapted narrative (CCR-7): one ruled sheet per section, criteria it serves, gaps highlighted. */
+function VariantSections({ variant }: { variant: VariantView }) {
+  const n = variant.sections.length;
+  return (
+    <>
+      {variant.sections.map((s, i) => (
+        <section key={s.id} className="sheet ruled" data-section="variant" data-variant-section={s.id}>
+          <Rail name="Para la convocatoria" sub={n > 1 ? `${i + 1} de ${n}` : undefined} />
+          <div className="main prose">
+            <h3 className="section-title">{s.heading}</h3>
+            {s.criteria.length ? (
+              <ul className="variant-criteria" aria-label="Criterios que cubre">
+                {s.criteria.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            ) : null}
+            {s.paras.map((parts, j) => (
+              <p key={j} className={j === 0 ? "lead" : undefined}>
+                {parts.map((part, k) =>
+                  part.pending ? (
+                    <mark key={k} className="pending-gap">
+                      {part.text}
+                    </mark>
+                  ) : (
+                    <span key={k}>{part.text}</span>
+                  ),
+                )}
+              </p>
+            ))}
+          </div>
+        </section>
+      ))}
+    </>
   );
 }
 
@@ -232,12 +269,15 @@ function Work({ w }: { w: WorkView }) {
 
 function CreatorDossier({ view, progressive }: { view: CreatorView; progressive?: boolean }) {
   const { states } = view;
+  const adapted = isAdapted(view);
   const signature = [view.name, view.city, view.date.split(" ").pop()].filter(Boolean).join(", ");
   return (
     <>
       <Cover view={view} kicker="Dossier artístico" sub={[view.discipline, view.city]} progressive={progressive} />
 
-      <Section name="statement" state={states.statement} progressive={progressive}>
+      {adapted && view.variant ? <VariantSections variant={view.variant} /> : null}
+
+      <Section name="statement" state={adapted ? "pending" : states.statement} progressive={progressive && !adapted}>
         <Rail name="Statement" />
         <div className="main prose">
           <Prose paras={view.statement} slot="profile.statement" lines={6} />
@@ -246,7 +286,7 @@ function CreatorDossier({ view, progressive }: { view: CreatorView; progressive?
         </div>
       </Section>
 
-      <Section name="bio" state={states.bio} progressive={progressive}>
+      <Section name="bio" state={adapted ? "pending" : states.bio} progressive={progressive && !adapted}>
         <Rail name="Biografía" />
         <div className="main prose">
           <Prose paras={view.bio} slot="profile.bio" lines={4} />
@@ -347,6 +387,7 @@ function CreatorDossier({ view, progressive }: { view: CreatorView; progressive?
 
 function BusinessDossier({ view, progressive }: { view: BusinessView; progressive?: boolean }) {
   const { states } = view;
+  const adapted = isAdapted(view);
   const people = view.team.people;
   const teamSub =
     view.team.size !== undefined && people.length
@@ -360,7 +401,9 @@ function BusinessDossier({ view, progressive }: { view: BusinessView; progressiv
     <>
       <Cover view={view} kicker="Dossier de empresa" sub={[view.activityShort, view.city]} progressive={progressive} />
 
-      <Section name="activity" state={states.activity} progressive={progressive}>
+      {adapted && view.variant ? <VariantSections variant={view.variant} /> : null}
+
+      <Section name="activity" state={adapted ? "pending" : states.activity} progressive={progressive && !adapted}>
         <Rail name="Actividad" />
         <div className="main stack">
           <div className="prose">
@@ -379,7 +422,7 @@ function BusinessDossier({ view, progressive }: { view: BusinessView; progressiv
         </div>
       </Section>
 
-      <Section name="team" state={states.team} progressive={progressive}>
+      <Section name="team" state={adapted ? "pending" : states.team} progressive={progressive && !adapted}>
         <Rail name="Equipo" sub={teamSub} />
         <div className="main stack">
           {people.length ? (

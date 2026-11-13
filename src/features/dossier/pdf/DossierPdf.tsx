@@ -8,7 +8,7 @@ import path from "node:path";
 import fs from "node:fs";
 import type { ComponentProps, ReactNode } from "react";
 import { Document, Font, Image, Link, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
-import type { BusinessView, CreatorView, CvGroup, DossierView, FactRow, WorkView } from "../model";
+import { isAdapted, type BusinessView, type CreatorView, type CvGroup, type DossierView, type FactRow, type VariantView, type WorkView } from "../model";
 import type { PdfImage } from "./images";
 
 // ---------------------------------------------------------------- fonts
@@ -129,6 +129,10 @@ function makeStyles(fonts: boolean) {
       contactName: { fontFamily: sans, fontWeight: 500, fontSize: 32, lineHeight: 1, letterSpacing: -1.1, marginBottom: 20 },
       colophon: { fontFamily: sans, fontSize: 7, color: C.onInk, maxWidth: 330 },
       block: { marginTop: mm(12) },
+      // call-adapted sections (CCR-7)
+      chips: { flexDirection: "row", flexWrap: "wrap", marginBottom: 8 },
+      chip: { fontFamily: sans, fontSize: 7, paddingVertical: 1.5, paddingHorizontal: 4, marginRight: 4, marginBottom: 3 },
+      gap: { fontFamily: sans, fontSize: 8.5, textDecoration: "underline", textDecorationStyle: "dashed" },
     }),
   };
 }
@@ -324,15 +328,60 @@ function CvColumn({ st, groups }: { st: S; groups: CvGroup[] }) {
   );
 }
 
+/** Call-adapted narrative: flows across pages, one ruled block per section, gaps marked "Pendiente". */
+function VariantPages({ st, variant, kind }: { st: S; variant: VariantView; kind: "creator" | "business" }) {
+  if (!variant.sections.length) return null;
+  const a = ACCENTS[kind];
+  const n = variant.sections.length;
+  return (
+    <Page size="A4" style={st.s.page}>
+      {variant.sections.map((sec, i) => (
+        <View key={sec.id} style={i ? st.s.block : undefined}>
+          <Ruled st={st} name="Para la convocatoria" sub={n > 1 ? `${i + 1} de ${n}` : undefined}>
+            <View wrap={false}>
+              <Text style={[st.s.sectionTitle, { fontSize: 17, letterSpacing: -0.3 }]}>{sec.heading}</Text>
+              {sec.criteria.length ? (
+                <View style={st.s.chips}>
+                  {sec.criteria.map((c) => (
+                    <Text key={c} style={[st.s.chip, { backgroundColor: a.soft }]}>
+                      {c}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+            </View>
+            {sec.paras.map((parts, j) => (
+              <Text key={j} style={j === 0 ? st.s.lead : st.s.p} orphans={3} widows={3}>
+                {parts.map((part, k) =>
+                  part.pending ? (
+                    <Text key={k} style={[st.s.gap, { color: C.ink }]}>
+                      {`Pendiente: ${part.text}`}
+                    </Text>
+                  ) : (
+                    part.text
+                  ),
+                )}
+              </Text>
+            ))}
+          </Ruled>
+        </View>
+      ))}
+      <Folio st={st} />
+    </Page>
+  );
+}
+
 // ---------------------------------------------------------------- documents
 
 export function CreatorPdf({ view, images, st }: { view: CreatorView; images: ImageMap; st: S }) {
   const year = view.date.split(" ").pop();
   const [left, right] = splitColumns(view.cv);
+  const adapted = isAdapted(view);
   return (
     <>
       <Cover st={st} view={view} images={images} kicker="Dossier artístico" meta={[view.discipline, view.city]} />
-      {view.statement.length || view.bio.length ? (
+      {adapted && view.variant ? <VariantPages st={st} variant={view.variant} kind="creator" /> : null}
+      {!adapted && (view.statement.length || view.bio.length) ? (
         <Page size="A4" style={st.s.page}>
           {view.statement.length ? (
             <Ruled st={st} name="Declaración" sub="artística">
@@ -392,12 +441,14 @@ export function CreatorPdf({ view, images, st }: { view: CreatorView; images: Im
 
 export function BusinessPdf({ view, images, st }: { view: BusinessView; images: ImageMap; st: S }) {
   const teamSub = view.team.size ? (view.team.size === 1 ? "1 persona" : `${view.team.size} personas`) : undefined;
-  const hasActivity = view.activity.length || view.plan.idea || view.plan.needs.length;
-  const hasTeam = view.team.people.length || view.team.text.length;
+  const adapted = isAdapted(view);
+  const hasActivity = !adapted && (view.activity.length || view.plan.idea || view.plan.needs.length);
+  const hasTeam = !adapted && (view.team.people.length || view.team.text.length);
   const p = view.projects;
   return (
     <>
       <Cover st={st} view={view} images={images} kicker="Dossier de empresa" meta={[view.activityShort, view.city]} />
+      {adapted && view.variant ? <VariantPages st={st} variant={view.variant} kind="business" /> : null}
       {hasActivity || hasTeam ? (
         <Page size="A4" style={st.s.page}>
           {hasActivity ? (

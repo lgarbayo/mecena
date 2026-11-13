@@ -41,3 +41,6 @@ criteria: [Live demo wow, Real problem and impact]
 - MCP calls `export_dossier_pdf`; the returned `url` uses `MECENA_PUBLIC_URL` so the link opens on the phone.
 
 ## Contract change requests
+
+## CCR-7: content adaptation per call (layer 2)
+`DossierVariant` gains `strategy`, `sections` (rewritten per criterion, with `criteria` ids and `from` keys), `omitted`, `questions`, `formatChecks`, `unsupportedNumbers` and `generatedBy`; `Db.variantCache` caches them; `AiService.adaptDossier` (fast tier, effort medium) with a deterministic mock. Prompt distilled from `fleet/spikes/voice/FINDINGS.md` §9; eligibility and fit stay WP-06's rules and are passed in. Code guards: unknown criteria/sources dropped, numbers not backed by profile/dossier/works/transcript/call flagged, format checks completed from the call. Pro only (`/api/dossier`, PDF); the free preview never calls the model. MCP `build_dossier` with `callId` adapts too. Files: `src/features/dossier/{ai,adapt}.ts`, tests `tests/dossier/adapt.test.tsx`.

@@ -461,3 +461,24 @@ html, body { background: #fff; }
   .dossier-wall .dossier > .sheet.cover { background: var(--paper); }
   .dossier-wall .dossier > .sheet.contact { background: var(--ink); }
 }
+
+/* Call-adapted sections (CCR-7): criteria they serve and the gaps the user must fill. */
+.dossier-wall .variant-criteria { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.dossier-wall .variant-criteria li {
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  line-height: 1.3;
+  padding: 0.15rem 0.5rem;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.dossier-wall .pending-gap {
+  font-family: var(--sans);
+  font-size: 0.85em;
+  background: none;
+  color: var(--ink);
+  border-bottom: 1.5px dashed var(--accent);
+  padding: 0 0.1em;
+}
+.dossier-wall .pending-gap::before { content: "Pendiente · "; color: var(--granite); }

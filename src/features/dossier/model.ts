@@ -44,11 +44,26 @@ export interface FactRow {
   href?: string;
 }
 
+export interface VariantSectionView {
+  id: string;
+  heading: string;
+  /** Paragraphs split into text and "[PENDIENTE: …]" gaps, so templates can highlight what the user must add. */
+  paras: { text: string; pending: boolean }[][];
+  criteria: string[]; // "Calidad artística · 40 ptos"
+}
+
 export interface VariantView {
   callId: string;
   callName: string;
   callRef?: string;
   notes: string[];
+  strategy?: string;
+  sections: VariantSectionView[]; // empty = order/limits only (no content adaptation)
+  questions: { criterion?: string; question: string }[];
+  formatChecks: { rule: string; status: "ok" | "riesgo" | "no_aplica"; note: string }[];
+  omitted: { what: string; why: string }[];
+  unsupportedNumbers: string[];
+  generatedBy?: "rules" | "ai" | "mock";
 }
 
 export interface Person {
@@ -346,15 +361,46 @@ export function buildContact(profile: Profile, contactBody?: string): FactRow[] 
 
 // ---------------------------------------------------------------- variant header
 
+const PENDING = /(\[PENDIENTE:[^\]]*\])/;
+
+/** "texto [PENDIENTE: x] más" -> [{text}, {text: "x", pending}, {text}] */
+export function splitPending(para: string): { text: string; pending: boolean }[] {
+  return para
+    .split(PENDING)
+    .filter(Boolean)
+    .map((t) => (PENDING.test(t) ? { text: t.slice(1, -1).replace(/^PENDIENTE:\s*/, "").trim(), pending: true } : { text: t, pending: false }));
+}
+
 export function toVariantView(dossier: Dossier, call?: Call): VariantView | undefined {
-  if (!dossier.variant) return undefined;
+  const v = dossier.variant;
+  if (!v) return undefined;
+  const crit = new Map((call?.criteria ?? []).map((c) => [c.id, c]));
+  const label = (id: string) => {
+    const c = crit.get(id);
+    return c ? `${c.name} · ${c.maxPoints} ${c.maxPoints === 1 ? "pto" : "ptos"}` : undefined;
+  };
   return {
-    callId: dossier.variant.callId,
-    callName: call ? `${call.title.replace(/^\[FIXTURE\]\s*/, "")}, ${call.organizer}` : dossier.variant.callId,
+    callId: v.callId,
+    callName: call ? `${call.title.replace(/^\[FIXTURE\]\s*/, "")}, ${call.organizer}` : v.callId,
     callRef: call?.bdnsId ? `BDNS ${call.bdnsId}` : undefined,
-    notes: dossier.variant.notes,
+    notes: v.notes,
+    strategy: v.strategy,
+    sections: (v.sections ?? []).map((s) => ({
+      id: s.id,
+      heading: s.heading,
+      paras: paragraphs(s.body).map(splitPending),
+      criteria: s.criteria.map(label).filter((x): x is string => !!x),
+    })),
+    questions: (v.questions ?? []).map((q) => ({ criterion: crit.get(q.criterionId)?.name, question: q.question })),
+    formatChecks: v.formatChecks ?? [],
+    omitted: v.omitted ?? [],
+    unsupportedNumbers: v.unsupportedNumbers ?? [],
+    generatedBy: v.generatedBy,
   };
 }
+
+/** True when the call variant rewrote the narrative sections (they replace statement/bio or activity/team). */
+export const isAdapted = (view: { variant?: VariantView }) => (view.variant?.sections.length ?? 0) > 0;
 
 // ---------------------------------------------------------------- main mappers
 

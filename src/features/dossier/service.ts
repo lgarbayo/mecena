@@ -11,6 +11,7 @@ import { serverEnv } from "@/contracts";
 import { exportsDir, getCall, getDossier, getProfile, listWorks, nowIso } from "@/server/store";
 import { orderWorks, toDossierView, type DossierView } from "./model";
 import { planVariant } from "./variant";
+import { adaptVariant } from "./adapt";
 
 export interface DossierData {
   dossier: Dossier;
@@ -29,7 +30,11 @@ async function imageSizer(): Promise<(w: Work) => number | undefined> {
   return (w) => readImageBytes(w.imageUrl)?.length;
 }
 
-export async function buildDossier(input: { profileId?: string; callId?: string }): Promise<Dossier> {
+/**
+ * With callId: the rules plan (order, image limits, notes) and, unless `ai: false`, the content adaptation
+ * (sections rewritten for the call's criteria, cached). `ai: false` is the free preview: no model call.
+ */
+export async function buildDossier(input: { profileId?: string; callId?: string; ai?: boolean }): Promise<Dossier> {
   const profile = getProfile(input.profileId);
   const saved = getDossier(profile.id);
   const works = sortWorks(listWorks(profile.id));
@@ -43,12 +48,15 @@ export async function buildDossier(input: { profileId?: string; callId?: string 
   if (!input.callId) return base;
   const call = getCall(input.callId);
   const plan = planVariant({ works, call, profile, imageBytes: await imageSizer() });
-  return { ...base, workIds: plan.workIds, variant: plan.variant };
+  if (input.ai === false) return { ...base, workIds: plan.workIds, variant: plan.variant };
+  const kept = orderWorks(works, plan.workIds);
+  const adaptation = await adaptVariant({ profile, call, sections: base.sections, works: kept });
+  return { ...base, workIds: plan.workIds, variant: { ...plan.variant, ...adaptation } };
 }
 
 /** Everything the page and the PDF need. `adapt: false` keeps the plain ordering but still returns the notes. */
 export async function loadDossierData(input: { profileId?: string; callId?: string; adapt?: boolean }): Promise<DossierData> {
-  const dossier = await buildDossier(input);
+  const dossier = await buildDossier({ ...input, ai: input.adapt !== false });
   const profile = getProfile(dossier.profileId);
   const all = listWorks(profile.id);
   const call = input.callId ? getCall(input.callId) : undefined;

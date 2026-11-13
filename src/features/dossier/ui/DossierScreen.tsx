@@ -12,7 +12,7 @@ import { useApp } from "@/components/shell/AppProvider";
 import { Button, Spinner } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
 import { apiGet } from "@/lib/api-client";
-import { isBlank, toDossierView } from "../model";
+import { isBlank, toDossierView, type VariantView } from "../model";
 import { DossierDocument } from "./DossierDocument";
 import "./screen.css";
 
@@ -83,7 +83,7 @@ export function DossierScreen() {
       </div>
     );
   }
-  if (!data || !view) return <Spinner label="Preparando tu dossier…" />;
+  if (!data || !view) return <Spinner label={callId ? "Adaptando tu dossier a la convocatoria… (unos segundos)" : "Preparando tu dossier…"} />;
 
   const blank = isBlank(view);
   const notes = data.dossier.variant?.notes ?? [];
@@ -118,9 +118,13 @@ export function DossierScreen() {
               ))}
             </ul>
           ) : null}
+          {data.adapted && view.variant ? <VariantPanel variant={view.variant} /> : null}
           {data.adapted ? null : (
             <>
-              <p className="dossier-variant__lock">Debajo tienes tu dossier general, gratis. Con Pro lo reordenamos y ajustamos para esta convocatoria, también en PDF.</p>
+              <p className="dossier-variant__lock">
+                Debajo tienes tu dossier general, gratis. Con Pro lo reescribimos para esta convocatoria: en el orden y con los criterios que puntúa el tribunal, con tus
+                propias palabras y marcando lo que falta. También en PDF.
+              </p>
               <Button onClick={() => setPaywall(true)}>Adaptar mi dossier con Pro</Button>
             </>
           )}
@@ -144,6 +148,68 @@ export function DossierScreen() {
           load();
         }}
       />
+    </div>
+  );
+}
+
+const CHECK_LABEL = { ok: "Cumple", riesgo: "Revisa", no_aplica: "Lo aportas tú" } as const;
+
+/** What the adaptation did and what the user can still add (screen only, never in the PDF). */
+export function VariantPanel({ variant }: { variant: VariantView }) {
+  if (!variant.sections.length) return null;
+  return (
+    <div className="dossier-variant__body" data-testid="variant-panel">
+      {variant.strategy ? <p className="dossier-variant__strategy">{variant.strategy}</p> : null}
+      {variant.unsupportedNumbers.length ? (
+        <p className="dossier-variant__warn" role="alert">
+          Revisa estas cifras: no salen de lo que nos has contado ni de las bases ({variant.unsupportedNumbers.join(", ")}).
+        </p>
+      ) : null}
+      {variant.questions.length ? (
+        <details open>
+          <summary>Para sumar puntos, cuéntanos ({variant.questions.length})</summary>
+          <ol className="dossier-variant__list">
+            {variant.questions.map((q, i) => (
+              <li key={i}>
+                {q.question}
+                {q.criterion ? <span className="dossier-variant__crit"> · {q.criterion}</span> : null}
+              </li>
+            ))}
+          </ol>
+          <Link className="btn btn-ghost" href={ROUTES.onboarding}>
+            Responder hablando
+          </Link>
+        </details>
+      ) : null}
+      {variant.formatChecks.length ? (
+        <details>
+          <summary>Requisitos de formato y documentos ({variant.formatChecks.length})</summary>
+          <ul className="dossier-variant__list">
+            {variant.formatChecks.map((c, i) => (
+              <li key={i} data-status={c.status}>
+                <strong>{CHECK_LABEL[c.status]}</strong> · {c.rule}
+                {c.note ? <span className="dossier-variant__crit"> · {c.note}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+      {variant.omitted.length ? (
+        <details>
+          <summary>Lo que hemos dejado fuera ({variant.omitted.length})</summary>
+          <ul className="dossier-variant__list">
+            {variant.omitted.map((o, i) => (
+              <li key={i}>
+                <strong>{o.what}</strong>: {o.why}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+      <p className="dossier-variant__crit">
+        {variant.generatedBy === "ai" ? "Reescrito con IA a partir de tus palabras." : "Adaptación automática sin IA."} Tú tienes la última palabra: revisa cada texto antes
+        de presentarlo.
+      </p>
     </div>
   );
 }

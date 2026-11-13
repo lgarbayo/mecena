@@ -16,11 +16,13 @@ import {
   Dossier,
   DossierSection,
   JudgePersona,
+  MatchResult,
   Profile,
   ProfileKind,
   ProfilePatch,
   TechnicalSheet,
   TranscriptSegment,
+  VariantFormatCheck,
   Work,
 } from "./domain";
 
@@ -71,6 +73,26 @@ export const ExplainFitResult = z.object({
 });
 export type ExplainFitResult = z.infer<typeof ExplainFitResult>;
 
+// ---- Dossier call variant (WP-03, CCR-7) ----
+export interface AdaptDossierInput {
+  profile: Profile;
+  call: Call;
+  sections: DossierSection[]; // the base dossier, written from the user's words
+  works: Work[]; // already ordered/capped by the rules variant
+  transcript: TranscriptSegment[];
+  match: MatchResult; // deterministic eligibility + fit from WP-06 (never re-decided by the model)
+}
+// No defaults here: this schema is sent to Claude as the structured output format.
+const AdaptedSection = z.object({ id: z.string(), heading: z.string(), body: z.string(), criteria: z.array(z.string()), from: z.array(z.string()) });
+export const AdaptDossierResult = z.object({
+  strategy: z.string(),
+  sections: z.array(AdaptedSection),
+  omitted: z.array(z.object({ what: z.string(), why: z.string() })),
+  questions: z.array(z.object({ criterionId: z.string(), question: z.string() })),
+  formatChecks: z.array(VariantFormatCheck),
+});
+export type AdaptDossierResult = z.infer<typeof AdaptDossierResult>;
+
 // ---- Calls ingest (WP-05) ----
 export interface StructureCallInput {
   rawText: string; // bases / BDNS record text
@@ -120,6 +142,7 @@ export interface AiService {
   onboardingTurn(input: OnboardingTurnInput): Promise<OnboardingTurnResult>;
   describeWork(input: DescribeWorkInput): Promise<DescribeWorkResult>;
   explainFit(input: ExplainFitInput): Promise<ExplainFitResult>;
+  adaptDossier(input: AdaptDossierInput): Promise<AdaptDossierResult>;
   structureCall(input: StructureCallInput): Promise<Call>;
   draftApplication(input: DraftApplicationInput): Promise<ApplicationDraftContent>;
   reviseApplication(input: ReviseApplicationInput): Promise<ApplicationDraftContent>;
