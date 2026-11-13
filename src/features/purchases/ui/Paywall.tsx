@@ -1,12 +1,11 @@
 "use client";
-// STUB (scaffold, working baseline). Owned by WP-07: real RevenueCat paywall with Hormozi offer copy.
-// Contract for other WPs: render <Paywall open trigger onClose onPurchased />; onPurchased fires after the
-// entitlement is synced server-side, so the caller can simply retry its request.
-import { useEffect, useState } from "react";
-import type { EntitlementState, PaywallTrigger, Plan, PlanId } from "@/contracts";
-import { useApp } from "@/components/shell/AppProvider";
-import { Button } from "@/components/ui";
-import { getPurchases } from "@/features/purchases/client";
+// Owned by WP-07. Contract for other WPs: render <Paywall open trigger onClose onPurchased />; onPurchased fires after
+// the entitlement is synced server-side, so the caller can simply retry its request.
+import { useEffect, useId } from "react";
+import type { EntitlementState, PaywallTrigger } from "@/contracts";
+import { OFFER } from "../offer";
+import { Offer } from "./Offer";
+import s from "./paywall.module.css";
 
 export interface PaywallProps {
   open: boolean;
@@ -15,33 +14,30 @@ export interface PaywallProps {
   onPurchased(entitlement: EntitlementState): void;
 }
 
-export function Paywall({ open, onClose, onPurchased }: PaywallProps) {
-  const { appUserId } = useApp();
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [busy, setBusy] = useState<PlanId | null>(null);
+export function Paywall({ open, trigger, onClose, onPurchased }: PaywallProps) {
+  const headingId = useId();
   useEffect(() => {
-    if (!open || !appUserId) return;
-    const p = getPurchases();
-    p.init(appUserId).then(() => p.getPlans()).then(setPlans);
-  }, [open, appUserId]);
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
   if (!open) return null;
-  const buy = async (id: PlanId) => {
-    setBusy(id);
-    const out = await getPurchases().purchase(id);
-    setBusy(null);
-    if (out.status === "purchased") onPurchased(out.entitlement);
-  };
   return (
-    <div className="sheet" role="dialog" aria-modal="true" aria-label="Mecena Pro">
-      <h2>Mecena Pro</h2>
-      {plans.map((p) => (
-        <Button key={p.id} disabled={!!busy} onClick={() => buy(p.id)}>
-          {p.title} · {p.priceText}
-        </Button>
-      ))}
-      <Button variant="quiet" onClick={onClose}>
-        Ahora no
-      </Button>
-    </div>
+    <>
+      <div className={s.backdrop} onClick={onClose} aria-hidden />
+      <div className={s.sheet} role="dialog" aria-modal="true" aria-labelledby={headingId} data-testid="paywall">
+        <div className={s.grab} aria-hidden />
+        <button type="button" className={s.close} onClick={onClose} aria-label={OFFER.later}>
+          ×
+        </button>
+        <Offer trigger={trigger} onPurchased={onPurchased} headingId={headingId} />
+      </div>
+    </>
   );
 }

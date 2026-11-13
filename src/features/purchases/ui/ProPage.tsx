@@ -1,0 +1,40 @@
+"use client";
+// WP-07 /pro: the same offer as a page, plus the current status (Pro / premium credits).
+import { useCallback, useEffect, useState } from "react";
+import type { EntitlementState } from "@/contracts";
+import { useApp } from "@/components/shell/AppProvider";
+import { Card } from "@/components/ui";
+import { getPurchases } from "../client";
+import { OFFER } from "../offer";
+import { Offer } from "./Offer";
+import s from "./paywall.module.css";
+
+export function ProPage() {
+  const { appUserId } = useApp();
+  const [ent, setEnt] = useState<EntitlementState | null>(null);
+  const load = useCallback(async () => {
+    if (!appUserId) return;
+    const p = getPurchases();
+    await p.init(appUserId);
+    setEnt(await p.getEntitlement());
+  }, [appUserId]);
+  useEffect(() => {
+    load().catch(() => undefined);
+  }, [load]);
+
+  return (
+    <>
+      {ent?.pro && (
+        <p className={s.status} data-testid="pro-status">
+          {OFFER.isPro}
+        </p>
+      )}
+      {!ent?.pro && !!ent?.premiumCredits && <p className={s.status}>{OFFER.credits(ent.premiumCredits)}</p>}
+      {!ent?.pro && (
+        <Card>
+          <Offer trigger="pricing_page" onPurchased={setEnt} />
+        </Card>
+      )}
+    </>
+  );
+}
