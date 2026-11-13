@@ -111,6 +111,12 @@ function workCaption(w: WorkView): ReactNode {
   );
 }
 
+/** The cover line is the statement's first sentence; skip it when it would repeat a one-sentence statement verbatim. */
+function coverLine(view: DossierView): string {
+  const body = view.kind === "creator" ? view.statement : view.activity;
+  return body.length === 1 && body[0].trim() === view.tagline.trim() ? "" : view.tagline;
+}
+
 function Cover({ view, kicker, sub, progressive }: { view: DossierView; kicker: string; sub: [string, string]; progressive?: boolean }) {
   const w = view.cover;
   return (
@@ -141,7 +147,7 @@ function Cover({ view, kicker, sub, progressive }: { view: DossierView; kicker: 
           </span>
         </p>
         <p className="cover__line" data-slot="profile.tagline" style={{ "--lines": 2 } as Slot}>
-          {view.tagline}
+          {coverLine(view)}
         </p>
       </div>
       {view.states.cover !== "ready" ? <Hint k="cover" /> : null}
