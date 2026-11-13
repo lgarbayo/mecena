@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ROUTES } from "@/contracts";
 import { TRUST } from "../copy";
 import { TrustIcon } from "./icons";
-import s from "./home.module.css";
+import s from "./trust.module.css";
 
 export function TrustPage() {
   return (

@@ -21,7 +21,7 @@ export const HOME = {
   kicker: "Mecena",
   title: "Las ayudas existen. Enterarse a tiempo y prepararlas es otro trabajo.",
   closing: "Mecena las encuentra y las prepara contigo.",
-  cta: "Empezar hablando",
+  cta: "Empezar",
   importCta: "Ya tengo dossier: subirlo",
   secondary: "Cómo cuidamos tu obra",
   sourcesLabel: "Fuente",

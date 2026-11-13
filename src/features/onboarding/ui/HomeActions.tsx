@@ -5,6 +5,7 @@ import { ROUTES } from "@/contracts";
 import { useOptionalApp } from "@/components/shell/AppProvider";
 import { HOME, HOME_BUSINESS } from "../copy";
 import s from "./home.module.css";
+import { glass as g } from "./Stage";
 
 export function HomeActions() {
   const business = useOptionalApp()?.profile?.kind === "business";
@@ -12,24 +13,24 @@ export function HomeActions() {
     <div className={s.actions}>
       {business ? (
         <>
-          <Link className="btn btn-primary" href={ROUTES.onboarding} data-testid="home-cta">
+          <Link className={`${g.btn} ${g.btnPrimary}`} href={ROUTES.onboarding} data-testid="home-cta">
             {HOME_BUSINESS.cta}
           </Link>
-          <Link className="btn btn-ghost" href={ROUTES.calls} data-testid="home-calls">
+          <Link className={g.btn} href={ROUTES.calls} data-testid="home-calls">
             {HOME_BUSINESS.calls}
           </Link>
         </>
       ) : (
         <>
-          <Link className="btn btn-primary" href={ROUTES.onboarding} data-testid="home-cta">
+          <Link className={`${g.btn} ${g.btnPrimary}`} href={ROUTES.onboarding} data-testid="home-cta">
             {HOME.cta}
           </Link>
-          <Link className="btn btn-ghost" href={`${ROUTES.onboarding}?subir=1`} data-testid="home-import">
+          <Link className={g.btn} href={`${ROUTES.onboarding}?subir=1`} data-testid="home-import">
             {HOME.importCta}
           </Link>
         </>
       )}
-      <Link className="btn btn-quiet" href={ROUTES.trust}>
+      <Link className={`${g.btn} ${g.btnQuiet}`} href={ROUTES.trust}>
         {business ? HOME_BUSINESS.secondary : HOME.secondary}
       </Link>
     </div>
