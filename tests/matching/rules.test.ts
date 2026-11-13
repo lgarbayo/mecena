@@ -18,14 +18,14 @@ describe("hard filters", () => {
     expect(r.match.eligible).toBe(true);
     expect(r.match.score).toBeGreaterThanOrEqual(75);
     expect(fitLabel(r.match.score)).toBe("alto");
-    expect(r.match.whyYouFit.join(" ")).toMatch(/Vives en A Coruña: cumples el requisito de residencia/);
+    expect(r.match.whyYouFit.join(" ")).toMatch(/Vives en A Coruña: cumple el requisito de A Coruña/);
     expect(evaluate(creator(), digital(), { now }).match.eligible).toBe(false);
   });
 
   it("business fits the SME aid, not the arts grant", () => {
     const r = evaluate(business(), digital(), { now });
     expect(r.match.eligible).toBe(true);
-    expect(r.match.whyYouFit.join(" ")).toMatch(/forma jurídica \(autónomo\) está admitida/);
+    expect(r.match.whyYouFit.join(" ")).toMatch(/Puedes presentarte como autónomo/);
     expect(evaluate(business(), beca(), { now }).match.eligible).toBe(false);
   });
 
@@ -33,25 +33,25 @@ describe("hard filters", () => {
     const r = evaluate({ ...creator(), birthYear: 1986 }, beca(), { now });
     expect(r.match.eligible).toBe(false);
     expect(r.match.score).toBe(0);
-    expect(r.match.whatYouMiss.join(" ")).toMatch(/entre 18 y 35 años y tú tendrás 40/);
+    expect(r.match.whatYouMiss.join(" ")).toMatch(/Edad fuera del rango \(18–35 años\)/);
   });
 
   it("borderline age and unknown fields ask to confirm instead of discarding", () => {
     const borderline = evaluate({ ...creator(), birthYear: 2026 - 36 }, beca(), { now }); // 35 or 36 at the deadline
     expect(borderline.match.eligible).toBe(true);
-    expect(borderline.match.whatYouMiss.join(" ")).toMatch(/Confírmalo: piden entre 18 y 35 años/);
+    expect(borderline.match.whatYouMiss.join(" ")).toMatch(/Confírmalo: edad exigida 18–35 años/);
 
-    const unknown = evaluate({ ...creator(), birthYear: undefined, city: undefined, province: undefined, region: undefined }, beca(), { now });
+    const unknown = evaluate({ ...creator(), birthYear: undefined, territory: undefined, city: undefined, province: undefined, region: undefined }, beca(), { now });
     expect(unknown.match.eligible).toBe(true);
-    expect(unknown.match.whatYouMiss).toEqual(expect.arrayContaining([expect.stringMatching(/^Confírmalo: hay que tener/), expect.stringMatching(/^Confírmalo: piden residir en A Coruña/)]));
+    expect(unknown.match.whatYouMiss).toEqual(expect.arrayContaining([expect.stringMatching(/^Confírmalo: edad exigida/), expect.stringMatching(/^Confírmalo: exige residencia en A Coruña/)]));
   });
 
   it("wrong residence, legal form or size discards with the reason", () => {
-    expect(evaluate({ ...creator(), city: "Vigo", province: "Pontevedra" }, beca(), { now }).match.whatYouMiss).toContain("Piden residir en A Coruña");
-    expect(evaluate({ ...business(), legalForm: "sa" }, digital(), { now }).match.eligible).toBe(false);
+    expect(evaluate({ ...creator(), territory: undefined, city: "Vigo", province: "Pontevedra" }, beca(), { now }).match.whatYouMiss).toContain("Exige residencia o sede en A Coruña");
+    expect(evaluate({ ...business(), legalForm: "asociacion", beneficiaryTypes: [] }, digital(), { now }).match.eligible).toBe(false);
     const big = evaluate({ ...business(), employees: 20 }, digital(), { now });
     expect(big.match.eligible).toBe(false);
-    expect(big.match.whatYouMiss.join(" ")).toMatch(/como máximo 9 personas/);
+    expect(big.match.whatYouMiss.join(" ")).toMatch(/Máximo 9 empleados/);
   });
 
   it("closed calls and past deadlines are excluded; upcoming ones are allowed and labelled", () => {

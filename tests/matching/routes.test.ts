@@ -35,10 +35,12 @@ describe("GET /api/calls", () => {
     expect(body.lockedCount).toBe(0);
   });
 
-  it("business mode gets business calls only", async () => {
+  it("business mode ranks business calls first; creator calls an autónomo may enter rank low", async () => {
     const body = await (await getCalls(req(`/api/calls?profileId=${DEMO_BUSINESS_ID}`))).json();
     expect(body.mode).toBe("business");
-    expect(body.results.map((r: { call: { id: string } }) => r.call.id)).toEqual(["fixture-digitalizacion-pymes"]);
+    const results = body.results as { call: { id: string; beneficiaryKinds: string[] }; match: { score: number } }[];
+    expect(results[0].call.id).toBe("fixture-digitalizacion-pymes");
+    for (const r of results.filter((x) => !x.call.beneficiaryKinds.includes("business"))) expect(r.match.score, r.call.id).toBeLessThan(60);
   });
 });
 
