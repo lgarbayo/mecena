@@ -1,47 +1,122 @@
-// STUB (scaffold, working baseline). Owned by WP-02.
+/**
+ * Works service (WP-02). The uploaded photo is stored byte-for-byte as received: we never write a
+ * modified image. Crop/rotation live only as numbers on the Work and are applied with CSS.
+ */
 import fs from "node:fs";
 import path from "node:path";
 import type { Work } from "@/contracts";
 import { getAi } from "@/server/ai";
-import { getProfile, getWork, listWorks, newId, nowIso, saveWork, uploadsDir } from "@/server/store";
+import { getProfile, getWork, listWorks, newId, nowIso, saveWork, updateDb, uploadsDir } from "@/server/store";
 
 const MEDIA = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" } as const;
 type Media = keyof typeof MEDIA;
 
+/** Client downscales to <= 1600 px / JPEG 0.85 (~0.3-0.8 MB); this is a generous safety net. */
+export const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
+
+export class InvalidImageError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidImageError";
+  }
+}
+
 export function parseDataUrl(dataUrl: string): { mediaType: Media; base64: string } {
   const m = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(dataUrl);
-  if (!m) throw new Error("Imagen no válida (usa JPEG, PNG o WebP)");
+  if (!m) throw new InvalidImageError("Imagen no válida (usa JPEG, PNG o WebP)");
   return { mediaType: m[1] as Media, base64: m[2] };
+}
+
+function imagePath(id: string): { file: string; mediaType: Media } | undefined {
+  for (const [mediaType, ext] of Object.entries(MEDIA)) {
+    const file = path.join(uploadsDir(), `${id}.${ext}`);
+    if (fs.existsSync(file)) return { file, mediaType: mediaType as Media };
+  }
+  return undefined;
 }
 
 export async function createWork(input: { profileId?: string; imageDataUrl: string; voiceDescription?: string }): Promise<Work> {
   const profile = getProfile(input.profileId);
   const { mediaType, base64 } = parseDataUrl(input.imageDataUrl);
+  const bytes = Buffer.from(base64, "base64");
+  if (!bytes.length) throw new InvalidImageError("La imagen está vacía");
+  if (bytes.length > MAX_IMAGE_BYTES) throw new InvalidImageError("La foto pesa demasiado (máx. 6 MB). Prueba otra vez desde la cámara.");
   const id = newId("work");
-  fs.writeFileSync(path.join(uploadsDir(), `${id}.${MEDIA[mediaType]}`), Buffer.from(base64, "base64"));
-  const described = await getAi().describeWork({ kind: profile.kind, imageBase64: base64, mediaType, voiceDescription: input.voiceDescription, profile });
+  fs.writeFileSync(path.join(uploadsDir(), `${id}.${MEDIA[mediaType]}`), bytes);
+  const voice = input.voiceDescription?.trim() || undefined;
+  const described = await getAi().describeWork({ kind: profile.kind, imageBase64: base64, mediaType, voiceDescription: voice, profile });
+  const existing = listWorks(profile.id);
   return saveWork({
     id,
     profileId: profile.id,
     imageUrl: `/api/works/${id}/image`,
+    originalImageUrl: `/api/works/${id}/image`,
     crop: described.crop,
     sheet: described.sheet,
-    sheetSource: input.voiceDescription ? "voice" : "vision",
+    sheetSource: voice ? "voice" : "vision",
     confirmed: false,
-    order: listWorks(profile.id).length,
+    order: existing.length ? Math.max(...existing.map((w) => w.order)) + 1 : 0,
     createdAt: nowIso(),
   });
 }
 
+/**
+ * Re-run the sheet with the voice note the artist dictated while the photo was uploading.
+ * Fields the artist already edited by hand are kept unless the new note says something about them.
+ */
+export async function describeWork(id: string, voiceDescription: string): Promise<Work> {
+  const w = getWork(id);
+  const img = imagePath(id);
+  const profile = getProfile(w.profileId);
+  if (!img) {
+    // Seeded/demo works have no upload: fall back to a voice-only sheet.
+    const r = await getAi().describeWork({ kind: profile.kind, imageBase64: "", mediaType: "image/jpeg", voiceDescription, profile });
+    return saveWork({ ...w, sheet: { ...w.sheet, ...stripEmpty(r.sheet) }, sheetSource: "voice", confirmed: false });
+  }
+  const base64 = fs.readFileSync(img.file).toString("base64");
+  const r = await getAi().describeWork({ kind: profile.kind, imageBase64: base64, mediaType: img.mediaType, voiceDescription, profile });
+  const sheet = w.sheetSource === "manual" ? { ...w.sheet, ...stripEmpty(r.sheet, true) } : { ...stripEmpty(w.sheet), ...stripEmpty(r.sheet) };
+  return saveWork({ ...w, sheet: { ...sheet, title: sheet.title || r.sheet.title }, crop: w.crop ?? r.crop, sheetSource: "voice", confirmed: false });
+}
+
+function stripEmpty<T extends Record<string, unknown>>(o: T, dropUntitled = false): Partial<T> {
+  return Object.fromEntries(Object.entries(o).filter(([k, v]) => v !== undefined && v !== "" && !(dropUntitled && k === "title" && v === "Sin título"))) as Partial<T>;
+}
+
 export async function updateWork(id: string, patch: Partial<Pick<Work, "crop" | "confirmed" | "order">> & { sheet?: Partial<Work["sheet"]> }): Promise<Work> {
   const w = getWork(id);
-  return saveWork({ ...w, ...patch, sheet: { ...w.sheet, ...patch.sheet } });
+  const sheetEdited = patch.sheet && Object.keys(patch.sheet).length > 0;
+  const sheet = { ...w.sheet, ...patch.sheet };
+  // Empty strings mean "the artist cleared this field": store as absent, not as "".
+  for (const k of ["technique", "dimensions", "series", "concept"] as const) if (sheet[k] === "") delete sheet[k];
+  if (!sheet.title?.trim()) sheet.title = "Sin título";
+  return saveWork({ ...w, ...patch, sheet, sheetSource: sheetEdited ? "manual" : w.sheetSource });
+}
+
+/** Move a work one place up (-1) or down (+1) in the profile's order; renumbers 0..n-1. */
+export async function moveWork(id: string, direction: -1 | 1): Promise<Work[]> {
+  const w = getWork(id);
+  return updateDb((db) => {
+    const mine = db.works.filter((x) => x.profileId === w.profileId).sort((a, b) => a.order - b.order);
+    const i = mine.findIndex((x) => x.id === id);
+    const j = i + direction;
+    if (j >= 0 && j < mine.length) [mine[i], mine[j]] = [mine[j], mine[i]];
+    mine.forEach((x, k) => (x.order = k));
+    return mine.map((x) => ({ ...x }));
+  });
+}
+
+export async function deleteWork(id: string): Promise<void> {
+  const w = getWork(id);
+  await updateDb((db) => {
+    db.works = db.works.filter((x) => x.id !== id);
+    db.works.filter((x) => x.profileId === w.profileId).sort((a, b) => a.order - b.order).forEach((x, k) => (x.order = k));
+  });
+  const img = imagePath(id);
+  if (img) fs.rmSync(img.file, { force: true });
 }
 
 export function readWorkImage(id: string): { bytes: Buffer; mediaType: string } | undefined {
-  for (const [mediaType, ext] of Object.entries(MEDIA)) {
-    const f = path.join(uploadsDir(), `${id}.${ext}`);
-    if (fs.existsSync(f)) return { bytes: fs.readFileSync(f), mediaType };
-  }
-  return undefined;
+  const img = imagePath(id);
+  return img ? { bytes: fs.readFileSync(img.file), mediaType: img.mediaType } : undefined;
 }
