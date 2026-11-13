@@ -2,10 +2,11 @@
 .dossier-screen { display: flex; flex-direction: column; gap: 14px; }
 .dossier-bar { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
 .dossier-bar h1 { margin: 0; font-size: 1.6rem; line-height: 1.1; }
-.dossier-bar__kicker, .dossier-variant__kicker { margin: 0 0 4px; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.7; }
+.dossier-bar__kicker { margin: 4px 0 0; font-size: 0.9rem; opacity: 0.75; }
+.dossier-variant__kicker { margin: 0 0 4px; font-size: 0.9rem; opacity: 0.75; }
 .dossier-bar__actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .dossier-bar__actions a[aria-disabled="true"] { opacity: 0.55; pointer-events: none; }
-.dossier-variant { border-left: 3px solid #a3a05a; background: #f1f0e2; padding: 12px 14px; border-radius: 4px; }
+.dossier-variant { border: 1px solid #d9d7bd; background: #f1f0e2; padding: 12px 14px; border-radius: 6px; }
 .dossier-variant__call { margin: 0 0 6px; font-weight: 600; }
 .dossier-variant__notes { margin: 0 0 10px; padding-left: 1.1em; }
 .dossier-variant__notes li + li { margin-top: 4px; }
@@ -19,3 +20,36 @@
   .dossier-screen { display: block; }
   .dossier-bleed { width: auto; margin: 0; }
 }
+/* Design panel: the artist asks, the design agent redraws (DesignPanel.tsx). */
+.design-panel { display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); border-radius: 8px; }
+.design-panel__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.design-panel__head h2 { margin: 0; font-size: 1.15rem; }
+.design-panel__current { margin: 0; font-size: 0.95rem; }
+.design-panel__why { margin: 0; max-width: 62ch; line-height: 1.5; }
+.design-panel__adjust { margin: 0; padding-left: 1.1em; font-size: 0.9rem; opacity: 0.85; }
+.design-panel__ask { display: flex; flex-direction: column; gap: 8px; }
+.design-panel__label { font-weight: 600; font-size: 0.95rem; }
+.design-panel__ask textarea {
+  width: 100%; min-height: 4.2em; resize: vertical; padding: 10px 12px;
+  font: inherit; line-height: 1.45; color: inherit; background: color-mix(in srgb, currentColor 3%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent); border-radius: 6px;
+}
+.design-panel__ask textarea:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+.design-panel__ask textarea::placeholder { color: inherit; opacity: 0.55; }
+.design-panel__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.design-panel__error { margin: 0; font-size: 0.9rem; }
+.design-panel__ideas { display: flex; flex-wrap: wrap; gap: 6px; }
+.design-chip {
+  font: inherit; font-size: 0.875rem; color: inherit; cursor: pointer;
+  padding: 6px 12px; border-radius: 999px; background: transparent;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+.design-chip:hover:not(:disabled) { border-color: currentColor; }
+.design-chip:focus-visible, .design-link:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.design-chip:disabled, .design-link:disabled { opacity: 0.5; cursor: progress; }
+.design-panel__start { margin: 0; font-size: 0.9rem; line-height: 1.5; }
+.design-link {
+  font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 0.18em; text-decoration-thickness: 1px; font-weight: 600;
+}
+.design-panel__tag { opacity: 0.75; }

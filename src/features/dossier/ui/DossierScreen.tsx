@@ -6,13 +6,16 @@
  */
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API, ROUTES, type Call, type Dossier, type Profile, type Work } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
 import { Button, Spinner } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
-import { apiGet } from "@/lib/api-client";
+import { apiGet, apiSend } from "@/lib/api-client";
 import { isBlank, toDossierView } from "../model";
+import { googleFontUrls, type DossierDesign } from "../design";
+import { paletteFromPixels, suggestStyle } from "../style";
+import { DESIGN_API, DesignPanel } from "./DesignPanel";
 import { DossierDocument } from "./DossierDocument";
 import "./screen.css";
 
@@ -38,6 +41,11 @@ export function DossierScreen() {
   const { profile: active, appUserId } = useApp();
   const profileId = sp.get("profileId") || active?.id || undefined;
   const callId = sp.get("callId") || undefined;
+  const [design, setDesign] = useState<DossierDesign | undefined>();
+  const [designSaved, setDesignSaved] = useState<boolean | undefined>();
+  const [autoDesigning, setAutoDesigning] = useState(false);
+  const autoTried = useRef(false);
+  const [workColors, setWorkColors] = useState<string[]>([]);
   const [data, setData] = useState<DossierPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paywall, setPaywall] = useState(false);
@@ -63,6 +71,67 @@ export function DossierScreen() {
     return data.adapted ? v : { ...v, variant: undefined };
   }, [data]);
 
+  // The design on file (or the starting point that suits the call). Separate from the dossier data so a
+  // redesign never reloads the content.
+  const loadDesign = useCallback(async () => {
+    const q = dossierQuery({ profileId, callId });
+    const res = await apiGet<{ design: DossierDesign; saved: boolean }>(`${DESIGN_API}${q}`).catch(() => undefined);
+    if (res) {
+      setDesign(res.design);
+      setDesignSaved(res.saved);
+    }
+  }, [profileId, callId]);
+  useEffect(() => {
+    loadDesign();
+  }, [loadDesign]);
+
+  // Colours of the artist's own photos, for the design agent: a few small samples, never a change to the work.
+  const imageKey = data ? data.works.slice(0, 6).map((w) => w.imageUrl).join("|") : "";
+  useEffect(() => {
+    if (!imageKey) return;
+    let cancelled = false;
+    Promise.all(imageKey.split("|").map(samplePixels)).then((chunks) => {
+      if (cancelled) return;
+      const all = chunks.filter((c): c is Uint8ClampedArray => !!c);
+      const merged = new Uint8ClampedArray(all.reduce((n, c) => n + c.length, 0));
+      let at = 0;
+      for (const c of all) {
+        merged.set(c, at);
+        at += c.length;
+      }
+      setWorkColors(merged.length ? paletteFromPixels(merged, 3) : []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [imageKey]);
+
+  // Nobody asks the artist how the dossier should look: the first design comes by itself, from the interview
+  // and the colours of their work, as soon as there is something to design. Asking for changes is optional.
+  const hasContent = !!data && (data.works.length > 0 || !!data.profile.statement);
+  const coloursReady = !imageKey || workColors.length > 0;
+  useEffect(() => {
+    if (!data || designSaved !== false || !hasContent || autoTried.current) return;
+    const go = () => {
+      if (autoTried.current) return;
+      autoTried.current = true;
+      setAutoDesigning(true);
+      apiSend<{ design: DossierDesign }>(DESIGN_API, { auto: true, workColors, profileId: data.profile.id, callId })
+        .then((res) => {
+          setDesign(res.design);
+          setDesignSaved(true);
+        })
+        .catch(() => undefined)
+        .finally(() => setAutoDesigning(false));
+    };
+    // Give the photos a moment to be sampled, but never wait on them for long.
+    const t = setTimeout(go, coloursReady ? 0 : 2500);
+    return () => clearTimeout(t);
+  }, [data, designSaved, hasContent, coloursReady, workColors, callId]);
+
+  const suggestion = data ? suggestStyle({ call: data.call, profile: data.profile }) : undefined;
+  const fontUrls = design ? googleFontUrls(design) : [];
+
   // Progressive build: while sections are still pending (the user is talking), refresh quietly.
   const pending = view ? Object.values(view.states).some((s) => s !== "ready") : false;
   useEffect(() => {
@@ -86,7 +155,8 @@ export function DossierScreen() {
   if (!data || !view) return <Spinner label="Preparando tu dossier…" />;
 
   const blank = isBlank(view);
-  const notes = data.dossier.variant?.notes ?? [];
+  // The style note is already told by the design panel above; keep it for MCP and the PDF flow only.
+  const notes = (data.dossier.variant?.notes ?? []).filter((n) => !n.startsWith("Estilo sugerido"));
   const pdfHref = `${API.dossierPdf}${dossierQuery({ profileId: data.profile.id, callId: data.adapted ? callId : undefined, appUserId })}`;
   const kindLabel = view.kind === "creator" ? "Dossier artístico" : "Dossier de empresa";
 
@@ -94,8 +164,8 @@ export function DossierScreen() {
     <div className="dossier-screen">
       <header className="dossier-bar no-print">
         <div className="dossier-bar__title">
-          <p className="dossier-bar__kicker">{kindLabel}</p>
           <h1>{view.name || "Tu dossier"}</h1>
+          <p className="dossier-bar__kicker">{kindLabel}</p>
         </div>
         <div className="dossier-bar__actions">
           <a className="btn btn-primary" href={pdfHref} target="_blank" rel="noopener" aria-disabled={blank} data-testid="dossier-pdf">
@@ -106,6 +176,25 @@ export function DossierScreen() {
           </Link>
         </div>
       </header>
+
+      {suggestion ? (
+        <DesignPanel
+          autoDesigning={autoDesigning}
+          design={design}
+          suggested={suggestion.style}
+          suggestedReason={suggestion.reason}
+          forCall={!!data.call}
+          workColors={workColors}
+          profileId={data.profile.id}
+          callId={callId}
+          onChange={(c) => setDesign(c.design)}
+          onUndo={async () => {
+            const res = await apiSend<{ design: DossierDesign }>(DESIGN_API, { undo: true, profileId: data.profile.id, callId }).catch(() => undefined);
+            if (res) setDesign(res.design);
+            autoTried.current = true; // undoing to the start must not trigger a new automatic design
+          }}
+        />
+      ) : null}
 
       {callId && data.call ? (
         <aside className="dossier-variant no-print" aria-label="Adaptación a la convocatoria">
@@ -133,7 +222,11 @@ export function DossierScreen() {
         </p>
       ) : null}
 
-      <DossierDocument view={view} progressive={blank} className="dossier-bleed" />
+      {fontUrls.map((href) => (
+        // eslint-disable-next-line @next/next/no-page-custom-font -- fonts chosen at runtime by the design agent
+        <link key={href} rel="stylesheet" href={href} />
+      ))}
+      <DossierDocument view={view} progressive={blank} className="dossier-bleed" design={design} />
 
       <Paywall
         open={paywall}
@@ -146,4 +239,28 @@ export function DossierScreen() {
       />
     </div>
   );
+}
+
+/** Reads a work image into a 48 px canvas and returns its RGBA pixels (same-origin images only). */
+function samplePixels(url: string): Promise<Uint8ClampedArray | undefined> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = () => {
+      try {
+        const size = 48;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return resolve(undefined);
+        ctx.drawImage(img, 0, 0, size, size);
+        resolve(ctx.getImageData(0, 0, size, size).data);
+      } catch {
+        resolve(undefined); // tainted canvas or decode error: the agent just works without these colours
+      }
+    };
+    img.onerror = () => resolve(undefined);
+    img.src = url;
+  });
 }

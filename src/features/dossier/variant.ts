@@ -2,9 +2,10 @@
  * Call-specific dossier variants: a pure transform on the ordered works, never an edit of the base dossier.
  * 1. Order series by keyword overlap with the call (title, summary, criteria, disciplines).
  * 2. Keep the first `maxImages` works in that order.
- * 3. Explain what we did in plain Spanish (`notes`).
+ * 3. Explain what we did in plain Spanish (`notes`), including the look that suits the call (style.ts).
  */
 import type { Call, DossierVariant, Profile, Work } from "@/contracts";
+import { STYLE_LABELS, suggestStyle } from "./style";
 
 const STOP = new Set(
   "para con sobre entre desde hasta como este esta estos estas pero porque cuando donde durante segun sera seran tiene tienen puede pueden debe deben hacer hace todo toda todos todas cada otro otra otros otras muy mas menos solo tambien proyecto proyectos convocatoria convocatorias ayuda ayudas beca becas premio premios meses euros persona personas fisica calidad interes viabilidad dossier memoria serie series obra obras trabajo".split(
@@ -116,6 +117,8 @@ export function planVariant(input: { works: Work[]; call: Call; profile?: Profil
   const docName = call.requiredDocuments.find((d) => /dossier/i.test(d));
   if (docName) notes.push(`En la solicitud se presenta como «${docName}».`);
   if (!req) notes.push("Las bases no fijan límites para el dossier: va completo, con lo más afín primero.");
+  const fit = suggestStyle({ call, profile });
+  notes.push(`Estilo sugerido: «${STYLE_LABELS[fit.style]}», porque ${fit.reason}. Puedes cambiarlo arriba.`);
 
   return {
     workIds: kept.map((w) => w.id),
