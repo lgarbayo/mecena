@@ -1,0 +1,54 @@
+# Calls dataset: sources (WP-05)
+
+`calls.json`: 25 real calls, each checked on its official page or bases on its `verifiedAt` date. Fixture calls (`fixture-*`) are fictional and never appear here.
+
+## Demo calls (used by WP-08 / WP-09)
+- **Creator (Galicia, visual arts):** `a-laracha-concurso-fotografia-2026`. Photography contest of the Concello de A Laracha, with real criteria (impacto visual / calidad técnico-artística / creatividad, rescaled 34/33/33), image limits and a no-AI rule. Deadline estimated (25 natural days from the BOP).
+- **Creator (illustration, best criteria for the jury demo):** `calahorra-cartel-jornadas-verdura-2027`. Five weighted criteria (30/25/25/10/10) from the bases, open to anyone in Spain, closes 03/12/2026.
+- **Business (Galicia):** `igape-re-acciona-2026`. IGAPE consultancy for autónomos and pymes (80 % paid). It closes **16/11/2026**, so it shows as "cierra en 2 días" on demo day. It is non-competitive, so it has **no scored criteria**: for the jury beat use a creator call, or treat it as a completeness check.
+- No Galician digitalisation or crafts call is open in November 2026. Ticket Innova, the autónomo programmes and the Premios de Artesanía are included as `recurring`, with their 2026 data.
+
+## How the data was obtained
+- **BDNS API** (`https://www.infosubvenciones.es/bdnstrans/api`, public, no key, always `vpd=GE`), verified 2026-11-13:
+  - `GET /convocatorias/busqueda?descripcion=…&finalidad=…&regiones=…&fechaDesde=dd/mm/yyyy&page&pageSize`: search. Useful filter ids: finalidad 11 cultura, 14 comercio/turismo/pymes, 6 empleo, 17 I+D+i; regiones 1 España, 3 Galicia.
+  - `GET /convocatorias?numConv=<codigoBDNS>`: full record (beneficiaries, NUTS regions, CNAE sectors, budget, dates, documents).
+  - `GET /convocatorias/documentos?idDocumento=<id>`: bases PDF.
+  - `GET /concesiones/busqueda?numeroConvocatoria=<codigoBDNS>`: past awards. Empty for open calls; not used yet (B3).
+  - Rate-limits bursts with **429**: the client retries with backoff.
+- **What BDNS lacks:**
+  - Criteria, requirements, documents and per-applicant amounts exist only in the bases PDF, so I read every curated call's PDF.
+  - Deadlines are often free text; with no API key, they were computed or copied by hand.
+  - **BDNS `regiones` is the impact area, not a residence requirement.** Most municipal contests (A Laracha, Calahorra, Cabra…) accept anyone, so `eligibility.residence` follows the bases, not BDNS.
+- **Raw records** for the BDNS-sourced calls are in `raw/<codigoBDNS>.json` (offline re-runs).
+- **Live ingest:** `npm run calls:ingest` writes `bdns-cache.json` (`source: "bdns"`, structured by `getAi().structureCall`). It keeps the previous cache on any failure. Curated `calls.json` wins on id clashes. Its output is unreviewed: don't use it for the demo without checking it.
+- **Criteria:** `criteriaSource: "bases"` = points published in the bases, rescaled to 100 (largest remainder; the original total is noted in `eligibility.other`). `"estimated"` = the bases list no points (weights split evenly) or the call has none (non-competitive).
+- **Recurring calls** (`status: "recurring"`, `deadline: null`): annual programmes whose 2026 edition has closed; amounts and requirements are from the 2026 edition. Their `deadlineText` deliberately contains no date, so the data standard does not read last year's date as this year's deadline.
+
+## Calls
+| id | title | status | deadline | source | verified | how |
+|---|---|---|---|---|---|---|
+| `igape-re-acciona-2026` | Programa Re-acciona 2026 (IGAPE): consultoría para pymes y autónomos | open | 2026-11-16 | [fuente](https://reacciona.igape.es) | 2026-11-13 | BDNS 880749 + PDF de bases; sin criterios (concurrencia no competitiva o no publicados) |
+| `a-laracha-concurso-fotografia-2026` | V Concurso de fotografía «A Laracha en el objetivo» | open | 2026-12-01 | [fuente](https://www.alaracha.gal/) | 2026-11-13 | BDNS 939879 + PDF de bases; criterios del PDF de bases |
+| `calahorra-cartel-jornadas-verdura-2027` | Concurso de cartel de las XXXI Jornadas Gastronómicas de la Verdura (Calahorra) | open | 2026-12-03 | [fuente](https://calahorra.es/convocado-el-concurso-para-el-diseno-del-cartel-de-las-xxxi-jornadas-gastronomicas-de-la-verdura/) | 2026-11-13 | BDNS 939239 + PDF de bases; criterios del PDF de bases |
+| `lasalita-gijon-el-paisaje-2026` | Convocatoria de arte plástica «El Paisaje» | open | 2026-12-06 | [fuente](https://lasalita.org/convocatoria-de-arte-plastica-tema-el-paisaje-lasalita) | 2026-11-13 | página oficial; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `turismo-galicia-eficiencia-energetica-tu986b-2026` | Ayudas de eficiencia energética para empresas turísticas de Galicia (TU986B) | open | 2026-12-07 | [fuente](https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/926278) | 2026-11-13 | BDNS 926278 + PDF de bases; sin criterios (concurrencia no competitiva o no publicados) |
+| `premios-que-arte-2026` | Premios Qué! Arte 2026 | open | 2026-12-10 | [fuente](https://premios.que.es/) | 2026-11-13 | página oficial; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `photoespana-descubrimientos-2027` | Descubrimientos PHotoEspaña 2027 | open | 2026-12-15 | [fuente](https://phe.es/programas/descubrimientos-photoespana-online/) | 2026-11-13 | página oficial; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `arte-intruso-sierra-norte-2027` | Arte Intruso 2027: exposiciones en el Centro Comarcal de Humanidades Sierra Norte | open | 2026-12-19 | [fuente](https://www.comunidad.madrid/centros/centro-comarcal-humanidades-sierra-norte) | 2026-11-13 | página oficial; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `cabra-cartel-carnaval-2027` | Concurso de carteles del Carnaval 2027 de Cabra | open | 2026-12-21 | [fuente](https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/939684) | 2026-11-13 | BDNS 939684 + PDF de bases; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `cromawards-2026` | cromAwards 2026 · Concurso internacional de arte y diseño | open | 2026-12-21 | [fuente](https://cromawards.com) | 2026-11-13 | página oficial; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `fornelos-premio-poesia-lueiro-rey-2026` | XV Premio de Poesía Manuel Lueiro Rey | open | 2026-12-28 | [fuente](https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/935589) | 2026-11-13 | BDNS 935589 + PDF de bases; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `benidorm-nuevos-creadores-2026` | XXXVIII Concurso Nuevos Creadores 2026 (pintura y escultura) | open | 2026-12-30 | [fuente](https://benidorm.org/es/ayuntamiento/concejalias/juventud/actividades-juveniles/concurso-de-nuevos-creadores/xxxviii-concurso-nuevos-creadores-2026) | 2026-11-13 | página oficial; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `ua-bienal-pluri-identitats-2027` | Premios V Bienal de Artes Visuales Pluri-identitats 2027 | open | 2027-01-08 | [fuente](https://www.boua.ua.es/Acuerdos/DescargarAcuerdo/69981) | 2026-11-13 | BDNS 934864 + PDF de bases; criterios del PDF de bases |
+| `cabra-premio-novela-juan-valera-2027` | Premio Juan Valera 2027 de novela | open | 2027-01-08 | [fuente](https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/938125) | 2026-11-13 | BDNS 938125 + PDF de bases; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `carballino-premio-anton-losada-dieguez-2026` | XLII Premio Antón Losada Diéguez | open | 2027-01-31 | [fuente](https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/941499) | 2026-11-13 | BDNS 941499 + PDF de bases; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `sant-joan-festival-cine-cortometrajes-2027` | XXVII Festival de Cine de Sant Joan d’Alacant: concurso de cortometrajes | open | 2027-02-14 | [fuente](https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/939355) | 2026-11-13 | BDNS 939355 + PDF de bases; sin criterios puntuados en las bases (peso repartido a partes iguales) |
+| `getxo-novela-corta-ramiro-pinilla-2027` | 10.º Concurso de Novela Corta Ramiro Pinilla | open | 2027-02-20 | [fuente](https://www.getxo-kultura.eus/ramiropinilla) | 2026-11-13 | BDNS 936011 + PDF de bases; criterios del PDF de bases |
+| `icaa-cortometrajes-realizados-2027` | Ayudas ICAA para cortometrajes realizados 2027 | upcoming | 2027-04-16 | [fuente](https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/941955) | 2026-11-13 | BDNS 941955 + PDF de bases; criterios del PDF de bases |
+| `xunta-xuventude-crea-2026` | Premios Xuventude Crea (BS310Q) | recurring | — | [fuente](https://www.xunta.gal/dog/Publicados/2026/20260831/AnuncioG0766-190826-0001_es.html) | 2026-11-13 | DOG/BOP edición 2026; criterios del PDF de bases |
+| `deputacion-coruna-bolsas-perfeccionamento-artistico-2026` | Bolsas de perfeccionamiento de estudios artísticos (Deputación da Coruña) | recurring | — | [fuente](https://www.dacoruna.gal/index.php/download_file/view/76825) | 2026-11-13 | DOG/BOP edición 2026; criterios del PDF de bases |
+| `artesania-galicia-premios-bolsas-eloy-gesto-2026` | Premios Artesanía de Galicia y Bolsas Eloy Gesto | recurring | — | [fuente](https://artesaniadegalicia.xunta.gal/) | 2026-11-13 | DOG/BOP edición 2026; sin criterios (concurrencia no competitiva o no publicados) |
+| `igape-ticket-innova-2026` | Ticket Innova (IG408K): servicios de innovación para pymes | recurring | — | [fuente](https://www.xunta.gal/dog/Publicados/2026/20260116/AnuncioO92-111225-0003_es.html) | 2026-11-13 | DOG/BOP edición 2026; sin criterios (concurrencia no competitiva o no publicados) |
+| `xunta-bono-autonomo-tr341q-2026` | Bono autónomo (TR341Q): inversiones para autónomos consolidados | recurring | — | [fuente](https://www.xunta.gal/dog/Publicados/2026/20260204/AnuncioG0767-130126-0004_es.html) | 2026-11-13 | DOG/BOP edición 2026; sin criterios (concurrencia no competitiva o no publicados) |
+| `xunta-bono-relevo-tr353d-2026` | Bono relevo (TR353D): coger el relevo de un negocio que cierra por jubilación | recurring | — | [fuente](https://www.xunta.gal/dog/Publicados/2026/20260204/AnuncioG0767-130126-0004_es.html) | 2026-11-13 | DOG/BOP edición 2026; sin criterios (concurrencia no competitiva o no publicados) |
+| `xunta-promocion-empleo-autonomo-tr341d-2026` | Promoción del empleo autónomo (TR341D): ayuda para darte de alta | recurring | — | [fuente](https://www.xunta.gal/dog/Publicados/2026/20260204/AnuncioG0767-130126-0004_es.html) | 2026-11-13 | DOG/BOP edición 2026; sin criterios (concurrencia no competitiva o no publicados) |
