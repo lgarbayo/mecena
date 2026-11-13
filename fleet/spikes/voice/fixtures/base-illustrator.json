@@ -1,0 +1,155 @@
+{
+  "id": "illustrator",
+  "mode": "creator",
+  "from": "live run 13/11/2026, claude-sonnet-5-5 (results/live-sonnet-run.txt)",
+  "profile": {
+    "fields": {
+      "name": {
+        "value": "Daniel Okafor",
+        "source": "buenas soy daniel okafor ilustrador vivo en valencia"
+      },
+      "discipline": {
+        "value": "Ilustración",
+        "source": "soy daniel okafor ilustrador vivo en valencia"
+      },
+      "location": {
+        "value": "Valencia",
+        "source": "ilustrador vivo en valencia aunque me crié en vigo"
+      },
+      "origin": {
+        "value": "Vigo",
+        "source": "vivo en valencia aunque me crié en vigo"
+      },
+      "practice": {
+        "value": "Álbum ilustrado infantil y algo de ilustración editorial para prensa",
+        "source": "hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa"
+      },
+      "goals": {
+        "value": "Una beca de creación para dedicarse 6 meses solo a la novela gráfica",
+        "source": "lo que necesito es una beca de creación para poder dedicarme 6 meses solo a la novela gráfica"
+      },
+      "website": {
+        "value": "Instagram: @dani.dibuja",
+        "source": "mi instagram es arroba dani punto dibuja"
+      }
+    },
+    "lists": {
+      "techniques": {
+        "procreate": {
+          "title": "Procreate (digital)",
+          "year": "",
+          "place": "",
+          "detail": "trabajo digital",
+          "source": "trabajo en digital con procreate pero cada vez más con gouache y lápices de colores"
+        },
+        "gouache": {
+          "title": "Gouache",
+          "year": "",
+          "place": "",
+          "detail": "cada vez más",
+          "source": "trabajo en digital con procreate pero cada vez más con gouache y lápices de colores"
+        },
+        "lapices-de-colores": {
+          "title": "Lápices de colores",
+          "year": "",
+          "place": "",
+          "detail": "cada vez más",
+          "source": "trabajo en digital con procreate pero cada vez más con gouache y lápices de colores"
+        }
+      },
+      "series": {
+        "la-abuela-gaviotas": {
+          "title": "La abuela que hablaba con las gaviotas",
+          "year": "2024",
+          "place": "",
+          "detail": "último álbum",
+          "source": "el último se llama la abuela que hablaba con las gaviotas es de 2024"
+        },
+        "novela-grafica-padre": {
+          "title": "La otra orilla",
+          "year": "",
+          "place": "",
+          "detail": "novela gráfica sobre el viaje de mi padre desde Lagos hasta Vigo en los años 80; unas 40 páginas abocetadas",
+          "source": "se llama la otra orilla y llevo unas 40 páginas abocetadas"
+        }
+      },
+      "education": {
+        "bellas-artes-upv": {
+          "title": "Bellas Artes",
+          "year": "",
+          "place": "Politécnica de Valencia",
+          "detail": "",
+          "source": "estudié bellas artes en la politécnica de valencia"
+        },
+        "master-ilustracion-massana": {
+          "title": "Máster de ilustración",
+          "year": "",
+          "place": "Escola Massana, Barcelona",
+          "detail": "",
+          "source": "luego un máster de ilustración en la escola massana en barcelona"
+        }
+      },
+      "awards": {
+        "ciudad-de-alicante": {
+          "title": "Premio de álbum ilustrado Ciudad de Alicante",
+          "year": "",
+          "place": "Alicante",
+          "detail": "finalista",
+          "source": "quedó finalista en el premio de álbum ilustrado ciudad de alicante"
+        }
+      },
+      "publications": {
+        "faro-de-papel": {
+          "title": "Editorial Faro de Papel",
+          "year": "",
+          "place": "Editorial Faro de Papel",
+          "detail": "7 álbumes contando el que sale en marzo",
+          "source": "bueno 7 si cuento el que sale en marzo"
+        },
+        "mar-de-fondo": {
+          "title": "Revista Mar de Fondo",
+          "year": "",
+          "place": "",
+          "detail": "portadas, colaboración mensual",
+          "source": "también colaboro cada mes con la revista mar de fondo haciendo las portadas"
+        }
+      }
+    }
+  },
+  "dossier": {
+    "bio": {
+      "title": "Biografía breve",
+      "body": "Daniel Okafor (Vigo) es ilustrador y vive en Valencia. Hace sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa. Estudió Bellas Artes en la Politécnica de Valencia y cursó un máster de ilustración en la Escola Massana de Barcelona.",
+      "missing": [
+        "año de nacimiento o trayectoria resumida (opcional)"
+      ]
+    },
+    "statement": {
+      "title": "Statement",
+      "body": "Soy ilustrador y hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa. Trabajo en digital con Procreate, pero cada vez más con gouache y lápices de colores.\n\nAhora mismo estoy con un proyecto de novela gráfica, *La otra orilla*, sobre el viaje de mi padre desde Lagos hasta Vigo en los años 80. Llevo unas 40 páginas abocetadas y lo que necesito es una beca de creación para poder dedicarme seis meses solo a ella.",
+      "missing": [
+        "por qué le interesa contar estas historias",
+        "qué busca en el álbum infantil frente a la novela gráfica"
+      ]
+    },
+    "cv": {
+      "title": "CV artístico",
+      "body": "**Formación**\n- Máster de ilustración, Escola Massana (Barcelona).\n- Bellas Artes, Politécnica de Valencia.\n\n**Premios y becas**\n- Finalista en el Premio de álbum ilustrado Ciudad de Alicante (Alicante).\n\n**Publicaciones**\n- *La abuela que hablaba con las gaviotas* (2024), último álbum.\n- Editorial Faro de Papel: 7 álbumes, contando el que sale en marzo.\n- Revista Mar de Fondo: colaboración mensual con las portadas.",
+      "missing": [
+        "años de la formación",
+        "año del premio Ciudad de Alicante y título del álbum finalista",
+        "desde cuándo colabora con Mar de Fondo",
+        "exposiciones, residencias y becas anteriores (si las hay)"
+      ]
+    },
+    "series": {
+      "title": "Series",
+      "body": "**La abuela que hablaba con las gaviotas** (2024) — su último álbum.\n\n**La otra orilla** — novela gráfica sobre el viaje de su padre desde Lagos hasta Vigo en los años 80. Lleva unas 40 páginas abocetadas.",
+      "missing": [
+        "editorial y formato de La abuela que hablaba con las gaviotas",
+        "año de inicio de La otra orilla",
+        "títulos y años de los otros álbumes"
+      ]
+    }
+  }
+}

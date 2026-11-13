@@ -1,0 +1,491 @@
+
+> mecena-spike-voice@0.0.0 start
+> node replay.js
+
+
+Mecena · spike de extracción por voz
+
+LIVE: Claude API (key from /home/luis-garbayo/.t3/worktrees/mecena/spike-voice-extraction-14fba978b127b200/.env)
+models: extract=claude-sonnet-5-5 dossier=claude-sonnet-5-5 sheet=claude-sonnet-5-5
+speech speed x1: 360 ms/word, final +350 ms, pause 650 ms
+
+
+━━━ Pintora gallega (Lugo) · modo creator ━━━
+[  3.2s] 🎙  hola me llamo uxía ferreiro y soy pintora
+[  7.2s] ⚙ extract #1 8 palabras → 2/2 ops  3920 ms, ttft 2695, lag 3923 ms in 75+0c out 170
+  ✓ Nombre = Uxía Ferreiro  «hola me llamo uxía ferreiro y soy pintora»
+  ✓ Disciplina = Pintura  «hola me llamo uxía ferreiro y soy pintora»
+  ? ¿Dónde vives y trabajas?
+[ 10.9s] 📄 dossier #2 [bio] 3774 ms
+   bio: Uxía Ferreiro es pintora.
+[ 11.8s] 🎙  nací en monforte de lemos pero desde hace unos 15 años vivo en una aldea cerca de lugo en o corgo
+[ 14.0s] ⚙ extract #3 21 palabras → 2/2 ops  2172 ms, ttft 970, lag 2172 ms in 200+2089c out 239
+  ✓ Origen = Monforte de Lemos  «nací en monforte de lemos pero desde hace unos 15 años vivo en una aldea»
+  ✓ Dónde vive/trabaja = Una aldea cerca de Lugo, en O Corgo  «desde hace unos 15 años vivo en una aldea cerca de lugo en o corgo»
+  ? ¿Cuál es tu serie o proyecto principal en este momento?
+[ 16.5s] 📄 dossier #4 [bio] 2498 ms
+   bio: Uxía Ferreiro (Monforte de Lemos) es pintora. Desde hace unos 15 años vive en una aldea cerca de Lugo, en O Corgo.
+[ 21.1s] 🎙  trabajo sobre todo óleo sobre lienzo de gran formato y últimamente también pigmentos naturales que preparo yo misma con tierras del río miño
+[ 23.7s] ⚙ extract #5 23 palabras → 2/2 ops  2591 ms, ttft 1237, lag 2592 ms in 372+2089c out 237
+  ✓ Técnicas y materiales + Óleo sobre lienzo de gran formato  «trabajo sobre todo óleo sobre lienzo de gran formato»
+  ✓ Técnicas y materiales + Pigmentos naturales (los prepara ella misma con tierras del río Miño)  «también pigmentos naturales que preparo yo misma con tierras del río miño»
+  ? ¿Qué series o proyectos estás desarrollando ahora mismo con estas técnicas?
+[ 26.4s] 📄 dossier #6 [statement] 2659 ms
+   statement: (vacío)
+[ 30.1s] 🎙  lo que me interesa es la memoria del paisaje rural y el abandono del campo gallego cómo el monte se queda vacío
+[ 33.0s] ⚙ extract #7 22 palabras → 2/2 ops  2882 ms, ttft 1322, lag 2884 ms in 581+2089c out 233
+  ✓ Temas + Memoria del paisaje rural  «lo que me interesa es la memoria del paisaje rural»
+  ✓ Temas + Abandono del campo gallego (el monte se queda vacío)  «el abandono del campo gallego cómo el monte se queda vacío»
+  ? ¿Tienes alguna serie o proyecto concreto en el que estés trabajando ahora sobre estos temas?
+[ 37.0s] 📄 dossier #8 [statement] 4095 ms
+   statement: Soy pintora. Trabajo sobre todo óleo sobre lienzo de gran formato, y también con pigmentos naturales que preparo yo mism…
+[ 37.6s] 🎙  mi serie más importante se llama terra queimada son 14 cuadros sobre los incendios de 2017 en galicia
+[ 40.4s] ⚙ extract #9 18 palabras → 1/1 ops  2869 ms, ttft 1644, lag 2870 ms in 770+2089c out 173
+  ✓ Series / proyectos + Terra queimada (2017 · Galicia · 14 cuadros sobre los incendios de 2017 en Galicia; su serie más importante)  «mi serie más importante se llama terra queimada son 14 cuadros sobre los incendios de 2017 en galicia»
+  ? ¿Has expuesto Terra queimada o tus cuadros en alguna sala o galería?
+[ 42.2s] 🎙  la expuse en el museo provincial de lugo en 2022
+[ 44.6s] ⚙ extract #10 10 palabras → 1/1 ops  2391 ms, ttft 985, lag 2392 ms in 907+2089c out 155
+  ✓ Exposiciones + Terra queimada (2022 · Museo Provincial de Lugo)  «la expuse en el museo provincial de lugo en 2022»
+  ? ВНачале ¿Has recibido algún premio, beca o residencia, o qué te gustaría financiar con esta ayuda?
+[ 47.1s] 🎙  eh no perdona fue en 2023 en 2022 estaba todavía pintándola
+[ 48.9s] ⚙ extract #11 11 palabras → 1/1 ops  1817 ms, ttft 937, lag 1818 ms in 1023+2089c out 151
+  ↺ corrige Exposiciones + Terra queimada (2023 · Museo Provincial de Lugo)  «eh no perdona fue en 2023 en 2022 estaba todavía pintándola»
+  ? ÂżQuĂ© te gustarĂa conseguir o financiar con esta beca?
+[ 52.8s] 🎙  también estuve en una colectiva en la fundación luis seoane en a coruña
+[ 55.1s] ⚙ extract #12 13 palabras → 1/1 ops  2245 ms, ttft 1112, lag 2246 ms in 1057+2089c out 162
+  ✓ Exposiciones + Colectiva (Fundación Luis Seoane, A Coruña · exposición colectiva)  «también estuve en una colectiva en la fundación luis seoane en a coruña»
+  ? ÂżEn quĂ© aĂąo fue esa colectiva en la Fundación Luis Seoane?
+[ 57.4s] 📄 dossier #13 [cv] 2305 ms
+   cv: **Exposiciones**
+[ 63.6s] 🎙  estudié bellas artes en pontevedra en la universidad de vigo y en 2019 me dieron un accésit en el premio de pintura de la diputación de lugo
+[ 69.0s] ⚙ extract #14 27 palabras → 2/2 ops  5478 ms, ttft 3567, lag 5479 ms in 1202+2089c out 285
+  ✓ Formación + Bellas Artes (Pontevedra, Universidad de Vigo)  «estudié bellas artes en pontevedra en la universidad de vigo»
+  ✓ Premios y becas + Accésit en el premio de pintura de la Diputación de Lugo (2019 · Diputación de Lugo · accésit)  «en 2019 me dieron un accésit en el premio de pintura de la diputación de lugo»
+  ? ¿Qué te gustaría conseguir o financiar con esta ayuda, por ejemplo un nuevo proyecto?
+[ 70.7s] 🎙  ahora quiero empezar una serie nueva sobre las mujeres que sostienen las aldeas retratos de vecinas mías
+[ 72.2s] 📄 dossier #15 [cv] 3193 ms
+   cv: **Exposiciones**
+[ 73.6s] ⚙ extract #15 17 palabras → 2/2 ops  2904 ms, ttft 825, lag 2905 ms in 1445+2089c out 287
+  ✓ Series / proyectos + Mujeres que sostienen las aldeas (serie nueva de retratos de vecinas suyas)  «quiero empezar una serie nueva sobre las mujeres que sostienen las aldeas retratos de vecinas mías»
+  ✓ Qué quiere conseguir / financiar = Empezar una serie nueva sobre las mujeres que sostienen las aldeas  «quiero empezar una serie nueva sobre las mujeres que sostienen las aldeas»
+  ? ¿Qué necesitarías financiar para esa serie nueva: materiales, tiempo de trabajo, un espacio...?
+[ 76.4s] 🎙  y busco ayudas para la producción y para poder exponer fuera de galicia
+[ 78.6s] ⚙ extract #17 13 palabras → 1/1 ops  2269 ms, ttft 1008, lag 2270 ms in 1650+2089c out 159
+  ↺ corrige Qué quiere conseguir / financiar = Empezar una serie nueva sobre las mujeres que sostienen las aldeas; busca ayudas para la producción y para exponer fuera de Galicia  «y busco ayudas para la producción y para poder exponer fuera de galicia»
+  ? ÂżTienes web o Instagram donde se puedan ver tus obras?
+[ 79.6s] 📄 dossier #17 [series, statement] 5978 ms
+   series: **Terra queimada** (2017) — 14 cuadros sobre los incendios de 2017 en Galicia; su serie más importante. Se expuso en el …
+   statement: Soy pintora. Trabajo sobre todo óleo sobre lienzo de gran formato, y también con pigmentos naturales que preparo yo mism…
+[ 88.8s] 📄 dossier-final #19 [bio, statement, series, cv] 9252 ms
+   bio: Uxía Ferreiro (Monforte de Lemos) es pintora. Estudió Bellas Artes en la Universidad de Vigo, en Pontevedra, y desde hac…
+   statement: Soy pintora. Trabajo sobre todo óleo sobre lienzo de gran formato, y también con pigmentos naturales que preparo yo mism…
+   series: **Terra queimada** (2017) — 14 cuadros sobre los incendios de 2017 en Galicia; su serie más importante. Se expuso en el …
+   cv: **Exposiciones**
+
+  Perfil final (15 datos):
+  Nombre: Uxía Ferreiro
+      «hola me llamo uxía ferreiro y soy pintora»
+  Disciplina: Pintura
+      «hola me llamo uxía ferreiro y soy pintora»
+  Dónde vive/trabaja: Una aldea cerca de Lugo, en O Corgo
+      «desde hace unos 15 años vivo en una aldea cerca de lugo en o corgo»
+  Origen: Monforte de Lemos
+      «nací en monforte de lemos pero desde hace unos 15 años vivo en una aldea»
+  Qué quiere conseguir / financiar: Empezar una serie nueva sobre las mujeres que sostienen las aldeas; busca ayudas para la producción y para exponer fuera de Galicia  (corregido; antes: Empezar una serie nueva sobre las mujeres que sostienen las aldeas)
+      «y busco ayudas para la producción y para poder exponer fuera de galicia»
+  Técnicas y materiales:
+    - Óleo sobre lienzo de gran formato
+        «trabajo sobre todo óleo sobre lienzo de gran formato»
+    - Pigmentos naturales — los prepara ella misma con tierras del río Miño
+        «también pigmentos naturales que preparo yo misma con tierras del río miño»
+  Temas:
+    - Memoria del paisaje rural
+        «lo que me interesa es la memoria del paisaje rural»
+    - Abandono del campo gallego — el monte se queda vacío
+        «el abandono del campo gallego cómo el monte se queda vacío»
+  Series / proyectos:
+    - Terra queimada — 2017 · Galicia · 14 cuadros sobre los incendios de 2017 en Galicia; su serie más importante
+        «mi serie más importante se llama terra queimada son 14 cuadros sobre los incendios de 2017 en galicia»
+    - Mujeres que sostienen las aldeas — serie nueva de retratos de vecinas suyas
+        «quiero empezar una serie nueva sobre las mujeres que sostienen las aldeas retratos de vecinas mías»
+  Formación:
+    - Bellas Artes — Pontevedra, Universidad de Vigo
+        «estudié bellas artes en pontevedra en la universidad de vigo»
+  Exposiciones:
+    - Terra queimada — 2023 · Museo Provincial de Lugo  (corregido; antes: Terra queimada 2022)
+        «eh no perdona fue en 2023 en 2022 estaba todavía pintándola»
+    - Colectiva — Fundación Luis Seoane, A Coruña · exposición colectiva
+        «también estuve en una colectiva en la fundación luis seoane en a coruña»
+  Premios y becas:
+    - Accésit en el premio de pintura de la Diputación de Lugo — 2019 · Diputación de Lugo · accésit
+        «en 2019 me dieron un accésit en el premio de pintura de la diputación de lugo»
+
+  Dossier:
+  Biografía breve (bio)
+    Uxía Ferreiro (Monforte de Lemos) es pintora. Estudió Bellas Artes en la Universidad de Vigo, en Pontevedra, y desde hace unos 15 años vive en una aldea cerca de Lugo, en O Corgo. Trabaja sobre todo óleo sobre lienzo de gran formato y con pigmentos naturales que prepara ella misma con tierras del río Miño; su obra se centra en la memoria del paisaje rural y el abandono del campo gallego.
+    falta: año de nacimiento o de finalización de los estudios
+  Statement (statement)
+    Soy pintora. Trabajo sobre todo óleo sobre lienzo de gran formato, y también con pigmentos naturales que preparo yo misma con tierras del río Miño.
+    
+    Nací en Monforte de Lemos, pero desde hace unos 15 años vivo en una aldea cerca de Lugo, en O Corgo. Lo que me interesa es la memoria del paisaje rural y el abandono del campo gallego, cómo el monte se queda vacío.
+    
+    Mi serie más importante, Terra queimada, son 14 cuadros sobre los incendios de 2017 en Galicia. Ahora quiero empezar una serie nueva sobre las mujeres que sostienen las aldeas: retratos de vecinas mías.
+    falta: por qué le interesa el paisaje rural (motivación personal)
+  CV artístico (cv)
+    **Exposiciones**
+    
+    - 2023 — *Terra queimada*, Museo Provincial de Lugo.
+    - Sin fecha — Exposición colectiva, Fundación Luis Seoane, A Coruña.
+    
+    **Premios y becas**
+    
+    - 2019 — Accésit en el premio de pintura de la Diputación de Lugo.
+    
+    **Formación**
+    
+    - Bellas Artes, Universidad de Vigo (Pontevedra). Sin fecha.
+    falta: año de la exposición colectiva en la Fundación Luis Seoane, años de la formación en Bellas Artes, residencias o publicaciones, si las hay
+  Series (series)
+    **Terra queimada** (2017) — 14 cuadros sobre los incendios de 2017 en Galicia; su serie más importante. Se expuso en el Museo Provincial de Lugo en 2023.
+    
+    **Mujeres que sostienen las aldeas** (en proyecto) — serie nueva de retratos de vecinas suyas, que quiere empezar. Busca ayudas para la producción y para poder exponerla fuera de Galicia.
+    falta: medidas de las obras, años exactos de realización de Terra queimada, número previsto de obras de la serie nueva
+
+  speech 77.0 s · final dossier ready 11.8 s after the user stops
+
+━━━ Ilustrador (Valencia) · modo creator ━━━
+[ 93.9s] 🎙  buenas soy daniel okafor ilustrador vivo en valencia aunque me crié en vigo
+[ 97.0s] ⚙ extract #1 13 palabras → 4/4 ops  3095 ms, ttft 1407, lag 3095 ms in 88+2089c out 316
+  ✓ Nombre = Daniel Okafor  «buenas soy daniel okafor ilustrador vivo en valencia»
+  ✓ Disciplina = Ilustración  «soy daniel okafor ilustrador vivo en valencia»
+  ✓ Dónde vive/trabaja = Valencia  «ilustrador vivo en valencia aunque me crié en vigo»
+  ✓ Origen = Vigo  «vivo en valencia aunque me crié en vigo»
+  ? Encantado, Daniel. ¿En qué proyecto o serie estás trabajando ahora mismo?
+[ 99.4s] 📄 dossier #2 [bio] 2463 ms
+   bio: Daniel Okafor es ilustrador. Vive en Valencia, aunque se crió en Vigo.
+[ 99.5s] 🎙  hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa
+[101.2s] ⚙ extract #3 13 palabras → 1/1 ops  1658 ms, ttft 751, lag 1659 ms in 282+2089c out 146
+  ✓ Cómo describe su práctica = Álbum ilustrado infantil y algo de ilustración editorial para prensa  «hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa»
+  ? ¿Qué técnicas o materiales usas habitualmente en tus ilustraciones?
+[108.8s] 🎙  trabajo en digital con procreate pero cada vez más con gouache y lápices de colores porque me gusta que se note la mano
+[111.6s] ⚙ extract #4 23 palabras → 3/3 ops  2719 ms, ttft 978, lag 2720 ms in 398+2089c out 314
+  ✓ Técnicas y materiales + Procreate (digital) (trabajo digital)  «trabajo en digital con procreate pero cada vez más con gouache y lápices de colores»
+  ✓ Técnicas y materiales + Gouache (cada vez más)  «trabajo en digital con procreate pero cada vez más con gouache y lápices de colores»
+  ✓ Técnicas y materiales + Lápices de colores (cada vez más)  «trabajo en digital con procreate pero cada vez más con gouache y lápices de colores»
+  ? ¿Qué libros o series has publicado o estás desarrollando ahora mismo?
+[113.1s] 🎙  he publicado 6 álbumes con editorial faro de papel
+[113.9s] 📄 dossier #5 [statement] 2323 ms
+   statement: (vacío)
+[114.8s] ⚙ extract #5 9 palabras → 1/1 ops  1729 ms, ttft 919, lag 1730 ms in 639+2089c out 141
+  ✓ Publicaciones / clientes + Editorial Faro de Papel (Editorial Faro de Papel · 6 álbumes publicados)  «he publicado 6 álbumes con editorial faro de papel»
+  ? ¿Cómo se llaman esos álbumes o en qué años se publicaron?
+[117.3s] 🎙  bueno 7 si cuento el que sale en marzo
+[119.4s] ⚙ extract #7 9 palabras → 1/1 ops  2103 ms, ttft 925, lag 2104 ms in 747+2089c out 143
+  ↺ corrige Publicaciones / clientes + Editorial Faro de Papel (Editorial Faro de Papel · 7 álbumes contando el que sale en marzo)  «bueno 7 si cuento el que sale en marzo»
+  ? ¿Qué quieres conseguir o financiar con esta ayuda?
+[127.7s] 🎙  el último se llama la abuela que hablaba con las gaviotas es de 2024 y quedó finalista en el premio de álbum ilustrado ciudad de alicante
+[132.3s] ⚙ extract #8 26 palabras → 2/2 ops  4570 ms, ttft 2938, lag 4571 ms in 807+2089c out 243
+  ✓ Series / proyectos + La abuela que hablaba con las gaviotas (2024 · último álbum)  «el último se llama la abuela que hablaba con las gaviotas es de 2024»
+  ✓ Premios y becas + Premio de álbum ilustrado Ciudad de Alicante (Alicante · finalista)  «quedó finalista en el premio de álbum ilustrado ciudad de alicante»
+  ? ¿Qué te gustaría conseguir o financiar con esta beca?
+[133.4s] 🎙  también colaboro cada mes con la revista mar de fondo haciendo las portadas
+[135.3s] 📄 dossier #9 [cv] 3020 ms
+   cv: **Premios y becas**
+[136.0s] ⚙ extract #9 13 palabras → 1/1 ops  2608 ms, ttft 1265, lag 2609 ms in 1022+2089c out 150
+  ✓ Publicaciones / clientes + Revista Mar de Fondo (portadas, colaboración mensual)  «también colaboro cada mes con la revista mar de fondo haciendo las portadas»
+  ? ÂżQuĂ© proyecto o idea concreta te gustarĂa financiar con la ayuda?
+[139.3s] 📄 dossier #11 [cv] 3050 ms
+   cv: **Premios y becas**
+[142.0s] 🎙  mi proyecto personal es una novela gráfica sobre el viaje de mi padre desde lagos hasta vigo en los años 80
+[144.9s] ⚙ extract #12 21 palabras → 1/1 ops  2957 ms, ttft 1304, lag 2957 ms in 1149+2089c out 200
+  ✓ Series / proyectos + Novela gráfica sobre el viaje de mi padre desde Lagos hasta Vigo (proyecto personal, viaje en los años 80)  «mi proyecto personal es una novela gráfica sobre el viaje de mi padre desde lagos hasta vigo en los años 80»
+  ? ÂżQuĂŠ te gustarĂ­a conseguir o financiar con la beca para esa novela grĂĄfica?
+[146.9s] 🎙  se llama la otra orilla y llevo unas 40 páginas abocetadas
+[148.7s] 📄 dossier #13 [series] 3784 ms
+   series: **La abuela que hablaba con las gaviotas** (2024) — es su último álbum.
+[149.1s] ⚙ extract #13 11 palabras → 1/1 ops  2198 ms, ttft 1103, lag 2199 ms in 1302+2089c out 200
+  ↺ corrige Series / proyectos + La otra orilla (novela gráfica sobre el viaje de mi padre desde Lagos hasta Vigo en los años 80; unas 40 páginas abocetadas)  «se llama la otra orilla y llevo unas 40 páginas abocetadas»
+  ? ¿Qué te gustaría conseguir o financiar con esta ayuda, por ejemplo terminar La otra orilla?
+[151.8s] 📄 dossier #15 [series] 2681 ms
+   series: **La abuela que hablaba con las gaviotas** (2024) — su último álbum.
+[155.1s] 🎙  estudié bellas artes en la politécnica de valencia y luego un máster de ilustración en la escola massana en barcelona
+[158.0s] ⚙ extract #16 20 palabras → 2/2 ops  2823 ms, ttft 1168, lag 2823 ms in 1333+2089c out 230
+  ✓ Formación + Bellas Artes (Politécnica de Valencia)  «estudié bellas artes en la politécnica de valencia»
+  ✓ Formación + Máster de ilustración (Escola Massana, Barcelona)  «luego un máster de ilustración en la escola massana en barcelona»
+  ? ¿Qué te gustaría conseguir o financiar con esta ayuda, por ejemplo terminar La otra orilla?
+[162.1s] 📄 dossier #17 [cv] 4105 ms
+   cv: **Formación**
+[162.6s] 🎙  lo que necesito es una beca de creación para poder dedicarme 6 meses solo a la novela gráfica
+[165.2s] ⚙ extract #18 18 palabras → 1/1 ops  2553 ms, ttft 1014, lag 2554 ms in 1521+2089c out 159
+  ✓ Qué quiere conseguir / financiar = Una beca de creación para dedicarse 6 meses solo a la novela gráfica  «lo que necesito es una beca de creación para poder dedicarme 6 meses solo a la novela gráfica»
+  ? ВҝTienes alguna exposiciГіn o muestra reciente de tu trabajo que quieras incluir?
+[166.2s] 🎙  mi instagram es arroba dani punto dibuja
+[167.6s] ⚙ extract #19 7 palabras → 1/1 ops  1435 ms, ttft 750, lag 1436 ms in 1617+2089c out 113
+  ✓ Web / redes = Instagram: @dani.dibuja  «mi instagram es arroba dani punto dibuja»
+  ? ¿Has tenido alguna exposición o residencia recientes que quieras incluir?
+[169.2s] 📄 dossier #19 [statement] 4016 ms
+   statement: Soy ilustrador y hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa. Trabajo en digita…
+[177.7s] 📄 dossier-final #21 [bio, statement, series, cv] 8442 ms
+   bio: Daniel Okafor (Vigo) es ilustrador y vive en Valencia. Hace sobre todo álbum ilustrado infantil y algo de ilustración ed…
+   statement: Soy ilustrador y hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa. Trabajo en digita…
+   series: **La abuela que hablaba con las gaviotas** (2024) — su último álbum.
+   cv: **Formación**
+
+  Perfil final (17 datos):
+  Nombre: Daniel Okafor
+      «buenas soy daniel okafor ilustrador vivo en valencia»
+  Disciplina: Ilustración
+      «soy daniel okafor ilustrador vivo en valencia»
+  Dónde vive/trabaja: Valencia
+      «ilustrador vivo en valencia aunque me crié en vigo»
+  Origen: Vigo
+      «vivo en valencia aunque me crié en vigo»
+  Cómo describe su práctica: Álbum ilustrado infantil y algo de ilustración editorial para prensa
+      «hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa»
+  Qué quiere conseguir / financiar: Una beca de creación para dedicarse 6 meses solo a la novela gráfica
+      «lo que necesito es una beca de creación para poder dedicarme 6 meses solo a la novela gráfica»
+  Web / redes: Instagram: @dani.dibuja
+      «mi instagram es arroba dani punto dibuja»
+  Técnicas y materiales:
+    - Procreate (digital) — trabajo digital
+        «trabajo en digital con procreate pero cada vez más con gouache y lápices de colores»
+    - Gouache — cada vez más
+        «trabajo en digital con procreate pero cada vez más con gouache y lápices de colores»
+    - Lápices de colores — cada vez más
+        «trabajo en digital con procreate pero cada vez más con gouache y lápices de colores»
+  Series / proyectos:
+    - La abuela que hablaba con las gaviotas — 2024 · último álbum
+        «el último se llama la abuela que hablaba con las gaviotas es de 2024»
+    - La otra orilla — novela gráfica sobre el viaje de mi padre desde Lagos hasta Vigo en los años 80; unas 40 páginas abocetadas  (corregido; antes: Novela gráfica sobre el viaje de mi padre desde Lagos hasta Vigo)
+        «se llama la otra orilla y llevo unas 40 páginas abocetadas»
+  Formación:
+    - Bellas Artes — Politécnica de Valencia
+        «estudié bellas artes en la politécnica de valencia»
+    - Máster de ilustración — Escola Massana, Barcelona
+        «luego un máster de ilustración en la escola massana en barcelona»
+  Premios y becas:
+    - Premio de álbum ilustrado Ciudad de Alicante — Alicante · finalista
+        «quedó finalista en el premio de álbum ilustrado ciudad de alicante»
+  Publicaciones / clientes:
+    - Editorial Faro de Papel — Editorial Faro de Papel · 7 álbumes contando el que sale en marzo  (corregido; antes: Editorial Faro de Papel)
+        «bueno 7 si cuento el que sale en marzo»
+    - Revista Mar de Fondo — portadas, colaboración mensual
+        «también colaboro cada mes con la revista mar de fondo haciendo las portadas»
+
+  Dossier:
+  Biografía breve (bio)
+    Daniel Okafor (Vigo) es ilustrador y vive en Valencia. Hace sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa. Estudió Bellas Artes en la Politécnica de Valencia y cursó un máster de ilustración en la Escola Massana de Barcelona.
+    falta: año de nacimiento o trayectoria resumida (opcional)
+  Statement (statement)
+    Soy ilustrador y hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa. Trabajo en digital con Procreate, pero cada vez más con gouache y lápices de colores.
+    
+    Ahora mismo estoy con un proyecto de novela gráfica, *La otra orilla*, sobre el viaje de mi padre desde Lagos hasta Vigo en los años 80. Llevo unas 40 páginas abocetadas y lo que necesito es una beca de creación para poder dedicarme seis meses solo a ella.
+    falta: por qué le interesa contar estas historias, qué busca en el álbum infantil frente a la novela gráfica
+  CV artístico (cv)
+    **Formación**
+    - Máster de ilustración, Escola Massana (Barcelona).
+    - Bellas Artes, Politécnica de Valencia.
+    
+    **Premios y becas**
+    - Finalista en el Premio de álbum ilustrado Ciudad de Alicante (Alicante).
+    
+    **Publicaciones**
+    - *La abuela que hablaba con las gaviotas* (2024), último álbum.
+    - Editorial Faro de Papel: 7 álbumes, contando el que sale en marzo.
+    - Revista Mar de Fondo: colaboración mensual con las portadas.
+    falta: años de la formación, año del premio Ciudad de Alicante y título del álbum finalista, desde cuándo colabora con Mar de Fondo, exposiciones, residencias y becas anteriores (si las hay)
+  Series (series)
+    **La abuela que hablaba con las gaviotas** (2024) — su último álbum.
+    
+    **La otra orilla** — novela gráfica sobre el viaje de su padre desde Lagos hasta Vigo en los años 80. Lleva unas 40 páginas abocetadas.
+    falta: editorial y formato de La abuela que hablaba con las gaviotas, año de inicio de La otra orilla, títulos y años de los otros álbumes
+
+  speech 78.0 s · final dossier ready 10.8 s after the user stops
+
+━━━ Conservera artesanal (Boiro) · modo business ━━━
+[183.1s] 🎙  hola soy marta castro y con mi hermana tenemos una conservera artesanal en boiro
+[186.3s] ⚙ extract #1 14 palabras → 4/4 ops  3242 ms, ttft 1369, lag 3243 ms in 86+2053c out 353
+  ✓ Persona de contacto = Marta Castro  «hola soy marta castro y con mi hermana tenemos una conservera artesanal en boiro»
+  ✓ Actividad = Conservera artesanal  «con mi hermana tenemos una conservera artesanal en boiro»
+  ✓ Ubicación = Boiro  «con mi hermana tenemos una conservera artesanal en boiro»
+  ✓ Equipo + Hermana de Marta (socia de la conservera)  «con mi hermana tenemos una conservera artesanal en boiro»
+  ? ¿Cuándo empezasteis con la conservera y qué te gustaría financiar?
+[188.6s] 📄 dossier #2 [activity] 2323 ms
+   activity: Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro.
+[188.7s] 🎙  se llama conservas da ría es una sociedad limitada que montamos en 2019
+[192.0s] ⚙ extract #3 13 palabras → 3/3 ops  3290 ms, ttft 1444, lag 3290 ms in 321+2053c out 272
+  ✓ Nombre comercial = Conservas da Ría  «se llama conservas da ría es una sociedad limitada que montamos en 2019»
+  ✓ Forma jurídica = Sociedad limitada  «es una sociedad limitada que montamos en 2019»
+  ✓ Año de creación = 2019  «es una sociedad limitada que montamos en 2019»
+  ? ¿Cuántas personas trabajáis en la conservera y qué productos elaboráis?
+[194.3s] 📄 dossier #4 [activity] 2230 ms
+   activity: Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro. Se llama Conservas da Ría, una sociedad li…
+[197.3s] 🎙  hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho
+[200.5s] ⚙ extract #5 21 palabras → 3/3 ops  3156 ms, ttft 841, lag 3156 ms in 500+2053c out 436
+  ✓ Productos / servicios + Mejillón en conserva (en aceite de oliva, de la ría de Arousa)  «hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho»
+  ✓ Productos / servicios + Sardinilla en conserva (en aceite de oliva, de la ría de Arousa)  «hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho»
+  ✓ Productos / servicios + Berberecho en conserva (en aceite de oliva, de la ría de Arousa)  «hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho»
+  ? ¿Cuántas personas trabajáis en la conservera y qué te gustaría financiar con la ayuda?
+[203.4s] 📄 dossier #6 [activity] 2900 ms
+   activity: Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro. Se llama Conservas da Ría, una sociedad li…
+[204.4s] 🎙  somos 4 personas mi hermana lleva la producción yo llevo la parte comercial y tenemos dos operarias
+[207.8s] ⚙ extract #7 17 palabras → 4/4 ops  3334 ms, ttft 1199, lag 3334 ms in 867+2053c out 353
+  ✓ Plantilla = 4 personas  «somos 4 personas mi hermana lleva la producción yo llevo la parte comercial y tenemos dos operarias»
+  ↺ corrige Equipo + Hermana de Marta (socia, lleva la producción)  «mi hermana lleva la producción yo llevo la parte comercial»
+  ✓ Equipo + Marta Castro (lleva la parte comercial)  «yo llevo la parte comercial y tenemos dos operarias»
+  ✓ Equipo + Dos operarias (personal de producción)  «tenemos dos operarias»
+  ? ¿Qué te gustaría conseguir o financiar con la ayuda?
+[209.8s] 🎙  bueno 5 desde septiembre que entró una chica para la tienda online
+[210.6s] 📄 dossier #8 [team] 2818 ms
+   team: Somos 4 personas en Conservas da Ría:
+[212.6s] ⚙ extract #8 12 palabras → 3/3 ops  2841 ms, ttft 1206, lag 2841 ms in 1064+2053c out 276
+  ↺ corrige Plantilla = 5 personas  «bueno 5 desde septiembre que entró una chica para la tienda online»
+  ✓ Equipo + Chica de la tienda online (entró en septiembre para la tienda online)  «5 desde septiembre que entró una chica para la tienda online»
+  ✓ Herramientas / situación digital + Tienda online  «que entró una chica para la tienda online»
+  ? ¿Qué te gustaría conseguir o financiar con la ayuda?
+[214.9s] 📄 dossier #10 [team] 2327 ms
+   team: Somos 5 personas en Conservas da Ría:
+[216.5s] 🎙  vendemos a tiendas gourmet de toda españa y desde hace un año también por la web
+[219.7s] ⚙ extract #11 16 palabras → 2/2 ops  3124 ms, ttft 1397, lag 3125 ms in 1208+2053c out 228
+  ✓ Clientes / canales / mercados + Tiendas gourmet de toda España (España · venta a tiendas gourmet)  «vendemos a tiendas gourmet de toda españa y desde hace un año también por la web»
+  ✓ Clientes / canales / mercados + Venta por la web (desde hace un año)  «vendemos a tiendas gourmet de toda españa y desde hace un año también por la web»
+  ? ¿Qué os gustaría conseguir o financiar con la ayuda?
+[220.1s] 🎙  el año pasado facturamos unos 280000 euros
+[222.4s] ⚙ extract #12 7 palabras → 1/1 ops  2302 ms, ttft 1251, lag 2303 ms in 1391+2053c out 115
+  ✓ Facturación = unos 280.000 euros (el año pasado)  «el año pasado facturamos unos 280000 euros»
+  ? ¿Qué te gustaría conseguir o financiar con la ayuda?
+[222.9s] 📄 dossier #12 [activity] 3247 ms
+   activity: Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro. Se llama Conservas da Ría, una sociedad li…
+[227.0s] 📄 dossier #14 [activity] 3294 ms
+   activity: Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro. Se llama Conservas da Ría, una sociedad li…
+[229.4s] 🎙  tenemos el sello galicia calidade y en 2022 hicimos un proyecto con la universidade da coruña para aprovechar los descartes de la pesca
+[232.1s] ⚙ extract #15 23 palabras → 2/2 ops  2700 ms, ttft 1277, lag 2701 ms in 1492+2053c out 267
+  ✓ Sellos, premios, certificaciones + Sello Galicia Calidade  «tenemos el sello galicia calidade y en 2022 hicimos un proyecto»
+  ✓ Proyectos + Aprovechamiento de los descartes de la pesca (2022 · Universidade da Coruña · proyecto en colaboración con la universidad)  «en 2022 hicimos un proyecto con la universidade da coruña para aprovechar los descartes de la pesca»
+  ? ¿Qué te gustaría conseguir o financiar con esta ayuda?
+[235.4s] 🎙  ahora mismo los pedidos y el stock los llevamos todo con excel y papel
+[236.3s] 📄 dossier #16 [activity, projects] 4287 ms
+   activity: Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro. Se llama Conservas da Ría, una sociedad li…
+   projects: En 2022 hicimos un proyecto con la Universidade da Coruña para aprovechar los descartes de la pesca.
+[237.7s] ⚙ extract #16 14 palabras → 1/1 ops  2252 ms, ttft 1098, lag 2253 ms in 1718+2053c out 174
+  ✓ Herramientas / situación digital + Excel y papel para pedidos y stock (pedidos y stock se llevan con Excel y papel)  «los pedidos y el stock los llevamos todo con excel y papel»
+  ? ¿Qué te gustaría conseguir o financiar con una ayuda, por ejemplo digitalizar la gestión?
+[240.9s] 📄 dossier #18 [projects] 3288 ms
+   projects: En 2022 hicimos un proyecto con la Universidade da Coruña para aprovechar los descartes de la pesca.
+[241.5s] 🎙  queremos digitalizar eso y empezar a exportar a francia que nos lo piden mucho
+[243.4s] ⚙ extract #19 14 palabras → 2/2 ops  1974 ms, ttft 754, lag 1975 ms in 1834+2053c out 237
+  ✓ Qué quiere conseguir / financiar = Digitalizar la gestión de pedidos y stock y empezar a exportar a Francia  «queremos digitalizar eso y empezar a exportar a francia que nos lo piden mucho»
+  ✓ Clientes / canales / mercados + Exportación a Francia (Francia · se lo piden mucho; quieren empezar a exportar)  «empezar a exportar a francia que nos lo piden mucho»
+  ? ¿Tienes ya una página web o redes sociales que podamos añadir al perfil?
+[248.6s] 📄 dossier #20 [projects, activity] 5127 ms
+   projects: En 2022 hicimos un proyecto con la Universidade da Coruña para aprovechar los descartes de la pesca.
+   activity: Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro. Se llama Conservas da Ría, una sociedad li…
+[254.6s] 📄 dossier-final #21 [activity, team, projects] 6015 ms
+   activity: Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro. Se llama Conservas da Ría, una sociedad li…
+   team: Somos 5 personas en Conservas da Ría:
+   projects: En 2022 hicimos un proyecto con la Universidade da Coruña para aprovechar los descartes de la pesca.
+
+  Perfil final (23 datos):
+  Persona de contacto: Marta Castro
+      «hola soy marta castro y con mi hermana tenemos una conservera artesanal en boiro»
+  Nombre comercial: Conservas da Ría
+      «se llama conservas da ría es una sociedad limitada que montamos en 2019»
+  Forma jurídica: Sociedad limitada
+      «es una sociedad limitada que montamos en 2019»
+  Actividad: Conservera artesanal
+      «con mi hermana tenemos una conservera artesanal en boiro»
+  Ubicación: Boiro
+      «con mi hermana tenemos una conservera artesanal en boiro»
+  Año de creación: 2019
+      «es una sociedad limitada que montamos en 2019»
+  Plantilla: 5 personas  (corregido; antes: 4 personas)
+      «bueno 5 desde septiembre que entró una chica para la tienda online»
+  Facturación: unos 280.000 euros (el año pasado)
+      «el año pasado facturamos unos 280000 euros»
+  Qué quiere conseguir / financiar: Digitalizar la gestión de pedidos y stock y empezar a exportar a Francia
+      «queremos digitalizar eso y empezar a exportar a francia que nos lo piden mucho»
+  Equipo:
+    - Hermana de Marta — socia, lleva la producción  (corregido; antes: Hermana de Marta)
+        «mi hermana lleva la producción yo llevo la parte comercial»
+    - Marta Castro — lleva la parte comercial
+        «yo llevo la parte comercial y tenemos dos operarias»
+    - Dos operarias — personal de producción
+        «tenemos dos operarias»
+    - Chica de la tienda online — entró en septiembre para la tienda online
+        «5 desde septiembre que entró una chica para la tienda online»
+  Productos / servicios:
+    - Mejillón en conserva — en aceite de oliva, de la ría de Arousa
+        «hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho»
+    - Sardinilla en conserva — en aceite de oliva, de la ría de Arousa
+        «hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho»
+    - Berberecho en conserva — en aceite de oliva, de la ría de Arousa
+        «hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho»
+  Clientes / canales / mercados:
+    - Tiendas gourmet de toda España — España · venta a tiendas gourmet
+        «vendemos a tiendas gourmet de toda españa y desde hace un año también por la web»
+    - Venta por la web — desde hace un año
+        «vendemos a tiendas gourmet de toda españa y desde hace un año también por la web»
+    - Exportación a Francia — Francia · se lo piden mucho; quieren empezar a exportar
+        «empezar a exportar a francia que nos lo piden mucho»
+  Proyectos:
+    - Aprovechamiento de los descartes de la pesca — 2022 · Universidade da Coruña · proyecto en colaboración con la universidad
+        «en 2022 hicimos un proyecto con la universidade da coruña para aprovechar los descartes de la pesca»
+  Sellos, premios, certificaciones:
+    - Sello Galicia Calidade
+        «tenemos el sello galicia calidade y en 2022 hicimos un proyecto»
+  Herramientas / situación digital:
+    - Tienda online
+        «que entró una chica para la tienda online»
+    - Excel y papel para pedidos y stock — pedidos y stock se llevan con Excel y papel
+        «los pedidos y el stock los llevamos todo con excel y papel»
+
+  Dossier:
+  Presentación y actividad (activity)
+    Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro. Se llama Conservas da Ría, una sociedad limitada que montamos en 2019.
+    
+    Hacemos conservas de pescado y marisco de la ría de Arousa en aceite de oliva, sobre todo mejillón, sardinilla y berberecho. Tenemos el sello Galicia Calidade.
+    
+    Vendemos a tiendas gourmet de toda España y, desde hace un año, también por la web. Somos 5 personas desde septiembre, cuando entró una chica para la tienda online. El año pasado facturamos unos 280.000 euros.
+    
+    Ahora queremos digitalizar la gestión de pedidos y stock y empezar a exportar a Francia, que nos lo piden mucho.
+  Equipo (team)
+    Somos 5 personas en Conservas da Ría:
+    
+    - **Mi hermana**, socia, lleva la producción.
+    - **Marta Castro**: yo llevo la parte comercial.
+    - **Dos operarias** de producción.
+    - **Una chica para la tienda online**, que entró en septiembre.
+  Proyectos y necesidades (projects)
+    En 2022 hicimos un proyecto con la Universidade da Coruña para aprovechar los descartes de la pesca.
+    
+    De cara al futuro, queremos digitalizar la gestión de pedidos y stock, que ahora llevamos todo con Excel y papel, y empezar a exportar a Francia, que nos lo piden mucho.
+    falta: resultados del proyecto con la Universidade da Coruña, presupuesto o importe necesario para la digitalización y la exportación, plazos previstos
+
+  speech 64.4 s · final dossier ready 12.5 s after the user stops
+
+━━━ Ficha técnica por voz (obra de la pintora) ━━━
+🎙  esta se llama a última fía es de 2023 óleo y pigmento de tierra sobre lienzo mide 130 por 97 es la primera de la serie nueva de las mujeres de la aldea es mi vecina carmen hilando en la cocina quería que se viera que el trabajo de ellas es lo que mantiene viva la aldea bueno el año en realidad es 2024 la terminé en enero
+⚙ sheet 5440 ms, ttft 3200
+  title: A última fía [voz] «esta se llama a última fía»
+  year: 2024 [voz] «bueno el año en realidad es 2024 la terminé en enero»
+  technique: Óleo y pigmento de tierra [voz] «óleo y pigmento de tierra sobre lienzo»
+  support: Lienzo [voz] «óleo y pigmento de tierra sobre lienzo»
+  series: Las mujeres de la aldea [voz] «es la primera de la serie nueva de las mujeres de la aldea»
+  concept: Es mi vecina Carmen hilando en la cocina. Quería que se viera que el trabajo de ellas es lo que mantiene viva la aldea. [voz] «es mi vecina carmen hilando en la cocina quería que se viera que el trabajo de ellas es lo que mantiene viva la aldea»
+  dimensions: 130 × 97 cm «mide 130 por 97»
+
+━━━ Latency summary (MEASURED) ━━━
+┌─────────┬─────────────────┬────┬──────┬──────┬──────┬──────────┬─────────┬─────────┐
+│ (index) │ type            │ n  │ p50  │ p95  │ max  │ ttft_p50 │ lag_p50 │ lag_p95 │
+├─────────┼─────────────────┼────┼──────┼──────┼──────┼──────────┼─────────┼─────────┤
+│ 0       │ 'extract'       │ 33 │ 2700 │ 4570 │ 5478 │ 1168     │ 2701    │ 4571    │
+│ 1       │ 'dossier'       │ 25 │ 3050 │ 5127 │ 5978 │ 1289     │ null    │ null    │
+│ 2       │ 'dossier-final' │ 3  │ 8442 │ 9252 │ 9252 │ 1226     │ null    │ null    │
+│ 3       │ 'sheet'         │ 1  │ 5440 │ 5440 │ 5440 │ 3200     │         │         │
+└─────────┴─────────────────┴────┴──────┴──────┴──────┴──────────┴─────────┴─────────┘
+latency = request → full JSON; lag = speech final result → profile updated on screen (queue wait + latency)
+  painter: 11 extract calls for 15 facts, 0 rejected ops, tail after stop 11.8 s, tokens in 47622 / out 6387
+  illustrator: 12 extract calls for 17 facts, 0 rejected ops, tail after stop 10.8 s, tokens in 54590 / out 6098
+  business: 10 extract calls for 23 facts, 0 rejected ops, tail after stop 12.5 s, tokens in 55448 / out 7507
+
+raw results: results/live-x1-2026-11-13T20-30-18-167Z.json

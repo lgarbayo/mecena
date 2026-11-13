@@ -1,0 +1,178 @@
+{
+  "id": "business",
+  "mode": "business",
+  "from": "live run 13/11/2026, claude-sonnet-5-5 (results/live-sonnet-run.txt)",
+  "profile": {
+    "fields": {
+      "contact_name": {
+        "value": "Marta Castro",
+        "source": "hola soy marta castro y con mi hermana tenemos una conservera artesanal en boiro"
+      },
+      "activity": {
+        "value": "Conservera artesanal",
+        "source": "con mi hermana tenemos una conservera artesanal en boiro"
+      },
+      "location": {
+        "value": "Boiro",
+        "source": "con mi hermana tenemos una conservera artesanal en boiro"
+      },
+      "business_name": {
+        "value": "Conservas da Ría",
+        "source": "se llama conservas da ría es una sociedad limitada que montamos en 2019"
+      },
+      "legal_form": {
+        "value": "Sociedad limitada",
+        "source": "es una sociedad limitada que montamos en 2019"
+      },
+      "founded_year": {
+        "value": "2019",
+        "source": "es una sociedad limitada que montamos en 2019"
+      },
+      "employees": {
+        "value": "5 personas",
+        "source": "bueno 5 desde septiembre que entró una chica para la tienda online"
+      },
+      "revenue": {
+        "value": "unos 280.000 euros (el año pasado)",
+        "source": "el año pasado facturamos unos 280000 euros"
+      },
+      "goals": {
+        "value": "Digitalizar la gestión de pedidos y stock y empezar a exportar a Francia",
+        "source": "queremos digitalizar eso y empezar a exportar a francia que nos lo piden mucho"
+      }
+    },
+    "lists": {
+      "team": {
+        "hermana": {
+          "title": "Hermana de Marta",
+          "year": "",
+          "place": "",
+          "detail": "socia, lleva la producción",
+          "source": "mi hermana lleva la producción yo llevo la parte comercial"
+        },
+        "marta": {
+          "title": "Marta Castro",
+          "year": "",
+          "place": "",
+          "detail": "lleva la parte comercial",
+          "source": "yo llevo la parte comercial y tenemos dos operarias"
+        },
+        "operarias": {
+          "title": "Dos operarias",
+          "year": "",
+          "place": "",
+          "detail": "personal de producción",
+          "source": "tenemos dos operarias"
+        },
+        "chica-tienda-online": {
+          "title": "Chica de la tienda online",
+          "year": "",
+          "place": "",
+          "detail": "entró en septiembre para la tienda online",
+          "source": "5 desde septiembre que entró una chica para la tienda online"
+        }
+      },
+      "products": {
+        "mejillon": {
+          "title": "Mejillón en conserva",
+          "year": "",
+          "place": "",
+          "detail": "en aceite de oliva, de la ría de Arousa",
+          "source": "hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho"
+        },
+        "sardinilla": {
+          "title": "Sardinilla en conserva",
+          "year": "",
+          "place": "",
+          "detail": "en aceite de oliva, de la ría de Arousa",
+          "source": "hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho"
+        },
+        "berberecho": {
+          "title": "Berberecho en conserva",
+          "year": "",
+          "place": "",
+          "detail": "en aceite de oliva, de la ría de Arousa",
+          "source": "hacemos conservas de pescado y marisco de la ría de arousa en aceite de oliva sobre todo mejillón sardinilla y berberecho"
+        }
+      },
+      "markets": {
+        "tiendas-gourmet": {
+          "title": "Tiendas gourmet de toda España",
+          "year": "",
+          "place": "España",
+          "detail": "venta a tiendas gourmet",
+          "source": "vendemos a tiendas gourmet de toda españa y desde hace un año también por la web"
+        },
+        "venta-web": {
+          "title": "Venta por la web",
+          "year": "",
+          "place": "",
+          "detail": "desde hace un año",
+          "source": "vendemos a tiendas gourmet de toda españa y desde hace un año también por la web"
+        },
+        "francia": {
+          "title": "Exportación a Francia",
+          "year": "",
+          "place": "Francia",
+          "detail": "se lo piden mucho; quieren empezar a exportar",
+          "source": "empezar a exportar a francia que nos lo piden mucho"
+        }
+      },
+      "projects": {
+        "descartes-udc": {
+          "title": "Aprovechamiento de los descartes de la pesca",
+          "year": "2022",
+          "place": "Universidade da Coruña",
+          "detail": "proyecto en colaboración con la universidad",
+          "source": "en 2022 hicimos un proyecto con la universidade da coruña para aprovechar los descartes de la pesca"
+        }
+      },
+      "certifications": {
+        "galicia-calidade": {
+          "title": "Sello Galicia Calidade",
+          "year": "",
+          "place": "",
+          "detail": "",
+          "source": "tenemos el sello galicia calidade y en 2022 hicimos un proyecto"
+        }
+      },
+      "tools": {
+        "tienda-online": {
+          "title": "Tienda online",
+          "year": "",
+          "place": "",
+          "detail": "",
+          "source": "que entró una chica para la tienda online"
+        },
+        "excel-papel": {
+          "title": "Excel y papel para pedidos y stock",
+          "year": "",
+          "place": "",
+          "detail": "pedidos y stock se llevan con Excel y papel",
+          "source": "los pedidos y el stock los llevamos todo con excel y papel"
+        }
+      }
+    }
+  },
+  "dossier": {
+    "activity": {
+      "title": "Presentación y actividad",
+      "body": "Somos Marta Castro y mi hermana, y tenemos una conservera artesanal en Boiro. Se llama Conservas da Ría, una sociedad limitada que montamos en 2019.\n\nHacemos conservas de pescado y marisco de la ría de Arousa en aceite de oliva, sobre todo mejillón, sardinilla y berberecho. Tenemos el sello Galicia Calidade.\n\nVendemos a tiendas gourmet de toda España y, desde hace un año, también por la web. Somos 5 personas desde septiembre, cuando entró una chica para la tienda online. El año pasado facturamos unos 280.000 euros.\n\nAhora queremos digitalizar la gestión de pedidos y stock y empezar a exportar a Francia, que nos lo piden mucho.",
+      "missing": []
+    },
+    "team": {
+      "title": "Equipo",
+      "body": "Somos 5 personas en Conservas da Ría:\n\n- **Mi hermana**, socia, lleva la producción.\n- **Marta Castro**: yo llevo la parte comercial.\n- **Dos operarias** de producción.\n- **Una chica para la tienda online**, que entró en septiembre.",
+      "missing": []
+    },
+    "projects": {
+      "title": "Proyectos y necesidades",
+      "body": "En 2022 hicimos un proyecto con la Universidade da Coruña para aprovechar los descartes de la pesca.\n\nDe cara al futuro, queremos digitalizar la gestión de pedidos y stock, que ahora llevamos todo con Excel y papel, y empezar a exportar a Francia, que nos lo piden mucho.",
+      "missing": [
+        "resultados del proyecto con la Universidade da Coruña",
+        "presupuesto o importe necesario para la digitalización y la exportación",
+        "plazos previstos"
+      ]
+    }
+  }
+}
