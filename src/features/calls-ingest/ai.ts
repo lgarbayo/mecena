@@ -57,6 +57,8 @@ function toCall(x: z.infer<typeof Extracted>, sourceUrl: string, bdnsId?: string
   const seen = new Set<string>();
   return {
     id: `bdns-${bdnsId ?? "unknown"}`,
+    beneficiaryTypes: [],
+    territories: [],
     title: x.title,
     organizer: x.organizer,
     type: x.type,
@@ -100,6 +102,8 @@ export const callsIngestAi: AiSlice<"structureCall"> = {
     async structureCall({ rawText, sourceUrl, bdnsId }): Promise<Call> {
       return {
         id: `bdns-${bdnsId ?? "unknown"}`,
+        beneficiaryTypes: [],
+        territories: [],
         title: rawText.replace(/^Título:\s*/, "").split("\n")[0].slice(0, 80) || "Convocatoria",
         organizer: "Desconocido",
         type: "convocatoria",

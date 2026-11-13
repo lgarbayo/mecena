@@ -9,6 +9,13 @@
     "beneficiaryKinds": [
       "business"
     ],
+    "beneficiaryTypes": [
+      "autonomo",
+      "pyme"
+    ],
+    "territories": [
+      "ES11"
+    ],
     "disciplines": [],
     "sectors": [],
     "eligibility": {
@@ -61,6 +68,10 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
     "disciplines": [
       "fotografia"
     ],
@@ -135,6 +146,10 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
     "disciplines": [
       "ilustracion",
       "diseno-grafico"
@@ -220,6 +235,11 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
     "disciplines": [
       "pintura",
       "fotografia",
@@ -275,6 +295,13 @@
     "region": "Galicia",
     "beneficiaryKinds": [
       "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme",
+      "autonomo"
+    ],
+    "territories": [
+      "ES11"
     ],
     "disciplines": [],
     "sectors": [
@@ -334,6 +361,11 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
     "disciplines": [
       "arte-urbano",
       "pintura"
@@ -390,6 +422,11 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
     "disciplines": [
       "fotografia"
     ],
@@ -443,6 +480,12 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo",
+      "colectivo"
+    ],
+    "territories": [],
     "disciplines": [
       "artes-visuales",
       "fotografia",
@@ -497,6 +540,10 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
     "disciplines": [
       "ilustracion",
       "diseno-grafico"
@@ -598,6 +645,11 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
     "disciplines": [
       "ilustracion",
       "diseno-grafico",
@@ -651,6 +703,10 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
     "disciplines": [
       "poesia"
     ],
@@ -706,6 +762,10 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
     "disciplines": [
       "pintura",
       "escultura"
@@ -759,6 +819,11 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "colectivo"
+    ],
+    "territories": [],
     "disciplines": [
       "artes-visuales"
     ],
@@ -821,6 +886,10 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
     "disciplines": [
       "narrativa"
     ],
@@ -898,6 +967,11 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
     "disciplines": [
       "narrativa",
       "poesia",
@@ -953,6 +1027,12 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo",
+      "pyme"
+    ],
+    "territories": [],
     "disciplines": [
       "cine",
       "animacion",
@@ -1010,6 +1090,12 @@
     "scope": "local",
     "beneficiaryKinds": [
       "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [
+      "ES"
     ],
     "disciplines": [
       "narrativa"
@@ -1084,6 +1170,11 @@
     "beneficiaryKinds": [
       "business"
     ],
+    "beneficiaryTypes": [
+      "pyme",
+      "autonomo"
+    ],
+    "territories": [],
     "disciplines": [
       "cine",
       "animacion",
@@ -1184,6 +1275,11 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "colectivo"
+    ],
+    "territories": [],
     "disciplines": [
       "artes-visuales",
       "arte-urbano",
@@ -1268,6 +1364,12 @@
     "beneficiaryKinds": [
       "creator"
     ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [
+      "ES111"
+    ],
     "disciplines": [
       "ilustracion",
       "artes-visuales",
@@ -1347,6 +1449,13 @@
       "creator",
       "business"
     ],
+    "beneficiaryTypes": [
+      "autonomo",
+      "pyme"
+    ],
+    "territories": [
+      "ES11"
+    ],
     "disciplines": [
       "artesania"
     ],
@@ -1394,6 +1503,12 @@
     "region": "Galicia",
     "beneficiaryKinds": [
       "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme"
+    ],
+    "territories": [
+      "ES11"
     ],
     "disciplines": [],
     "sectors": [],
@@ -1449,6 +1564,12 @@
     "beneficiaryKinds": [
       "business"
     ],
+    "beneficiaryTypes": [
+      "autonomo"
+    ],
+    "territories": [
+      "ES11"
+    ],
     "disciplines": [],
     "sectors": [],
     "eligibility": {
@@ -1496,6 +1617,13 @@
     "region": "Galicia",
     "beneficiaryKinds": [
       "business"
+    ],
+    "beneficiaryTypes": [
+      "autonomo",
+      "pyme"
+    ],
+    "territories": [
+      "ES11"
     ],
     "disciplines": [],
     "sectors": [],
@@ -1547,6 +1675,12 @@
     "beneficiaryKinds": [
       "creator",
       "business"
+    ],
+    "beneficiaryTypes": [
+      "autonomo"
+    ],
+    "territories": [
+      "ES11"
     ],
     "disciplines": [],
     "sectors": [],

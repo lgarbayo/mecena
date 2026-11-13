@@ -8,7 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { Call, serverEnv, type AiService } from "@/contracts";
-import { bdnsToCallPatch } from "@/features/normalize";
+import { bdnsToCallPatch, withCanonicalCallFields } from "@/features/normalize";
 
 export interface BdnsDetail {
   codigoBDNS: string;
@@ -170,7 +170,7 @@ export async function runIngest(opts: IngestOptions): Promise<IngestResult> {
           source: "bdns",
           verifiedAt: today,
         });
-        out.push(call);
+        out.push(withCanonicalCallFields(call));
       } catch (e) {
         skipped.push({ bdnsId: code, reason: `no estructurable: ${e instanceof Error ? e.message.slice(0, 120) : e}` });
       }
