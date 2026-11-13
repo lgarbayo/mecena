@@ -1,6 +1,6 @@
 {
-  "bdns-880749": {
-    "callId": "bdns-880749",
+  "igape-re-acciona-2026": {
+    "callId": "igape-re-acciona-2026",
     "bdnsId": "880749",
     "editionsFound": 0,
     "editionsWithAwards": 0,
@@ -8,8 +8,8 @@
     "evidence": "No hay ediciones anteriores en la BDNS.",
     "builtAt": "2026-11-13"
   },
-  "bdns-939879": {
-    "callId": "bdns-939879",
+  "a-laracha-concurso-fotografia-2026": {
+    "callId": "a-laracha-concurso-fotografia-2026",
     "bdnsId": "939879",
     "editionsFound": 0,
     "editionsWithAwards": 0,
@@ -17,8 +17,8 @@
     "evidence": "No hay ediciones anteriores en la BDNS.",
     "builtAt": "2026-11-13"
   },
-  "bdns-939239": {
-    "callId": "bdns-939239",
+  "calahorra-cartel-jornadas-verdura-2027": {
+    "callId": "calahorra-cartel-jornadas-verdura-2027",
     "bdnsId": "939239",
     "editionsFound": 1,
     "editionsWithAwards": 1,
@@ -47,8 +47,8 @@
       "persona": 1
     }
   },
-  "bdns-926278": {
-    "callId": "bdns-926278",
+  "turismo-galicia-eficiencia-energetica-tu986b-2026": {
+    "callId": "turismo-galicia-eficiencia-energetica-tu986b-2026",
     "bdnsId": "926278",
     "editionsFound": 0,
     "editionsWithAwards": 0,
@@ -56,8 +56,8 @@
     "evidence": "No hay ediciones anteriores en la BDNS.",
     "builtAt": "2026-11-13"
   },
-  "bdns-939684": {
-    "callId": "bdns-939684",
+  "cabra-cartel-carnaval-2027": {
+    "callId": "cabra-cartel-carnaval-2027",
     "bdnsId": "939684",
     "editionsFound": 2,
     "editionsWithAwards": 0,
@@ -82,8 +82,8 @@
     "evidence": "2 ediciones anteriores en la BDNS; 0 con premiados publicados. Muestra pequeña: tómalo como orientación.",
     "builtAt": "2026-11-13"
   },
-  "bdns-935589": {
-    "callId": "bdns-935589",
+  "fornelos-premio-poesia-lueiro-rey-2026": {
+    "callId": "fornelos-premio-poesia-lueiro-rey-2026",
     "bdnsId": "935589",
     "editionsFound": 5,
     "editionsWithAwards": 0,
@@ -132,8 +132,8 @@
     "evidence": "5 ediciones anteriores en la BDNS; 0 con premiados publicados. Muestra pequeña: tómalo como orientación.",
     "builtAt": "2026-11-13"
   },
-  "bdns-934864": {
-    "callId": "bdns-934864",
+  "ua-bienal-pluri-identitats-2027": {
+    "callId": "ua-bienal-pluri-identitats-2027",
     "bdnsId": "934864",
     "editionsFound": 2,
     "editionsWithAwards": 0,
@@ -158,8 +158,8 @@
     "evidence": "2 ediciones anteriores en la BDNS; 0 con premiados publicados. Muestra pequeña: tómalo como orientación.",
     "builtAt": "2026-11-13"
   },
-  "bdns-938125": {
-    "callId": "bdns-938125",
+  "cabra-premio-novela-juan-valera-2027": {
+    "callId": "cabra-premio-novela-juan-valera-2027",
     "bdnsId": "938125",
     "editionsFound": 0,
     "editionsWithAwards": 0,
@@ -167,8 +167,8 @@
     "evidence": "No hay ediciones anteriores en la BDNS.",
     "builtAt": "2026-11-13"
   },
-  "bdns-941499": {
-    "callId": "bdns-941499",
+  "carballino-premio-anton-losada-dieguez-2026": {
+    "callId": "carballino-premio-anton-losada-dieguez-2026",
     "bdnsId": "941499",
     "editionsFound": 5,
     "editionsWithAwards": 1,
@@ -229,8 +229,8 @@
       "persona": 2
     }
   },
-  "bdns-939355": {
-    "callId": "bdns-939355",
+  "sant-joan-festival-cine-cortometrajes-2027": {
+    "callId": "sant-joan-festival-cine-cortometrajes-2027",
     "bdnsId": "939355",
     "editionsFound": 1,
     "editionsWithAwards": 1,
@@ -261,8 +261,8 @@
       "pyme": 1
     }
   },
-  "bdns-936011": {
-    "callId": "bdns-936011",
+  "getxo-novela-corta-ramiro-pinilla-2027": {
+    "callId": "getxo-novela-corta-ramiro-pinilla-2027",
     "bdnsId": "936011",
     "editionsFound": 9,
     "editionsWithAwards": 1,
@@ -355,8 +355,8 @@
       "persona": 2
     }
   },
-  "bdns-941955": {
-    "callId": "bdns-941955",
+  "icaa-cortometrajes-realizados-2027": {
+    "callId": "icaa-cortometrajes-realizados-2027",
     "bdnsId": "941955",
     "editionsFound": 9,
     "editionsWithAwards": 5,
@@ -488,5 +488,69 @@
       "max": 60.83,
       "editions": 3
     }
+  },
+  "xunta-xuventude-crea-2026": {
+    "callId": "xunta-xuventude-crea-2026",
+    "bdnsId": "926016",
+    "editionsFound": 4,
+    "editionsWithAwards": 2,
+    "editions": [
+      {
+        "bdnsId": "853424",
+        "date": "2025-08-26",
+        "title": "Orden de 14 de agosto de 2025 por la que se establecen las bases que rigen los premios del programa Xuventude Crea y se procede a su convocatoria para el año 2025 (código de procedimiento BS310Q)",
+        "awards": 95,
+        "amountTotalEur": 85525,
+        "amountMinEur": 75,
+        "amountMaxEur": 2000,
+        "winners": {
+          "persona": 88,
+          "entidad-sin-animo-lucro": 5,
+          "pyme": 2
+        }
+      },
+      {
+        "bdnsId": "817323",
+        "date": "2025-02-27",
+        "title": "ORDEN de 26 de agosto de 2024 por la que se establecen las bases que rigen los premios del programa Xuventude Crea y se procede a su convocatoria para el año 2024 (código de procedimiento BS310Q).",
+        "awards": 38,
+        "amountTotalEur": 11850,
+        "amountMinEur": 75,
+        "amountMaxEur": 1000,
+        "winners": {
+          "persona": 36,
+          "entidad-sin-animo-lucro": 2
+        }
+      },
+      {
+        "bdnsId": "783915",
+        "date": "2024-09-05",
+        "title": "ANULADA Orden, del 26 de agosto de 2024, por la que se establecen las bases que rigen los premios del programa Xuventude Crea y se procede a su convocatoria para el año 2024 (código de procedimiento BS310Q) ",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      },
+      {
+        "bdnsId": "714353",
+        "date": "2023-08-29",
+        "title": "Orden, del 25 de agosto de 2023, por la que se establecen las bases que rigen los premios del programa Xuventude Crea y se procede a su convocatoria para el año 2023 (código de procedimiento BS310Q)",
+        "awards": 0,
+        "amountTotalEur": 0,
+        "winners": {}
+      }
+    ],
+    "evidence": "4 ediciones anteriores en la BDNS; 2 con premiados publicados. Unos 66,5 premiados por edición. 93 % de los premiados son personas físicas. Importes entre 75 € y 2000 €. 7 % de los premiados repite.",
+    "builtAt": "2026-11-13",
+    "awardsPerEdition": 66.5,
+    "amountRangeEur": {
+      "min": 75,
+      "max": 2000
+    },
+    "winners": {
+      "persona": 124,
+      "entidad-sin-animo-lucro": 7,
+      "pyme": 2
+    },
+    "repeatWinnerShare": 0.0673076923076923
   }
 }
