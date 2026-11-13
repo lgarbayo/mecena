@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "mecena": {
+      "command": "npx",
+      "args": [
+        "--prefix",
+        "/ABSOLUTE/PATH/TO/mecena",
+        "tsx",
+        "--tsconfig",
+        "/ABSOLUTE/PATH/TO/mecena/tsconfig.json",
+        "/ABSOLUTE/PATH/TO/mecena/src/mcp/server.ts"
+      ],
+      "env": {
+        "MECENA_PUBLIC_URL": "http://localhost:3000"
+      }
+    }
+  }
+}
