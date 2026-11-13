@@ -103,3 +103,29 @@ describe("onboarding mock extraction (business)", () => {
     expect(sections.map((s) => s.key)).toEqual(expect.arrayContaining(["activity", "team", "figures", "projects", "location"]));
   });
 });
+
+describe("pyme follow-up questions", () => {
+  it("asks for what decides eligibility (activity, place, legal form, size) before money and pride", async () => {
+    const { followUpFor } = await import("@/features/onboarding/mock");
+    const base = { ...fixtureBusiness, legalForm: undefined, employees: undefined, foundedYear: undefined, annualRevenueEur: undefined, fundingNeeds: [], projectIdea: undefined };
+    expect(followUpFor("business", base)).toMatch(/autónomo\/a o tenéis una sociedad/);
+    expect(followUpFor("business", { ...base, legalForm: "autonomo" })).toMatch(/Cuántas personas/);
+    expect(followUpFor("business", { ...base, legalForm: "autonomo", employees: 2 })).toMatch(/financiar/);
+    expect(followUpFor("business", { ...base, legalForm: "autonomo", employees: 2, fundingNeeds: ["tienda online"] })).toMatch(/Desde qué año/);
+  });
+});
+
+describe("pyme fallback extraction of short answers", () => {
+  const p = { ...fixtureBusiness, legalForm: "autonomo" as const, employees: undefined, foundedYear: undefined };
+  it("reads bare answers to the follow-up questions", () => {
+    expect(extractProfilePatch("Somos tres.", "business", p).employees).toBe(3);
+    expect(extractProfilePatch("5 contándome", "business", p).employees).toBe(5);
+    expect(extractProfilePatch("Desde 2019", "business", p).foundedYear).toBe(2019);
+    expect(extractProfilePatch("Es una sociedad anónima", "business", { ...p, legalForm: undefined }).legalForm).toBe("sa");
+    expect(extractProfilePatch("Somos una comunidad de bienes", "business", { ...p, legalForm: undefined }).legalForm).toBe("otra");
+  });
+  it("does not mistake what they want to finance for a headcount", () => {
+    expect(extractProfilePatch("Una tienda online", "business", p).employees).toBeUndefined();
+    expect(extractProfilePatch("Dos hornos nuevos", "business", p).employees).toBeUndefined();
+  });
+});

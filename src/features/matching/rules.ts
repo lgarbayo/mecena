@@ -160,9 +160,10 @@ const FIT_POINTS: Record<Fit, number> = { exact: 20, within: 20, sector: 20, any
 /** 0-25: discipline/sector fit (0-20) + keyword overlap between the profile narrative and the call text (0-5). */
 function affinity(raw: Profile, call: Call, p: CanonicalProfile, c: CanonicalCall, fit: { fit: Fit; matched: string[] }, why: string[], miss: string[]): number {
   let pts = FIT_POINTS[fit.fit];
-  if (fit.fit === "exact" || fit.fit === "within") why.push(`Encaja con tu disciplina: ${discNames(fit.matched).join(", ")}`);
-  else if (fit.fit === "related") miss.push(`Confírmalo: es para ${discNames(c.disciplines).join(", ")}; revisa si encaja tu trabajo`);
-  else if (fit.fit === "none" && c.disciplines.length) miss.push(`Es para otras disciplinas: ${discNames(c.disciplines).join(", ")}`);
+  const biz = raw.kind === "business";
+  if (fit.fit === "exact" || fit.fit === "within") why.push(`Encaja con tu ${biz ? "actividad" : "disciplina"}: ${discNames(fit.matched).join(", ")}`);
+  else if (fit.fit === "related") miss.push(`Confírmalo: es para ${discNames(c.disciplines).join(", ")}; revisa si encaja ${biz ? "tu actividad" : "tu trabajo"}`);
+  else if (fit.fit === "none" && c.disciplines.length) miss.push(`Es para ${biz ? "otras actividades" : "otras disciplinas"}: ${discNames(c.disciplines).join(", ")}`);
   else if (fit.fit === "sector") why.push("Tu actividad está entre los sectores de la convocatoria");
 
   const mine = raw.kind === "creator" ? p.disciplines.map((d) => disciplineLabel(d)) : [raw.sector ?? ""];
@@ -173,10 +174,22 @@ function affinity(raw: Profile, call: Call, p: CanonicalProfile, c: CanonicalCal
   return Math.min(25, pts);
 }
 
-const DOC_RULES: { test: RegExp; has: (p: Profile, ctx: MatchContext) => boolean; label: string }[] = [
-  { test: /dossier|portfolio|porfolio|imagenes|fotografias|obras/, has: (_p, ctx) => Boolean(ctx.hasDossier) || (ctx.worksCount ?? 0) > 0, label: "dossier con tus obras" },
+const DOC_RULES: { test: RegExp; has: (p: Profile, ctx: MatchContext, doc?: string) => boolean; label: string; businessLabel?: string }[] = [
+  // A pyme builds no dossier in Mecena: only its photos (products, workshop, premises) count, and the wording follows.
+  {
+    test: /dossier|portfolio|porfolio|imagenes|fotografias|obras/,
+    has: (p, ctx) => (p.kind === "creator" && Boolean(ctx.hasDossier)) || (ctx.worksCount ?? 0) > 0,
+    label: "dossier con tus obras",
+    businessLabel: "fotos de tus productos o tu actividad",
+  },
   { test: /\bcv\b|curriculum|trayectoria|biografia/, has: (p) => p.achievements.length + p.education.length > 0 || p.bio.length > 0, label: "currículum" },
-  { test: /memoria|proyecto|sinopsis/, has: (p) => Boolean(p.projectIdea), label: "idea del proyecto para la memoria" },
+  {
+    test: /memoria|proyecto|sinopsis/,
+    // For a pyme, knowing what it wants to finance is the seed of the memoria (not of a technical project or budget).
+    has: (p, _ctx, doc) => Boolean(p.projectIdea) || (p.kind === "business" && p.fundingNeeds.length > 0 && /memoria/.test(doc ?? "")),
+    label: "idea del proyecto para la memoria",
+    businessLabel: "la idea de lo que queréis financiar, para la memoria",
+  },
   // a self-declaration is just signed (checked before the certificate rule, which shares its wording)
   { test: /declaracion responsable|declaracion jurada/, has: () => false, label: "declaración responsable firmada" },
   { test: /hacienda|seguridad social|al corriente|certificad/, has: () => false, label: "certificado de estar al corriente con Hacienda y la Seguridad Social" },
@@ -193,11 +206,12 @@ function documents(p: Profile, c: Call, ctx: MatchContext, why: string[], miss: 
     if (!rule || seen.has(rule.label)) continue;
     seen.add(rule.label);
     known++;
-    if (rule.has(p, ctx)) {
+    const label = (p.kind === "business" && rule.businessLabel) || rule.label;
+    if (rule.has(p, ctx, d)) {
       have++;
-      why.push(`Ya tienes ${rule.label}`);
+      why.push(`Ya tienes ${label}`);
     } else {
-      miss.push(`Te falta: ${rule.label}`);
+      miss.push(`Te falta: ${label}`);
     }
   }
   return known ? Math.round((15 * have) / known) : 8;
@@ -235,7 +249,7 @@ function timing(p: CanonicalProfile, c: CanonicalCall, call: Call, daysLeft: num
 export function checklistFor(p: Profile, c: Call, ctx: MatchContext = {}): { item: string; done: boolean }[] {
   return c.requiredDocuments.map((item) => {
     const rule = DOC_RULES.find((r) => r.test.test(norm(item)));
-    return { item, done: rule ? rule.has(p, ctx) : false };
+    return { item, done: rule ? rule.has(p, ctx, norm(item)) : false };
   });
 }
 

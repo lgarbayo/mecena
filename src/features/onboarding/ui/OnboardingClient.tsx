@@ -10,10 +10,11 @@ import type { ImportDossierResponse, OnboardingTurnResponse } from "@/contracts/
 import { useApp } from "@/components/shell/AppProvider";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { apiGet, apiSend } from "@/lib/api-client";
-import { FIELD_LABELS, ONBOARDING } from "../copy";
+import { ONBOARDING, fieldLabel } from "../copy";
 import { TurnQueue, type QueuedTurn } from "../turnQueue";
 import { DossierPanel } from "./DossierPanel";
 import { ImportDossier } from "./ImportDossier";
+import { MatchesPanel } from "./MatchesPanel";
 import { MicIcon, PauseIcon } from "./icons";
 import { ProfilePanel } from "./ProfilePanel";
 import { TrustStrip } from "./TrustStrip";
@@ -43,6 +44,9 @@ export function OnboardingClient() {
   const [changedSections, setChangedSections] = useState<Set<string>>(new Set());
   const [noted, setNoted] = useState<string[]>([]);
   const [version, setVersion] = useState(0);
+  // Pyme: bumps when the company card changes, so the live "ayudas que encajan" panel searches again.
+  const [matchKey, setMatchKey] = useState(0);
+  const [matchCount, setMatchCount] = useState<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [checked, setChecked] = useState(false);
@@ -51,7 +55,10 @@ export function OnboardingClient() {
   const finishRef = useRef<HTMLDivElement>(null);
 
   const kind: ProfileKind = profile?.kind ?? app.profile?.kind ?? "creator";
+  const kindRef = useRef(kind);
+  kindRef.current = kind;
   const profileId = app.profile?.id;
+  const business = kind === "business";
 
   // Load (and reload on mode switch) the persisted state so a refresh never loses the conversation.
   useEffect(() => {
@@ -79,7 +86,7 @@ export function OnboardingClient() {
     if (res.followUpQuestion) setFollowUp(res.followUpQuestion);
     setChangedFields(new Set(res.changedProfileFields));
     setChangedSections(new Set(res.changedSectionKeys));
-    setNoted(res.changedProfileFields.map((f) => FIELD_LABELS[f]).filter(Boolean));
+    setNoted(res.changedProfileFields.map((f) => fieldLabel(kindRef.current, f)).filter(Boolean));
     setVersion((v) => v + 1);
     clearTimeout(flashTimer.current);
     flashTimer.current = setTimeout(() => {
@@ -87,7 +94,10 @@ export function OnboardingClient() {
       setChangedSections(new Set());
       setNoted([]);
     }, FLASH_MS);
-    if (res.changedProfileFields.length) appRef.current.refresh().catch(() => undefined);
+    if (res.changedProfileFields.length) {
+      setMatchKey((k) => k + 1);
+      appRef.current.refresh().catch(() => undefined);
+    }
   }, []);
 
   // Imported dossier: same live update as a turn, plus the new transcript segments (the dossier's own text).
@@ -149,7 +159,7 @@ export function OnboardingClient() {
         <p className={s.lede}>{ONBOARDING.subtitle[kind]}</p>
       </header>
 
-      <TrustStrip />
+      <TrustStrip kind={kind} />
 
       <ImportDossier key={wantsImport ? "open" : "closed"} kind={kind} profileId={profileId} onImported={onImported} defaultOpen={wantsImport} />
 
@@ -238,7 +248,11 @@ export function OnboardingClient() {
 
       <div className={s.live}>
         <ProfilePanel kind={kind} profile={profile} changed={changedFields} version={version} />
-        <DossierPanel kind={kind} sections={sections} changed={changedSections} version={version} />
+        {business ? (
+          <MatchesPanel profileId={profile?.id ?? profileId} appUserId={app.appUserId || undefined} refreshKey={matchKey} onCount={setMatchCount} knowsEnough={Boolean(profile?.sector && profile?.city)} />
+        ) : (
+          <DossierPanel kind={kind} sections={sections} changed={changedSections} version={version} />
+        )}
       </div>
 
       <section className={s.panel} aria-labelledby="transcript-title">
@@ -272,8 +286,8 @@ export function OnboardingClient() {
         <div ref={finishRef} className={s.finish}>
           <h2>{ONBOARDING.finish[kind].title}</h2>
           <p>{ONBOARDING.finish[kind].body}</p>
-          <Link className="btn btn-primary" href={kind === "creator" ? ROUTES.works : ROUTES.dossier} data-testid="finish-cta">
-            {ONBOARDING.finish[kind].cta}
+          <Link className="btn btn-primary" href={business ? ROUTES.calls : ROUTES.works} data-testid="finish-cta">
+            {business && matchCount ? ONBOARDING.finishBusinessCount(matchCount) : ONBOARDING.finish[kind].cta}
           </Link>
         </div>
       )}

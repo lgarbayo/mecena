@@ -1,7 +1,8 @@
 /**
  * Import the user's existing dossier (CCR-8) instead of (or before) talking: a PDF, a photo of it, or pasted text.
  * Claude reads it natively (PDF document block / vision) and returns the same shape as an onboarding turn:
- * profile patch + dossier sections, copied from the document (not rewritten) so the user's own words survive.
+ * profile patch + dossier sections, copied from the document (not rewritten) so the user's own words survive, with
+ * typos, spelling and OCR slips corrected by Claude (WORDING_RULE): their words, not their errata.
  * Each imported section is also stored as a transcript segment (source "text"), so drafting, the call variant and
  * the jury can cite it exactly like spoken words. The original file is kept under uploads/.
  * Feature-local real/mock pair (no AiService change): without AI only pasted text can be imported.
@@ -13,6 +14,7 @@ import type { DossierSection, Profile, ProfileKind, ProfilePatch } from "@/contr
 import type { ImportDossierRequest, ImportDossierResponse } from "@/contracts/api";
 import { BusinessSectionKey, CreatorSectionKey } from "@/contracts";
 import { imageBlock, isMockAi, structured, type UserContent } from "@/server/ai/llm";
+import { WORDING_RULE } from "@/server/ai/wording";
 import { appendSegment, getDossier, getProfile, listWorks, mergeProfile, nowIso, saveDossier, saveProfile, uploadsDir } from "@/server/store";
 import { sectionTitles } from "./copy";
 import { extractProfilePatch, followUpFor, mockOnboardingTurn } from "./mock";
@@ -35,7 +37,7 @@ export function importSchema(kind: ProfileKind) {
     sections: z.array(
       z.object({
         key,
-        body: z.string().describe("Texto de la sección COPIADO del documento, en su redacción original; párrafos y viñetas '- '"),
+        body: z.string().describe("Texto de la sección COPIADO del documento, en su redacción original pero sin erratas; párrafos y viñetas '- '"),
       }),
     ),
     worksFound: z.array(z.string()).describe("Obras o proyectos que aparecen: 'Título, año, técnica, medidas' con lo que diga el documento"),
@@ -49,17 +51,31 @@ function system(kind: ProfileKind): string {
     .map(([k, t]) => `${k} (${t})`)
     .join(", ");
   const who = kind === "creator" ? "artista o creador/a" : "pyme o autónomo/a";
+  const copyRule = `COPIA sus textos con su redacción (puedes quitar repeticiones y cortar lo que no sea de esa sección, pero no reescribas ni adornes), corrigiendo solo erratas, faltas de ortografía, tildes y lo que la foto o el PDF haya leído mal (letras cambiadas, palabras partidas o pegadas). Traduce al castellano solo si el documento está en otro idioma que no sea gallego; el gallego se deja en gallego (solo se corrigen sus erratas).`;
+  if (kind === "business")
+    return [
+      `Eres Mecena. Una pyme o un/a autónomo/a te da un documento sobre su negocio (presentación, web, memoria…; PDF, foto o texto) para rellenar la ficha de su empresa y buscarle ayudas y subvenciones. No le estás haciendo un dossier.`,
+      "Tu trabajo es ordenar, no escribir:",
+      "- profilePatch (lo más importante): nombre del negocio, actividad con sus palabras (sector), municipio/provincia/comunidad, forma jurídica (legalForm: autonomo, sl, sa, cooperativa, asociacion u otra), plantilla total (employees), año de inicio (foundedYear), facturación anual (annualRevenueEur), clientes y proyectos (achievements), enlaces e idiomas. CNAE solo si aparece. Omite lo que no diga.",
+      "- Si habla de algo que quiere hacer o financiar (invertir, digitalizar, contratar, exportar, ahorrar energía, innovar), ponlo en profilePatch.projectIdea (una frase) y en fundingNeeds.",
+      `- sections: la descripción de la empresa que irá en sus solicitudes, en estas secciones: ${titles}. ${copyRule}`,
+      "- worksFound: devuelve [].",
+      "- followUpQuestion: una pregunta breve (máx. 15 palabras) sobre lo que más falta para saber a qué ayudas puede optar (actividad, municipio, forma jurídica, plantilla o qué quiere financiar).",
+      "Reglas: NUNCA inventes datos. Si una sección no aparece en el documento, no la incluyas. Castellano de España (tú) en la pregunta.",
+      WORDING_RULE,
+    ].join("\n");
   return [
     `Eres Mecena. Una persona (${who}) te da el dossier que ya tenía (PDF, foto o texto) para no empezar de cero.`,
     "Tu trabajo es ordenar, no escribir:",
     "- profilePatch: los datos que el documento dice (nombre, ciudad, disciplinas, formación, exposiciones/premios/clientes, enlaces, idiomas, año de nacimiento o de fundación…). Omite lo que no diga.",
-    `- sections: reparte el contenido del documento en estas secciones: ${titles}. COPIA sus textos tal como están escritos (puedes quitar repeticiones y cortar lo que no sea de esa sección, pero no reescribas ni adornes). Traduce al castellano solo si el documento está en otro idioma que no sea gallego; el gallego se deja tal cual.`,
+    `- sections: reparte el contenido del documento en estas secciones: ${titles}. ${copyRule}`,
     "- Series, colecciones y proyectos (también los que aún va a hacer) van en su sección (series/projects) con el texto del documento. Si habla de un proyecto que quiere hacer o financiar, ponlo además en profilePatch.projectIdea (una frase) y lo que necesita en fundingNeeds.",
     "- Exposiciones, premios, publicaciones o clientes también en profilePatch.achievements; estudios en education. Disciplinas en minúscula.",
     "- La trayectoria (cv) en viñetas '- AAAA Texto. Lugar'. El contacto en viñetas.",
     "- worksFound: cada obra o proyecto que aparezca, con título y los datos de ficha que dé el documento.",
     "- followUpQuestion: una pregunta breve (máx. 15 palabras) sobre lo más útil que falta (proyecto que quiere financiar, ciudad, qué busca…).",
     "Reglas: NUNCA inventes datos. Si una sección no aparece en el documento, no la incluyas. Castellano de España (tú) en la pregunta.",
+    WORDING_RULE,
   ].join("\n");
 }
 

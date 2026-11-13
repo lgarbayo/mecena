@@ -1,16 +1,28 @@
 "use client";
-// STUB (scaffold, working baseline). Owned by WP-06: one-tap Creador/a <-> Pyme switch in the header.
+// One-tap Creador/a <-> Pyme switch in the header. A pyme has no works or dossier to build, so switching to it
+// from those screens lands on the aid it fits instead.
+import { usePathname, useRouter } from "next/navigation";
+import { ROUTES, type ProfileKind } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
+
+const CREATOR_ONLY = [ROUTES.works, ROUTES.dossier];
 
 export function ModeSwitch() {
   const { profile, setMode } = useApp();
+  const path = usePathname();
+  const router = useRouter();
   const kind = profile?.kind ?? "creator";
+  const choose = async (next: ProfileKind) => {
+    if (next === kind) return;
+    await setMode(next);
+    if (next === "business" && CREATOR_ONLY.some((r) => path?.startsWith(r))) router.push(ROUTES.calls);
+  };
   return (
     <div className="mode-switch" role="group" aria-label="Modo">
-      <button aria-pressed={kind === "creator"} onClick={() => setMode("creator")}>
+      <button aria-pressed={kind === "creator"} onClick={() => choose("creator")}>
         Creador/a
       </button>
-      <button aria-pressed={kind === "business"} onClick={() => setMode("business")}>
+      <button aria-pressed={kind === "business"} onClick={() => choose("business")}>
         Pyme
       </button>
     </div>
