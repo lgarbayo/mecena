@@ -8,6 +8,7 @@
     "start": "node replay.js",
     "fast": "node replay.js --speed 6",
     "sheet": "node sheet.js",
+    "variant": "node variant.js",
     "serve": "node server.js",
     "test": "node --test test/"
   },

@@ -1,0 +1,483 @@
+
+Mecena · variante del dossier por convocatoria
+
+LIVE: Claude API
+models: fit=claude-sonnet-5-5 variant=claude-sonnet-5-5
+
+1) encaje: 9 pares perfil × convocatoria en paralelo…
+
+Encaje (estimación de un tribunal estricto con lo que el usuario ha contado):
+┌─────────┬───────────────┬─────────────────┬───────────────┬───────────────────┬────────────┬───────┐
+│ (index) │ perfil        │ convocatoria    │ encaje        │ puntos            │ requisitos │ ms    │
+├─────────┼───────────────┼─────────────────┼───────────────┼───────────────────┼────────────┼───────┤
+│ 0       │ 'painter'     │ 'mc-arte'       │ 'medio'       │ '12/30'           │ '1✓ 4? 0✗' │ 13066 │
+│ 1       │ 'painter'     │ 'rega-cidade'   │ 'medio'       │ '51/100 (mín 50)' │ '2✓ 1? 0✗' │ 11136 │
+│ 2       │ 'painter'     │ 'igape-galicia' │ 'medio'       │ 'no competitiva'  │ '0✓ 4? 0✗' │ 8760  │
+│ 3       │ 'illustrator' │ 'mc-arte'       │ 'medio'       │ '14/30'           │ '1✓ 4? 0✗' │ 14917 │
+│ 4       │ 'illustrator' │ 'rega-cidade'   │ 'medio'       │ '51/100 (mín 50)' │ '2✓ 1? 0✗' │ 11357 │
+│ 5       │ 'illustrator' │ 'igape-galicia' │ 'no_elegible' │ 'no competitiva'  │ '0✓ 3? 1✗' │ 7974  │
+│ 6       │ 'business'    │ 'mc-arte'       │ 'no_elegible' │ '0/30'            │ '0✓ 4? 1✗' │ 9923  │
+│ 7       │ 'business'    │ 'rega-cidade'   │ 'no_elegible' │ '0/100 (mín 50)'  │ '0✓ 2? 1✗' │ 8158  │
+│ 8       │ 'business'    │ 'igape-galicia' │ 'medio'       │ 'no competitiva'  │ '3✓ 1? 0✗' │ 7371  │
+└─────────┴───────────────┴─────────────────┴───────────────┴───────────────────┴────────────┴───────┘
+
+painter × Ayudas para la producción e investigación artística en el ámbito del arte contemporáneo 2026 — Línea A: creación y producción artística  medio
+  + Eres pintora profesional con trayectoria verificable: serie Terra queimada expuesta en el Museo Provincial de Lugo en 2023 y accésit en 2019.
+  + Tu serie nueva sobre las mujeres que sostienen las aldeas encaja con los criterios de igualdad de género y cohesión territorial.
+  + Buscas justo producción y exponer fuera de Galicia, lo que encaja con la línea A y con el valor de difusión en varias comunidades.
+  A1      4/6   Currículum  → Falta detallar el currículum: años de la formación y de la colectiva, más exposiciones y becas, y el vínculo explícito entre tu trayectoria y la serie nueva.
+  A2a     5/12  Calidad: aportación artística  → Falta la memoria del proyecto: concepto, planteamiento formal, qué aporta de innovador (por ejemplo los pigmentos propios del Miño) y su relación con tendencias contemporáneas.
+  A2b     2/5   Calidad: ODS y valores  → Falta vincular el proyecto con los ODS, la igualdad de género, la cohesión territorial y la accesibilidad; la temática rural y de mujeres encaja pero no está articulada.
+  A3a   0.5/4   Viabilidad y presupuesto  → No hay presupuesto ni plan de producción (materiales, lienzos de gran formato, tiempo de dedicación) ni espacios donde mostrar el proyecto.
+  A3b   0.5/2   Difusión  → Falta un plan de difusión concreto: espacios, comunidades autónomas implicadas, actividades con el entorno social y canales digitales.
+  A4      0/1   DANA  → Nada en tu perfil conecta el proyecto con municipios afectados por la DANA; probablemente no aplique.
+  ? reta: Confirma si estás de alta como autónoma (RETA); si no, deberás darte de alta antes de la lista definitiva de beneficiarios.
+  ? residencia-fiscal: Confirma que tu residencia fiscal permanente está en España (vivir cerca de Lugo lo sugiere, pero no lo acredita).
+  ? no-beneficiaria-2025: Confirma que no fuiste beneficiaria de esta ayuda en la convocatoria anterior.
+  ? una-linea: Solicita solo una de las dos líneas (A o B); esta es la A, de creación y producción.
+  ¿ ¿Estás de alta como autónoma en el RETA, y tienes tu residencia fiscal en España?
+  ¿ ¿Qué espacios o comunidades fuera de Galicia podrían acoger la serie nueva, y has hablado ya con alguno?
+  ¿ ¿Cuántas obras tendría la serie, de qué formato, y qué costes prevés (materiales, tiempo de dedicación, transporte y montaje)?
+
+painter × Axudas Rega: proxectos artísticos con mentoría a través de residencias (Cidade da Cultura de Galicia, CT898A)  medio
+  + Tu serie nueva sobre las mujeres de las aldeas es un proyecto inédito y concreto, que encaja con una ayuda de creación.
+  + Terra queimada, su exposición en el Museo Provincial de Lugo y el accésit de 2019 dan base de trayectoria para el criterio C.
+  + Buscas ayuda para producción y proyección fuera de Galicia, justo lo que ofrece una residencia con mentoría.
+  A      28/45  Concepto / idea artística  → Falta formular objetivos concretos, argumentar el concepto (por qué estas mujeres, por qué ahora) y conectarlo con tu línea sobre memoria y abandono rural.
+  B       8/30  Viabilidad de su materialización  → Falta presupuesto desglosado, calendario de producción, número de obras, y cómo trabajar óleo de gran formato y pigmentos propios en la residencia (traslado, materiales, espacio).
+  C      15/25  Oportunidad para la trayectoria  → Falta explicar qué cambia esta residencia en tu trayectoria: qué aporta la mentoría, cómo te ayuda a salir de Galicia y cómo encaja con tu recorrido tras Terra queimada.
+  ? residencia-gaias: Confirmar que puedes desplazarte a Santiago y trabajar allí de 3 a 6 semanas dentro del plazo, y que el proyecto es viable fuera de tu estudio.
+  ¿ ¿Cuántos retratos y de qué formato prevés para la serie, y cuánto te costaría producirlos (lienzos, pigmentos, traslado)?
+  ¿ ¿Puedes pasar de 3 a 6 semanas en Santiago y cómo trabajarías con tus pigmentos del Miño y el gran formato fuera de tu estudio?
+  ¿ ¿Qué esperas de un mentor y qué haría esta residencia por tu carrera (exposiciones fuera de Galicia, galerías, contactos) que ahora no puedes conseguir?
+
+painter × Galicia Exporta Empresas 2026 (IG622A)  medio
+  + Quieres exponer fuera de Galicia, que es justo lo que financia esta línea (ferias, viajes, alojamiento, reserva de espacios).
+  + Tu producción y tu taller parten de Galicia (serie Terra queimada, pigmentos del Miño), lo que apoya el vínculo con el centro de trabajo.
+  + Tu trayectoria expositiva (Museo Provincial de Lugo, Fundación Luis Seoane) da base para un plan de internacionalización creíble.
+  ? pyme-galicia: Confirma si estás dada de alta como autónoma (epígrafe de artista plástica) y si tu centro de trabajo, por ejemplo tu taller, está en Galicia. Vivir en Galicia no basta; la ayuda es para pymes o autónomos.
+  ? un-trabajador: Confirma si tienes al menos una persona contratada por cuenta ajena. Si llevas menos de 42 meses de actividad, podría no exigirse.
+  ? ig192: Solicita el alta en un programa avanzado de internacionalización del Igape (IG192) y consigue el informe positivo antes de pedir la ayuda.
+  ? vinculo-centro: Explica que las exposiciones fuera de Galicia se vinculan a tu actividad y centro de trabajo en Galicia (tu taller y tu producción). Hay que documentarlo en el plan de acciones.
+  ¿ ¿Estás dada de alta como autónoma y tienes tu taller o centro de trabajo en Galicia? ¿Desde cuándo?
+  ¿ ¿Tienes a alguien contratado por cuenta ajena, o llevas menos de 42 meses de actividad?
+  ¿ ¿Qué exposiciones o ferias concretas fuera de Galicia tienes en mente (ciudad, fechas, coste aproximado)?
+
+illustrator × Ayudas para la producción e investigación artística en el ámbito del arte contemporáneo 2026 — Línea A: creación y producción artística  medio
+  + Tienes un proyecto concreto, La otra orilla, con unas 40 páginas abocetadas: es material real de creación y producción artística.
+  + Tu trayectoria (Bellas Artes, máster en la Massana, 7 álbumes con Faro de Papel, finalista en Alicante) sostiene bien el criterio de currículum.
+  + La beca de 6 meses de dedicación encaja con la parte de la ayuda destinada a soporte de dedicación a la creación.
+  A1      4/6   Currículum  → Falta enlazar la trayectoria (álbum infantil y editorial) con el salto a la novela gráfica y aportar un currículum formal con fechas y exposiciones o publicaciones relevantes.
+  A2a     6/12  Calidad: aportación artística  → Falta la memoria: qué aporta artísticamente La otra orilla, su carácter experimental o innovador (técnica mixta de gouache y lápices, narrativa, formato) y su vínculo con temas contemporáneos como la migración.
+  A2b     2/5   Calidad: ODS y valores  → El tema migratorio da base para diversidad cultural, pero falta explicitar el vínculo con ODS, accesibilidad, inclusión e igualdad en la memoria.
+  A3a     1/4   Viabilidad y presupuesto  → No hay presupuesto ni calendario: falta desglosar gastos (dedicación máx. 4.500 €, materiales, producción) dentro del periodo 01/07/2026 a 30/06/2027 y posibles espacios de presentación.
+  A3b     1/2   Difusión  → Falta un plan de difusión: editorial prevista, presentaciones, actividades en varias comunidades autónomas (Galicia y Comunitat Valenciana encajan con tu historia).
+  A4      0/1   DANA  → Vives en Valencia, pero habría que comprobar si tu municipio está entre los afectados por la DANA; si no, el proyecto no se relaciona con esos territorios.
+  ? reta: Confirma si estás de alta en el RETA o si podrías darte de alta antes de la lista definitiva de beneficiarios.
+  ? residencia-fiscal: Indica tu residencia fiscal: vives en Valencia, pero hay que confirmar que es residencia fiscal permanente en España.
+  ? no-beneficiaria-2025: Confirma que no recibiste esta ayuda en la convocatoria anterior (2025).
+  ? una-linea: Confirma que solo solicitarás la Línea A y no la B.
+  ¿ ¿Qué hace diferente a La otra orilla en lo artístico: mezcla gouache y lápices de colores, usas archivo familiar, tiene un formato o una narrativa poco habitual?
+  ¿ ¿Tienes ya interés de alguna editorial o espacio para publicar o presentar la novela gráfica, y en qué comunidades podrías difundirla (Galicia, Comunitat Valenciana)?
+  ¿ ¿Estás de alta como autónomo (RETA) y tienes tu residencia fiscal en España? ¿En qué municipio de Valencia vives?
+
+illustrator × Axudas Rega: proxectos artísticos con mentoría a través de residencias (Cidade da Cultura de Galicia, CT898A)  medio
+  + Tienes un proyecto inédito con 40 páginas abocetadas (La otra orilla) que encaja con una residencia de creación con mentoría.
+  + Tu raíz viguesa y una historia de migración Lagos-Vigo dan un vínculo natural con Galicia.
+  + Tu trayectoria editorial (7 álbumes, finalista en Alicante) sostiene el criterio de trayectoria, y la mentoría te ayuda a dar el salto a la novela gráfica.
+  A      28/45  Concepto / idea artística  → Falta redactar el concepto: objetivos concretos, argumentación, referentes y qué harías específicamente durante la residencia. La historia (migración Lagos-Vigo) es potente y tiene vínculo gallego, pero hay que plasmarla en la memoria.
+  B       9/30  Viabilidad de su materialización  → No hay presupuesto ni plan de producción. Falta definir qué parte de la novela gráfica se produciría en 3-6 semanas, el desglose de gastos (viaje, alojamiento, manutención) y por qué necesita la Cidade da Cultura.
+  C      14/25  Oportunidad para la trayectoria  → Trayectoria sólida en álbum infantil (7 títulos, finalista en Alicante), pero hay que justificar por qué esta residencia es un paso clave: tu salto a la novela gráfica, un género nuevo para ti, y con mentoría.
+  ? residencia-gaias: Confirma que puedes residir entre 3 y 6 semanas en Santiago de Compostela en las fechas de la convocatoria. Tu objetivo declarado es una beca de 6 meses, y esta es una residencia corta de 8.000 €.
+  ¿ ¿Qué parte concreta de La otra orilla (cuántas páginas, qué escenas) podrías terminar o desarrollar en 3 a 6 semanas en Santiago?
+  ¿ ¿Puedes desplazarte a Santiago de Compostela entre 3 y 6 semanas, y qué costes de viaje, alojamiento y materiales calculas?
+  ¿ ¿Qué te aportaría un mentor en el paso del álbum infantil a la novela gráfica, y qué referentes del género te mueven?
+
+business × Galicia Exporta Empresas 2026 (IG622A)  medio
+  + Sois una pyme (SL de 2019, 5 personas, unos 280.000 € de facturación) con centro de trabajo en Boiro, Galicia.
+  + Queréis empezar a exportar a Francia porque os lo piden mucho, justo lo que financia la convocatoria.
+  + Tenéis producto propio y sello Galicia Calidade, un buen punto de partida para ferias del sector en Francia.
+  ? ig192: Solicita el alta en un programa avanzado de internacionalización del Igape (IG192) y espera el informe positivo antes de pedir la ayuda.
+  ¿ ¿Habéis pedido ya el alta en algún programa de internacionalización del Igape (IG192) o es la primera vez que os acercáis?
+  ¿ ¿Qué acciones concretas tenéis en mente para Francia (ferias, viajes comerciales, visitas a distribuidores) y en qué fechas?
+  ¿ ¿Las dos operarias y la chica de la tienda online tienen contrato laboral con la empresa?
+
+2) variantes: 6 en paralelo (claude-sonnet-5-5)…
+
+━━━ painter × Ayudas para la producción e investigación artística en el ámbito del arte contemporáneo 2026 — Línea A: creación y producción artística ━━━
+20242 ms · 437 palabras · out 2791 tokens
+Estrategia: Esta variante pone primero la aportación artística del proyecto (12 puntos, el criterio de mayor peso): concepto de la serie nueva, pigmentos propios del Miño y memoria del paisaje rural. Después articula los valores (igualdad de género, cohesión territorial) con tus propias palabras, y deja marcados como pendientes el presupuesto, la difusión y el currículum con fechas, que puntúan y hoy no tienes.
+Base: bio → statement → cv → series
+Variante: Memoria del proyecto: planteamiento y aportación artística [A2a] → Valores del proyecto: igualdad, territorio e inclusión [A2b] → Currículum y vínculo con el proyecto [A1] → Presupuesto y viabilidad [A3a] → Difusión [A3b]
+
+  ## Memoria del proyecto: planteamiento y aportación artística  criterios A2a · de statement, series, bio
+  **Proyecto.** Serie nueva de retratos sobre las mujeres que sostienen las aldeas: retratos de vecinas mías, en la aldea de O Corgo, cerca de Lugo, donde vivo desde hace unos 15 años.
+  
+  **Punto de partida.** Lo que me interesa es la memoria del paisaje rural y el abandono del campo gallego, cómo el monte se queda vacío. En *Terra queimada* (14 cuadros sobre los incendios de 2017 en Galicia) trabajé esa mirada sobre el territorio; esta serie la lleva a las personas que siguen habitando y cuidando ese espacio.
+  
+  **Planteamiento formal.** Óleo sobre lienzo de gran formato, con pigmentos naturales que preparo yo misma con tierras del río Miño. La materia de los retratos procede así del propio territorio que se retrata.
+  
+  [PENDIENTE: número de obras de la serie, formatos concretos y fases de trabajo.]
+  [PENDIENTE: qué aporta de innovador o experimental frente a tu trabajo anterior y a la pintura contemporánea de retrato y paisaje, con tus propias palabras.]
+
+  ## Valores del proyecto: igualdad, territorio e inclusión  criterios A2b · de statement, profile, nuevo
+  El proyecto pone en el centro a las mujeres que sostienen las aldeas, y el trabajo se hace con vecinas de mi propio entorno rural, lo que conecta con la **igualdad de género** y con la **cohesión territorial**: dar presencia a quienes mantienen vivo un territorio que se vacía.
+  
+  [PENDIENTE: vínculo concreto con los ODS que quieras defender (por ejemplo, los relacionados con igualdad de género y comunidades rurales), explicado sin forzarlo.]
+  [PENDIENTE: si hay alguna medida de accesibilidad o inclusión prevista (textos en gallego y castellano, visitas, etc.).]
+
+  ## Currículum y vínculo con el proyecto  criterios A1 · de cv, bio, series
+  **Formación**
+  - Bellas Artes, Universidad de Vigo (Pontevedra). [PENDIENTE: años de estudio.]
+  
+  **Exposiciones**
+  - 2023 — *Terra queimada*, Museo Provincial de Lugo.
+  - [PENDIENTE: año] — Exposición colectiva, Fundación Luis Seoane, A Coruña.
+  
+  **Premios**
+  - 2019 — Accésit en el premio de pintura de la Diputación de Lugo.
+  
+  **Vínculo con el proyecto.** *Terra queimada* (2017) ya trabajó la memoria del paisaje rural gallego; la serie nueva continúa esa línea con los mismos materiales (óleo de gran formato y pigmentos del Miño) y la acerca a las personas que lo habitan.
+  
+  [PENDIENTE: otras exposiciones, becas o residencias que quieras incluir.]
+
+  ## Presupuesto y viabilidad  criterios A3a · de nuevo
+  [PENDIENTE: presupuesto detallado (máximo 30.000 €; hasta 4.500 € pueden ser dedicación a la creación): lienzos y bastidores de gran formato, pigmentos y materiales, tiempo de dedicación, transporte y montaje.]
+  
+  [PENDIENTE: calendario entre el 01/07/2026 y el 30/06/2027.]
+  [PENDIENTE: espacios culturales donde podría mostrarse la serie.]
+
+  ## Difusión  criterios A3b · de profile, nuevo
+  Busco ayudas para la producción y para poder exponer fuera de Galicia.
+  
+  [PENDIENTE: espacios y comunidades autónomas concretas donde exponer, y si hay contactos ya establecidos.]
+  [PENDIENTE: actividades con el entorno social (por ejemplo, con las propias vecinas retratadas) y canales digitales previstos.]
+
+  Omitido: Biografía personal extensa y datos de origen (nacimiento en Monforte de Lemos) (No puntúa en ningún criterio; solo se conserva la residencia en O Corgo por su relación con el proyecto.); Descripción detallada de Terra queimada (Se reduce a una referencia que sirve de antecedente del proyecto y de apoyo al currículum.); Criterio A4 (DANA) (Nada en tu perfil conecta el proyecto con municipios afectados; no se fuerza ninguna conexión.)
+  ¿ [A3a] ¿Cuántas obras tendría la serie, de qué formato, y qué costes prevés (materiales, tiempo de dedicación, transporte y montaje)?
+  ¿ [A3b] ¿Qué espacios o comunidades fuera de Galicia podrían acoger la serie, y has hablado ya con alguno?
+  ¿ [A2a] ¿Qué crees que hay de nuevo o distinto en esta serie respecto a Terra queimada y a otros retratos o paisajes actuales?
+  ¿ [A1] ¿En qué años estudiaste Bellas Artes y cuándo fue la colectiva en la Fundación Luis Seoane? ¿Tienes más exposiciones o becas?
+  ¿ [A2b] ¿Quieres vincular el proyecto con algún ODS concreto o con medidas de accesibilidad o inclusión?
+  ! Solicitud en sede electrónica (cultura.sede.gob.es) — Hay que presentarla por sede electrónica; la convocatoria figura como cerrada (plazo hasta el 19/05/2026), así que sirve de preparación para la próxima edición.
+  ! Memoria del proyecto — Faltan datos clave (número de obras, formatos, aportación innovadora) marcados como PENDIENTE.
+  ! Currículum — Faltan fechas de formación y de la colectiva, y posibles exposiciones o becas adicionales.
+  ! Presupuesto — No hay presupuesto; máximo 30.000 € y hasta 4.500 € para dedicación.
+  ! Alta en el RETA antes de la lista definitiva — Sin confirmar si estás de alta como autónoma.
+  ! Residencia fiscal permanente en España — Vives cerca de Lugo, pero falta confirmar la residencia fiscal.
+  ! No beneficiaria en la convocatoria anterior / una sola línea — Sin confirmar; esta es la línea A.
+  · Límites de extensión de la memoria — La convocatoria no indica límites de formato en este extracto.
+  ✓ todos los números salen del perfil, el dossier base o las bases
+  12 huecos [PENDIENTE] para el usuario
+
+━━━ painter × Axudas Rega: proxectos artísticos con mentoría a través de residencias (Cidade da Cultura de Galicia, CT898A) ━━━
+19865 ms · 479 palabras · out 2853 tokens
+Estrategia: La memoria sigue exactamente la estructura A-E que piden las bases. Pone primero el concepto de la serie nueva (45 puntos), pero con la parte de Terra queimada que le da sentido, y deja visibles los huecos de viabilidad (30 puntos) como [PENDIENTE], porque ahí es donde más puntos te juegas y faltan datos.
+Base: bio → statement → cv → series
+Variante: A) Categoría [persona-fisica] → B) Nombre del proyecto y solicitante [persona-fisica,inedito] → C) Concepto / idea y objetivos [A,inedito] → D) Viabilidad y presupuesto [B,residencia-gaias] → E) Justificación de la oportunidad en la trayectoria [C]
+
+  ## A) Categoría  criterios persona-fisica · de profile
+  Artes visuales (pintura).
+
+  ## B) Nombre del proyecto y solicitante  criterios persona-fisica, inedito · de profile, series
+  **Solicitante:** Uxía Ferreiro, persona física. [PENDIENTE: confirmar si estás de alta como autónoma (no es obligatorio) y que presentas la solicitud a título personal.]
+  
+  **Proyecto:** serie nueva sobre las mujeres que sostienen las aldeas (retratos de vecinas). [PENDIENTE: título definitivo del proyecto, si quieres uno distinto del descriptivo.]
+
+  ## C) Concepto / idea y objetivos  criterios A, inedito · de statement, series, bio, profile
+  Soy pintora. Lo que me interesa es la memoria del paisaje rural y el abandono del campo gallego, cómo el monte se queda vacío. Nací en Monforte de Lemos y desde hace unos 15 años vivo en una aldea cerca de Lugo, en O Corgo: miro ese abandono desde dentro.
+  
+  Mi serie más importante, *Terra queimada*, son 14 cuadros sobre los incendios de 2017 en Galicia, y se expuso en el Museo Provincial de Lugo en 2023. Ahora quiero empezar una serie nueva, original e inédita, sobre las mujeres que sostienen las aldeas: retratos de vecinas mías. Si *Terra queimada* mira el monte vacío, esta serie mira a quienes siguen sosteniendo esos lugares.
+  
+  **Técnica.** Óleo sobre lienzo de gran formato y pigmentos naturales que preparo yo misma con tierras del río Miño.
+  
+  **Objetivos:**
+  - [PENDIENTE: objetivos concretos de la serie (qué quieres conseguir con ella, qué quieres que vea quien la mire).]
+  - [PENDIENTE: por qué estas mujeres y por qué ahora, en tus propias palabras.]
+  - [PENDIENTE: número de retratos y formato previstos.]
+
+  ## D) Viabilidad y presupuesto  criterios B, residencia-gaias · de statement, bio, nuevo
+  **Resultado práctico.** [PENDIENTE: número de obras que prevés producir en la residencia y en qué estado quedarán al terminar (cuadros terminados, estudios, etc.).]
+  
+  **Producción en la Cidade da Cultura.** Trabajo con óleo de gran formato y con pigmentos propios del Miño. [PENDIENTE: cómo los llevarías a Santiago (traslado de lienzos y pigmentos), qué espacio y qué materiales necesitas allí y cómo adaptas tu forma de trabajar fuera del estudio.]
+  
+  **Calendario.** [PENDIENTE: plan de trabajo para una residencia de 3 a 6 semanas; ¿puedes estar en Santiago ese tiempo dentro del plazo de la convocatoria?]
+  
+  **Presupuesto (máximo 8.000 €, incluye producción, viaje, alojamiento, manutención y presentación).**
+  | Concepto | Importe |
+  |---|---|
+  | Lienzos y bastidores | [PENDIENTE] |
+  | Pigmentos y materiales | [PENDIENTE] |
+  | Traslado de material y obra | [PENDIENTE] |
+  | Viaje | [PENDIENTE] |
+  | Alojamiento | [PENDIENTE] |
+  | Manutención | [PENDIENTE] |
+  | Presentación | [PENDIENTE] |
+
+  ## E) Justificación de la oportunidad en la trayectoria  criterios C · de cv, bio, series, profile
+  Estudié Bellas Artes en la Universidad de Vigo (Pontevedra). En 2019 recibí un accésit en el premio de pintura de la Diputación de Lugo. Con *Terra queimada* (14 cuadros, 2017) llegué al Museo Provincial de Lugo en 2023, y he participado en una colectiva en la Fundación Luis Seoane (A Coruña).
+  
+  Busco ayudas para la producción y para poder exponer fuera de Galicia. Esta serie es el paso siguiente a *Terra queimada*.
+  
+  [PENDIENTE: qué esperas de un mentor y qué cambia esta residencia en tu carrera (contactos, exposiciones fuera de Galicia, galerías) que ahora no puedes conseguir por tu cuenta.]
+
+  Omitido: Descripción biográfica detallada (bio completa) (La memoria no pide biografía como bloque; solo se conserva lo que sirve al concepto y a la trayectoria (origen, vida en O Corgo, formación).); Fecha de la colectiva en la Fundación Luis Seoane y fecha de Bellas Artes (No constan; se citan sin fecha. Añádelas si las tienes, porque suman en el criterio C.)
+  ¿ [B] ¿Cuántos retratos y de qué formato prevés para la serie, y cuánto te costaría producirlos (lienzos, pigmentos, traslado, viaje, alojamiento, manutención)?
+  ¿ [B] ¿Puedes estar de 3 a 6 semanas en Santiago y cómo trabajarías allí con tus pigmentos del Miño y el gran formato fuera de tu estudio?
+  ¿ [A] ¿Qué quieres conseguir con esta serie y por qué estas mujeres y por qué ahora?
+  ¿ [C] ¿Qué esperas de un mentor y qué haría esta residencia por tu carrera (exposiciones fuera de Galicia, galerías, contactos) que ahora no puedes conseguir?
+  ¿ [persona-fisica] ¿Estás de alta como autónoma y presentas la solicitud a título personal?
+  ✓ Memoria en PDF, máximo 30 páginas — Con este contenido la memoria queda muy por debajo del límite; exportar a PDF y comprobar páginas.
+  ✓ Estructura A) categoría, B) nombre y solicitante, C) concepto y objetivos, D) viabilidad con presupuesto, E) oportunidad en la trayectoria — Los encabezados replican las cinco secciones pedidas, en el mismo orden.
+  ! Presupuesto desglosado dentro del máximo de 8.000 € — Todas las partidas están como [PENDIENTE]; sin presupuesto la sección D (30 puntos) no se puede puntuar.
+  ! Anexo II (solicitud) — Documento aparte, aún sin preparar; es obligatorio.
+  ! Sin memoria en plazo: inadmisión, no subsanable — La edición 2026 cerró el 08/05/2026; hay que esperar a la siguiente convocatoria y verificar que los criterios no cambian respecto a las bases 2025.
+  ✓ Una solicitud por persona; proyecto original e inédito — La serie de retratos de vecinas es nueva; confirmar que no presentas otra solicitud.
+  ✓ todos los números salen del perfil, el dossier base o las bases
+  9 huecos [PENDIENTE] para el usuario
+
+━━━ painter × Galicia Exporta Empresas 2026 (IG622A) ━━━
+17925 ms · 436 palabras · out 2598 tokens
+Estrategia: Esta convocatoria no puntúa por mérito artístico: es una subvención no competitiva y lo que decide es la elegibilidad y la calidad del plan de acciones con su presupuesto. Por eso la variante pone primero el vínculo con tu centro de trabajo en Galicia y las acciones de internacionalización, y deja tu trayectoria como base breve que da credibilidad al plan. Casi todos los datos de elegibilidad y de presupuesto están pendientes y los marcamos de forma visible.
+Base: bio → statement → cv → series
+Variante: Datos del solicitante y centro de trabajo en Galicia [pyme-galicia,un-trabajador,ig192] → Vínculo de las acciones con la actividad del centro de trabajo en Galicia [vinculo-centro] → Plan de acciones de internacionalización [plan-acciones] → Presupuesto de las acciones [plan-acciones] → Trayectoria de apoyo [plan-acciones]
+
+  ## Datos del solicitante y centro de trabajo en Galicia  criterios pyme-galicia, un-trabajador, ig192 · de profile, nuevo
+  Uxía Ferreiro, pintora. Nacida en Monforte de Lemos, vive desde hace unos 15 años en una aldea cerca de Lugo, en O Corgo.
+  
+  - Forma jurídica y alta como autónoma: [PENDIENTE: confirmar alta como autónoma (epígrafe y fecha de alta) o forma jurídica]
+  - Centro de trabajo en Galicia: [PENDIENTE: dirección del taller o centro de trabajo y si coincide con tu domicilio en O Corgo]
+  - Persona trabajadora por cuenta ajena: [PENDIENTE: indicar si tienes a alguien contratado; si no, acreditar que llevas menos de 42 meses de actividad]
+  - Alta en programa avanzado del Igape (IG192) con informe positivo: [PENDIENTE: estado del trámite IG192; hay que pedirlo y tener el informe positivo antes de solicitar]
+
+  ## Vínculo de las acciones con la actividad del centro de trabajo en Galicia  criterios vinculo-centro · de statement, series, nuevo
+  Toda tu producción parte de Galicia. Trabajas sobre todo óleo sobre lienzo de gran formato y con pigmentos naturales que preparas tú misma con tierras del río Miño. Tu obra se centra en la memoria del paisaje rural y en el abandono del campo gallego, «cómo el monte se queda vacío».
+  
+  Las exposiciones y ferias fuera de Galicia darían salida a obra producida en tu taller en Galicia. Tu serie más importante, *Terra queimada* (14 cuadros sobre los incendios de 2017 en Galicia), y la serie nueva, *Mujeres que sostienen las aldeas* (retratos de vecinas tuyas), nacen del territorio donde trabajas.
+  
+  [PENDIENTE: confirmar que la producción de estas obras se realiza en el centro de trabajo declarado]
+
+  ## Plan de acciones de internacionalización  criterios plan-acciones · de series, nuevo
+  Objetivo: poder exponer fuera de Galicia.
+  
+  Acciones previstas (una ficha por acción):
+  - [PENDIENTE: exposición o feria concreta (nombre, ciudad, país)]
+  - [PENDIENTE: fechas de celebración, dentro del periodo de ejecución 01/01/2026 – 15/12/2026]
+  - [PENDIENTE: obra que llevarías (por ejemplo, *Terra queimada* o la serie nueva) y su relación con la acción]
+  - [PENDIENTE: resultado que esperas de cada acción]
+  
+  Comprobación previa: la convocatoria 2026 figura cerrada (plazo 28/01 a 30/09/2026). [PENDIENTE: verificar con el Igape si hay plazo abierto o próxima edición antes de preparar la solicitud]
+
+  ## Presupuesto de las acciones  criterios plan-acciones · de nuevo
+  Conceptos subvencionables según la convocatoria: ferias, viajes, alojamiento, reserva de espacios, con importes máximos por concepto según las bases.
+  
+  | Concepto | Acción | Importe |
+  |---|---|---|
+  | Reserva de espacio / participación en feria | [PENDIENTE] | [PENDIENTE: importe] |
+  | Viajes | [PENDIENTE] | [PENDIENTE: importe] |
+  | Alojamiento | [PENDIENTE] | [PENDIENTE: importe] |
+  
+  Anticipo posible de hasta el 50 % sin garantías. [PENDIENTE: decidir si lo solicitas]
+
+  ## Trayectoria de apoyo  criterios plan-acciones · de cv
+  - Formación: Bellas Artes, Universidad de Vigo (Pontevedra).
+  - 2023: exposición *Terra queimada*, Museo Provincial de Lugo.
+  - Exposición colectiva en la Fundación Luis Seoane, A Coruña. [PENDIENTE: año]
+  - 2019: accésit en el premio de pintura de la Diputación de Lugo.
+
+  Omitido: Statement artístico completo y descripción detallada de series y técnicas (La convocatoria no puntúa criterios artísticos; solo se conserva lo que sostiene el vínculo con el centro de trabajo y la credibilidad del plan.); Bio extensa (Se reduce a los datos de localización y actividad que importan para la elegibilidad.)
+  ¿ [pyme-galicia] ¿Estás dada de alta como autónoma y tienes tu taller o centro de trabajo en Galicia? ¿Desde cuándo?
+  ¿ [un-trabajador] ¿Tienes a alguien contratado por cuenta ajena, o llevas menos de 42 meses de actividad?
+  ¿ [ig192] ¿Has pedido ya el alta en el programa avanzado de internacionalización del Igape (IG192) y tienes el informe positivo?
+  ¿ [plan-acciones] ¿Qué exposiciones o ferias concretas fuera de Galicia tienes en mente (ciudad, fechas, coste aproximado)?
+  ¿ [plan-acciones] ¿Sabes si hay un plazo abierto, ya que la edición 2026 figura cerrada?
+  ! Solicitud en spiga-sede.igape.es — Trámite electrónico por la sede del Igape; hay que prepararlo y comprobar que el plazo sigue abierto.
+  ! Plan / descripción de las acciones de internacionalización y su presupuesto — Faltan acciones concretas, fechas e importes; todo marcado como PENDIENTE.
+  ! Alta en IG192 con informe positivo antes de solicitar — Sin datos de que esté tramitado.
+  ! Ejecución entre 01/01/2026 y 15/12/2026 — Las acciones deben caer en ese periodo; la convocatoria figura cerrada.
+  · Límite de extensión o formato de memoria — La convocatoria no fija formato ni extensión.
+  ✓ todos los números salen del perfil, el dossier base o las bases
+  15 huecos [PENDIENTE] para el usuario
+
+━━━ illustrator × Ayudas para la producción e investigación artística en el ámbito del arte contemporáneo 2026 — Línea A: creación y producción artística ━━━
+18843 ms · 441 palabras · out 2661 tokens
+Estrategia: La convocatoria puntúa sobre todo la aportación artística del proyecto (12 de 30 puntos), así que la memoria abre con La otra orilla: qué es, cómo se trabaja y qué lleva hecho. Después va el currículum, enlazado con el salto a la novela gráfica, y al final los bloques de valores, presupuesto y difusión, que hoy tienen huecos que solo tú puedes rellenar.
+Base: bio → statement → cv → series
+Variante: Memoria del proyecto: La otra orilla [A2a] → Trayectoria y vínculo con el proyecto [A1] → Valores culturales, inclusión y territorio [A2b] → Presupuesto y calendario [A3a] → Plan de difusión [A3b] → Vinculación con territorios DANA [A4]
+
+  ## Memoria del proyecto: La otra orilla  criterios A2a · de statement, series, profile
+  *La otra orilla* es una novela gráfica sobre el viaje de mi padre desde Lagos hasta Vigo en los años 80. Llevo unas 40 páginas abocetadas y lo que necesito es una beca de creación para poder dedicarme seis meses solo a ella.
+  
+  Trabajo en digital con Procreate, pero cada vez más con gouache y lápices de colores. [PENDIENTE: qué hace diferente a este proyecto en lo artístico (técnica mixta de gouache y lápices, uso de archivo familiar, narrativa o formato poco habituales). Es lo que más puntúa y ahora mismo no hay base para argumentarlo.]
+  
+  [PENDIENTE: extensión prevista de la novela gráfica, estructura narrativa y estado actual más allá de las 40 páginas abocetadas.]
+
+  ## Trayectoria y vínculo con el proyecto  criterios A1 · de bio, cv, series
+  Soy ilustrador, nacido en Vigo y residente en Valencia. Hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa.
+  
+  **Formación**
+  - Bellas Artes, Politécnica de Valencia.
+  - Máster de ilustración, Escola Massana (Barcelona).
+  
+  **Publicaciones**
+  - Editorial Faro de Papel: 7 álbumes, contando el que sale en marzo. El último, *La abuela que hablaba con las gaviotas* (2024).
+  - Revista Mar de Fondo: colaboración mensual con las portadas.
+  
+  **Premios**
+  - Finalista en el Premio de álbum ilustrado Ciudad de Alicante.
+  
+  [PENDIENTE: años de los estudios, del finalista de Alicante y del resto de álbumes; exposiciones o publicaciones relevantes si las hay.]
+  [PENDIENTE: una frase que explique por qué das ahora el salto del álbum infantil a la novela gráfica.]
+
+  ## Valores culturales, inclusión y territorio  criterios A2b · de statement, profile, nuevo
+  El proyecto parte del viaje de mi padre de Lagos a Vigo, y yo me crié en Vigo y vivo en Valencia. [PENDIENTE: cómo el proyecto se vincula con diversidad cultural y territorial, inclusión, accesibilidad o igualdad de género, y con qué ODS. Redáctalo solo si lo sientes así; no se ha incluido ningún vínculo que no hayas dicho.]
+
+  ## Presupuesto y calendario  criterios A3a · de nuevo
+  Dedicación exclusiva de seis meses a la novela gráfica. [PENDIENTE: calendario dentro del periodo 01/07/2026 a 30/06/2027.]
+  [PENDIENTE: presupuesto desglosado. Recuerda que el soporte de dedicación a la creación no puede superar el 30 % (máx. 4.500 €) y que la ayuda llega a 30.000 €. Incluye materiales y producción.]
+  [PENDIENTE: posibles espacios de presentación o desarrollo digital, si los hay.]
+
+  ## Plan de difusión  criterios A3b · de cv, nuevo
+  [PENDIENTE: editorial prevista (¿Faro de Papel u otra?), presentaciones y comunidades autónomas donde se difundiría (por ejemplo Galicia y Comunitat Valenciana, si es el caso).]
+  Colaboro cada mes con la revista Mar de Fondo haciendo las portadas. [PENDIENTE: confirmar si esta revista puede servir de canal para dar a conocer el proyecto.]
+
+  ## Vinculación con territorios DANA  criterios A4 · de profile
+  Resido en Valencia. [PENDIENTE: municipio de residencia, para comprobar si es uno de los afectados por la DANA. Si no lo es, omite este apartado: el proyecto no se relaciona con esos territorios.]
+
+  Omitido: Detalle de la práctica de álbum infantil e ilustración de prensa más allá de lo que sostiene el currículum (La convocatoria no puntúa la práctica anterior en sí, sino su vínculo con el proyecto planteado.); Instagram @dani.dibuja (No es un documento ni un criterio de esta convocatoria; puedes añadirlo en la solicitud si el formulario lo permite.); Descripción de Procreate como técnica (Se mantiene solo la mención breve; lo que puntúa es la técnica de este proyecto, que apunta a gouache y lápices.)
+  ¿ [A2a] ¿Qué hace diferente a La otra orilla en lo artístico: la mezcla de gouache y lápices, el uso de archivo familiar, un formato o narrativa poco habituales?
+  ¿ [A3a] ¿Cuánto necesitas para los seis meses de dedicación y cuánto para materiales y producción, entre el 01/07/2026 y el 30/06/2027?
+  ¿ [A3b] ¿Tienes interés de alguna editorial o espacio para publicar o presentar la novela, y en qué comunidades podrías difundirla?
+  ¿ [A2b] ¿Qué vínculo ves entre el proyecto y la diversidad cultural, la inclusión o la igualdad, y con qué ODS lo relacionarías?
+  ¿ [A4] ¿En qué municipio de Valencia vives y fue afectado por la DANA?
+  ! Solicitud en sede electrónica (cultura.sede.gob.es) — La convocatoria consta como cerrada (plazo hasta el 19/05/2026): confirma si aún puedes presentarte o úsalo como borrador para la próxima edición.
+  ! Memoria del proyecto — Las secciones de proyecto, valores, presupuesto y difusión tienen marcadores [PENDIENTE] que hay que rellenar antes de presentar.
+  ! Currículum — Faltan fechas de formación, del finalista de Alicante y de los álbumes.
+  ! Presupuesto — No hay desglose; la dedicación a la creación se limita a 4.500 € (30 %).
+  ! Elegibilidad: RETA, residencia fiscal, no beneficiario 2025, una sola línea — Sin confirmar; el alta en el RETA solo es necesaria antes de la lista definitiva.
+  ✓ todos los números salen del perfil, el dossier base o las bases
+  11 huecos [PENDIENTE] para el usuario
+
+━━━ illustrator × Axudas Rega: proxectos artísticos con mentoría a través de residencias (Cidade da Cultura de Galicia, CT898A) ━━━
+20529 ms · 459 palabras · out 2933 tokens
+Estrategia: La memoria sigue exactamente los cinco apartados A-E que pide la convocatoria. Abre con el concepto de La otra orilla (45 puntos), porque ahí tienes ya lo mejor: una historia propia con vínculo gallego y 40 páginas abocetadas. El presupuesto y el plan de residencia (30 puntos) son tu mayor hueco y van marcados como pendientes, igual que la justificación de trayectoria, que hay que apoyar en tu salto a la novela gráfica.
+Base: bio → statement → cv → series
+Variante: A) Categoría [persona-fisica] → B) Nombre del proyecto y solicitante [persona-fisica,inedito] → C) Concepto, idea y objetivos [A,inedito] → D) Viabilidad y presupuesto [B,residencia-gaias] → E) Justificación de la oportunidad en la trayectoria [C]
+
+  ## A) Categoría  criterios persona-fisica · de nuevo
+  Artes visuales: ilustración / novela gráfica.
+  
+  [PENDIENTE: confirmar en las bases bajo qué categoría formal debe inscribirse un proyecto de novela gráfica (artes visuales, diseño u otra).]
+
+  ## B) Nombre del proyecto y solicitante  criterios persona-fisica, inedito · de bio, profile
+  **Proyecto:** *La otra orilla*.
+  
+  **Solicitante:** Daniel Okafor, ilustrador, nacido en Vigo y residente en Valencia. Solicitud a título personal. [PENDIENTE: confirmar si estás de alta como autónomo; no es obligatorio, pero se indica en el Anexo II.]
+
+  ## C) Concepto, idea y objetivos  criterios A, inedito · de statement, series, profile
+  *La otra orilla* es una novela gráfica sobre el viaje de mi padre desde Lagos hasta Vigo en los años 80. Es un proyecto inédito, en el que llevo unas 40 páginas abocetadas.
+  
+  Hago sobre todo álbum ilustrado infantil y algo de ilustración editorial para prensa. Trabajo en digital con Procreate, pero cada vez más con gouache y lápices de colores. [PENDIENTE: confirmar si la novela gráfica se resolverá con esta mezcla de gouache, lápices de colores y digital.]
+  
+  **Objetivos de la residencia:** [PENDIENTE: objetivos concretos, p. ej. cuántas páginas o qué escenas quieres desarrollar o terminar en Santiago y con qué resultado final.]
+  
+  **Argumentación y referentes:** [PENDIENTE: por qué esta historia, por qué ahora y qué referentes de novela gráfica te mueven. Aquí pesan hasta 45 puntos.]
+  
+  **Vínculo con Galicia:** me crié en Vigo y el viaje de mi padre termina allí. [PENDIENTE: desarrollar este vínculo solo con lo que quieras contar tú sobre esa llegada y su relación con Galicia.]
+
+  ## D) Viabilidad y presupuesto  criterios B, residencia-gaias · de nuevo
+  **Punto de partida:** unas 40 páginas abocetadas de *La otra orilla*.
+  
+  **Plan de producción en 3-6 semanas:** [PENDIENTE: qué parte concreta se produciría durante la residencia, con calendario por semanas y resultado práctico esperado.]
+  
+  **Presupuesto (máximo 8.000 €, incluye producción, viaje, alojamiento, manutención y presentación):** [PENDIENTE: desglose por partidas (viaje Valencia-Santiago, alojamiento, manutención, materiales, presentación) con cifras reales y que sume como máximo 8.000 €.]
+  
+  **Por qué la Cidade da Cultura:** [PENDIENTE: qué necesita el proyecto de estos espacios y de la mentoría, y por qué no puede hacerse igual desde Valencia.]
+  
+  **Disponibilidad:** [PENDIENTE: confirmar que puedes residir en Santiago de Compostela entre 3 y 6 semanas dentro de las fechas de la convocatoria.]
+
+  ## E) Justificación de la oportunidad en la trayectoria  criterios C · de cv, bio, series
+  **Formación:** Bellas Artes en la Politécnica de Valencia y máster de ilustración en la Escola Massana (Barcelona).
+  
+  **Trayectoria editorial:** 7 álbumes con la Editorial Faro de Papel, contando el que sale en marzo; el último publicado es *La abuela que hablaba con las gaviotas* (2024). Colaboro cada mes con la revista Mar de Fondo haciendo las portadas. Finalista en el Premio de álbum ilustrado Ciudad de Alicante.
+  
+  **Qué supone esta residencia:** *La otra orilla* es mi primer proyecto de novela gráfica, un género distinto del álbum infantil que he trabajado hasta ahora. [PENDIENTE: explicar con tus palabras por qué la residencia y la mentoría son el paso que necesitas para ese salto, y qué cambiaría en tu trabajo después.]
+
+  Omitido: Detalle completo de técnicas y de la biografía en tercera persona (Se reducen a lo que sostiene el concepto y la trayectoria; la convocatoria puntúa idea, viabilidad y oportunidad, no la presentación biográfica.); Objetivo declarado de una beca de 6 meses dedicada solo a la novela gráfica (La convocatoria es una residencia de 3 a 6 semanas con 8.000 €. Conviene plantear el proyecto en ese marco y no como la beca larga que buscas.); Nombre de usuario de Instagram (@dani.dibuja) (La memoria no pide enlaces y no puntúa en ningún criterio.)
+  ¿ [B] ¿Qué parte concreta de La otra orilla (cuántas páginas, qué escenas) podrías terminar o desarrollar en 3 a 6 semanas en Santiago?
+  ¿ [B] ¿Qué costes calculas de viaje, alojamiento, manutención y materiales para esas semanas, para armar un presupuesto de máximo 8.000 €?
+  ¿ [A] ¿Qué referentes de novela gráfica te mueven y qué quieres conseguir con esta historia más allá de terminar las páginas?
+  ¿ [C] ¿Qué te aportaría un mentor en el paso del álbum infantil a la novela gráfica?
+  ¿ [residencia-gaias] ¿Puedes residir entre 3 y 6 semanas en Santiago de Compostela en las fechas de la convocatoria?
+  ✓ Memoria en PDF, máximo 30 páginas (se excluyen las que superen el límite) — El texto previsto cabe de sobra; las 30 páginas dejan espacio incluso para incluir imágenes de las 40 páginas abocetadas.
+  ✓ Memoria con apartados A) categoría, B) nombre y solicitante, C) concepto y objetivos, D) viabilidad con presupuesto, E) oportunidad en la trayectoria — La estructura reproduce exactamente los cinco apartados y su orden.
+  ! Anexo II (solicitud) — Es un formulario oficial que no se genera aquí; hay que rellenarlo y presentarlo junto con la memoria.
+  ! Sin memoria en plazo: inadmisión, no subsanable — El plazo de 2026 cerró el 08/05/2026. Hay que esperar a la próxima edición y presentar la memoria completa dentro de plazo.
+  ✓ Una solicitud por persona, proyecto original e inédito — Solo se presenta La otra orilla; confirmar que es inédita.
+  ! Presupuesto máximo 8.000 € y residencia de 3 a 6 semanas — Faltan el desglose y el plan de producción; sin ellos el criterio B (30 puntos) queda muy bajo.
+  ✓ todos los números salen del perfil, el dossier base o las bases
+  11 huecos [PENDIENTE] para el usuario
+
+━━━ business × Galicia Exporta Empresas 2026 (IG622A) ━━━
+20035 ms · 396 palabras · out 2556 tokens
+Estrategia: Esta convocatoria no tiene criterios puntuados: es de concesión no competitiva y lo que cuenta es cumplir los requisitos y presentar un plan de acciones de internacionalización con su presupuesto. Por eso la memoria abre con la elegibilidad (pyme en Boiro, plantilla por cuenta ajena, vínculo con el centro de trabajo) y después presenta el plan para Francia, con los datos que faltan marcados como pendientes.
+Base: activity → team → projects
+Variante: 1. Datos del solicitante y encaje con la convocatoria [pyme-galicia,un-trabajador,ig192] → 2. Actividad y producto que se quiere internacionalizar [vinculo-centro] → 3. Objetivo: empezar a exportar a Francia [vinculo-centro] → 4. Plan de acciones de internacionalización y calendario [vinculo-centro] → 5. Presupuesto [vinculo-centro] → 6. Nota sobre plazos de la convocatoria [ig192]
+
+  ## 1. Datos del solicitante y encaje con la convocatoria  criterios pyme-galicia, un-trabajador, ig192 · de activity, team, profile
+  **Conservas da Ría** es una sociedad limitada constituida en 2019, con centro de trabajo en **Boiro (Galicia)**. Somos Marta Castro (parte comercial) y mi hermana (socia, lleva la producción), y desde septiembre somos **5 personas** en plantilla. El año pasado facturamos unos 280.000 euros.
+  
+  - **Pyme con centro de trabajo en Galicia:** elaboramos nuestras conservas en Boiro.
+  - **Personal por cuenta ajena:** [PENDIENTE: confirmar que al menos una de las 5 personas (las dos operarias o la chica de la tienda online) tiene contrato laboral con la empresa; las socias no cuentan].
+  - **Alta en programa avanzado del Igape (IG192):** [PENDIENTE: indicar si está solicitada el alta y la fecha de entrada, o la fecha prevista, y si hay informe positivo; debe pedirse antes de solicitar la ayuda].
+
+  ## 2. Actividad y producto que se quiere internacionalizar  criterios vinculo-centro · de activity, projects
+  Hacemos conservas de pescado y marisco de la ría de Arousa en aceite de oliva, sobre todo **mejillón, sardinilla y berberecho**. Tenemos el sello **Galicia Calidade**.
+  
+  Vendemos a tiendas gourmet de toda España y, desde hace un año, también por la web. En 2022 hicimos un proyecto con la Universidade da Coruña para aprovechar los descartes de la pesca.
+  
+  Todas las acciones que se proponen en este plan promocionan producto elaborado en nuestro centro de Boiro, por lo que quedan vinculadas a su actividad.
+
+  ## 3. Objetivo: empezar a exportar a Francia  criterios vinculo-centro · de activity, profile
+  Queremos empezar a exportar a Francia **porque nos lo piden mucho**. Hoy vendemos solo en España, así que Francia sería nuestro primer mercado exterior.
+  
+  [PENDIENTE: describir de dónde vienen esas peticiones (clientes, distribuidores, tiendas, particulares a través de la web) y, si se puede, cuántas o de qué tipo.]
+
+  ## 4. Plan de acciones de internacionalización y calendario  criterios vinculo-centro · de nuevo
+  [PENDIENTE: listar las acciones concretas previstas para Francia (ferias, viajes comerciales, visitas a distribuidores, reserva de espacios, alojamiento), con el nombre y lugar de cada una.]
+  
+  [PENDIENTE: fechas de cada acción. Todas deben caer entre el 01/01/2026 y el 15/12/2026, que es el periodo de ejecución.]
+  
+  [PENDIENTE: quién de la empresa participaría en cada acción.]
+
+  ## 5. Presupuesto  criterios vinculo-centro · de nuevo
+  [PENDIENTE: importe previsto por concepto (ferias, viajes, alojamiento, reserva de espacios…), ajustado a los máximos por concepto de las bases, y total de la inversión.]
+  
+  Se solicitaría el anticipo de hasta el 50 % sin garantías, si procede. [PENDIENTE: confirmar si queréis pedirlo.]
+
+  ## 6. Nota sobre plazos de la convocatoria  criterios ig192 · de nuevo
+  La convocatoria 2026 figura con plazo del 28/01 al 30/09/2026 y como cerrada. [PENDIENTE: confirmar si sigue abierta para vuestra solicitud o si hay que esperar a la siguiente edición, y ajustar entonces el calendario del plan.]
+
+  Omitido: Digitalización de pedidos y stock (Excel y papel) (No es un gasto subvencionable en esta línea, que solo cubre gastos de internacionalización, y no puntúa nada aquí.); Detalle del equipo y de la tienda online (Solo se usa lo necesario para acreditar el requisito de plantilla; el resto no aporta a una ayuda no competitiva.); Proyecto con la UDC sobre descartes de pesca (Se menciona en una línea; no es relevante para decidir la concesión.)
+  ¿ [ig192] ¿Habéis pedido ya el alta en algún programa avanzado de internacionalización del Igape (IG192) o es la primera vez que os acercáis?
+  ¿ [vinculo-centro] ¿Qué acciones concretas tenéis en mente para Francia (ferias, viajes comerciales, visitas a distribuidores) y en qué fechas?
+  ¿ [vinculo-centro] ¿Cuánto calculáis que costaría cada acción (feria, viaje, alojamiento, espacio)?
+  ¿ [un-trabajador] ¿Las dos operarias y la chica de la tienda online tienen contrato laboral con la empresa?
+  ¿ [ig192] ¿Sabéis si la convocatoria 2026 sigue abierta para vosotras o habría que esperar a la próxima edición?
+  ! Solicitud en spiga-sede.igape.es — La solicitud se presenta en la sede electrónica del Igape; este documento solo prepara el contenido de la memoria.
+  ! Plan / descripción de las acciones de internacionalización y su presupuesto — Faltan acciones, fechas y presupuesto: hasta completarlos el plan queda incompleto.
+  ! Alta IG192 con informe positivo previo — Sin datos sobre si está pedida; es requisito previo a solicitar la ayuda.
+  ! Ejecución entre el 01/01/2026 y el 15/12/2026 — Hay que confirmar que las acciones caen en ese periodo y que la convocatoria sigue abierta.
+  · Límites de formato (extensión, tipografía) — La convocatoria no fija límites de formato para la memoria.
+  ✓ todos los números salen del perfil, el dossier base o las bases
+  9 huecos [PENDIENTE] para el usuario
+
+━━━ Resumen (MEDIDO) ━━━
+┌─────────┬───────────┬───┬───────┬───────┐
+│ (index) │ llamada   │ n │ p50   │ max   │
+├─────────┼───────────┼───┼───────┼───────┤
+│ 0       │ 'fit'     │ 9 │ 9923  │ 14917 │
+│ 1       │ 'variant' │ 6 │ 20035 │ 20529 │
+└─────────┴───────────┴───┴───────┴───────┘
+wall total 35484 ms (fits en paralelo, luego variantes en paralelo)
+informe: results/variants-live-sonnet-5-5.md

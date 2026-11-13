@@ -17,6 +17,9 @@ fleet/spikes/voice/
   src/session.js       call scheduler: debounce, single-flight coalescing, dossier loop, flush   ← port
   src/llm.js           @anthropic-ai/sdk client (streams to measure TTFT)                        ← port
   src/mock.js          deterministic oracle + template dossier (used when no key)
+  src/calls.js         3 REAL calls (Ministerio arte contemporáneo 2026, Rega, Igape Galicia Exporta) ← seed format
+  variant.js           npm run variant: fit of each profile with each call + call-specific dossier variant
+  fixtures/base-*.json base profile + dossier per scenario, exported from the live Sonnet run
   src/transcripts.js   3 onboarding transcripts (painter, illustrator, small business) + 1 artwork description
   test/spike.test.js   npm test
 ```
@@ -27,6 +30,7 @@ npm start                          # all scenarios, real-time speech (~3.5 min)
 npm run fast                       # 6x speech speed: stresses coalescing
 node replay.js --scenario business # one scenario
 node replay.js --image obra.jpg    # per-work sheet with the vision pass (live only)
+npm run variant                    # fit + dossier variant per call (~35 s live)
 npm run serve                      # http://localhost:8787 → demo.html
 npm test
 ```
@@ -274,3 +278,79 @@ not re-measured):
 1. Corrections: the new value is only the corrected fact (Haiku had written "4 personas, luego 5 desde septiembre").
 2. Dates inside a description are not the item's date (both models dated *Terra queimada* 2017, the year of the fires).
 3. Business `activity` in the company's voice, not "Somos Marta Castro y mi hermana…".
+
+## 9. Call-specific dossier variant (layer 2)
+
+Two layers: the **base dossier** is built live from voice and does not depend on any call (it is the free lead
+magnet and matching needs the profile first). The **variant** is generated per call after matching and is the
+differentiator: the same facts, re-structured and re-weighted for the committee that will score them.
+
+Pipeline (`variant.js`, prompts `FIT_SYSTEM` / `variantSystem(mode)`, schemas `FIT_SCHEMA` / `variantSchema(mode)`):
+
+1. **Fit** (profile × call): per requirement `cumple / no_cumple / sin_datos` with the user's quote and an action;
+   per criterion a strict estimate of today's points (clamped to the max in code), confidence, gap; overall
+   `alto / medio / bajo / no_elegible`; `why_fit`, `missing`, and up to 3 questions that would raise the score most.
+2. **Variant** (only for eligible pairs): mirrors the memoria structure the call prescribes (Rega's A–E), otherwise
+   orders sections by criterion weight; every section tagged with the criteria it serves and the base sections it
+   draws on; `omitted` (what was cut and why), `questions` per gap, `format_checks` per rule; anything the call scores
+   that the user has not said is a visible **`[PENDIENTE: …]`**, never invented.
+3. **Code checks**: numbers in the variant that appear nowhere in the profile / base dossier / call → flagged;
+   placeholders counted.
+
+Calls (`src/calls.js`): real criteria copied from the official texts. Ministerio de Cultura, producción e investigación
+en arte contemporáneo 2026, line A (30 points: CV 6, aportación 12, ODS/igualdad/territorio 5, presupuesto 4, difusión 2,
+DANA 1). Rega, Cidade da Cultura (100 points: concepto 45, viabilidad 30, oportunidad en la trayectoria 25, minimum 50,
+memoria ≤ 30 pages in the A–E structure; criteria from the 2025 bases, the 2026 edition used the same procedure).
+Igape Galicia Exporta Empresas 2026 (non-competitive; requirements only, including the IG192 programme). **All three
+editions are closed today**; they are used for their real rules.
+
+### Results (live, 13/11/2026; logs `results/variants-live-*-run.txt`, readable report `results/variants-live-*.md`)
+
+| | Sonnet 5.5 (all 3 profiles) | Opus 5.5 variant (painter) |
+|---|---|---|
+| fit, 9 calls in parallel | p50 9.9 s, max 14.9 s | (fit on Sonnet) |
+| variant | p50 20.0 s, max 20.5 s, ~2.6-2.9 k output tokens | p50 35.3 s, max 44.6 s, 3.1-4.8 k tokens |
+| wall, fits ∥ then variants ∥ | 35 s | 56 s |
+| numbers not backed by the profile | 0 in 6 variants | 0 in 3 variants |
+
+Fit quality:
+
+- Eligibility was correct in every case: the business is `no_elegible` for both artist calls, the illustrator is
+  `no_elegible` for Igape, and the business is eligible for Igape with the **IG192 prerequisite flagged** (the kind of
+  trap that sinks real applications).
+- The scores are honest, not flattering: painter 12/30 Ministerio and 51/100 Rega (just above Rega's 50 cut-off),
+  low because budget and dissemination plan do not exist yet. Questions target the points at stake ("¿Cuántos retratos
+  y de qué formato… y cuánto te costaría?").
+- Weak spot: painter × Igape came out `medio` instead of `bajo`; it hedged with the right questions (RETA, employees),
+  but an artist exhibiting abroad is a poor fit for an SME export programme. Rule added to `FIT_SYSTEM` (not re-measured):
+  business-programme calls for a creator without a business structure → `bajo` at most.
+
+Variant quality (the differentiator):
+
+- **Same painter, two calls, two different dossiers.** Ministerio: aportación artística first (12 pts), then values
+  (igualdad de género, territorio, using her own "mujeres que sostienen las aldeas"), CV, budget, dissemination.
+  Rega: exactly the A–E memoria structure, budget as a table capped at 8.000 € with every line `[PENDIENTE]`, and the
+  question about what the mentor would change in her career (criterion C, 25 pts).
+- Business × Igape: rewrites the company dossier into an export action plan, drops the digitalisation project
+  (not eligible spending) and says why in `omitted`.
+- Voice preserved: sections reuse the speaker's sentences ("cómo el monte se queda vacío", "porque nos lo piden mucho").
+- `format_checks` caught real things: the 30-page limit, the A–E structure, the missing Anexo II, and that the edition
+  is closed.
+- Inherited error: Sonnet repeated the base dossier's "Terra queimada (2017)" (from the extraction bug fixed in §8);
+  Opus wrote it correctly ("14 cuadros sobre los incendios de 2017"). Upstream fixes matter more than the variant model.
+- Opus vs Sonnet: Opus is a bit sharper (more precise placeholders such as "cómo usarás los pigmentos de tierra en esta
+  serie", ODS only "si tú lo quieres plantear", a full CV block), but it takes 1.8x the time and 1.5x the tokens.
+
+### Recommendation for the app
+
+- **Fit on `claude-sonnet-5-5`**, effort `medium`, all candidate calls in parallel right after onboarding (~10-15 s);
+  show the cards as they arrive. Cache per (profile version, call).
+- **Variant on `claude-sonnet-5-5` by default**, streamed section by section (20 s total; first section after about
+  3-4 s if streamed). Offer **"Revisión final" on `claude-opus-5-5`** behind the Pro paywall, just before exporting the
+  PDF, where 40 s is acceptable.
+- `[PENDIENTE]` placeholders become tappable chips in the UI that open a **voice answer** to the attached question; the answer goes
+  through the same extractor, the profile updates, and the variant and fit refresh. This closes the loop with the hero
+  feature and makes the score rise visibly (e.g. Rega 51 → 70+ once budget and plan are said).
+- Keep the number check server-side; block export while a variant has unbacked numbers.
+- Seed calls must carry criteria with points, requirements with ids and format rules as in `src/calls.js`; the
+  prompts depend on that structure.

@@ -1,0 +1,147 @@
+{
+  "id": "painter",
+  "mode": "creator",
+  "from": "live run 13/11/2026, claude-sonnet-5-5 (results/live-sonnet-run.txt)",
+  "profile": {
+    "fields": {
+      "name": {
+        "value": "Uxía Ferreiro",
+        "source": "hola me llamo uxía ferreiro y soy pintora"
+      },
+      "discipline": {
+        "value": "Pintura",
+        "source": "hola me llamo uxía ferreiro y soy pintora"
+      },
+      "origin": {
+        "value": "Monforte de Lemos",
+        "source": "nací en monforte de lemos pero desde hace unos 15 años vivo en una aldea"
+      },
+      "location": {
+        "value": "Una aldea cerca de Lugo, en O Corgo",
+        "source": "desde hace unos 15 años vivo en una aldea cerca de lugo en o corgo"
+      },
+      "goals": {
+        "value": "Empezar una serie nueva sobre las mujeres que sostienen las aldeas; busca ayudas para la producción y para exponer fuera de Galicia",
+        "source": "y busco ayudas para la producción y para poder exponer fuera de galicia"
+      }
+    },
+    "lists": {
+      "techniques": {
+        "oleo-lienzo": {
+          "title": "Óleo sobre lienzo de gran formato",
+          "year": "",
+          "place": "",
+          "detail": "",
+          "source": "trabajo sobre todo óleo sobre lienzo de gran formato"
+        },
+        "pigmentos-naturales": {
+          "title": "Pigmentos naturales",
+          "year": "",
+          "place": "",
+          "detail": "los prepara ella misma con tierras del río Miño",
+          "source": "también pigmentos naturales que preparo yo misma con tierras del río miño"
+        }
+      },
+      "themes": {
+        "memoria-paisaje-rural": {
+          "title": "Memoria del paisaje rural",
+          "year": "",
+          "place": "",
+          "detail": "",
+          "source": "lo que me interesa es la memoria del paisaje rural"
+        },
+        "abandono-campo-gallego": {
+          "title": "Abandono del campo gallego",
+          "year": "",
+          "place": "",
+          "detail": "el monte se queda vacío",
+          "source": "el abandono del campo gallego cómo el monte se queda vacío"
+        }
+      },
+      "series": {
+        "terra-queimada": {
+          "title": "Terra queimada",
+          "year": "2017",
+          "place": "Galicia",
+          "detail": "14 cuadros sobre los incendios de 2017 en Galicia; su serie más importante",
+          "source": "mi serie más importante se llama terra queimada son 14 cuadros sobre los incendios de 2017 en galicia"
+        },
+        "mujeres-aldeas": {
+          "title": "Mujeres que sostienen las aldeas",
+          "year": "",
+          "place": "",
+          "detail": "serie nueva de retratos de vecinas suyas",
+          "source": "quiero empezar una serie nueva sobre las mujeres que sostienen las aldeas retratos de vecinas mías"
+        }
+      },
+      "education": {
+        "bellas-artes-pontevedra": {
+          "title": "Bellas Artes",
+          "year": "",
+          "place": "Pontevedra, Universidad de Vigo",
+          "detail": "",
+          "source": "estudié bellas artes en pontevedra en la universidad de vigo"
+        }
+      },
+      "exhibitions": {
+        "terra-queimada-museo-lugo": {
+          "title": "Terra queimada",
+          "year": "2023",
+          "place": "Museo Provincial de Lugo",
+          "detail": "",
+          "source": "eh no perdona fue en 2023 en 2022 estaba todavía pintándola"
+        },
+        "colectiva-luis-seoane": {
+          "title": "Colectiva",
+          "year": "",
+          "place": "Fundación Luis Seoane, A Coruña",
+          "detail": "exposición colectiva",
+          "source": "también estuve en una colectiva en la fundación luis seoane en a coruña"
+        }
+      },
+      "awards": {
+        "accesit-diputacion-lugo": {
+          "title": "Accésit en el premio de pintura de la Diputación de Lugo",
+          "year": "2019",
+          "place": "Diputación de Lugo",
+          "detail": "accésit",
+          "source": "en 2019 me dieron un accésit en el premio de pintura de la diputación de lugo"
+        }
+      }
+    }
+  },
+  "dossier": {
+    "bio": {
+      "title": "Biografía breve",
+      "body": "Uxía Ferreiro (Monforte de Lemos) es pintora. Estudió Bellas Artes en la Universidad de Vigo, en Pontevedra, y desde hace unos 15 años vive en una aldea cerca de Lugo, en O Corgo. Trabaja sobre todo óleo sobre lienzo de gran formato y con pigmentos naturales que prepara ella misma con tierras del río Miño; su obra se centra en la memoria del paisaje rural y el abandono del campo gallego.",
+      "missing": [
+        "año de nacimiento o de finalización de los estudios"
+      ]
+    },
+    "statement": {
+      "title": "Statement",
+      "body": "Soy pintora. Trabajo sobre todo óleo sobre lienzo de gran formato, y también con pigmentos naturales que preparo yo misma con tierras del río Miño.\n\nNací en Monforte de Lemos, pero desde hace unos 15 años vivo en una aldea cerca de Lugo, en O Corgo. Lo que me interesa es la memoria del paisaje rural y el abandono del campo gallego, cómo el monte se queda vacío.\n\nMi serie más importante, Terra queimada, son 14 cuadros sobre los incendios de 2017 en Galicia. Ahora quiero empezar una serie nueva sobre las mujeres que sostienen las aldeas: retratos de vecinas mías.",
+      "missing": [
+        "por qué le interesa el paisaje rural (motivación personal)"
+      ]
+    },
+    "cv": {
+      "title": "CV artístico",
+      "body": "**Exposiciones**\n\n- 2023 — *Terra queimada*, Museo Provincial de Lugo.\n- Sin fecha — Exposición colectiva, Fundación Luis Seoane, A Coruña.\n\n**Premios y becas**\n\n- 2019 — Accésit en el premio de pintura de la Diputación de Lugo.\n\n**Formación**\n\n- Bellas Artes, Universidad de Vigo (Pontevedra). Sin fecha.",
+      "missing": [
+        "año de la exposición colectiva en la Fundación Luis Seoane",
+        "años de la formación en Bellas Artes",
+        "residencias o publicaciones, si las hay"
+      ]
+    },
+    "series": {
+      "title": "Series",
+      "body": "**Terra queimada** (2017) — 14 cuadros sobre los incendios de 2017 en Galicia; su serie más importante. Se expuso en el Museo Provincial de Lugo en 2023.\n\n**Mujeres que sostienen las aldeas** (en proyecto) — serie nueva de retratos de vecinas suyas, que quiere empezar. Busca ayudas para la producción y para poder exponerla fuera de Galicia.",
+      "missing": [
+        "medidas de las obras",
+        "años exactos de realización de Terra queimada",
+        "número previsto de obras de la serie nueva"
+      ]
+    }
+  }
+}

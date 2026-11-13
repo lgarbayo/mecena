@@ -184,3 +184,35 @@ export const MOCK_SHEET = {
   edition: f("", "", "ninguno"),
   follow_up_question: "",
 };
+
+// ---------------------------------------------------------------------------
+// Fit + variant mock: kind match, every requirement "sin_datos", criteria at a third of max,
+// variant = base sections reordered, one section per criterion. Deterministic, no claims.
+// ---------------------------------------------------------------------------
+
+export const mockFitVariant = {
+  async fit({ profile, call, mode }) {
+    const wrongKind = call.kind !== mode;
+    const fit = {
+      eligibility: call.eligibility.map((r) => ({ requirement_id: r.id, status: wrongKind ? "no_cumple" : "sin_datos", evidence: "", action: "Confírmalo." })),
+      criteria: call.criteria.map((c) => ({ criterion_id: c.id, estimate: Math.round(c.max / 3), confidence: "baja", evidence: [], gap: "Sin evaluar (mock)." })),
+      fit: wrongKind ? "no_elegible" : "medio",
+      why_fit: wrongKind ? [] : [`Tu perfil (${profile.fields.discipline?.value ?? profile.fields.activity?.value ?? "?"}) es del tipo que admite la convocatoria.`],
+      missing: ["Evaluación real (mock)"],
+      questions: [],
+    };
+    return { fit, latencyMs: 0, usage: { input_tokens: 0, output_tokens: 0 } };
+  },
+  async variant({ mode, dossier, call }) {
+    const ids = Object.keys(DOSSIER_SECTIONS[mode]);
+    const sections = (call.criteria.length ? call.criteria : [{ id: "requisitos", label: "Requisitos" }]).map((c, i) => ({
+      id: `s-${c.id}`.toLowerCase(),
+      heading: c.label,
+      body: dossier[ids[i % ids.length]]?.body || "[PENDIENTE: contenido]",
+      criteria: [c.id],
+      from: [ids[i % ids.length]],
+    }));
+    const variant = { strategy: "Variante simulada (mock): secciones ordenadas por criterio.", sections, omitted: [], questions: [], format_checks: call.format.map((rule) => ({ rule, status: "no_aplica", note: "mock" })) };
+    return { variant, latencyMs: 0, usage: { input_tokens: 0, output_tokens: 0 } };
+  },
+};

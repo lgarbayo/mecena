@@ -234,3 +234,111 @@ export const IMAGE_NOTES_SCHEMA = {
     visible_text: { type: "string", description: "Signature/date/text readable on the work, verbatim, or empty." },
   },
 };
+
+// ---------------------------------------------------------------------------
+// 5. Fit with a call (convocatoria): eligibility + per-criterion estimate
+// ---------------------------------------------------------------------------
+
+export const FIT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["eligibility", "criteria", "fit", "why_fit", "missing", "questions"],
+  properties: {
+    eligibility: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["requirement_id", "status", "evidence", "action"],
+        properties: {
+          requirement_id: { type: "string" },
+          status: { type: "string", enum: ["cumple", "no_cumple", "sin_datos"] },
+          evidence: { type: "string", description: "Verbatim PROFILE source quote that proves it, or empty." },
+          action: { type: "string", description: "Spanish, short: what the user must do or confirm. Empty if nothing." },
+        },
+      },
+    },
+    criteria: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["criterion_id", "estimate", "confidence", "evidence", "gap"],
+        properties: {
+          criterion_id: { type: "string" },
+          estimate: { type: "number", description: "Points a strict jury would give TODAY with only what is in PROFILE (0..max)." },
+          confidence: { type: "string", enum: ["alta", "media", "baja"] },
+          evidence: { type: "array", items: { type: "string" }, description: "Verbatim PROFILE source quotes supporting the estimate." },
+          gap: { type: "string", description: "Spanish, short: what is missing to score higher. Empty if nothing." },
+        },
+      },
+    },
+    fit: { type: "string", enum: ["alto", "medio", "bajo", "no_elegible"] },
+    why_fit: { type: "array", items: { type: "string" }, description: "Max 3 short Spanish reasons, each tied to a fact the user said." },
+    missing: { type: "array", items: { type: "string" }, description: "Short Spanish list of what the application still needs." },
+    questions: { type: "array", items: { type: "string" }, description: "Max 3 questions in Spanish (tú) that would raise the score most." },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// 6. Call-specific dossier variant
+// ---------------------------------------------------------------------------
+
+/** @param {"creator"|"business"} mode */
+export function variantSchema(mode) {
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["strategy", "sections", "omitted", "questions", "format_checks"],
+    properties: {
+      strategy: { type: "string", description: "Spanish, 2-3 sentences for the user: what this variant puts first and why, in terms of this call's criteria." },
+      sections: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["id", "heading", "body", "criteria", "from"],
+          properties: {
+            id: { type: "string", description: "Short slug." },
+            heading: { type: "string", description: "Spanish heading; mirror the structure the call asks for when it asks for one." },
+            body: { type: "string", description: "Spanish (Spain) markdown. Facts only from PROFILE/BASE_DOSSIER. Missing required data as [PENDIENTE: …]." },
+            criteria: { type: "array", items: { type: "string" }, description: "Criterion or requirement ids this section serves." },
+            from: { type: "array", items: { type: "string", enum: [...Object.keys(DOSSIER_SECTIONS[mode]), "profile", "nuevo"] } },
+          },
+        },
+      },
+      omitted: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["what", "why"],
+          properties: { what: { type: "string" }, why: { type: "string" } },
+        },
+        description: "Base-dossier content left out or shortened for this call, and why (Spanish).",
+      },
+      questions: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["criterion_id", "question"],
+          properties: { criterion_id: { type: "string" }, question: { type: "string", description: "Spanish, tú, one short question." } },
+        },
+      },
+      format_checks: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["rule", "status", "note"],
+          properties: {
+            rule: { type: "string" },
+            status: { type: "string", enum: ["ok", "riesgo", "no_aplica"] },
+            note: { type: "string" },
+          },
+        },
+      },
+    },
+  };
+}

@@ -4,14 +4,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import Anthropic from "@anthropic-ai/sdk";
-import { patchSchema, dossierSchema, SHEET_SCHEMA, IMAGE_NOTES_SCHEMA } from "./schemas.js";
-import { extractorSystem, dossierSystem, SHEET_SYSTEM, IMAGE_NOTES_SYSTEM } from "./prompts.js";
+import { patchSchema, dossierSchema, SHEET_SCHEMA, IMAGE_NOTES_SCHEMA, FIT_SCHEMA, variantSchema } from "./schemas.js";
+import { extractorSystem, dossierSystem, SHEET_SYSTEM, IMAGE_NOTES_SYSTEM, FIT_SYSTEM, variantSystem } from "./prompts.js";
 import { stateForPrompt } from "./profile.js";
 
 export const MODELS = {
   extract: process.env.EXTRACT_MODEL || "claude-sonnet-5-5",
   dossier: process.env.DOSSIER_MODEL || "claude-sonnet-5-5",
   sheet: process.env.SHEET_MODEL || "claude-sonnet-5-5",
+  fit: process.env.FIT_MODEL || "claude-sonnet-5-5",
+  variant: process.env.VARIANT_MODEL || "claude-sonnet-5-5",
 };
 
 /**
@@ -81,6 +83,34 @@ export function createClaudeLLM(apiKey) {
   return {
     mock: false,
 
+    /** Fit of one profile with one call. Not real-time: runs once per (profile, call) after onboarding. */
+    async fit({ profile, call }) {
+      const r = await run({
+        ...baseParams(MODELS.fit, FIT_SCHEMA, "medium"),
+        max_tokens: 8192,
+        system: [{ type: "text", text: FIT_SYSTEM, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: `CALL:\n${JSON.stringify(callForPrompt(call))}\n\nPROFILE:\n${JSON.stringify(profile)}` }],
+      });
+      return { fit: r.data, latencyMs: r.latencyMs, ttftMs: r.ttftMs, usage: r.usage };
+    },
+
+    /** Call-specific dossier variant built from the base dossier + fit. */
+    async variant({ mode, profile, dossier, call, fit }) {
+      const base = Object.fromEntries(Object.entries(dossier).map(([k, s]) => [k, s.body]));
+      const r = await run({
+        ...baseParams(MODELS.variant, variantSchema(mode), "medium"),
+        max_tokens: 16000,
+        system: [{ type: "text", text: variantSystem(mode), cache_control: { type: "ephemeral" } }],
+        messages: [
+          {
+            role: "user",
+            content: `CALL:\n${JSON.stringify(callForPrompt(call))}\n\nFIT:\n${JSON.stringify(fit)}\n\nPROFILE:\n${JSON.stringify(profile)}\n\nBASE_DOSSIER:\n${JSON.stringify(base)}`,
+          },
+        ],
+      });
+      return { variant: r.data, latencyMs: r.latencyMs, ttftMs: r.ttftMs, usage: r.usage };
+    },
+
     async extract({ mode, transcript, newFrom, state }) {
       const before = transcript.slice(0, newFrom).trim();
       const after = transcript.slice(newFrom).trim();
@@ -139,4 +169,10 @@ export function createClaudeLLM(apiKey) {
       return { sheet: r.data, latencyMs: r.latencyMs, ttftMs: r.ttftMs, usage: r.usage };
     },
   };
+}
+
+/** The call as the model sees it (drops ids of sources, keeps rules). */
+export function callForPrompt(call) {
+  const { sources, ...rest } = call;
+  return rest;
 }
