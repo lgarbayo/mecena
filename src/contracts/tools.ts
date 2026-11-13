@@ -28,7 +28,8 @@ export const toolSchemas = {
     output: z.object({ profile: Profile }),
   },
   update_profile: {
-    description: "Update fields of the user's profile. Arrays are merged. Never invent facts the user did not state.",
+    description:
+      "Update fields of the user's profile. Arrays are merged. Never invent facts the user did not state. Write their words without their typos: fix spelling, accents and dictation slips, keep their wording, names and language (Galician stays Galician).",
     input: z.object({ profileId: profileIdIn, patch: ProfilePatch }),
     output: z.object({ profile: Profile }),
   },

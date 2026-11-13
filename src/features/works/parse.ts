@@ -6,6 +6,7 @@
  *   -> { title: "Redeira II", year: 2025, technique: "acuarela sobre papel", dimensions: "50 x 70 cm", series: "Redeiras" }
  */
 import type { TechnicalSheet } from "@/contracts";
+import { polishProse } from "@/server/ai/wording";
 
 export const UNTITLED = "Sin título";
 
@@ -130,7 +131,8 @@ function parseConcept(text: string): string | undefined {
   const kept = sentences.filter((s) => !factual(s) && s.split(/\s+/).length >= 3);
   if (!kept.length) return undefined;
   const joined = kept.join(" ");
-  return cap(/[.!?]$/.test(joined) ? joined : `${joined}.`);
+  // The no-AI path writes this into the sheet: their words, with the unambiguous typos fixed.
+  return cap(polishProse(/[.!?]$/.test(joined) ? joined : `${joined}.`));
 }
 
 /** Facts explicitly stated in the voice note. Missing fields stay undefined (never invented). */
