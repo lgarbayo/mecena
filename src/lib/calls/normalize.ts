@@ -64,7 +64,7 @@ export function bdnsToCall(d: BdnsDetail, e: Enrichment, sel: SelectedCall, veri
         : undefined,
     opensAt: toIso(d.fechaInicioSolicitud),
     deadline,
-    deadlineEstimated: !officialDeadline && Boolean(deadline),
+    deadlineEstimated: !officialDeadline && Boolean(deadline) && e.deadlineEstimated,
     deadlineText: e.deadlineText ?? d.textFin ?? undefined,
     procedure: e.procedure,
     requirements: e.requirements.map(mapRequirement),

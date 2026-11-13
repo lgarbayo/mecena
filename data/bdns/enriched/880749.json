@@ -63,6 +63,7 @@
     "eligibleExpenses": [
       "Servicios de profesionalización y desarrollo estratégico",
       "Servicios de innovación (diseño de productos, protección de la innovación, financiación de la innovación)"
-    ]
+    ],
+    "deadlineEstimated": false
   }
 }

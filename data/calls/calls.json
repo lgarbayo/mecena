@@ -527,6 +527,70 @@
     ]
   },
   {
+    "id": "seed-arte-intruso-2027",
+    "source": "seed",
+    "url": "https://www.comunidad.madrid/centros/centro-comarcal-humanidades-sierra-norte",
+    "basesUrl": "https://www.arteinformado.com/fichas/publicacion/bases-252298",
+    "title": "Arte Intruso 2027: exposiciones en el Centro Comarcal de Humanidades Sierra Norte",
+    "issuer": "Comunidad de Madrid · Centro Comarcal de Humanidades Cardenal Gonzaga Sierra Norte",
+    "audiences": [
+      "creador"
+    ],
+    "beneficiaryTypes": [
+      "persona_fisica",
+      "autonomo_pyme"
+    ],
+    "regions": [
+      "ES"
+    ],
+    "disciplines": [
+      "artes_visuales",
+      "fotografia",
+      "escultura",
+      "pintura",
+      "ilustracion",
+      "arte_urbano"
+    ],
+    "amountPerBeneficiary": {
+      "text": "Sin dotación económica: cesión del espacio expositivo del vestíbulo; montaje y transporte a cargo del artista"
+    },
+    "opensAt": "2026-07-01",
+    "deadline": "2026-12-19",
+    "deadlineEstimated": false,
+    "deadlineText": "Del 1 de julio al 19 de diciembre de 2026",
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Proyecto de exposición individual o colectiva, o intervención en el espacio"
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Valoración del proyecto expositivo",
+        "weight": 100,
+        "description": "Las bases no publican criterios puntuados."
+      }
+    ],
+    "criteriaWeightsStated": false,
+    "maxScore": 100,
+    "requiredDocs": [
+      "Solicitud Arte Intruso 2027",
+      "Proyecto expositivo adaptado al plano y los recursos del espacio",
+      "Dossier con imágenes de la obra"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "Convocatoria de la Comunidad de Madrid para exponer en el vestíbulo del Centro de Humanidades Sierra Norte (La Cabrera). No tiene dotación económica: es una oportunidad de exposición para tu currículum.",
+    "keywords": [
+      "exposición",
+      "espacio expositivo",
+      "Comunidad de Madrid",
+      "proyecto expositivo",
+      "currículum"
+    ],
+    "verifiedAt": "2026-11-13"
+  },
+  {
     "id": "bdns-939684",
     "source": "bdns",
     "codigoBDNS": "939684",
@@ -554,7 +618,7 @@
       "text": "Premio único de 600 €"
     },
     "deadline": "2026-12-21",
-    "deadlineEstimated": true,
+    "deadlineEstimated": false,
     "deadlineText": "Hasta el 21 de diciembre de 2026 a las 14:15 h",
     "procedure": "competitiva",
     "requirements": [
@@ -723,7 +787,7 @@
       "text": "Premio único de 2.500 €"
     },
     "deadline": "2026-12-28",
-    "deadlineEstimated": true,
+    "deadlineEstimated": false,
     "deadlineText": "Hasta el 28/12/2026",
     "procedure": "competitiva",
     "requirements": [
@@ -934,7 +998,7 @@
       "text": "600 € y publicación de la novela"
     },
     "deadline": "2027-01-08",
-    "deadlineEstimated": true,
+    "deadlineEstimated": false,
     "deadlineText": "Hasta el 8 de enero de 2027",
     "procedure": "competitiva",
     "requirements": [
@@ -1056,6 +1120,162 @@
       "creación literaria",
       "ensayo",
       "Ourense"
+    ],
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "bdns-939355",
+    "source": "bdns",
+    "codigoBDNS": "939355",
+    "url": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/939355",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1548497",
+    "title": "XXVII Festival de Cine de Sant Joan d’Alacant: concurso de cortometrajes",
+    "issuer": "SANT JOAN D'ALACANT · AYUNTAMIENTO DE SANT JOAN D'ALACANT",
+    "audiences": [
+      "creador"
+    ],
+    "beneficiaryTypes": [
+      "persona_fisica",
+      "entidad_sin_animo"
+    ],
+    "regions": [
+      "ES"
+    ],
+    "disciplines": [
+      "audiovisual",
+      "cine"
+    ],
+    "amountTotal": 3600,
+    "amountPerBeneficiary": {
+      "min": 500,
+      "max": 2000,
+      "text": "Ficus de Oro 2.000 €; Ficus de Plata 1.000 € y 600 €; Ficus de Bronce 500 €; Ficus Palomitas (local) 500 €"
+    },
+    "deadline": "2027-02-14",
+    "deadlineEstimated": false,
+    "deadlineText": "Inscripción hasta el 14 de febrero de 2027 a las 23:59",
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Cortometraje de hasta 30 minutos, de tema libre (no turístico ni publicitario, ni series ni videoclips)"
+      },
+      {
+        "kind": "other",
+        "text": "Máximo 3 obras por participante"
+      },
+      {
+        "kind": "other",
+        "text": "Producido después de la fecha que fijan las bases"
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Valoración del comité de selección y del jurado",
+        "weight": 100,
+        "description": "Las bases no publican criterios puntuados; se valora positivamente la accesibilidad (subtítulos y audiodescripción)."
+      }
+    ],
+    "criteriaWeightsStated": false,
+    "maxScore": 100,
+    "requiredDocs": [
+      "Inscripción en plataforma con todos los campos obligatorios",
+      "Enlace de visionado online",
+      "Si te seleccionan, copia de proyección (MP4/MOV, máx. 3 GB)"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "XXVII Festival de Cine de Sant Joan d’Alacant: concurso de cortometrajes españoles o internacionales de hasta 30 minutos y tema libre. El premio principal es el Ficus de Oro, de 2.000 €.",
+    "keywords": [
+      "cortometraje",
+      "festival de cine",
+      "ficción",
+      "Alicante",
+      "premio"
+    ],
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "bdns-936011",
+    "source": "bdns",
+    "codigoBDNS": "936011",
+    "url": "https://www.getxo-kultura.eus/ramiropinilla",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1539088",
+    "title": "10.º Concurso de Novela Corta Ramiro Pinilla",
+    "issuer": "GETXO · AYUNTAMIENTO DE GETXO",
+    "audiences": [
+      "creador"
+    ],
+    "beneficiaryTypes": [
+      "entidad_sin_animo"
+    ],
+    "regions": [
+      "ES"
+    ],
+    "disciplines": [
+      "literatura",
+      "narrativa"
+    ],
+    "amountTotal": 13600,
+    "amountPerBeneficiary": {
+      "min": 6300,
+      "max": 6300,
+      "text": "6.300 € por lengua (castellano y euskera)"
+    },
+    "deadline": "2027-02-20",
+    "deadlineEstimated": false,
+    "deadlineText": "Hasta el 20 de febrero de 2027",
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Persona domiciliada en España, de cualquier nacionalidad"
+      },
+      {
+        "kind": "other",
+        "text": "Novela corta inédita de 80 a 120 páginas DIN A4"
+      },
+      {
+        "kind": "other",
+        "text": "Derechos de edición no comprometidos con terceros"
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Calidad creativa de la obra",
+        "weight": 4,
+        "description": "Criterios conceptuales, críticos y de la propia producción de la obra."
+      },
+      {
+        "name": "Singularidad, excelencia y originalidad",
+        "weight": 2.5,
+        "description": ""
+      },
+      {
+        "name": "Resolución formal de la obra",
+        "weight": 3,
+        "description": ""
+      },
+      {
+        "name": "Integración de la perspectiva de género",
+        "weight": 0.5,
+        "description": ""
+      }
+    ],
+    "criteriaWeightsStated": true,
+    "maxScore": 10,
+    "requiredDocs": [
+      "Solicitud en la sede de Getxo Kultura",
+      "Original de la novela",
+      "Declaración de autoría y originalidad"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "10.º Concurso de Novela Corta Ramiro Pinilla de Getxo Kultura: un premio de 6.300 € para una novela corta inédita en castellano y otro en euskera. Pueden presentarse personas residentes en España, de cualquier nacionalidad.",
+    "keywords": [
+      "novela corta",
+      "inédita",
+      "castellano",
+      "euskera",
+      "Getxo"
     ],
     "verifiedAt": "2026-11-13"
   },

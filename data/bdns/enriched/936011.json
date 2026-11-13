@@ -1,0 +1,83 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": 6300,
+    "amountPerBeneficiaryMax": 6300,
+    "amountText": "6.300 € por lengua (castellano y euskera)",
+    "deadline": "2027-02-20",
+    "deadlineText": "Hasta el 20 de febrero de 2027",
+    "procedure": "competitiva",
+    "criteriaWeightsStated": true,
+    "eligibleExpenses": [],
+    "summaryPlain": "10.º Concurso de Novela Corta Ramiro Pinilla de Getxo Kultura: un premio de 6.300 € para una novela corta inédita en castellano y otro en euskera. Pueden presentarse personas residentes en España, de cualquier nacionalidad.",
+    "disciplines": [
+      "literatura",
+      "narrativa"
+    ],
+    "keywords": [
+      "novela corta",
+      "inédita",
+      "castellano",
+      "euskera",
+      "Getxo"
+    ],
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Persona domiciliada en España, de cualquier nacionalidad",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Novela corta inédita de 80 a 120 páginas DIN A4",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Derechos de edición no comprometidos con terceros",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Calidad creativa de la obra",
+        "weight": 4,
+        "description": "Criterios conceptuales, críticos y de la propia producción de la obra."
+      },
+      {
+        "name": "Singularidad, excelencia y originalidad",
+        "weight": 2.5,
+        "description": ""
+      },
+      {
+        "name": "Resolución formal de la obra",
+        "weight": 3,
+        "description": ""
+      },
+      {
+        "name": "Integración de la perspectiva de género",
+        "weight": 0.5,
+        "description": ""
+      }
+    ],
+    "requiredDocs": [
+      "Solicitud en la sede de Getxo Kultura",
+      "Original de la novela",
+      "Declaración de autoría y originalidad"
+    ],
+    "deadlineEstimated": false
+  }
+}

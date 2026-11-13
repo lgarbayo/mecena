@@ -82,5 +82,22 @@
     "docId": 1517961,
     "title": "Programa Re-acciona 2026 (IGAPE): consultoría para pymes y autónomos",
     "url": "https://reacciona.igape.es"
+  },
+  {
+    "codigoBDNS": "936011",
+    "audiences": [
+      "creador"
+    ],
+    "docId": 1539088,
+    "title": "10.º Concurso de Novela Corta Ramiro Pinilla",
+    "url": "https://www.getxo-kultura.eus/ramiropinilla"
+  },
+  {
+    "codigoBDNS": "939355",
+    "audiences": [
+      "creador"
+    ],
+    "docId": 1548497,
+    "title": "XXVII Festival de Cine de Sant Joan d’Alacant: concurso de cortometrajes"
   }
 ]

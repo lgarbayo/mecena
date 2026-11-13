@@ -1,0 +1,68 @@
+{
+  "verifiedAt": "2026-11-13",
+  "extractedBy": "claude-code (manual read of the bases PDF)",
+  "enrichment": {
+    "amountPerBeneficiaryMin": 500,
+    "amountPerBeneficiaryMax": 2000,
+    "amountText": "Ficus de Oro 2.000 €; Ficus de Plata 1.000 € y 600 €; Ficus de Bronce 500 €; Ficus Palomitas (local) 500 €",
+    "deadline": "2027-02-14",
+    "deadlineText": "Inscripción hasta el 14 de febrero de 2027 a las 23:59",
+    "procedure": "competitiva",
+    "criteriaWeightsStated": false,
+    "eligibleExpenses": [],
+    "summaryPlain": "XXVII Festival de Cine de Sant Joan d’Alacant: concurso de cortometrajes españoles o internacionales de hasta 30 minutos y tema libre. El premio principal es el Ficus de Oro, de 2.000 €.",
+    "disciplines": [
+      "audiovisual",
+      "cine"
+    ],
+    "keywords": [
+      "cortometraje",
+      "festival de cine",
+      "ficción",
+      "Alicante",
+      "premio"
+    ],
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Cortometraje de hasta 30 minutos, de tema libre (no turístico ni publicitario, ni series ni videoclips)",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Máximo 3 obras por participante",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      },
+      {
+        "kind": "other",
+        "text": "Producido después de la fecha que fijan las bases",
+        "min": null,
+        "max": null,
+        "regions": [],
+        "codes": [],
+        "required": null
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Valoración del comité de selección y del jurado",
+        "weight": 100,
+        "description": "Las bases no publican criterios puntuados; se valora positivamente la accesibilidad (subtítulos y audiodescripción)."
+      }
+    ],
+    "requiredDocs": [
+      "Inscripción en plataforma con todos los campos obligatorios",
+      "Enlace de visionado online",
+      "Si te seleccionan, copia de proyección (MP4/MOV, máx. 3 GB)"
+    ],
+    "deadlineEstimated": false
+  }
+}

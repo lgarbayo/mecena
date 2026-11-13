@@ -330,5 +330,69 @@
       "Alicante"
     ],
     "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "seed-arte-intruso-2027",
+    "source": "seed",
+    "url": "https://www.comunidad.madrid/centros/centro-comarcal-humanidades-sierra-norte",
+    "basesUrl": "https://www.arteinformado.com/fichas/publicacion/bases-252298",
+    "title": "Arte Intruso 2027: exposiciones en el Centro Comarcal de Humanidades Sierra Norte",
+    "issuer": "Comunidad de Madrid · Centro Comarcal de Humanidades Cardenal Gonzaga Sierra Norte",
+    "audiences": [
+      "creador"
+    ],
+    "beneficiaryTypes": [
+      "persona_fisica",
+      "autonomo_pyme"
+    ],
+    "regions": [
+      "ES"
+    ],
+    "disciplines": [
+      "artes_visuales",
+      "fotografia",
+      "escultura",
+      "pintura",
+      "ilustracion",
+      "arte_urbano"
+    ],
+    "amountPerBeneficiary": {
+      "text": "Sin dotación económica: cesión del espacio expositivo del vestíbulo; montaje y transporte a cargo del artista"
+    },
+    "opensAt": "2026-07-01",
+    "deadline": "2026-12-19",
+    "deadlineEstimated": false,
+    "deadlineText": "Del 1 de julio al 19 de diciembre de 2026",
+    "procedure": "competitiva",
+    "requirements": [
+      {
+        "kind": "other",
+        "text": "Proyecto de exposición individual o colectiva, o intervención en el espacio"
+      }
+    ],
+    "criteria": [
+      {
+        "name": "Valoración del proyecto expositivo",
+        "weight": 100,
+        "description": "Las bases no publican criterios puntuados."
+      }
+    ],
+    "criteriaWeightsStated": false,
+    "maxScore": 100,
+    "requiredDocs": [
+      "Solicitud Arte Intruso 2027",
+      "Proyecto expositivo adaptado al plano y los recursos del espacio",
+      "Dossier con imágenes de la obra"
+    ],
+    "eligibleExpenses": [],
+    "summaryPlain": "Convocatoria de la Comunidad de Madrid para exponer en el vestíbulo del Centro de Humanidades Sierra Norte (La Cabrera). No tiene dotación económica: es una oportunidad de exposición para tu currículum.",
+    "keywords": [
+      "exposición",
+      "espacio expositivo",
+      "Comunidad de Madrid",
+      "proyecto expositivo",
+      "currículum"
+    ],
+    "verifiedAt": "2026-11-13"
   }
 ]

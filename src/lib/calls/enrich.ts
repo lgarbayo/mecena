@@ -23,6 +23,7 @@ export const EnrichmentSchema = z.object({
   amountText: z.string().nullable().describe('e.g. "1.º premio 1.500 €, 2.º 800 €"'),
   deadline: z.string().nullable().describe('YYYY-MM-DD if a concrete date can be determined, else null'),
   deadlineText: z.string().nullable(),
+  deadlineEstimated: z.boolean().describe('true only if the date was computed (e.g. "25 días naturales desde la publicación"), false if stated literally'),
   procedure: z.enum(['competitiva', 'no_competitiva']).describe('no_competitiva = resolved by order of arrival until budget runs out'),
   requirements: z.array(RequirementSchema),
   criteria: z.array(z.object({ name: z.string(), weight: z.number(), description: z.string() })).describe(
@@ -79,6 +80,7 @@ export class MockBasesExtractor implements BasesExtractor {
       amountText: null,
       deadline: null,
       deadlineText: null,
+      deadlineEstimated: false,
       procedure: 'competitiva',
       requirements: [],
       criteria: [{ name: 'Calidad de la propuesta', weight: 100, description: 'Pendiente de extraer de las bases.' }],

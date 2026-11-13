@@ -1,0 +1,861 @@
+{
+  "fetchedAt": "2026-11-13",
+  "since": "15/08/2026",
+  "candidates": [
+    {
+      "codigoBDNS": "939299",
+      "title": "XXVII Premio Investigación Concello de Pontedeume. 2026",
+      "issuer": "PONTEDEUME / AYUNTAMIENTO DE PONTEDEUME",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES11"
+      ],
+      "presupuestoTotal": 1200,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "28/12/2026",
+      "docs": 1,
+      "queries": [
+        "cultura-galicia"
+      ]
+    },
+    {
+      "codigoBDNS": "935589",
+      "title": "XV Edición del Premio de Poesía Manuel Lueiro Rey",
+      "issuer": "FORNELOS DE MONTES / AYUNTAMIENTO DE FORNELOS DE MONTES",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES11"
+      ],
+      "presupuestoTotal": 2500,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "28/12/2026",
+      "docs": 2,
+      "queries": [
+        "cultura-galicia"
+      ]
+    },
+    {
+      "codigoBDNS": "941955",
+      "title": "Resolución de 12 de noviembre de 2026 de la Dirección General del Instituto de la Cinematografía y de las Artes Audiovisuales, por la que se convocan para el año 2027 ayudas a la producción de cortometrajes realizados.",
+      "issuer": "MINISTERIO DE CULTURA / INSTITUTO DE LA CINEMATOGRAFÍA Y DE LAS ARTES AUDIOVISUALES",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "autonomo_pyme"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 1000000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2027-04-16",
+      "textFin": null,
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "941499",
+      "title": "BASES Y CONVOCATORIA DE PREMIO ANTÓN LOSADA DIÉGUEZ-EDICIÓN XLII",
+      "issuer": "CARBALLIÑO, O / AYUNTAMIENTO DE CARBALLIÑO, O",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "autonomo_pyme"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 12000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2027-01-31",
+      "textFin": null,
+      "docs": 2,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "941291",
+      "title": "XXV CERTAMEN DE TEATRO AFICIONADO ANA Mª VIDAL . BRUNETE 2027",
+      "issuer": "BRUNETE / AYUNTAMIENTO DE BRUNETE",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 6750,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-12-21",
+      "textFin": null,
+      "docs": 3,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "940683",
+      "title": "CONVOCATORIA DEL CONCURSO DE AGRUPACIONES CARNAVALESCAS C.A.C. - CABRA 2027",
+      "issuer": "CABRA / AYUNTAMIENTO DE CABRA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 10500,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "22 DE DICIEMBRE DE 2026 A LAS 23:59 HORAS.",
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "939992",
+      "title": "RESOLUCIÓN de la directora general de Patrimonio Cultural por la que se convocan subvenciones a galerías de arte de la Comunitat Valenciana para la dinamización, promoción y difusión de la creación artística.",
+      "issuer": "COMUNITAT VALENCIANA / SECRETARÍA AUTONÓMICA DE CULTURA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "autonomo_pyme"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 300000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-11-13",
+      "textFin": "10 días hábiles a partir del siguiente al de su publicación",
+      "docs": 2,
+      "queries": [
+        "cultura-espana",
+        "kw:creación artística"
+      ]
+    },
+    {
+      "codigoBDNS": "939684",
+      "title": "CONVOCATORIA CONCURSO DE CARTELES PARA EL CARNAVAL 2027",
+      "issuer": "CABRA / AYUNTAMIENTO DE CABRA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 600,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "HASTA EL 21 DE DICIEMBRE DE 2026 A LAS 14:15 H., AMBOS INCLUIDOS",
+      "docs": 2,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "939355",
+      "title": "APROBACIÓN DE BASES XXVII FESTIVAL DE CINE DE SANT JOAN D’ALACANT. CONVOCATORIA ANTICIPADA 2027",
+      "issuer": "SANT JOAN D'ALACANT / AYUNTAMIENTO DE SANT JOAN D'ALACANT",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica",
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 3600,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "14/02/2027",
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "939239",
+      "title": "BASES DEL II CONCURSO DE DISEÑO DEL CARTEL DE LAS JORNADAS GASTRONÓMICAS DE LA VERDURA DE 2027",
+      "issuer": "CALAHORRA / AYUNTAMIENTO DE CALAHORRA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 800,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-12-03",
+      "textFin": null,
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "938734",
+      "title": "CONVOCATORIA DE SUBVENCIONES A ASOCIACIONES SIN ÁNIMO DE LUCRO DE JIMENA DE LA FRONTERA 2026",
+      "issuer": "JIMENA DE LA FRONTERA / AYUNTAMIENTO DE JIMENA DE LA FRONTERA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 25000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "A los 15 días hábiles de la publicación en el Boletín Oficial de la Provincia de Cádiz",
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "938125",
+      "title": "CONVOCATORIA PREMIO \" JUAN VALERA \" 2027 NOVELA",
+      "issuer": "CABRA / AYUNTAMIENTO DE CABRA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 600,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "EL 8 DE ENERO DE 2027",
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "936837",
+      "title": "Anuncio convocatoria concesión de subvenciones a entidades deportivas Alcanar (ejercicio 2026)",
+      "issuer": "ALCANAR / AYUNTAMIENTO DE ALCANAR",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 25000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "15 de noviembre de 2026",
+      "docs": 8,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "936483",
+      "title": "CONVOCATORIA SUBVENCIONES A ASOCIACIONES REGISTRADAS EN EL MOLAR PARA LA REALIZACION DE ACTIVIDADES DE INTERES PUBLICO Y SOCIAL PARA EL AÑO 2026",
+      "issuer": "MOLAR, EL / AYUNTAMIENTO DE MOLAR, EL",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 20400,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "10 DIAS DESDE SU PUBLICACION EN BOCM",
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "936011",
+      "title": "Convocatoria de la 10ª edición del Concurso de Novela Corta Ramiro Pinilla",
+      "issuer": "GETXO / AYUNTAMIENTO DE GETXO",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 13600,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "El plazo para la presentación de candidaturas concluirá el 20 de febrero de 2027",
+      "docs": 2,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "935647",
+      "title": "BASES DEL CONCURSO PARA LA ELECCIÓN DEL CARTEL DEL CARNAVAL 2027",
+      "issuer": "NAVALMORAL DE LA MATA / AYUNTAMIENTO DE NAVALMORAL DE LA MATA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 1200,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "HASTA EL 14 DE DICIEMBRE DE 2026",
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "933716",
+      "title": "Ayudas para la internacionalización del videojuego, el podcast y la cultura digital correspondientes al 2026",
+      "issuer": "MINISTERIO DE CULTURA / SUBSECRETARÍA DE CULTURA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 1000000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "Quince días hábiles siguientes a la publicación del extracto de la convocatoria en el BOE",
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "933409",
+      "title": "CONCURSO DE CARTELES CARNAVAL 2027",
+      "issuer": "VALDEPEÑAS / AYUNTAMIENTO DE VALDEPEÑAS",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 785,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-11-13",
+      "textFin": null,
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "933386",
+      "title": "Convocatoria y bases específicas para la concesión de subv. para las actividades de cooperación internacional, mediante concurrencia competitiva, destinadas a financiar proyectos de cooperación internacional organizados por entidades sin ánimo de lucro",
+      "issuer": "VILASSAR DE DALT / AYUNTAMIENTO DE VILASSAR DE DALT",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 5000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "28/09/2026",
+      "docs": 2,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "932894",
+      "title": "Vigésimo tercer concurso de música festera \"Francesc Cerdà\". Modalidad Marcha Mora.",
+      "issuer": "OLLERIA, L' / AYUNTAMIENTO DE OLLERIA, L'",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 4000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-12-14",
+      "textFin": null,
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "932745",
+      "title": "Resolucion de 30 de septiembre de 2026 de la Teniente Alcalde Delegada de Actividades Musicales del Ayuntamiento de Cullera  por la que se convoca el LXXIX Certamen Nacional de Bandas de Música \"Ciudad de Cullera\"",
+      "issuer": "CULLERA / AYUNTAMIENTO DE CULLERA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 44000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-12-04",
+      "textFin": null,
+      "docs": 3,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "932646",
+      "title": "Convocatoria subvenciones Asociaciones de Vecinos 2026",
+      "issuer": "TORTOSA / AYUNTAMIENTO DE TORTOSA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 26000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "10 dias a contar desde el dia de la publicación en el BOPT de la presente convocatoria",
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "932609",
+      "title": "Anuncio concesión subvenciones, en régimen de concurrencia competitiva, para entidades culturales y sociales municipio de Alcanar (ejercicio 2026)",
+      "issuer": "ALCANAR / AYUNTAMIENTO DE ALCANAR",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 14000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-11-27",
+      "textFin": null,
+      "docs": 11,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "932422",
+      "title": "Convocatoria subvenciones a entidades deportivas para el año 2026",
+      "issuer": "TORTOSA / AYUNTAMIENTO DE TORTOSA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 70000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "10 dias a contar desde el dia de la publicación en el BOPT de la presente convocatoria",
+      "docs": 1,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "931964",
+      "title": "JUV CONVOCATORIA CONCURSO ENTRE CUERDAS Y METALES",
+      "issuer": "CARTAGENA / AYUNTAMIENTO DE CARTAGENA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 24990,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "Veinte días hábiles a partir después de su publicación en el BORM",
+      "docs": 2,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "930248",
+      "title": "Convocatoria del I Concurso de Pintura al aire libre en Homenaje a José Hernández",
+      "issuer": "FUENTE ÁLAMO DE MURCIA / AYUNTAMIENTO DE FUENTE ÁLAMO DE MURCIA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 3000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "Hasta el 23 de octubre de 2026",
+      "docs": 2,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "929251",
+      "title": "Aprobación bases \"I Concurso nacional de música antigua Fira Borja\"",
+      "issuer": "XÀTIVA / AYUNTAMIENTO DE XÀTIVA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 4050,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "11 de octubre de 2026",
+      "docs": 2,
+      "queries": [
+        "cultura-espana"
+      ]
+    },
+    {
+      "codigoBDNS": "934864",
+      "title": "PREMIOS CON MOTIVO DE LA REALIZACIÓN DE LA V BIENAL DE ARTES VISUALES PLURI-IDENTITATS 2027. CURSO: 2026-2027, DE LA UNIVERSIDAD DE ALICANTE",
+      "issuer": "UNIVERSIDAD DE ALICANTE",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES"
+      ],
+      "presupuestoTotal": 2000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2027-01-08",
+      "textFin": null,
+      "docs": 2,
+      "queries": [
+        "kw:artes visuales"
+      ]
+    },
+    {
+      "codigoBDNS": "939879",
+      "title": "CONOVCATORIA SUBVENCIONES: V CONCURSO DE FOTOGRAFÍA A LARACHA NO OBXECTIVO",
+      "issuer": "LARACHA, A / AYUNTAMIENTO DE A LARACHA",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica",
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES111"
+      ],
+      "presupuestoTotal": 1500,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "25 DÍAS NATURALES A CONTAR DESDE INICIO ",
+      "docs": 3,
+      "queries": [
+        "kw:fotografía"
+      ]
+    },
+    {
+      "codigoBDNS": "931653",
+      "title": "VII Concurso de fotografía para la temática del calendario del Ayuntamiento de Covelo 2027 \"Covelo, Turismo, Cultura y Patrimonio\"",
+      "issuer": "COVELO / AYUNTAMIENTO DE COVELO",
+      "audiences": [
+        "creador"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES114"
+      ],
+      "presupuestoTotal": 420,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "Finaliza el 9 de noviembre de 2026 a las 13:30 horas",
+      "docs": 2,
+      "queries": [
+        "kw:fotografía"
+      ]
+    },
+    {
+      "codigoBDNS": "937371",
+      "title": "CONVOCATORIA de la 2ª edición del año 2026 del Programa de dinamización e incentivación del consumo en los comercios minoristas de la Comunidad Autónoma de Galicia a través de los bonos Activa comercio (código de procedimiento CO301B).",
+      "issuer": "GALICIA / CONSELLERÍA DE EMPLEO, COMERCIO Y EMIGRACIÓN",
+      "audiences": [
+        "pyme"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES11"
+      ],
+      "presupuestoTotal": 2501000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-12-31",
+      "textFin": "esgotamento do crédito",
+      "docs": 2,
+      "queries": [
+        "pymes-galicia"
+      ]
+    },
+    {
+      "codigoBDNS": "926278",
+      "title": "Resolución de 10 de agosto de 2026 de la Agencia Turismo de Galicia por la que se establecen las BBRR para la concesión de subvenciones para actuaciones de eficiencia energética en empresas turísticas, cofinanciadas por el FEDER en un 60% (2026-2027)",
+      "issuer": "GALICIA / AGENCIA TURISMO DE GALICIA",
+      "audiences": [
+        "pyme"
+      ],
+      "beneficiaryTypes": [
+        "autonomo_pyme"
+      ],
+      "regions": [
+        "ES11"
+      ],
+      "presupuestoTotal": 9000000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-12-07",
+      "textFin": null,
+      "docs": 1,
+      "queries": [
+        "pymes-galicia"
+      ]
+    },
+    {
+      "codigoBDNS": "880749",
+      "title": "Bases reguladoras Reacciona 2026, cofinanciadas FEDER, concurrencia no competitiva, minimis general",
+      "issuer": "GALICIA / INSTITUTO GALLEGO DE PROMOCIÓN ECONÓMICA (IGAPE)",
+      "audiences": [
+        "pyme"
+      ],
+      "beneficiaryTypes": [
+        "autonomo_pyme"
+      ],
+      "regions": [
+        "ES11"
+      ],
+      "presupuestoTotal": 1950000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-11-16",
+      "textFin": null,
+      "docs": 3,
+      "queries": [
+        "pymes-galicia"
+      ]
+    },
+    {
+      "codigoBDNS": "882496",
+      "title": "Orde de bases y 1ª convocatoria de subvenciones formación para ocupados",
+      "issuer": "GALICIA / CONSELLERÍA DE EMPLEO, COMERCIO Y EMIGRACIÓN",
+      "audiences": [
+        "pyme"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo",
+        "autonomo_pyme"
+      ],
+      "regions": [
+        "ES11"
+      ],
+      "presupuestoTotal": 10622078,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-12-01",
+      "textFin": "Hasta el día 1 de diciembre de 2026 a las 20:00 o, de ser el caso, hasta que se agote el crédito pre",
+      "docs": 6,
+      "queries": [
+        "empleo-galicia"
+      ]
+    },
+    {
+      "codigoBDNS": "934079",
+      "title": "RESOLUCIÓN de 1 de octubre de 2026 por la que se establecen las bases reguladoras del VIII Premio al Talento Innovador en la Administración Pública Gallega y se procede a su convocatoria para el año 2026",
+      "issuer": "GALICIA / AGENCIA GALLEGA DE INNOVACIÓN",
+      "audiences": [
+        "pyme"
+      ],
+      "beneficiaryTypes": [
+        "persona_fisica"
+      ],
+      "regions": [
+        "ES11"
+      ],
+      "presupuestoTotal": 9000,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": "2026-11-13",
+      "textFin": "13/11/2026",
+      "docs": 8,
+      "queries": [
+        "idi-galicia"
+      ]
+    },
+    {
+      "codigoBDNS": "929221",
+      "title": "Bases reguladoras para la concesión de las ayudas VInnovate Galicia al amparo de la tercera convocatoria del mecanismo de financiación  interregional VInnovate 2026_Medida sujeta REG (UE) 651/2014, DE 17 DE JUNIO, de exención",
+      "issuer": "GALICIA / AGENCIA GALLEGA DE INNOVACIÓN",
+      "audiences": [
+        "pyme"
+      ],
+      "beneficiaryTypes": [
+        "autonomo_pyme"
+      ],
+      "regions": [
+        "ES11"
+      ],
+      "presupuestoTotal": 859920.74,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "19.10.2026",
+      "docs": 6,
+      "queries": [
+        "idi-galicia"
+      ]
+    },
+    {
+      "codigoBDNS": "929218",
+      "title": "Bases reguladoras para la concesión de las ayudas VInnovate Galicia al amparo de la tercera convocatoria del mecanismo de financiación  interregional VInnovate. Medida no sujeta",
+      "issuer": "GALICIA / AGENCIA GALLEGA DE INNOVACIÓN",
+      "audiences": [
+        "pyme"
+      ],
+      "beneficiaryTypes": [
+        "entidad_sin_animo"
+      ],
+      "regions": [
+        "ES11"
+      ],
+      "presupuestoTotal": 140079.26,
+      "tipoConvocatoria": "Concurrencia competitiva - canónica",
+      "abierto": false,
+      "fechaFinSolicitud": null,
+      "textFin": "19.10.2026",
+      "docs": 6,
+      "queries": [
+        "idi-galicia"
+      ]
+    }
+  ]
+}
