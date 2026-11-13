@@ -83,12 +83,15 @@ const ROMAN = /^[ivxlcdm]+$/;
 
 const keyWord = (w: string) => singular(fold(w));
 
-/** Distinctive, edition-independent tokens of a title (folded, singular). */
+/**
+ * Distinctive, edition-independent tokens of a title (folded, singular). Type words (premio, certamen, concurso…)
+ * are dropped too: organisers switch them between editions ("XXXII Premio López-Villaseñor" → "XXXIV Certamen …").
+ */
 export function titleCoreTokens(title: string): string[] {
   const out: string[] = [];
   for (const raw of fold(title).split(" ")) {
     const t = singular(raw);
-    if (t.length < 2 || NOISE.has(t) || ROMAN.test(t) || /\d/.test(t)) continue;
+    if (t.length < 2 || NOISE.has(t) || GENERIC.has(t) || ROMAN.test(t) || /\d/.test(t)) continue;
     if (!out.includes(t)) out.push(t);
   }
   return out;
@@ -118,14 +121,14 @@ export function searchTerms(title: string, max = 2): string[] {
 
 /**
  * Same series = same organizer (BDNS nivel3 ?? nivel2) and every core token of the shorter title appears in the longer
- * one (old editions have short titles, new ones long boilerplate). Needs 3+ tokens to avoid trivial matches.
+ * one (old editions have short titles, new ones long boilerplate). Needs 2+ tokens to avoid trivial matches.
  * Strict on purpose: "Premio de Poesía Manuel Lueiro Rey" must not link "Premio de Periodismo Manuel Lueiro Rey".
  */
 export function isSameSeries(current: { title: string; organizer: string }, candidate: { title: string; organizer: string }): boolean {
   if (fold(current.organizer) !== fold(candidate.organizer)) return false;
   const [a, b] = [titleCoreTokens(current.title), titleCoreTokens(candidate.title)];
   const [short, long] = a.length <= b.length ? [a, new Set(b)] : [b, new Set(a)];
-  return short.length >= 3 && short.every((t) => long.has(t));
+  return short.length >= 2 && short.every((t) => long.has(t));
 }
 
 /**

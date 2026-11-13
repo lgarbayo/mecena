@@ -20,8 +20,8 @@ const icaaTitle = (date: string, year: number, line = "cortometrajes realizados"
 
 describe("edition linking", () => {
   it("core tokens drop edition markers, years, months and accents", () => {
-    expect(titleCoreTokens("XV Edición del Premio de Poesía Manuel Lueiro Rey 2026")).toEqual(["premio", "poesia", "manuel", "lueiro", "rey"]);
-    expect(titleCoreTokens('Bases y convocatoria XXXIV Edición Premios "Antón Losada Diéguez"')).toEqual(["premio", "anton", "losada", "dieguez"]);
+    expect(titleCoreTokens("XV Edición del Premio de Poesía Manuel Lueiro Rey 2026")).toEqual(["poesia", "manuel", "lueiro", "rey"]);
+    expect(titleCoreTokens('Bases y convocatoria XXXIV Edición Premios "Antón Losada Diéguez"')).toEqual(["anton", "losada", "dieguez"]);
     expect(titleCoreTokens("Resolución de 12 de noviembre de 2026")).toEqual([]);
   });
 
@@ -36,6 +36,17 @@ describe("edition linking", () => {
     expect(isSameSeries(cur, { title: "XIII edición del premio de poesía Manuel Lueiro Rey", organizer: FORNELOS })).toBe(true);
     expect(isSameSeries(cur, { title: "IX edición del Premio de Periodismo Manuel Lueiro Rey", organizer: FORNELOS })).toBe(false);
     expect(isSameSeries(cur, { title: "XXXIII PREMIO MANUEL LUEIRO REY DE POESIA", organizer: "AYUNTAMIENTO DE GROVE, O" })).toBe(false);
+
+    // short titles: two core tokens are enough within the same organizer; one is not
+    const cabra = { title: "CONVOCATORIA CONCURSO DE CARTELES PARA EL CARNAVAL 2027", organizer: "AYUNTAMIENTO DE CABRA" };
+    expect(isSameSeries(cabra, { title: "CONCURSO CARTELES CARNAVAL 2025", organizer: "AYUNTAMIENTO DE CABRA" })).toBe(true);
+    expect(isSameSeries(cabra, { title: "CONCURSO DE CARTELES DE LA FERIA 2025", organizer: "AYUNTAMIENTO DE CABRA" })).toBe(false);
+    expect(isSameSeries({ title: "Concurso de carteles 2027", organizer: "X" }, { title: "Concurso de carteles 2026", organizer: "X" })).toBe(false);
+
+    // the type word changes between editions (premio → certamen)
+    const lv = { title: "XXXIV CERTAMEN LÓPEZ-VILLASEÑOR DE ARTES PLÁSTICAS 2025", organizer: "AYUNTAMIENTO DE CIUDAD REAL" };
+    expect(isSameSeries(lv, { title: "CONVOCATORIA XXXII PREMIO LÓPEZ-VILLASEÑOR DE ARTES PLÁSTICAS", organizer: "AYUNTAMIENTO DE CIUDAD REAL" })).toBe(true);
+    expect(isSameSeries(lv, { title: "Convocatoria del XXXIII Premio López-Villaseñor Artes Plásticas de Ciudad Real", organizer: "AYUNTAMIENTO DE CIUDAD REAL" })).toBe(true);
 
     const icaa = { title: icaaTitle("12 de noviembre de 2026", 2027), organizer: ICAA };
     expect(isSameSeries(icaa, { title: icaaTitle("11 de marzo de 2026", 2026), organizer: ICAA })).toBe(true);
