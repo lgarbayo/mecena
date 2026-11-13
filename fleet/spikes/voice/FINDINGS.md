@@ -1,10 +1,8 @@
 # Spike: live voice → profile + dossier (hero feature A3)
 
 > **Status, 13/11/2026:** the whole pipeline runs end to end (replay script, local endpoint, browser demo,
-> 5 unit tests). **No `ANTHROPIC_API_KEY` was available on this machine** (not in the environment, not
-> in a repo-root `.env`), so every run so far used the **deterministic mock**. The mock latencies
-> below are **simulated, not measured**. First thing to do with a key: `npm start` (about 3.5 min) and paste
-> the summary table into §3. Everything that needs that check is marked **[verify with key]**.
+> 5 unit tests) and has been **measured against the live Claude API** (two full real-time runs: all-Sonnet, and
+> Haiku for extraction). Numbers in §3, quality notes in §4. Still unverified: the browser side on a real phone (§5).
 
 ## 0. What is here / how to run
 
@@ -36,7 +34,7 @@ npm test
 Key lookup: `ANTHROPIC_API_KEY` in the environment, else `ANTHROPIC_API_KEY=` in `.env` at the repo root
 (this worktree's root, then the main checkout's root). `.env` is gitignored. Without a key, the script prints a yellow
 **MOCK MODE** banner and repeats the reminder after the summary. Raw per-call data goes to `results/*.json` (gitignored).
-`results/sample-mock-run.txt` is a committed example of the full output.
+`results/sample-mock-run.txt` (mock), `results/live-sonnet-run.txt` and `results/live-haiku-extract-run.txt` (live API) are committed examples of the full output.
 
 ## 1. Incremental extraction design
 
@@ -65,8 +63,8 @@ It does not send a delta alone:
   context needed for "la expuse…" (what is "la"?) and for corrections that refer back.
 - The state (values + source quotes, no history or timestamps: `stateForPrompt`) lets the model skip facts it already has and use
   existing keys for `update`.
-- The system prompt is frozen per mode (≈ 900 tokens). It carries `cache_control`, but it may be **below the minimum cacheable
-  prefix** for the model, so do not count on cache hits. At these sizes it barely matters. **[verify with key: `cache_read_input_tokens`]**
+- The system prompt + schema is frozen per mode and carries `cache_control`. **Measured: it caches** (~2.05-2.09 k tokens
+  written on the first call of each scenario, read on every later call; uncached input grows from ~80 to ~1.8 k tokens).
 
 ### 1.3 Output: a patch, not the full profile
 
@@ -109,8 +107,8 @@ This guarantees valid JSON with no tool loop. Forced `tool_choice` returns a 400
 - The engine keeps `history` per field/item, so the UI can show "corregido (antes: 4 personas)" and undo is trivial.
 - The transcripts split each correction into its own final result, so the model sees the wrong fact first and the correction in a later call.
   Each scenario has one: painter exhibition 2022→2023, illustrator 6→7 álbumes, business 4→5 personas, artwork year 2023→2024.
-  The mock handles all four. **[verify with key: that the real model uses `update` + the existing key rather than adding a duplicate item.
-  If it duplicates, the engine already turns `add` with an existing key into `update`. A fuzzy title match on `add` would be the next guard.]**
+  **Measured live:** both Sonnet and Haiku handled all four with `update` on the existing key (no duplicates). If a model
+  duplicates, the engine already turns `add` with an existing key into `update`; a fuzzy title match on `add` would be the next guard.
 
 ## 2. Prompts and schemas (port these)
 
@@ -118,9 +116,9 @@ All in `src/prompts.js` and `src/schemas.js`, plain ES modules with no dependenc
 
 | Purpose | Prompt | Output schema | Model / settings |
 |---|---|---|---|
-| Live profile patch, creator | `extractorSystem("creator")` | `patchSchema("creator")` | `claude-sonnet-5-5`, thinking `between_tools` (= off), effort `low` |
+| Live profile patch, creator | `extractorSystem("creator")` | `patchSchema("creator")` | **`claude-haiku-5-5`, thinking disabled**, effort `low` (or `claude-sonnet-5-5`, thinking `between_tools`, set `EXTRACT_MODEL`) |
 | Live profile patch, business | `extractorSystem("business")` | `patchSchema("business")` | same |
-| Dossier sections: bio, statement, series, cv / activity, team, projects | `dossierSystem(mode)` + `PREVIOUS_TEXT` + `WRITE: <ids>` | `dossierSchema(mode)` | `claude-sonnet-5-5` live. Consider `claude-opus-5-5` for the final pass only **[verify quality]** |
+| Dossier sections: bio, statement, series, cv / activity, team, projects | `dossierSystem(mode)` + `PREVIOUS_TEXT` + `WRITE: <ids>` | `dossierSchema(mode)` | `claude-sonnet-5-5` live. Live quality good enough; `claude-opus-5-5` not needed |
 | Artwork technical sheet from voice | `SHEET_SYSTEM` | `SHEET_SCHEMA` (each field `{value, source, origin: voz/imagen/ninguno}`, dimensions in cm, `follow_up_question`) | `claude-sonnet-5-5` |
 | Optional vision pass on the artwork photo | `IMAGE_NOTES_SYSTEM` | `IMAGE_NOTES_SCHEMA` (neutral description, medium hint, orientation, photo issues for crop/straighten, visible signature text) | `claude-sonnet-5-5` |
 
@@ -148,54 +146,64 @@ client.beta.messages.stream({
 Streaming is used only to measure time-to-first-token. Possible optimisation: parse the `ops` array as it streams and
 apply each op as soon as its object closes. **[measure the TTFT vs total gap first]**
 
-## 3. Latency
+## 3. Latency (measured, live Claude API, 13/11/2026)
 
-**Not measured yet: no API key on this machine.** The table is from the mock, where latency is a formula
-(`450 ms + input/40 + output×2.2` per call). It only shows that the scheduler behaves: coalescing keeps one call in flight, and lag
-stays bounded when calls are slower than speech. It says nothing about Claude.
+Real-time replay (`npm start`, x1 speed, 3 scenarios, 64-78 s of speech each). Logs: `results/live-sonnet-run.txt`,
+`results/live-haiku-extract-run.txt`; raw JSON next to them. Network: home fibre in Galicia, standard tier.
 
-Mock, real-time speech (`npm start`, simulated):
+**Run A: everything on `claude-sonnet-5-5`** (thinking `between_tools`, effort `low`, structured outputs)
 
-| call | n | p50 ms | p95 ms | max ms | lag p50 ms | lag p95 ms |
-|---|---|---|---|---|---|---|
-| extract | 33 | 1248 | 1988 | 2129 | 1249 | 1989 |
-| dossier (dirty sections) | 25 | 1191 | 1545 | 1724 | – | – |
-| dossier final pass | 3 | 3468 | 3670 | 3670 | – | – |
-| sheet | 1 | 2680 | – | – | – | – |
+| call | n | p50 ms | p95 ms | max ms | ttft p50 ms | lag p50 ms | lag p95 ms |
+|---|---|---|---|---|---|---|---|
+| extract | 33 | 2700 | 4570 | 5478 | 1168 | 2701 | 4571 |
+| dossier (dirty sections) | 25 | 3050 | 5127 | 5978 | 1289 | – | – |
+| dossier final pass | 3 | 8442 | 9252 | 9252 | 1226 | – | – |
+| sheet (voice → technical sheet) | 1 | 5440 | – | – | 3200 | – | – |
 
-10-12 extraction calls per 60 s onboarding (one per final result, minus coalesced ones). Final dossier ready 4.0-5.5 s after "Terminar" (simulated).
-With 6x speech (`npm run fast`) coalescing kicks in: 7-9 calls per scenario with lag p95 about 3.7 s, and the calls never overlap.
+**Run B: extract on `claude-haiku-5-5`** (thinking disabled, effort `low`); dossier and sheet stay on Sonnet
 
-What to measure with a key (the script prints all of it):
+| call | n | p50 ms | p95 ms | max ms | ttft p50 ms | lag p50 ms | lag p95 ms |
+|---|---|---|---|---|---|---|---|
+| extract | 33 | **1969** | **3264** | 4092 | 1047 | **1970** | **3264** |
+| dossier (dirty sections) | 26 | 3248 | 5693 | 5758 | 1312 | – | – |
+| dossier final pass | 3 | 8005 | 9302 | 9302 | 1160 | – | – |
+| sheet | 1 | 3439 | – | – | 1243 | – | – |
 
-- `latency`: request → complete JSON, per call type. `ttft`: request → first token.
-- `lag`: **speech final result → profile updated on screen**. This is the number the demo audience feels.
-  Target: p50 ≤ 2.5 s, p95 ≤ 4 s for extraction. The final dossier should be ready ≤ 6 s after "Terminar".
-- `tokens in/out` per scenario, for cost.
+`lag` = speech final result → profile updated on screen (queue wait + call). Target was p50 ≤ 2.5 s, p95 ≤ 4 s.
 
-If the live extraction p50 is well above about 2.5 s: (1) check the output token count per call (trim `detail`, cap ops per call);
-(2) send only the last about 60 words before `⟦NEW⟧` plus the state; (3) stream-apply ops; (4) try `claude-haiku-5-5` for
-the patch only and keep Sonnet for the dossier.
+- **Sonnet misses the target slightly (2.7 / 4.6 s); Haiku meets it (2.0 / 3.3 s).** The lag equals the latency: single-flight
+  never queued a final at real speaking speed, so the scheduler adds nothing.
+- Per scenario: 10-12 extract calls, 15-23 facts, ~50-55 k input tokens (most of it cache reads of the ~2 k-token system
+  prompt + schema) and 6-8 k output tokens. Average ~760 output tokens per call; output size, not input, drives latency.
+- First call per schema is slower (3.9 s on the first painter call, 4.4-6.2 s in an earlier x6 run with large coalesced
+  deltas): structured-output grammar compile + cache write. **Pre-warm both modes at server start.**
+- **Final dossier is ready 11-14.5 s after "Terminar"** (flush + final pass of 8-9 s), well above the 6 s target.
+  It does not hurt the demo much because the live dossier is already ~90 % complete when the user stops, but the
+  final pass should run **per section in parallel** (one call per section, each ~3 s) instead of one big call, and
+  the UI should keep the live text visible while it runs.
+- Cost (list price order of magnitude): ~60 k in / ~7 k out per onboarding on Sonnet, mostly cached → cents per user.
 
-## 4. Quality notes
+## 4. Quality notes (live)
 
-What the spike shows (mock = an "ideal" model, so these are pipeline properties):
+Both runs, all three transcripts:
 
-- The patch engine, validation, corrections, dirty-section tracking and dossier refresh work on all 3 transcripts
-  (16, 17 and 20 facts) and the artwork sheet. The injected hallucination is rejected.
-- Field coverage of the schemas is enough for the three personas: for each sentence of the transcripts there was a field to put it in.
-
-What only a live run can show **[verify with key]**:
-
-- Whether the model copies the `source` verbatim. Expect some rejections for paraphrased quotes, especially accents and "eh"/"bueno".
-  `normalize()` already ignores accents, case and punctuation. If the rejection rate is above about 10 %, add a fuzzy match (token overlap
-  ≥ 0.8) before discarding.
-- Over-inference: e.g. adding "Galicia" when only "Lugo" was said, or "pintora contemporánea". The prompt forbids it, and the quote check limits
-  the damage, because the value can still be embellished while the quote is real. Spot-check values against quotes.
-- ASR noise on Galician names: "uxía" may come back as "ugía"/"o sea", "o corgo" as "el corgo", "a última fía" as anything.
-  Chrome es-ES has no Galician vocabulary. Mitigation: the confirm/edit step in the UI (tap a field to fix it) and `ask_next`.
-- Dossier tone: sober, reusing the user's words, no superlatives. Read the three dossiers out loud. If they sound generic,
-  try `claude-opus-5-5` for the final consistency pass only (it runs once, after speech, so latency matters less).
+- **Quote validation:** 0 rejected ops on Sonnet, 1 on Haiku (an empty `birth_year` value, correctly dropped). The models
+  copy `source` verbatim, so the fuzzy-match fallback is not needed now. Keep the check: it is cheap and it is the hallucination guard.
+- **Corrections work on both models:** "no perdona fue en 2023" → exhibition year 2022→2023; "bueno 5 desde septiembre" →
+  staff 4→5; title added to the graphic-novel project; "el año en realidad es 2024" in the artwork sheet → 2024. All
+  show `corregido; antes: …` history. Haiku sometimes keeps the history inside the value ("4 personas, luego 5 desde
+  septiembre") instead of replacing it; Sonnet replaces cleanly. Prompt fix: "on correction, the value is ONLY the new fact".
+- **Over-inference (both models, same case):** the series *Terra queimada* got year 2017, which is the year of the fires
+  it depicts, not of the series. Add to the prompt: "dates inside a description are not the item's date unless the user says so".
+- **No invented facts** found in either run when checking every value against its quote. Haiku extracted slightly more
+  items (17/18/23 vs 15/17/23 facts), e.g. "Mujeres que sostienen las aldeas" both as a theme and as a series.
+- **Dossier tone:** sober, first person in the statement, reuses the user's words ("cómo el monte se queda vacío"),
+  no superlatives. `falta:` lists are useful (missing budget, missing motivation). One glitch: the business activity
+  text mixes the brand voice with the speaker's name ("Somos Marta Castro y mi hermana…"); the business prompt should
+  write in "nosotros" using the company name, not the speaker's name.
+- **Technical sheet from voice:** all 7 fields correct with quotes, the year correction applied, dimensions parsed to
+  "130 × 97 cm". Sonnet 5.4 s, ~3.4 s in run B (network variance; the sheet model was the same).
+- Not tested live: ASR noise on Galician names (the replay feeds clean text). Still the biggest quality risk; see §5/§7.
 
 ## 5. Browser side (Web Speech API)
 
@@ -232,10 +240,13 @@ Test once with airplane mode to see the error message. Test with the projector's
 
 1. Browser: Web Speech es-ES, interims for display only. POST each **final** to the server (or send it over a WebSocket).
 2. Server: one `Session` per onboarding (port `session.js`): extract on final if ≥ 6 new words, else after 1.2 s quiet;
-   **single-flight + coalescing**; full transcript + compact state + `⟦NEW⟧`; `claude-sonnet-5-5`, thinking `between_tools`,
-   effort `low`, structured outputs. Validate quotes server-side and apply the patch, then push the patch to the UI (SSE).
+   **single-flight + coalescing**; full transcript + compact state + `⟦NEW⟧`; **`claude-haiku-5-5`, thinking disabled,
+   effort `low`, structured outputs** (measured 2.0 s p50 / 3.3 s p95 lag; same quality as Sonnet on these transcripts
+   once the correction rule is added to the prompt). Keep `EXTRACT_MODEL` configurable to fall back to Sonnet. Validate quotes server-side and apply the patch, then push the patch to the UI (SSE).
 3. Dossier: separate single-flight loop, dirty sections only, ≥ 2 facts per section, ≥ 4 s apart, previous text sent back for stability.
-4. On stop: flush → consistency pass over all sections (candidate for `claude-opus-5-5` if quality needs it).
+4. On stop: flush → consistency pass, **one call per section in parallel** on Sonnet (a single call measured 8-9 s).
+   `claude-opus-5-5` not needed: Sonnet's dossier quality was good enough in the live run.
+5a. Pre-warm: one tiny call per mode schema when the server starts (first call per schema is 1-2 s slower).
 5. Per artwork: photo → vision notes (in parallel with the speech) → sheet call when the artist stops talking about that work
    → show `follow_up_question` if something key is missing.
 6. Every AI call behind the same interface as `createClaudeLLM` / `createMockLLM`, so the app runs and tests without a key (brief requirement).
@@ -244,12 +255,22 @@ Test once with airplane mode to see the error message. Test with the projector's
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Real latency higher than the 2.5 s target | Profile lags behind speech; weaker wow | Measure first; then trim output, window the transcript, stream-apply ops, Haiku for the patch |
+| Real latency higher than the 2.5 s target | Profile lags behind speech; weaker wow | Measured: Sonnet 2.7 s p50, Haiku 2.0 s p50. Use Haiku for the patch; trim output further if the venue network is slow |
+| Final dossier 11-14 s after stop | Awkward wait at the end of the demo | Keep the live dossier on screen; parallel per-section final pass; show a "repasando…" state |
 | Speech recognition quality on Galician names / noisy room | Wrong names on stage | Rehearse with the actual speaker; tap-to-edit; text fallback ready; good external mic |
 | Demo phone is an iPhone / not Chrome | Mic flow may not work | Test today; bring an Android with Chrome; text fallback |
 | No network / venue Wi-Fi | Both Web Speech and Claude fail | Phone hotspot; recorded replay (`replay.js` path) as a backup demo |
-| Model paraphrases quotes → many rejected ops | Profile fills slowly | Fuzzy quote match; log the rejection rate in the first live run |
+| Model paraphrases quotes → many rejected ops | Profile fills slowly | Measured 0-1 rejections per 33 calls; fuzzy match not needed yet |
 | Duplicated list items after corrections | Messy CV | `add` with an existing key → `update` (done); add a title-similarity merge |
 | Audio goes to Google (Chrome) | Trust message conflicts with the product | Disclose in onboarding; server-side STT later |
-| Structured-output schema compile on first request | One slow first call per schema | Pre-warm each schema at server start (one tiny call per mode) **[verify]** |
+| Structured-output schema compile on first request | One slow first call per schema | Pre-warm each schema at server start (one tiny call per mode). Measured: first call per scenario 1-2 s slower |
 | Refusals on benign content | Missing update | Server-side `fallbacks: "default"` enabled; `stop_reason` checked; the session retries the words next call |
+
+## 8. Prompt changes after the live run
+
+Applied in `src/prompts.js` after the measurements above (the numbers in §3/§4 are from the prompts before these edits;
+not re-measured):
+
+1. Corrections: the new value is only the corrected fact (Haiku had written "4 personas, luego 5 desde septiembre").
+2. Dates inside a description are not the item's date (both models dated *Terra queimada* 2017, the year of the fires).
+3. Business `activity` in the company's voice, not "Somos Marta Castro y mi hermana…".

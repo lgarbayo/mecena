@@ -44,13 +44,13 @@ export function loadApiKey() {
 // - structured outputs (output_config.format) guarantee schema-valid JSON.
 // - server-side refusal fallback ("default"), as recommended for claude-sonnet-5-5.
 function baseParams(model, schema, effort = "low") {
-  return {
-    model,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    thinking: model === "claude-sonnet-5-5" ? { type: "between_tools" } : { type: "adaptive" },
-    output_config: { effort, format: { type: "json_schema", schema } },
-  };
+  const params = { model, output_config: { effort, format: { type: "json_schema", schema } } };
+  if (model === "claude-sonnet-5-5") params.thinking = { type: "between_tools" };
+  else if (model === "claude-haiku-5-5") params.thinking = { type: "disabled" }; // allowed at effort <= high
+  else params.thinking = { type: "adaptive" };
+  // Haiku has no server-side refusal fallback; the session simply retries the words next call.
+  if (model !== "claude-haiku-5-5") Object.assign(params, { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
+  return params;
 }
 
 export function createClaudeLLM(apiKey) {

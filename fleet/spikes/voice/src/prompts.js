@@ -33,9 +33,9 @@ Rules:
 2. Every op needs "source": words copied verbatim and contiguously from TRANSCRIPT (5-25 words), including recognition errors and missing accents. Code checks this; anything not found verbatim is discarded.
 3. Values are short and in Spanish as the speaker said them. You may fix obvious recognition casing/accents in "value" (e.g. "lugo" -> "Lugo"), never in "source".
 4. Do not repeat facts that CURRENT_STATE already has with the same meaning. Usually only the ⟦NEW⟧ text produces ops; returning no ops is normal.
-5. Corrections: when the speaker corrects themselves ("no, perdona, fue en 2023", "bueno, cinco desde septiembre"), the latest statement wins. Use "set" again for scalars, or "update" with the EXISTING key for list items, with the correction as source. Use "remove" only when they retract something entirely.
+5. Corrections: when the speaker corrects themselves ("no, perdona, fue en 2023", "bueno, cinco desde septiembre"), the latest statement wins. Use "set" again for scalars, or "update" with the EXISTING key for list items, with the correction as source. The new value is ONLY the corrected fact (write "5 personas", never "4 personas, luego 5"); the app keeps the history. Use "remove" only when they retract something entirely.
 6. The last words of the transcript may be an unfinished sentence that recognition will extend; skip a fact whose sentence is clearly cut off.
-7. Lists: one item per distinct thing (each exhibition, award, series, team member, project…). Put year, place and a short detail in their own properties when said. Keys are short lowercase slugs (e.g. "terra-queimada").
+7. Lists: one item per distinct thing (each exhibition, award, series, team member, project…). Put year, place and a short detail in their own properties when said. A date that belongs to the subject matter is not the item's date ("14 cuadros sobre los incendios de 2017" does not make the series from 2017); leave year empty unless the speaker dates the item itself. Keys are short lowercase slugs (e.g. "terra-queimada").
 8. Speech recognition errors: interpret obvious mishearings for "value" when the meaning is clear from context; when it is not clear, skip.
 9. ask_next: if a key fact for a grant application is still missing (${mode === "creator" ? "discipline, location, main series, recent exhibitions or what they want to fund" : "activity, location, team size, founding year or what they want to fund"}), write one short, friendly question in Spanish using tú; otherwise empty. Never ask about something already said.`;
 }
@@ -51,7 +51,7 @@ export function dossierSystem(mode) {
 - statement: first person, 80-150 words, built from the artist's own phrases about what they do and why. No art-speak they did not use.
 - series: one short block per series: "**Title** (years) — what it is, size of the series, where shown".
 - cv: dated lists, most recent first, under headings Formación / Exposiciones / Premios y becas / Residencias / Publicaciones. Only what is in PROFILE.`
-      : `- activity: 80-150 words, first person plural ("Somos…"): what the business does, since when, where, legal form, products, channels, figures if given.
+      : `- activity: 80-150 words, first person plural in the company's voice ("En Conservas X somos…"), never naming the speaker as part of "nosotros": what the business does, since when, where, legal form, products, channels, figures if given.
 - team: who does what, headcount; list format if several roles.
 - projects: past projects with results, then what they want to do next and what they need funding for, in their own words.`;
 
