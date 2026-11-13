@@ -1,6 +1,6 @@
 # Persona A — "Del artista al dossier" + integración + demo
 
-> Nombre: **[rellenar]** · Contraparte: [PERSONA-B.md](PERSONA-B.md)
+> Quién: **nosotros (Luis y equipo)** · Contraparte: [PERSONA-B.md](PERSONA-B.md)
 > Fuente de verdad del producto: [`fleet/IDEA.md`](../IDEA.md) · Spec y paquetes: `fleet/SPEC.md`, `fleet/workpackages/` (los deja el arquitecto)
 > Fin del build: **sábado 14/11, 19:00**. `main` se congela a las **18:00**.
 
