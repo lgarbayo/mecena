@@ -63,7 +63,7 @@ export { parseAgeRange, ageRangeAt, ageCheck, parseYearsActive, yearsActiveCheck
 export { normalizeDocuments, documentLabel, missingDocuments, type DocumentsResult } from "./documents";
 export { normalizeCriteria, largestRemainder, type CriteriaResult } from "./criteria";
 export { normalizeProfile, profileTerritory } from "./profile";
-export { normalizeCall, callTerritories, type NormalizeCallOptions } from "./call";
+export { normalizeCall, callTerritories, callBeneficiaries, withCanonicalCallFields, type NormalizeCallOptions } from "./call";
 export { BdnsRecord, normalizeBdnsRecord, bdnsToCallPatch, type BdnsNormalized } from "./bdns";
 export { evaluateEligibility, describeAge, type EligibilityCheck, type EligibilityResult } from "./eligibility";
 export { validateCallDataset, formatQualityReport, type QualityReport, type CallQuality } from "./quality";

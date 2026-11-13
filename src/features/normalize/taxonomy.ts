@@ -48,16 +48,8 @@ export const TerritoryTaxonomy = z.object({
 });
 export type TerritoryNode = z.infer<typeof TerritoryTaxonomy>["items"][number];
 
-export const BeneficiaryType = z.enum([
-  "persona-fisica",
-  "autonomo",
-  "pyme",
-  "gran-empresa",
-  "entidad-sin-animo-lucro",
-  "colectivo",
-  "entidad-publica",
-]);
-export type BeneficiaryType = z.infer<typeof BeneficiaryType>;
+import { BeneficiaryType } from "@/contracts/domain";
+export { BeneficiaryType };
 
 export const BeneficiaryTaxonomy = z.object({
   version: z.string(),

@@ -9,7 +9,7 @@ import { normalizeDocuments } from "./documents";
 import { parseAmountRange, eurosToCents } from "./money";
 import { parseAgeRange } from "./ranges";
 import { type BeneficiaryType } from "./taxonomy";
-import { ccaaOf, normalizeTerritory } from "./territory";
+import { ccaaOf, normalizeTerritory, territoryNode } from "./territory";
 import { unique } from "./text";
 import { type AmountCents, type CanonicalCall, type CnaeRef, type DataWarning, type Deadline, type Normalized, warn } from "./types";
 
@@ -19,8 +19,16 @@ export interface NormalizeCallOptions {
 }
 
 /** Territories the applicant must be within. Empty residence = state-wide (["ES"]), per the Call contract. */
-export function callTerritories(call: Pick<Call, "eligibility" | "scope" | "region">): Normalized<string[]> {
+export function callTerritories(call: Pick<Call, "eligibility" | "scope" | "region"> & { territories?: string[] }): Normalized<string[]> {
   const warnings: DataWarning[] = [];
+  // CCR-5: stored canonical territories are the source of truth when present.
+  if (call.territories?.length) {
+    const known = call.territories.filter((t) => territoryNode(t));
+    call.territories.forEach((t, i) => {
+      if (!territoryNode(t)) warnings.push(warn("unmapped-territory", `territories[${i}]`, `Territorio no reconocido: «${t}»`, t, "error"));
+    });
+    if (known.length) return { value: unique(known), warnings };
+  }
   const ids: string[] = [];
   call.eligibility.residence.forEach((r, i) => {
     const t = normalizeTerritory(r, { prefer: "broadest" });
@@ -34,8 +42,10 @@ export function callTerritories(call: Pick<Call, "eligibility" | "scope" | "regi
   return { value: ids.length ? unique(ids) : ["ES"], warnings };
 }
 
-function callBeneficiaries(call: Call): { types: BeneficiaryType[]; source: CanonicalCall["beneficiarySource"]; warnings: DataWarning[] } {
+export function callBeneficiaries(call: Call): { types: BeneficiaryType[]; source: CanonicalCall["beneficiarySource"]; warnings: DataWarning[] } {
   const warnings: DataWarning[] = [];
+  // CCR-6: stored canonical types are the source of truth when present.
+  if (call.beneficiaryTypes?.length) return { types: unique([...call.beneficiaryTypes]), source: "explicit", warnings };
   if (call.eligibility.legalForms.length) {
     const r = normalizeBeneficiaries(call.eligibility.legalForms);
     call.eligibility.legalForms.forEach((lf, i) => {
@@ -142,4 +152,22 @@ export function normalizeCall(call: Call, opts: NormalizeCallOptions = {}): Norm
     },
     warnings,
   };
+}
+
+/**
+ * CCR-5 / CCR-6: fill Call.territories and Call.beneficiaryTypes from the display fields when they are empty.
+ * Only explicit sources are stored: an empty residence stays [] (state-wide) and types inferred from
+ * beneficiaryKinds are left to normalizeCall, so "unknown" never turns into a hard rule.
+ */
+export function withCanonicalCallFields(call: Call): Call {
+  const next: Call = { ...call };
+  if (!next.territories.length && next.eligibility.residence.length) {
+    const t = callTerritories({ ...next, territories: [] });
+    if (!t.warnings.some((w) => w.code === "unmapped-territory")) next.territories = t.value;
+  }
+  if (!next.beneficiaryTypes.length) {
+    const b = callBeneficiaries({ ...next, beneficiaryTypes: [] });
+    if (b.source === "explicit") next.beneficiaryTypes = b.types;
+  }
+  return next;
 }

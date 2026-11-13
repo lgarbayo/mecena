@@ -31,7 +31,7 @@ describe("normalizeProfile", () => {
     const r = normalizeProfile(makeProfile({ disciplines: ["pintura", "astrología"] }));
     expect(r.value.disciplines).toEqual(["pintura"]);
     expect(codes(r.warnings)).toContain("unmapped-discipline");
-    expect(codes(normalizeProfile({ ...fixtureBusiness, legalForm: undefined }).warnings)).toContain("missing-legal-form");
+    expect(codes(normalizeProfile({ ...fixtureBusiness, legalForm: undefined, beneficiaryTypes: [] }).warnings)).toContain("missing-legal-form");
   });
 });
 

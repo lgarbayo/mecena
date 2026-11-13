@@ -14,6 +14,7 @@ export const DEMO_APP_USER_ID = "mecena-demo-0001";
 export const blankCreator: Profile = {
   id: DEMO_CREATOR_ID,
   kind: "creator",
+  beneficiaryTypes: [],
   displayName: "",
   disciplines: [],
   bio: "",
@@ -30,6 +31,8 @@ export const blankCreator: Profile = {
 export const fixtureCreator: Profile = {
   ...blankCreator,
   displayName: "Antía Varela",
+  territory: "mun:15030",
+  beneficiaryTypes: ["persona-fisica"],
   city: "A Coruña",
   province: "A Coruña",
   region: "Galicia",
@@ -49,6 +52,8 @@ export const fixtureBusiness: Profile = {
   id: DEMO_BUSINESS_ID,
   kind: "business",
   displayName: "Cerámica Mareira",
+  territory: "mun:27028",
+  beneficiaryTypes: ["autonomo"],
   city: "Lugo",
   province: "Lugo",
   region: "Galicia",
@@ -119,6 +124,8 @@ const fixtureCallBase = {
   source: "seed" as const,
   verifiedAt: "2026-11-13",
   criteriaSource: "bases" as const,
+  beneficiaryTypes: [], // derived by normalizeCall from legalForms / beneficiaryKinds
+  territories: [], // derived by normalizeCall from eligibility.residence
 };
 
 export const fixtureCalls: Call[] = [
