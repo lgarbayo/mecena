@@ -1,8 +1,9 @@
 /**
  * Real-AI onboarding turn: system prompt, compact user payload and a lean output schema for Claude.
  * The schema avoids defaults/unions so structured outputs stay simple; ai.ts maps it onto OnboardingTurnResult.
- * TODO(WP-01): align with fleet/spikes/voice/FINDINGS.md (branch spike/voice-extraction) once it lands
- * (debounce strategy, per-field source quotes, corrections). The branch did not exist when this was written.
+ * Aligned with fleet/spikes/voice/FINDINGS.md (branch spike/voice-extraction) where it fits the per-turn contract:
+ * finals only (interims never sent), corrections win, nothing invented, schema pre-warm (ai.ts).
+ * TODO(WP-01 follow-up): the spike's verbatim per-op source quotes and server-side coalescing are not ported yet.
  */
 import { z } from "zod";
 import { BusinessSectionKey, CreatorSectionKey, type OnboardingTurnInput, type ProfileKind } from "@/contracts";
@@ -68,6 +69,7 @@ export function systemPrompt(kind: ProfileKind): string {
     "Recibes el perfil actual, las secciones actuales del dossier, los últimos fragmentos de la transcripción y el NUEVO fragmento.",
     "Devuelve solo lo que el nuevo fragmento aporta:",
     "- profilePatch: solo los campos que el fragmento dice o corrige. Si corrige algo (\"no, quería decir…\"), devuelve el valor corregido. Omite el resto.",
+    "- Si dice lo que busca o necesita (\"busco…\", \"quiero…\", \"necesito…\", \"me gustaría…\": una beca, una residencia, producir, exponer, digitalizar, contratar…), ponlo en fundingNeeds con sus palabras, aunque también lo uses en projectIdea.",
     "- sectionUpdates: solo las secciones que cambian, con el texto COMPLETO de la sección (lo que ya había más lo nuevo), reescrito en primera persona, con sus palabras, sin adornos ni adjetivos que no haya dicho. Cada sección lista en sourceSegmentIds los ids de los fragmentos de los que sale (incluye el nuevo si lo usas).",
     `- Claves de sección permitidas: ${keys}.`,
     `- followUpQuestion: una pregunta breve (máx. 15 palabras) sobre lo que falta para optar a convocatorias: ${missing}. No repitas preguntas ya respondidas.`,

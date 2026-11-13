@@ -7,6 +7,7 @@ import { OnboardingTurnResult, type DossierSection, type OnboardingTurnInput, ty
 import type { OnboardingTurnResponse } from "@/contracts/api";
 import { getAi, mockAi } from "@/server/ai";
 import { appendSegment, getDossier, getProfile, getTranscript, listWorks, mergeProfile, nowIso, saveDossier, saveProfile } from "@/server/store";
+import { warmOnboardingAi } from "./ai";
 import { sectionTitles } from "./copy";
 
 /** A retry of the same chunk within this window reuses the last segment. */
@@ -82,5 +83,6 @@ export async function processTurn(input: { profileId?: string; text: string; sou
 /** Current onboarding state for the active (or given) profile: lets /onboarding resume after a reload. */
 export function getOnboardingState(profileId?: string) {
   const profile = getProfile(profileId);
+  warmOnboardingAi(profile.kind);
   return { profile, sections: getDossier(profile.id)?.sections ?? [], transcript: getTranscript(profile.id) };
 }

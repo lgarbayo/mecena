@@ -7,7 +7,7 @@ vi.mock("@/server/ai/llm", async (orig) => {
 });
 
 import { AiError, structured } from "@/server/ai/llm";
-import { realOnboardingTurn } from "@/features/onboarding/ai";
+import { realOnboardingTurn, warmOnboardingAi } from "@/features/onboarding/ai";
 import { systemPrompt, userPayload, CONTEXT_SEGMENTS } from "@/features/onboarding/prompt";
 import { blankCreator, FIXTURE_NOW } from "@/fixtures";
 import type { OnboardingTurnInput, TranscriptSegment } from "@/contracts";
@@ -69,5 +69,18 @@ describe("onboarding real AI path", () => {
     expect(systemPrompt("business")).toMatch(/figures \(Cifras\)/);
     expect(systemPrompt("business")).not.toMatch(/statement/);
     expect(userPayload(input()).length).toBeLessThan(4000);
+  });
+
+  it("backstops fundingNeeds from the user's words when Claude omits them", async () => {
+    mocked.mockResolvedValue({ profilePatch: { projectIdea: "Un fotolibro" }, sectionUpdates: [], followUpQuestion: "¿Y?" });
+    const r = await realOnboardingTurn(input("Quiero hacer un fotolibro y busco una beca de producción."));
+    expect(r.profilePatch.fundingNeeds?.join(" ")).toMatch(/beca de producción/);
+    mocked.mockResolvedValue({ profilePatch: { fundingNeeds: ["Una beca de producción"] }, sectionUpdates: [], followUpQuestion: "¿Y?" });
+    expect((await realOnboardingTurn(input("Busco una beca de producción."))).profilePatch.fundingNeeds).toEqual(["Una beca de producción"]);
+  });
+
+  it("the schema warm-up is a no-op in mock mode", () => {
+    warmOnboardingAi("creator");
+    expect(mocked).not.toHaveBeenCalled();
   });
 });
