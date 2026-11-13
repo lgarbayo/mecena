@@ -1,0 +1,67 @@
+.home {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.head { display: flex; flex-direction: column; gap: 0.5rem; }
+.title {
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  line-height: 1.15;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.lede { margin: 0; opacity: 0.8; }
+.data, .rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.point {
+  border-top: 2px solid currentColor;
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  animation: rise 0.5s ease both;
+}
+.figure {
+  font-size: clamp(2.2rem, 10vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.text { margin: 0; font-size: 1.05rem; }
+.source {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  overflow-wrap: anywhere;
+}
+.closing { margin: 0; font-size: 1.15rem; }
+.slogan { margin: 0; font-size: 1.3rem; font-weight: 700; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.rule { display: flex; gap: 0.9rem; align-items: flex-start; }
+.rule h2 { font-size: 1.1rem; margin: 0 0 0.25rem; }
+.rule p { margin: 0; }
+.ruleIcon {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid currentColor;
+}
+@media (min-width: 720px) {
+  .data { grid-template-columns: repeat(3, 1fr); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .point { animation: none; }
+}
