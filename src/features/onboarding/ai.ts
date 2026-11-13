@@ -6,6 +6,7 @@ import type { AiSlice, DossierSection, OnboardingTurnInput, OnboardingTurnResult
 import { AiError, isMockAi, structured } from "@/server/ai/llm";
 import type { ProfileKind } from "@/contracts";
 import { sectionTitles } from "./copy";
+import { dossierLookQuestion } from "./interview";
 import { extractProfilePatch, mockOnboardingTurn } from "./mock";
 import { llmTurnSchema, systemPrompt, userPayload, type LlmTurn } from "./prompt";
 
@@ -34,7 +35,16 @@ export function toTurnResult(input: OnboardingTurnInput, out: LlmTurn): Onboardi
     const needs = extractProfilePatch(input.newSegment.text, input.kind, input.profile).fundingNeeds;
     if (needs?.length) profilePatch.fundingNeeds = needs;
   }
-  return { profilePatch, sectionUpdates, followUpQuestion: out.followUpQuestion?.trim() || undefined };
+  // The optional dossier-look question is ours, asked once when the core profile becomes complete.
+  const before = input.profile;
+  const after = {
+    ...before,
+    ...profilePatch,
+    disciplines: [...before.disciplines, ...(profilePatch.disciplines ?? [])],
+    fundingNeeds: [...before.fundingNeeds, ...(profilePatch.fundingNeeds ?? [])],
+  };
+  const look = dossierLookQuestion(input.kind, before, after, input.transcript);
+  return { profilePatch, sectionUpdates, followUpQuestion: look ?? (out.followUpQuestion?.trim() || undefined) };
 }
 
 export async function realOnboardingTurn(input: OnboardingTurnInput): Promise<OnboardingTurnResult> {
