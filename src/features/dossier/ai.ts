@@ -9,6 +9,7 @@ import type { Call, Profile } from "@/contracts";
 import { isMockAi, structured } from "@/server/ai/llm";
 import { DossierDesign, presetDesign, type DossierDesign as Design } from "./design";
 import { suggestStyle, tameAccent } from "./style";
+import { familyOf } from "./arts";
 
 export interface DesignDossierInput {
   request: string; // what the artist asked for ("más oscuro, como una noche en el puerto"); "" = design from the interview
@@ -33,6 +34,13 @@ Principios:
 - Tipografías: cualquier familia de Google Fonts, escrita exactamente como en Google Fonts. Evita las de siempre (Inter, Roboto, Poppins, Montserrat, Open Sans, Lato, Playfair Display). Busca carácter: p. ej. Fraunces, Instrument Serif, Cormorant Garamond, Libre Caslon Text, EB Garamond, Spectral, Young Serif, Bricolage Grotesque, Familjen Grotesk, Hanken Grotesk, Space Grotesk, Syne, Unbounded, Archivo, IBM Plex Mono, DM Mono, Space Mono, Caveat, Gloock, Bodoni Moda, Anybody. "category" debe corresponder a la familia.
 - Nada de degradados, brillos ni adornos de plantilla. Un solo acento que signifique algo.
 - titles: solo cuando ayuden (por ejemplo si el artista habla de sus "piezas" en vez de "obra", o pide un tono más personal). Máximo 3-4 palabras, en español o gallego si el artista lo usa. Si no, déjalos vacíos.
+- Vale para cualquier arte (familia en "perfil.familia"): pintura, música, danza, teatro, cine, literatura, diseño, artesanía… Piensa en cómo se presenta ese arte: una compañía de danza no es una galería, un disco no es un cuadro.
+- structure: también decides el contenido entre portada y contraportada, si el artista lo pide o si su forma de hablar lo pide.
+  - blocks: orden de los bloques "statement", "bio", "works", "cv" y "custom". Déjalo vacío para el orden habitual. Quita un bloque si el artista no lo quiere.
+  - "custom" es una sección propia (Proceso, Lo que me mueve, Prensa, Con quién trabajo…). Su "body" se escribe SOLO con lo que el artista ha contado en la entrevista, con sus palabras. Nunca inventes datos, nombres, fechas ni premios. Si no hay material, no la crees.
+  - title de un bloque: renómbralo si lo pide o si encaja con su arte (p. ej. "Repertorio", "Piezas", "Lo que hago").
+  - length: "breve" si pide algo corto (una página, lo esencial); si no, "completo".
+- Las obras siempre se quedan. Si la convocatoria pide currículum, la trayectoria también.
 - name: nombre corto y evocador del diseño (2-4 palabras).
 - rationale: 1-3 frases en español de España, tuteando: qué has hecho y por qué encaja con su obra y, si la hay, con la convocatoria.`;
 
@@ -48,6 +56,7 @@ function brief(input: DesignDossierInput) {
       tipo: profile.kind === "creator" ? "artista" : "pyme/autónomo",
       nombre: profile.displayName,
       disciplinas: profile.disciplines,
+      familia: familyOf(profile.disciplines),
       sector: profile.sector,
       declaracion: profile.statement?.slice(0, 600),
       zona: [profile.city, profile.region].filter(Boolean).join(", "),
@@ -160,6 +169,41 @@ export function mockDesign(input: DesignDossierInput): Design {
     d.titles = { ...d.titles, works: "Piezas" };
     done.push("«Piezas» en vez de «Obra»");
   }
+
+  // Structure: what goes in the dossier and in what order.
+  const st = { ...d.structure, blocks: [...(d.structure?.blocks ?? [])] };
+  const order = () => (st.blocks.length ? st.blocks : (["statement", "bio", "works", "cv"] as const).map((key) => ({ key })));
+  if (has(req, "breve", "una pagina", "corto", "lo esencial")) {
+    st.length = "breve";
+    done.push("versión breve, con lo esencial");
+  } else if (has(req, "completo", "largo")) {
+    st.length = "completo";
+  }
+  if (has(req, "sin biografia", "quita la biografia", "fuera la biografia")) {
+    st.blocks = order().filter((b) => b.key !== "bio");
+    done.push("sin biografía");
+  }
+  if (has(req, "trayectoria primero", "trayectoria antes", "cv primero", "curriculum primero")) {
+    const bs = order();
+    st.blocks = [...bs.filter((b) => b.key === "cv"), ...bs.filter((b) => b.key !== "cv")];
+    done.push("la trayectoria por delante");
+  } else if (has(req, "obra primero", "obras primero", "obra antes", "empieza por la obra")) {
+    const bs = order();
+    st.blocks = [...bs.filter((b) => b.key === "works"), ...bs.filter((b) => b.key !== "works")];
+    done.push("la obra por delante");
+  }
+  const custom = /seccion\s+(?:de|sobre|con|llamada)?\s*(?:mi\s+|mis\s+|el\s+|la\s+|los\s+|las\s+)?([a-z]+)/.exec(req);
+  if (custom) {
+    const topic = custom[1];
+    const said = (input.interview ?? []).filter((t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(topic));
+    if (said.length) {
+      st.blocks = [...order(), { key: "custom" as const, title: capital(topic), body: said.slice(0, 3).join("\n\n") }];
+      done.push(`una sección «${capital(topic)}» con lo que contaste`);
+    } else {
+      done.push(`no tengo nada de lo que contaste sobre «${topic}» para escribir esa sección; cuéntamelo y la añado`);
+    }
+  }
+  d.structure = st;
 
   const words = input.request.trim().split(/\s+/).slice(0, 4).join(" ");
   d.name = done.length ? (input.request.trim().length <= 40 ? capital(input.request.trim()) : `${capital(words)}…`) : d.name;

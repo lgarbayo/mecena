@@ -19,7 +19,7 @@ export const SECTION_TITLE_KEYS = ["statement", "bio", "works", "cv", "contact",
 export type SectionTitleKey = (typeof SECTION_TITLE_KEYS)[number];
 
 export const DEFAULT_TITLES: Record<SectionTitleKey, string> = {
-  statement: "Statement",
+  statement: "Declaración",
   bio: "Biografía",
   works: "Obra",
   cv: "Trayectoria",
@@ -31,6 +31,24 @@ export const DEFAULT_TITLES: Record<SectionTitleKey, string> = {
 };
 
 const Title = z.string().min(1).max(40);
+
+/** Blocks between the cover and the back cover, in the order the artist wants. "custom" = a section of their own. */
+export const BlockKey = z.enum(["statement", "bio", "works", "cv", "custom"]);
+export type BlockKey = z.infer<typeof BlockKey>;
+export const Structure = z.object({
+  blocks: z
+    .array(
+      z.object({
+        key: BlockKey,
+        title: Title.optional(), // overrides the section name for this block
+        body: z.string().max(1500).optional(), // custom blocks only: text built from the artist's own words
+      }),
+    )
+    .max(10), // [] = the usual order
+  length: z.enum(["completo", "breve"]), // breve: one statement paragraph, no bio, a few works, short CV
+});
+export type Structure = z.infer<typeof Structure>;
+export const DEFAULT_STRUCTURE: Structure = { blocks: [], length: "completo" };
 
 export const DossierDesign = z.object({
   name: z.string().min(1).max(60), // short name for this look, e.g. "Noche en el puerto"
@@ -85,6 +103,7 @@ export const DossierDesign = z.object({
       figures: Title.optional(),
     })
     .default({}),
+  structure: Structure.default(DEFAULT_STRUCTURE),
 });
 export type DossierDesign = z.infer<typeof DossierDesign>;
 
@@ -105,6 +124,7 @@ export function presetDesign(style: DossierStyle, kind: ProfileKind, accent?: st
       works: { layout: "cartela-lateral", frame: "paspartu" },
       rhythm: { density: "normal", rules: "finas", corners: 0, texture: "ninguna" },
       titles: {},
+      structure: DEFAULT_STRUCTURE,
     };
   if (style === "galeria")
     return {
@@ -116,6 +136,7 @@ export function presetDesign(style: DossierStyle, kind: ProfileKind, accent?: st
       works: { layout: "cartela-lateral", frame: "plana" },
       rhythm: { density: "aireada", rules: "finas", corners: 0, texture: "ninguna" },
       titles: {},
+      structure: DEFAULT_STRUCTURE,
     };
   return {
     name: "Sobrio",
@@ -126,6 +147,7 @@ export function presetDesign(style: DossierStyle, kind: ProfileKind, accent?: st
     works: { layout: "cartela-lateral", frame: "sombra" },
     rhythm: { density: "normal", rules: "finas", corners: 0, texture: "ninguna" },
     titles: {},
+    structure: DEFAULT_STRUCTURE,
   };
 }
 
@@ -194,7 +216,25 @@ export function guardDesign(input: DossierDesign, ctx: { call?: Call } = {}): Gu
       adjustments.push("El texto corrido va en serifa: la comisión lee mucho y rápido.");
     }
   }
+  // Structure: the artist decides, but the dossier keeps its works and whatever the call requires.
+  const st = d.structure ?? DEFAULT_STRUCTURE;
+  st.blocks = st.blocks.filter((b) => b.key !== "custom" || (b.body?.trim() && b.title?.trim()));
+  if (st.blocks.length) {
+    if (!st.blocks.some((b) => b.key === "works")) {
+      st.blocks.push({ key: "works" });
+      adjustments.push("He mantenido tus obras: son lo que más mira un jurado.");
+    }
+    if (callWantsCv(ctx.call) && !st.blocks.some((b) => b.key === "cv")) {
+      st.blocks.push({ key: "cv" });
+      adjustments.push("La convocatoria pide currículum, así que la trayectoria se queda.");
+    }
+  }
+  d.structure = st;
   return { design: d, adjustments };
+}
+
+export function callWantsCv(call?: Call): boolean {
+  return !!call && call.requiredDocuments.some((doc) => /curr[ií]cul|trayectoria|\bcv\b/i.test(doc));
 }
 
 // ---------------------------------------------------------------- fonts

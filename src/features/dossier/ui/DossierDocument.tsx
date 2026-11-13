@@ -7,7 +7,9 @@
  */
 import { createContext, useContext, type CSSProperties, type ReactNode } from "react";
 import type { BusinessView, CreatorView, DossierView, FactRow, SectionState, WorkView } from "../model";
+import { linkLabel, vocabFor, type ArtFamily } from "../arts";
 import { DEFAULT_TITLES, designTokens, fontStack, type DossierDesign, type SectionTitleKey } from "../design";
+import { planCreator, type Block } from "../structure";
 import "./dossier.css";
 
 type Slot = CSSProperties & { "--lines"?: number; "--skw"?: string };
@@ -276,19 +278,35 @@ function Contact({ view, colophon, progressive }: { view: DossierView; colophon:
   );
 }
 
-function Work({ w }: { w: WorkView }) {
+function Work({ w, family }: { w: WorkView; family: ArtFamily }) {
+  const vocab = vocabFor(family);
+  const measure = vocab.sizeLabel === "duration" ? w.duration || w.size : w.size || w.duration;
   return (
-    <li className="work" data-work-id={w.id}>
-      <Frame work={w} hint="Foto de la obra" />
+    <li className="work" data-work-id={w.id} data-media={w.mediaKind}>
+      <Frame work={w} hint={vocab.photoHint} />
       <div className="label">
         <h4 className="label__title">
           <cite>{w.title || "Sin título"}</cite>
           {w.year ? <>, {w.year}</> : null}
         </h4>
         {w.technique ? <p className="label__tech">{w.technique}</p> : null}
-        {w.size ? <p className="label__size">{w.size}</p> : null}
-        <p className="label__cat">Cat. {w.catNo}</p>
+        {measure ? <p className="label__size">{measure}</p> : null}
+        {w.credits ? <p className="label__tech">{w.credits}</p> : null}
+        {w.venue ? <p className="label__tech">{w.venue}</p> : null}
+        <p className="label__cat">
+          {vocab.cat} {w.catNo}
+        </p>
         {w.concept ? <p className="label__concept">{w.concept}</p> : null}
+        {w.links.length ? (
+          <p className="label__links">
+            {w.links.map((l, i) => (
+              <a key={l} href={l} target="_blank" rel="noreferrer">
+                {i ? " · " : ""}
+                {linkLabel(l)}
+              </a>
+            ))}
+          </p>
+        ) : null}
       </div>
     </li>
   );
@@ -296,114 +314,139 @@ function Work({ w }: { w: WorkView }) {
 
 // ---------------------------------------------------------------- creator
 
-function CreatorDossier({ view, progressive }: { view: CreatorView; progressive?: boolean }) {
+function CreatorDossier({ view: full, progressive, design }: { view: CreatorView; progressive?: boolean; design?: DossierDesign }) {
+  const { view, blocks } = planCreator(full, design);
   const { states } = view;
+  const vocab = vocabFor(view.family);
   const signature = [view.name, view.city, view.date.split(" ").pop()].filter(Boolean).join(", ");
+
+  const render = (b: Block) => {
+    switch (b.kind) {
+      case "statement":
+        return (
+          <Section key="statement" name="statement" state={states.statement} progressive={progressive}>
+            <Rail name={b.title} />
+            <div className="main prose">
+              <Prose paras={view.statement} slot="profile.statement" lines={6} />
+              {view.statement.length && view.name ? <p className="signature">{signature}</p> : null}
+              {states.statement !== "ready" ? <Hint k="statement" /> : null}
+            </div>
+          </Section>
+        );
+      case "bio":
+        if (!view.bio.length && !progressive) return null;
+        return (
+          <Section key="bio" name="bio" state={states.bio} progressive={progressive}>
+            <Rail name={b.title} />
+            <div className="main prose">
+              <Prose paras={view.bio} slot="profile.bio" lines={4} />
+              {states.bio !== "ready" ? <Hint k="bio" /> : null}
+            </div>
+          </Section>
+        );
+      case "custom":
+        return (
+          <Section key={b.id} name="custom" state="ready" progressive={progressive}>
+            <Rail name={b.title} />
+            <div className="main prose">
+              <Prose paras={b.paras} slot={b.id} lines={4} />
+            </div>
+          </Section>
+        );
+      case "works":
+        if (!view.series.length && !progressive) return null;
+        return view.series.length ? (
+          view.series.map((s, i) => (
+            <Section key={`series-${s.id}`} name="series" state={states.series} progressive={progressive} className="sheet ruled series" extra={{ "data-series-id": s.id }}>
+              <Rail name={b.title} sub={view.series.length > 1 ? `${vocab.series} ${i + 1} de ${view.series.length}` : undefined} />
+              <div className="main">
+                {s.title || s.years || s.description.length ? (
+                  <header className="series__head">
+                    {s.title ? <h3 className="section-title">{s.title}</h3> : null}
+                    {s.years ? <p className="series__years">{s.years}</p> : null}
+                    {s.description.length ? (
+                      <div className="series__text prose">
+                        {s.description.map((p, j) => (
+                          <p key={j}>{p}</p>
+                        ))}
+                      </div>
+                    ) : null}
+                  </header>
+                ) : null}
+                <ol className="works">
+                  {s.works.map((w) => (
+                    <Work key={w.id} w={w} family={view.family} />
+                  ))}
+                </ol>
+              </div>
+            </Section>
+          ))
+        ) : (
+          <Section key="series" name="series" state={states.series} progressive={progressive} className="sheet ruled series">
+            <Rail name={b.title} />
+            <div className="main">
+              <header className="series__head">
+                <h3 className="section-title" data-slot="series[0].title" style={{ "--skw": "40%" } as Slot} />
+              </header>
+              <ol className="works">
+                <li className="work">
+                  <Frame hint={vocab.photoHint} />
+                  <div className="label">
+                    <p data-slot="series[0].works[0].title" style={{ "--lines": 3 } as Slot} />
+                  </div>
+                </li>
+              </ol>
+              <p className="hint">{vocab.worksHint}</p>
+            </div>
+          </Section>
+        );
+      case "cv":
+        return (
+          <Section key="cv" name="cv" state={states.cv} progressive={progressive}>
+            <Rail name={b.title} />
+            <div className="main">
+              {view.cv.length ? (
+                <div className="cv">
+                  {view.cv.map((g) => (
+                    <div key={g.key} className="cv__group" data-cv={g.key}>
+                      <h3 className="cv__title">{g.title}</h3>
+                      <ol className="cv__list">
+                        {g.items.map((it, j) => (
+                          <li key={j}>
+                            <span className="cv__year">{it.year}</span>
+                            <span>
+                              {it.text}
+                              {it.place ? (
+                                <>
+                                  {". "}
+                                  <span className="cv__place">{it.place}</span>
+                                </>
+                              ) : null}
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p data-slot="cv" style={{ "--lines": 5 } as Slot} />
+              )}
+              {states.cv !== "ready" ? <Hint k="cv" /> : null}
+            </div>
+          </Section>
+        );
+    }
+  };
+
   return (
     <>
       <Cover view={view} kicker="Dossier artístico" sub={[view.discipline, view.city]} progressive={progressive} />
-
-      <Section name="statement" state={states.statement} progressive={progressive}>
-        <Rail name="Statement" />
-        <div className="main prose">
-          <Prose paras={view.statement} slot="profile.statement" lines={6} />
-          {view.statement.length && view.name ? <p className="signature">{signature}</p> : null}
-          {states.statement !== "ready" ? <Hint k="statement" /> : null}
-        </div>
-      </Section>
-
-      <Section name="bio" state={states.bio} progressive={progressive}>
-        <Rail name="Biografía" />
-        <div className="main prose">
-          <Prose paras={view.bio} slot="profile.bio" lines={4} />
-          {states.bio !== "ready" ? <Hint k="bio" /> : null}
-        </div>
-      </Section>
-
-      {view.series.length ? (
-        view.series.map((s, i) => (
-          <Section key={s.id} name="series" state={states.series} progressive={progressive} className="sheet ruled series" extra={{ "data-series-id": s.id }}>
-            <Rail name="Obra" sub={view.series.length > 1 ? `Serie ${i + 1} de ${view.series.length}` : undefined} />
-            <div className="main">
-              {s.title || s.years || s.description.length ? (
-                <header className="series__head">
-                  {s.title ? <h3 className="section-title">{s.title}</h3> : null}
-                  {s.years ? <p className="series__years">{s.years}</p> : null}
-                  {s.description.length ? (
-                    <div className="series__text prose">
-                      {s.description.map((p, j) => (
-                        <p key={j}>{p}</p>
-                      ))}
-                    </div>
-                  ) : null}
-                </header>
-              ) : null}
-              <ol className="works">
-                {s.works.map((w) => (
-                  <Work key={w.id} w={w} />
-                ))}
-              </ol>
-            </div>
-          </Section>
-        ))
-      ) : (
-        <Section name="series" state={states.series} progressive={progressive} className="sheet ruled series">
-          <Rail name="Obra" />
-          <div className="main">
-            <header className="series__head">
-              <h3 className="section-title" data-slot="series[0].title" style={{ "--skw": "40%" } as Slot} />
-            </header>
-            <ol className="works">
-              <li className="work">
-                <Frame hint="Haz una foto de la obra" />
-                <div className="label">
-                  <p data-slot="series[0].works[0].title" style={{ "--lines": 3 } as Slot} />
-                </div>
-              </li>
-            </ol>
-            <Hint k="series" />
-          </div>
-        </Section>
-      )}
-
-      <Section name="cv" state={states.cv} progressive={progressive}>
-        <Rail name="Trayectoria" />
-        <div className="main">
-          {view.cv.length ? (
-            <div className="cv">
-              {view.cv.map((g) => (
-                <div key={g.key} className="cv__group" data-cv={g.key}>
-                  <h3 className="cv__title">{g.title}</h3>
-                  <ol className="cv__list">
-                    {g.items.map((it, j) => (
-                      <li key={j}>
-                        <span className="cv__year">{it.year}</span>
-                        <span>
-                          {it.text}
-                          {it.place ? (
-                            <>
-                              {". "}
-                              <span className="cv__place">{it.place}</span>
-                            </>
-                          ) : null}
-                        </span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p data-slot="cv" style={{ "--lines": 5 } as Slot} />
-          )}
-          {states.cv !== "ready" ? <Hint k="cv" /> : null}
-        </div>
-      </Section>
-
+      {blocks.map(render)}
       <Contact
         view={view}
         progressive={progressive}
-        colophon={`Obras y textos de ${view.name || "la artista o el artista"}. Dossier maquetado con Mecena.`}
+        colophon={`Obras y textos de ${view.name || "la artista o el artista"}. ${vocab.credit} Dossier maquetado con Mecena.`}
       />
     </>
   );
@@ -490,7 +533,7 @@ function BusinessDossier({ view, progressive }: { view: BusinessView; progressiv
           {view.projects.works.length ? (
             <ol className="works">
               {view.projects.works.map((w) => (
-                <Work key={w.id} w={w} />
+                <Work key={w.id} w={w} family="diseno" />
               ))}
             </ol>
           ) : null}
@@ -542,7 +585,7 @@ export function DossierDocument({ view, progressive, className = "", design }: D
     <TitlesContext.Provider value={titlesFor(design)}>
       <div className={`dossier-wall ${className}`.trim()} style={props.wall} {...props.attrs}>
         <article className="dossier" data-kind={view.kind} lang="es" style={props.sheet}>
-          {view.kind === "creator" ? <CreatorDossier view={view} progressive={progressive} /> : <BusinessDossier view={view} progressive={progressive} />}
+          {view.kind === "creator" ? <CreatorDossier view={view} progressive={progressive} design={design} /> : <BusinessDossier view={view} progressive={progressive} />}
         </article>
       </div>
     </TitlesContext.Provider>

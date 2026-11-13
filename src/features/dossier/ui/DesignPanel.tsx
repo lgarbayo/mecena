@@ -12,7 +12,7 @@ import { DOSSIER_STYLES, STYLE_LABELS, type DossierStyle } from "../style";
 
 export const DESIGN_API = "/api/dossier/design";
 
-const EXAMPLES = ["Más oscuro, como una noche en el puerto", "Que parezca un fanzine", "Como un catálogo de museo", "La obra a sangre y más aire", "Usa los colores de mi obra"];
+const EXAMPLES = ["Más oscuro, como una noche en el puerto", "Que parezca un fanzine", "La obra a sangre y más aire", "Algo breve, de una página", "Añade una sección sobre mi proceso", "Empieza por la obra y deja la biografía fuera"];
 
 export interface DesignChange {
   design: DossierDesign;
@@ -104,7 +104,7 @@ export function DesignPanel(props: {
               submit();
             }
           }}
-          placeholder="Por ejemplo: más oscuro y con la letra de un libro antiguo, que la obra respire"
+          placeholder="Por ejemplo: más oscuro y con letra de libro antiguo, que empiece por mis piezas y añade una sección sobre mi proceso"
           disabled={!!busy || props.autoDesigning}
         />
         <div className="design-panel__actions">

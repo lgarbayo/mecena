@@ -464,6 +464,10 @@ html, body { background: #fff; }
   .dossier-wall .dossier > .sheet.contact { background: var(--ink); }
 }
 
+.dossier-wall .label__links { margin-top: 0.6rem; font-family: var(--sans); font-size: var(--fs-small); }
+.dossier-wall .label__links a { color: var(--ink); text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+@media print { .dossier-wall .label__links a::after { content: " " attr(href); color: var(--granite); word-break: break-all; } }
+
 /* ---- Design (design.ts). Colours and faces arrive as custom properties from DossierDocument; these rules
    turn the design's choices (cover, works, frame, rhythm, texture) into layout. Only active with [data-design]. */
 .dossier-wall ::selection { background: var(--accent-soft); color: var(--ink); }

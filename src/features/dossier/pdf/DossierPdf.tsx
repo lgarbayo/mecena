@@ -12,6 +12,8 @@ import type { BusinessView, CreatorView, CvGroup, DossierView, FactRow, WorkView
 import type { PdfImage } from "./images";
 import { styleTokens, type StyleTokens } from "../style";
 import { DEFAULT_TITLES, type DossierDesign } from "../design";
+import { linkLabel, vocabFor } from "../arts";
+import { planCreator } from "../structure";
 import type { PdfFaces } from "./fonts";
 
 export type PdfTokens = StyleTokens & { design?: DossierDesign };
@@ -206,9 +208,17 @@ function Label({ st, work, cat }: { st: S; work: WorkView; cat: string }) {
         {work.year ? `, ${work.year}` : ""}
       </Text>
       {work.technique ? <Text style={st.s.muted}>{work.technique}</Text> : null}
-      {work.size ? <Text style={st.s.muted}>{work.size}</Text> : null}
+      {work.size || work.duration ? <Text style={st.s.muted}>{work.size || work.duration}</Text> : null}
+      {work.credits ? <Text style={st.s.muted}>{work.credits}</Text> : null}
+      {work.venue ? <Text style={st.s.muted}>{work.venue}</Text> : null}
       <Text style={st.s.labelCat}>{cat}</Text>
       {work.concept ? <Text style={st.s.concept}>{work.concept}</Text> : null}
+      {work.links.map((l) => (
+        // Clickable in the PDF, readable on paper.
+        <Link key={l} src={l} style={[st.s.labelCat, { color: st.t.ink, textDecoration: "none", marginTop: 4 }]}>
+          {linkLabel(l)}: {l.replace(/^https?:\/\/(www\.)?/, "")}
+        </Link>
+      ))}
     </View>
   );
 }
@@ -350,54 +360,80 @@ function CvColumn({ st, groups }: { st: S; groups: CvGroup[] }) {
 
 // ---------------------------------------------------------------- documents
 
-export function CreatorPdf({ view, images, st }: { view: CreatorView; images: ImageMap; st: S }) {
+export function CreatorPdf({ view: full, images, st }: { view: CreatorView; images: ImageMap; st: S }) {
+  const { view, blocks } = planCreator(full, st.t.design);
+  const vocab = vocabFor(view.family);
   const year = view.date.split(" ").pop();
   const [left, right] = splitColumns(view.cv);
-  return (
-    <>
-      <Cover st={st} view={view} images={images} kicker="Dossier artístico" meta={[view.discipline, view.city]} />
-      {view.statement.length || view.bio.length ? (
-        <Page size="A4" style={st.s.page}>
-          {view.statement.length ? (
-            <Ruled st={st} name="Declaración" sub="artística">
-              <Prose st={st} paras={view.statement} />
-              <Text style={st.s.signature}>{[view.name, view.city, year].filter(Boolean).join(", ")}</Text>
+
+  // Short text blocks (statement, bio, sections of their own) share a page until a long block breaks it.
+  const pages: ReactNode[] = [];
+  let text: ReactNode[] = [];
+  const flush = () => {
+    if (!text.length) return;
+    pages.push(
+      <Page key={`text-${pages.length}`} size="A4" style={st.s.page}>
+        {text}
+        <Folio st={st} />
+      </Page>,
+    );
+    text = [];
+  };
+  const addText = (key: string, node: ReactNode) => text.push(<View key={key} style={text.length ? st.s.block : undefined}>{node}</View>);
+
+  for (const b of blocks) {
+    if (b.kind === "statement" && view.statement.length) {
+      addText(
+        "statement",
+        <Ruled st={st} name={b.title}>
+          <Prose st={st} paras={view.statement} />
+          <Text style={st.s.signature}>{[view.name, view.city, year].filter(Boolean).join(", ")}</Text>
+        </Ruled>,
+      );
+    } else if (b.kind === "bio" && view.bio.length) {
+      addText(
+        "bio",
+        <Ruled st={st} name={b.title}>
+          <Prose st={st} paras={view.bio} leadFirst={false} />
+        </Ruled>,
+      );
+    } else if (b.kind === "custom") {
+      addText(
+        b.id,
+        <Ruled st={st} name={b.title}>
+          <Prose st={st} paras={b.paras} leadFirst={false} />
+        </Ruled>,
+      );
+    } else if (b.kind === "works") {
+      flush();
+      view.series.forEach((s, i) =>
+        pages.push(
+          <Page key={`series-${s.id}`} size="A4" style={st.s.page}>
+            <Ruled st={st} name={b.title} sub={view.series.length > 1 ? `${vocab.series} ${i + 1} de ${view.series.length}` : undefined}>
+              <View wrap={false}>
+                <Text style={st.s.sectionTitle}>{s.title}</Text>
+                {s.years ? <Text style={st.s.years}>{s.years}</Text> : null}
+                {s.description.length ? (
+                  <View style={st.s.seriesText}>
+                    <Prose st={st} paras={s.description} leadFirst={false} />
+                  </View>
+                ) : (
+                  <View style={{ height: 10 }} />
+                )}
+              </View>
+              {s.works.map((w) => (
+                <WorkRow key={w.id} st={st} work={w} images={images} cat={`${vocab.cat} ${w.catNo}`} />
+              ))}
             </Ruled>
-          ) : null}
-          {view.bio.length ? (
-            <View style={view.statement.length ? st.s.block : undefined}>
-              <Ruled st={st} name="Biografía">
-                <Prose st={st} paras={view.bio} leadFirst={false} />
-              </Ruled>
-            </View>
-          ) : null}
-          <Folio st={st} />
-        </Page>
-      ) : null}
-      {view.series.map((s, i) => (
-        <Page key={s.id} size="A4" style={st.s.page}>
-          <Ruled st={st} name="Obra" sub={view.series.length > 1 ? `Serie ${i + 1} de ${view.series.length}` : undefined}>
-            <View wrap={false}>
-              <Text style={st.s.sectionTitle}>{s.title}</Text>
-              {s.years ? <Text style={st.s.years}>{s.years}</Text> : null}
-              {s.description.length ? (
-                <View style={st.s.seriesText}>
-                  <Prose st={st} paras={s.description} leadFirst={false} />
-                </View>
-              ) : (
-                <View style={{ height: 10 }} />
-              )}
-            </View>
-            {s.works.map((w) => (
-              <WorkRow key={w.id} st={st} work={w} images={images} cat={`Cat. ${w.catNo}`} />
-            ))}
-          </Ruled>
-          <Folio st={st} />
-        </Page>
-      ))}
-      {view.cv.length ? (
-        <Page size="A4" style={st.s.page}>
-          <Ruled st={st} name="Trayectoria">
+            <Folio st={st} />
+          </Page>,
+        ),
+      );
+    } else if (b.kind === "cv" && view.cv.length) {
+      flush();
+      pages.push(
+        <Page key="cv" size="A4" style={st.s.page}>
+          <Ruled st={st} name={b.title}>
             <View style={st.s.cvCols}>
               <CvColumn st={st} groups={left} />
               <View style={{ width: mm(9) }} />
@@ -405,10 +441,18 @@ export function CreatorPdf({ view, images, st }: { view: CreatorView; images: Im
             </View>
           </Ruled>
           <Folio st={st} />
-        </Page>
-      ) : null}
+        </Page>,
+      );
+    }
+  }
+  flush();
+
+  return (
+    <>
+      <Cover st={st} view={view} images={images} kicker="Dossier artístico" meta={[view.discipline, view.city]} />
+      {pages}
       {view.contact.length ? (
-        <Contact st={st} name={view.name} rows={view.contact} colophon={`Obras y textos de ${view.name || "la artista"}. Fotografías de la obra hechas por su autora o autor, sin retoques. Dossier maquetado con Mecena.`} />
+        <Contact st={st} name={view.name} rows={view.contact} colophon={`Obras y textos de ${view.name || "la artista"}. ${vocab.credit} Dossier maquetado con Mecena.`} />
       ) : null}
     </>
   );
