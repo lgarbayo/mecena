@@ -1,19 +1,130 @@
-// STUB (scaffold). Owned by WP-02: replace `real` with a Claude vision call (llm.structured + imageBlock, tier "fast").
-import type { AiSlice } from "@/contracts";
+/**
+ * Describe work (WP-02): photo + the artist's voice note -> technical sheet + light crop suggestion.
+ * Trust rules: we never generate or alter the artwork (the crop is applied visually, with CSS, on the
+ * untouched original) and nothing here trains on user works. Facts come from the artist's words;
+ * the image may only add technique/support when evident. Measures are never inferred from pixels.
+ */
+import { z } from "zod";
+import { CropSuggestion, DescribeWorkResult, TechnicalSheet, type AiSlice, type DescribeWorkInput } from "@/contracts";
+import { imageBlock, structured } from "@/server/ai/llm";
+import { IDENTITY_CROP } from "./crop";
+import { mentionsDimensions, parseVoiceSheet, sheetFromVoice, UNTITLED } from "./parse";
+
+export { IDENTITY_CROP };
+
+export const DESCRIBE_WORK_SYSTEM = [
+  "Ficha técnica de una obra. Toma título/serie/concepto de lo que dice el autor; deduce técnica y soporte de la imagen solo si es evidente; medidas solo si las dice. Sugiere recorte del marco de la obra dentro de la foto (0..1) y rotación; si dudas, recorte identidad. Nunca describas cambios a la obra.",
+  "",
+  "Reglas:",
+  "- Escribe en español de España. El concepto, en primera persona y con las palabras del autor (1-3 frases); si no dice nada sobre el sentido de la pieza, deja concept vacío.",
+  "- Campo que el autor no dice y la imagen no muestra con claridad: déjalo vacío (cadena vacía o ausente). Nunca inventes año, medidas, serie ni título.",
+  '- Si no hay título, usa "Sin título".',
+  "- dimensions con formato \"50 x 70 cm\" (alto x ancho, unidad incluida).",
+  "- crop: rectángulo normalizado (x, y, width, height en 0..1 respecto a la foto original) que encuadra solo la obra, quitando fondo, pared o mesa. rotationDeg entre -10 y 10 para enderezar. Si la obra ya ocupa la foto o dudas, devuelve {x:0,y:0,width:1,height:1,rotationDeg:0}.",
+  "- Solo recortamos y enderezamos la foto: nunca propongas retocar, repintar, limpiar ni completar la obra.",
+  "- confidence: 0..1, tu seguridad global en la ficha.",
+  "- Si es una pyme (producto, taller, local), title es el nombre del producto o espacio y technique el material o proceso.",
+].join("\n");
+
+// Model-facing schema: plain numbers (the contract's .default() and bounds are re-applied by normalise()).
+const ModelSheet = z.object({
+  title: z.string(),
+  year: z.number().int().optional(),
+  technique: z.string().optional(),
+  dimensions: z.string().optional(),
+  series: z.string().optional(),
+  concept: z.string().optional(),
+});
+const ModelResult = z.object({
+  sheet: ModelSheet,
+  crop: z.object({ x: z.number(), y: z.number(), width: z.number(), height: z.number(), rotationDeg: z.number() }),
+  confidence: z.number(),
+});
+
+const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Number.isFinite(n) ? n : lo));
+
+/** Keep crops sane: inside the photo, not tiny, small rotation. Anything odd -> identity (trust first). */
+export function sanitizeCrop(c: Partial<CropSuggestion> | undefined): CropSuggestion {
+  if (!c) return { ...IDENTITY_CROP };
+  const x = clamp(c.x ?? 0, 0, 1);
+  const y = clamp(c.y ?? 0, 0, 1);
+  const width = clamp(c.width ?? 1, 0, 1 - x);
+  const height = clamp(c.height ?? 1, 0, 1 - y);
+  const rotationDeg = Math.round(clamp(c.rotationDeg ?? 0, -10, 10) * 10) / 10;
+  if (width * height < 0.25 || width < 0.4 || height < 0.4) return { ...IDENTITY_CROP };
+  return CropSuggestion.parse({ x: round3(x), y: round3(y), width: round3(width), height: round3(height), rotationDeg });
+}
+const round3 = (n: number) => Math.round(n * 1000) / 1000;
+
+const blank = (s: string | undefined) => (s && s.trim() ? s.trim() : undefined);
+
+/** "óleo" (said) + "óleo sobre lienzo" (seen) -> the more specific one; a different technique -> the artist's. */
+function mergeTechnique(said: string | undefined, seen: string | undefined): string | undefined {
+  if (!said) return seen;
+  if (seen && seen.toLocaleLowerCase("es-ES").startsWith(said.toLocaleLowerCase("es-ES"))) return seen;
+  return said;
+}
+
+/**
+ * Merge the model's sheet with what the artist explicitly said. The artist's words win for every
+ * factual field; measures are dropped unless the note mentions them (no hallucinated sizes).
+ */
+export function guardSheet(model: Partial<TechnicalSheet>, voice: string | undefined, now = new Date()): TechnicalSheet {
+  const said = parseVoiceSheet(voice);
+  const year = said.year ?? model.year;
+  const sheet: TechnicalSheet = {
+    title: said.title ?? blank(model.title) ?? UNTITLED,
+    year: year && year >= 1900 && year <= now.getFullYear() + 1 && (said.year || voice?.includes(String(year))) ? year : undefined,
+    technique: mergeTechnique(said.technique, blank(model.technique)),
+    dimensions: said.dimensions ?? (mentionsDimensions(voice) ? blank(model.dimensions) : undefined),
+    series: said.series ?? (voice && model.series && voice.toLowerCase().includes(model.series.toLowerCase()) ? blank(model.series) : undefined),
+    concept: blank(model.concept) ?? said.concept,
+  };
+  return TechnicalSheet.parse(Object.fromEntries(Object.entries(sheet).filter(([, v]) => v !== undefined)));
+}
+
+function userPrompt(input: DescribeWorkInput): string {
+  const who = input.profile
+    ? `Autor/a: ${input.profile.displayName || "(sin nombre)"}${input.profile.disciplines?.length ? ` · disciplinas: ${input.profile.disciplines.join(", ")}` : ""}`
+    : "";
+  return [
+    `Tipo de perfil: ${input.kind === "business" ? "pyme / autónomo (producto, taller o local)" : "creador/a (obra artística)"}`,
+    who,
+    input.voiceDescription?.trim() ? `Lo que dice el autor sobre esta pieza: «${input.voiceDescription.trim()}»` : "El autor no ha dicho nada sobre esta pieza: no inventes título, año, medidas, serie ni concepto.",
+    "Devuelve la ficha técnica y el recorte sugerido.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+async function mockDescribe({ voiceDescription }: DescribeWorkInput): Promise<DescribeWorkResult> {
+  const sheet = sheetFromVoice(voiceDescription);
+  const filled = Object.keys(parseVoiceSheet(voiceDescription)).length;
+  return DescribeWorkResult.parse({ sheet, crop: { ...IDENTITY_CROP }, confidence: Math.min(0.9, 0.3 + filled * 0.1) });
+}
 
 export const worksAi: AiSlice<"describeWork"> = {
-  mock: {
-    async describeWork({ voiceDescription }) {
-      return {
-        sheet: { title: voiceDescription?.split(/[.,]/)[0]?.trim() || "Sin título", concept: voiceDescription },
-        crop: { x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 },
-        confidence: 0.5,
-      };
-    },
-  },
+  mock: { describeWork: mockDescribe },
   real: {
     async describeWork(input) {
-      return worksAi.mock.describeWork(input); // TODO(WP-02)
+      try {
+        const out = await structured({
+          tier: "fast",
+          system: DESCRIBE_WORK_SYSTEM,
+          user: [imageBlock(input.imageBase64, input.mediaType), { type: "text", text: userPrompt(input) }],
+          schema: ModelResult,
+          maxTokens: 2000,
+        });
+        return DescribeWorkResult.parse({
+          sheet: guardSheet(out.sheet, input.voiceDescription),
+          crop: sanitizeCrop(out.crop),
+          confidence: clamp(out.confidence, 0, 1),
+        });
+      } catch (e) {
+        // AiError (refusal / parse / API) or anything unexpected: the demo must keep going on the mock.
+        console.warn("[works] describeWork fell back to the mock:", e instanceof Error ? e.message : e);
+        return mockDescribe(input);
+      }
     },
   },
 };
