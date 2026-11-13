@@ -1,0 +1,23 @@
+/* WP-08 simulated jury page. Tokens from app/globals.css. */
+.scoreBox { text-align: center; margin: 8px 0 16px; }
+.score { font-family: var(--serif); font-size: 5.5rem; line-height: 1; font-variant-numeric: tabular-nums; margin: 0; }
+.score small { font-size: 1.6rem; color: var(--ink-2); }
+.delta { display: inline-block; margin-top: 6px; padding: 2px 10px; border-radius: 999px; background: #e2efe7; color: var(--ok); font-weight: 700; }
+.summary { color: var(--ink-2); margin: 8px auto 0; max-width: 36ch; }
+.judges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+
+.crit { margin: 14px 0; }
+.critHead { display: flex; justify-content: space-between; gap: 10px; font-weight: 700; }
+.track { height: 8px; border-radius: 4px; background: var(--paper-2); overflow: hidden; margin: 6px 0; }
+.fill { height: 100%; background: var(--accent); transition: width 900ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.comments { list-style: none; padding: 0; margin: 4px 0 0; font-size: 0.88rem; color: var(--ink-2); }
+.comments li { margin: 2px 0; }
+.comments b { color: var(--ink); font-weight: 600; }
+.fix { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.fix:last-child { border-bottom: 0; }
+.fix input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--accent); flex: none; }
+.changed { white-space: pre-wrap; background: #e2efe7; border-left: 3px solid var(--ok); padding: 6px 10px; border-radius: 6px; margin: 8px 0; font-size: 0.92rem; }
+.disclaimer { color: var(--ink-2); font-size: 0.82rem; text-align: center; margin: 16px 0 8px; }
+.actions { position: sticky; bottom: 72px; display: grid; gap: 8px; padding: 12px 0; background: linear-gradient(to bottom, transparent, var(--paper) 30%); }
+.error { color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }

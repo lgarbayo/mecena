@@ -11,7 +11,7 @@ owns:
   - src/features/jury/**
   - tests/drafting/**
   - tests/jury/**
-status: pending
+status: review
 hours: 3
 criteria: [Applied AI depth, Live demo wow, Sponsor fit (RevenueCat)]
 ---

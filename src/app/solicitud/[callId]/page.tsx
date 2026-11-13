@@ -1,12 +1,7 @@
-// STUB (scaffold). Owned by WP-08.
-import { PageTitle, Pending } from "@/components/ui";
+// Owned by WP-08. Draft written from the user's own words, behind the paywall.
+import { DraftPage } from "@/features/drafting/ui/DraftPage";
 
 export default async function Page({ params }: { params: Promise<{ callId: string }> }) {
   const { callId } = await params;
-  return (
-    <>
-      <PageTitle kicker="Solicitud">Prepárame la solicitud</PageTitle>
-      <Pending wp="WP-08" what={`Borrador escrito con tus palabras (tras el paywall). (${decodeURIComponent(callId)})`} />
-    </>
-  );
+  return <DraftPage callId={decodeURIComponent(callId)} />;
 }
