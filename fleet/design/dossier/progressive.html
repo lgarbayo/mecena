@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dossier en construcción</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Schibsted+Grotesk:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="dossier.css">
+<style>
+  /* Demo stage only: transcript panel beside the growing dossier. */
+  .stage { display: grid; grid-template-columns: 340px minmax(0, 1fr); min-height: 100vh; }
+  .transcript {
+    position: sticky; top: 0; height: 100vh; overflow: auto;
+    background: var(--ink); color: var(--paper);
+    padding: 28px 24px; font-family: var(--sans);
+  }
+  .transcript__status { font-size: 0.8125rem; color: #a9aeb2; margin-bottom: 1.5rem; display: flex; justify-content: space-between; gap: 1rem; }
+  .transcript__status b { color: var(--paper); font-weight: 500; }
+  .transcript__lines { display: flex; flex-direction: column; gap: 1rem; }
+  .transcript__lines p { font-family: var(--serif); font-size: 1.0625rem; line-height: 1.45; }
+  .transcript__lines .is-photo { font-family: var(--sans); font-size: 0.8125rem; color: #c9c7a0; }
+  .replay {
+    margin-top: 2rem; font: 500 0.875rem var(--sans); color: var(--ink); background: var(--paper);
+    border: 0; padding: 0.6rem 1rem; cursor: pointer;
+  }
+  .replay:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  @media (max-width: 720px) {
+    .stage { grid-template-columns: minmax(0, 1fr); }
+    .transcript { position: fixed; left: 0; right: 0; bottom: 0; top: auto; height: auto; max-height: 34vh; padding: 14px 16px; z-index: 2; }
+    .dossier { padding-bottom: 40vh; }
+    .transcript__lines p:not(:last-child) { display: none; }
+    .transcript__status { margin-bottom: 0.5rem; }
+    .replay { margin-top: 0.75rem; }
+  }
+  @media print { .transcript { display: none; } .stage { display: block; } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.06" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="28"/>
+    </filter>
+    <filter id="rough-fine">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="6"/>
+    </filter>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 0.15  0 0 0 0 0.16  0 0 0 0 0.17  0 0 0 0.22 0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- Stand-ins for the photos the artist takes with the phone. -->
+<template id="img-w1">
+  <svg viewBox="0 0 560 760" role="img" aria-label="Marea baixa I">
+    <rect width="560" height="760" fill="#ddd7c8"/>
+    <g filter="url(#rough)"><rect x="-20" y="-20" width="600" height="300" fill="#73858f"/><rect x="-20" y="270" width="600" height="14" fill="#a9874f"/><rect x="-20" y="330" width="600" height="160" fill="#c9c1ae"/></g>
+    <g filter="url(#rough-fine)" stroke="#45503f" stroke-width="5" fill="none" opacity=".8"><path d="M40 560 q60 -30 120 0 t120 0 t120 0 t120 0"/><path d="M20 620 q60 -20 120 0 t120 0 t120 0 t120 0" opacity=".6"/></g>
+    <rect width="560" height="760" filter="url(#grain)"/>
+  </svg>
+</template>
+<template id="img-w2">
+  <svg viewBox="0 0 700 500" role="img" aria-label="Bajamar en Corrubedo">
+    <rect width="700" height="500" fill="#ebe7dc"/>
+    <g filter="url(#rough)"><rect x="-20" y="140" width="740" height="60" fill="#9fb0b4" opacity=".8"/><rect x="-20" y="230" width="740" height="40" fill="#c3b79b"/><rect x="-20" y="300" width="740" height="220" fill="#d8ceb6"/></g>
+    <g stroke="#2f3638" stroke-width="1.4" fill="none" opacity=".75" filter="url(#rough-fine)"><path d="M60 330 L640 322"/><path d="M60 352 L600 346"/><path d="M90 376 L660 370"/><path d="M120 404 L540 398"/><path d="M60 430 L620 426"/></g>
+    <circle cx="520" cy="96" r="34" fill="#c99a52" opacity=".55" filter="url(#rough-fine)"/>
+    <rect width="700" height="500" filter="url(#grain)"/>
+  </svg>
+</template>
+
+<div class="stage">
+  <aside class="transcript no-print" aria-live="polite">
+    <p class="transcript__status"><span>Escuchando</span><span><span id="verb">Escribiendo:</span> <b id="now">portada</b></span></p>
+    <div class="transcript__lines" id="lines"></div>
+    <button class="replay" id="replay" type="button">Repetir la demo</button>
+  </aside>
+
+  <main class="dossier" data-kind="creator">
+
+    <section class="sheet cover" data-section="cover" data-state="pending">
+      <header class="cover__head"><span>Dossier artístico</span><span>Noviembre 2026</span></header>
+      <figure class="cover__work">
+        <div class="frame" data-slot-image="profile.coverWork.imageUrl" data-hint="Aquí irá tu obra de portada"></div>
+      </figure>
+      <div class="cover__text">
+        <h1 class="cover__name" data-slot="profile.name"></h1>
+        <p class="cover__meta"><span data-slot="profile.discipline" style="--skw:16ch"></span><span data-slot="profile.city" style="--skw:8ch"></span></p>
+        <p class="cover__line" data-slot="profile.tagline" style="--lines:2"></p>
+      </div>
+      <p class="hint">Di tu nombre, a qué te dedicas y dónde vives.</p>
+    </section>
+
+    <section class="sheet ruled" data-section="statement" data-state="pending">
+      <h2 class="rail"><span class="rail__name">Statement</span></h2>
+      <div class="main prose">
+        <p class="lead" data-slot="profile.statement.0" style="--lines:3"></p>
+        <p data-slot="profile.statement.1" style="--lines:4"></p>
+        <p class="hint">Cuéntame de dónde viene tu trabajo y cómo lo haces.</p>
+      </div>
+    </section>
+
+    <section class="sheet ruled series" data-section="series" data-state="pending">
+      <h2 class="rail"><span class="rail__name">Obra</span></h2>
+      <div class="main">
+        <header class="series__head">
+          <h3 class="section-title" data-slot="series[0].title" style="--skw:9ch"></h3>
+          <p class="series__years" data-slot="series[0].years" style="--skw:8ch"></p>
+          <p class="series__text prose" data-slot="series[0].description" style="--lines:3"></p>
+        </header>
+        <ol class="works">
+          <li class="work">
+            <div class="frame" data-slot-image="series[0].works[0].imageUrl" data-img="img-w1" data-hint="Haz una foto de la obra"></div>
+            <div class="label">
+              <p class="label__cat">Cat. 1</p>
+              <h4 class="label__title"><cite data-slot="series[0].works[0].title"></cite> <span data-slot="series[0].works[0].year" style="--skw:4ch"></span></h4>
+              <p class="label__tech" data-slot="series[0].works[0].technique" style="--skw:90%"></p>
+              <p class="label__size" data-slot="series[0].works[0].size" style="--skw:8ch"></p>
+              <p class="label__concept" data-slot="series[0].works[0].concept" style="--lines:3"></p>
+            </div>
+          </li>
+          <li class="work">
+            <div class="frame" data-slot-image="series[0].works[1].imageUrl" data-img="img-w2" data-hint="Haz una foto de la obra"></div>
+            <div class="label">
+              <p class="label__cat">Cat. 2</p>
+              <h4 class="label__title"><cite data-slot="series[0].works[1].title"></cite> <span data-slot="series[0].works[1].year" style="--skw:4ch"></span></h4>
+              <p class="label__tech" data-slot="series[0].works[1].technique" style="--skw:90%"></p>
+              <p class="label__size" data-slot="series[0].works[1].size" style="--skw:8ch"></p>
+              <p class="label__concept" data-slot="series[0].works[1].concept" style="--lines:3"></p>
+            </div>
+          </li>
+        </ol>
+        <p class="hint">Habla de una serie y fotografía sus obras: título, año, técnica y medidas.</p>
+      </div>
+    </section>
+
+    <section class="sheet ruled" data-section="cv" data-state="pending">
+      <h2 class="rail"><span class="rail__name">Trayectoria</span></h2>
+      <div class="main">
+        <div class="cv">
+          <div class="cv__group">
+            <h3 class="cv__title">Formación</h3>
+            <ol class="cv__list">
+              <li><span class="cv__year" data-slot="cv.education[0].year" style="--skw:3ch"></span><span data-slot="cv.education[0].text" style="--skw:90%"></span></li>
+            </ol>
+          </div>
+          <div class="cv__group">
+            <h3 class="cv__title">Exposiciones individuales</h3>
+            <ol class="cv__list">
+              <li><span class="cv__year" data-slot="cv.soloShows[0].year" style="--skw:3ch"></span><span data-slot="cv.soloShows[0].text" style="--skw:80%"></span></li>
+            </ol>
+          </div>
+        </div>
+        <p class="hint">¿Dónde estudiaste? ¿Dónde has expuesto?</p>
+      </div>
+    </section>
+
+    <section class="sheet contact" data-section="contact" data-state="pending">
+      <div class="ruled">
+        <h2 class="rail"><span class="rail__name">Contacto</span></h2>
+        <div class="main">
+          <p class="contact__name" data-slot="profile.name" style="--skw:60%"></p>
+          <dl class="facts">
+            <dt>Correo</dt><dd data-slot="contact.email" style="--skw:22ch"></dd>
+            <dt>Instagram</dt><dd data-slot="contact.instagram" style="--skw:14ch"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="hint">Deja un correo o una red donde puedan encontrarte.</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* Simulated interview. In the app, each AI patch ({section, slot, value}) calls fill() the same way. */
+const STEPS = [
+  { section: "cover", say: "Me llamo Antía Mosquera Bouzas. Soy pintora, hago sobre todo pintura y obra sobre papel, y vivo en A Coruña.",
+    fill: { "profile.name": "Antía Mosquera Bouzas", "profile.discipline": "Pintura y obra sobre papel", "profile.city": "A Coruña" } },
+  { section: "statement", say: "Crecí en Cee, viendo la ría vaciarse dos veces al día. Pinto lo que la marea deja al retirarse.",
+    fill: { "profile.statement.0": "Crecí en Cee, en una casa desde la que se veía la ría vaciarse dos veces al día. Mi trabajo empieza ahí: en mirar lo que queda cuando el agua se va.",
+            "profile.statement.1": "Pinto sobre lino y papel de algodón con capas muy diluidas que dejo secar en horizontal, para que el pigmento se deposite como lo hace el limo. Mezclo arena de la playa de Lariño, cera fría y grafito.",
+            "profile.tagline": "Pinto lo que la marea deja al retirarse: restos, sal y el tiempo que tarda en volver." } },
+  { section: "series", say: "La serie en la que estoy ahora se llama Marea baixa. La empecé en 2023, caminando en bajamar entre Corrubedo y Lariño.",
+    fill: { "series[0].title": "Marea baixa", "series[0].years": "2023–2025",
+            "series[0].description": "Pinturas y obras sobre papel hechas a partir de caminatas en bajamar entre Corrubedo y Lariño. Cada pieza conserva arena del lugar que nombra." } },
+  { section: "series", photo: "Foto 1 de 2: enderezada y recortada", say: "Esta es Marea baixa I, de 2023. Acrílico y arena sobre papel de algodón, 76 por 56.",
+    fill: { "series[0].works[0].imageUrl": true, "series[0].works[0].title": "Marea baixa I", "series[0].works[0].year": "2023",
+            "series[0].works[0].technique": "Acrílico y arena sobre papel de algodón", "series[0].works[0].size": "76 × 56 cm",
+            "series[0].works[0].concept": "La línea ocre marca hasta dónde llegó el agua la mañana en que empecé a pintarla.",
+            "profile.coverWork.imageUrl": "img-w1" } },
+  { section: "series", photo: "Foto 2 de 2: enderezada y recortada", say: "Y esta, Bajamar en Corrubedo, de 2024. Gouache y grafito, 50 por 70. La dibujé allí mismo.",
+    fill: { "series[0].works[1].imageUrl": true, "series[0].works[1].title": "Bajamar en Corrubedo", "series[0].works[1].year": "2024",
+            "series[0].works[1].technique": "Gouache y grafito sobre papel", "series[0].works[1].size": "50 × 70 cm",
+            "series[0].works[1].concept": "Dibujada in situ durante las dos horas de bajamar." } },
+  { section: "cv", say: "Estudié Bellas Artes en Pontevedra, acabé en 2014. Y el año pasado expuse Bajamar en la Galería Arcada, en Vigo.",
+    fill: { "cv.education[0].year": "2014", "cv.education[0].text": "Grado en Bellas Artes. Universidade de Vigo, Pontevedra",
+            "cv.soloShows[0].year": "2025", "cv.soloShows[0].text": "Bajamar. Galería Arcada, Vigo" } },
+  { section: "contact", say: "Me podéis escribir a estudio@antiamosquera.gal, y en Instagram estoy como antiamosquera.",
+    fill: { "profile.name": "Antía Mosquera Bouzas", "contact.email": "estudio@antiamosquera.gal", "contact.instagram": "@antiamosquera" } },
+];
+
+const NAMES = { cover: "portada", statement: "statement", series: "obra", cv: "trayectoria", contact: "contacto" };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let run = 0;
+
+function fill(section, slot, value) {
+  const scope = document.querySelector(`[data-section="${section}"]`);
+  const imgFrame = document.querySelector(`[data-slot-image="${slot}"]`);
+  if (imgFrame) {
+    const tpl = document.getElementById(typeof value === "string" ? value : imgFrame.dataset.img);
+    imgFrame.replaceChildren(tpl.content.cloneNode(true));
+    return;
+  }
+  (scope.querySelectorAll(`[data-slot="${slot}"]`).length ? scope : document)
+    .querySelectorAll(`[data-slot="${slot}"]`).forEach(el => {
+      el.textContent = value;
+      el.classList.remove("just-filled"); void el.offsetWidth; el.classList.add("just-filled");
+    });
+}
+
+function say(text, photo) {
+  const lines = document.getElementById("lines");
+  if (photo) { const p = document.createElement("p"); p.className = "is-photo"; p.textContent = photo; lines.append(p); }
+  const p = document.createElement("p"); p.textContent = text; lines.append(p);
+  p.scrollIntoView({ block: "nearest" });
+}
+
+function reset() {
+  document.getElementById("lines").replaceChildren();
+  document.getElementById("verb").textContent = "Escribiendo:";
+  document.querySelectorAll("[data-slot]").forEach(el => el.textContent = "");
+  document.querySelectorAll("[data-slot-image]").forEach(el => el.replaceChildren());
+  document.querySelectorAll("[data-section]").forEach(el => el.dataset.state = "pending");
+}
+
+async function play() {
+  const me = ++run;
+  reset();
+  await wait(600);
+  for (let i = 0; i < STEPS.length; i++) {
+    if (me !== run) return;
+    const step = STEPS[i];
+    const sec = document.querySelector(`[data-section="${step.section}"]`);
+    document.getElementById("now").textContent = NAMES[step.section];
+    sec.dataset.state = "filling";
+    if (innerWidth > 720) sec.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    say(step.say, step.photo);
+    await wait(reduce ? 200 : 900);
+    for (const [slot, value] of Object.entries(step.fill)) {
+      if (me !== run) return;
+      fill(step.section, slot, value);
+      await wait(reduce ? 50 : 320);
+    }
+    const next = STEPS[i + 1];
+    // A ready section hides slots that are still empty; late arrivals (cover tagline, cover photo) still appear.
+    if (!next || next.section !== step.section) sec.dataset.state = "ready";
+  }
+  document.getElementById("verb").textContent = "";
+  document.getElementById("now").textContent = "Listo para exportar";
+  scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+}
+
+document.getElementById("replay").addEventListener("click", play);
+play();
+</script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Obradoiro Nordés · Dossier de empresa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Schibsted+Grotesk:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="dossier.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="rough-fine">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 0.15  0 0 0 0 0.16  0 0 0 0 0.17  0 0 0 0.2 0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="wood">
+      <feTurbulence type="fractalNoise" baseFrequency="0.004 0.12" numOctaves="3" seed="2"/>
+      <feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.22  0 0 0 0 0.12  0 0 0 0.35 0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+
+<main class="dossier" data-kind="business">
+
+  <!-- ============ COVER ============ -->
+  <section class="sheet cover" data-section="cover" data-state="ready">
+    <div class="call-header" data-variant="call" hidden>
+      <span>Dossier para: <span class="call-header__name" data-slot="variant.callName"></span></span>
+      <span class="call-header__ref" data-slot="variant.callRef"></span>
+    </div>
+    <header class="cover__head">
+      <span>Dossier de empresa</span>
+      <span data-slot="meta.date">Noviembre 2026</span>
+    </header>
+    <figure class="cover__work">
+      <div class="frame" data-slot-image="company.coverImageUrl" data-hint="Foto del taller o de un proyecto">
+        <svg viewBox="0 0 800 560" role="img" aria-label="Estanterías de la biblioteca de Sada">
+          <rect width="800" height="560" fill="#e9e6df"/>
+          <rect y="430" width="800" height="130" fill="#cfc6b5"/>
+          <g fill="#b98c5d">
+            <rect x="90" y="70" width="620" height="370"/>
+          </g>
+          <rect x="90" y="70" width="620" height="370" filter="url(#wood)"/>
+          <g fill="#efe9de">
+            <rect x="110" y="90" width="180" height="100"/><rect x="310" y="90" width="180" height="100"/><rect x="510" y="90" width="180" height="100"/>
+            <rect x="110" y="210" width="180" height="100"/><rect x="310" y="210" width="180" height="100"/><rect x="510" y="210" width="180" height="100"/>
+            <rect x="110" y="330" width="180" height="90"/><rect x="310" y="330" width="180" height="90"/><rect x="510" y="330" width="180" height="90"/>
+          </g>
+          <g fill="#4f6e7d" opacity=".85">
+            <rect x="122" y="118" width="14" height="72"/><rect x="140" y="110" width="12" height="80"/><rect x="156" y="124" width="18" height="66"/>
+            <rect x="330" y="236" width="14" height="74"/><rect x="348" y="244" width="16" height="66"/>
+            <rect x="530" y="350" width="12" height="70"/><rect x="546" y="358" width="18" height="62"/><rect x="568" y="346" width="12" height="74"/>
+          </g>
+          <g fill="#8a6a4a"><rect x="190" y="132" width="16" height="58"/><rect x="420" y="250" width="22" height="60"/><rect x="620" y="122" width="14" height="68"/></g>
+          <rect width="800" height="560" filter="url(#grain)"/>
+        </svg>
+      </div>
+      <figcaption class="cover__caption">Biblioteca municipal de Sada, 2025. Roble y castaño gallego</figcaption>
+    </figure>
+    <div class="cover__text">
+      <h1 class="cover__name" data-slot="company.name">Obradoiro Nordés</h1>
+      <p class="cover__meta">
+        <span data-slot="company.activityShort">Carpintería y mobiliario a medida</span>
+        <span data-slot="company.city">Betanzos, A Coruña</span>
+      </p>
+      <p class="cover__line" data-slot="company.tagline">Diseñamos, fabricamos y montamos mobiliario en madera gallega para bibliotecas, comercios y viviendas.</p>
+    </div>
+  </section>
+
+  <!-- ============ ACTIVITY ============ -->
+  <section class="sheet ruled" data-section="activity" data-state="ready">
+    <h2 class="rail"><span class="rail__name">Actividad</span></h2>
+    <div class="main stack">
+      <div class="prose" data-slot-html="company.activity">
+        <p class="lead">Somos un taller de seis personas que trabaja de principio a fin: medimos, dibujamos, fabricamos en nuestra nave de Betanzos y montamos en obra.</p>
+        <p>Desde 2016 hemos entregado más de 150 proyectos, la mayoría para clientes públicos y comercio local de las comarcas de A Coruña. Trabajamos sobre todo con roble, castaño y pino del país, comprado a aserraderos a menos de 80 km del taller.</p>
+        <p>En 2025 incorporamos un centro de mecanizado CNC que nos permite producir series cortas para otras carpinterías y empezar a vender en el norte de Portugal.</p>
+      </div>
+      <div>
+        <h3 class="block-title">Servicios</h3>
+        <dl class="facts">
+          <dt>Proyecto</dt><dd>Levantamiento de medidas, diseño y planos de fabricación</dd>
+          <dt>Fabricación</dt><dd>Mobiliario a medida, estanterías, mostradores y revestimientos</dd>
+          <dt>Montaje</dt><dd>Instalación en obra con equipo propio</dd>
+          <dt>Mecanizado</dt><dd>Corte CNC para terceros en series cortas</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TEAM ============ -->
+  <section class="sheet ruled" data-section="team" data-state="ready">
+    <h2 class="rail"><span class="rail__name">Equipo</span>4 de 6 personas</h2>
+    <div class="main">
+      <ul class="team">
+        <li class="person">
+          <p class="person__name" data-slot="team[0].name">Breogán Seoane Pita</p>
+          <p class="person__role" data-slot="team[0].role">Fundador, jefe de taller</p>
+          <p class="person__bio" data-slot="team[0].bio">Carpintero desde 2004. Formado en el CIFP Someso. Dirige la fabricación y los montajes.</p>
+        </li>
+        <li class="person">
+          <p class="person__name" data-slot="team[1].name">Iria Varela Novo</p>
+          <p class="person__role" data-slot="team[1].role">Socia, diseño y proyectos</p>
+          <p class="person__bio" data-slot="team[1].bio">Arquitecta técnica. Hace los levantamientos, los planos de fabricación y la relación con clientes públicos.</p>
+        </li>
+        <li class="person">
+          <p class="person__name" data-slot="team[2].name">Xabier Lema Rey</p>
+          <p class="person__role" data-slot="team[2].role">Oficial de primera, CNC</p>
+          <p class="person__bio" data-slot="team[2].bio">Programa y opera el centro de mecanizado. Responsable de las series para terceros.</p>
+        </li>
+        <li class="person">
+          <p class="person__name" data-slot="team[3].name">Carmen Ouro Bao</p>
+          <p class="person__role" data-slot="team[3].role">Administración y compras</p>
+          <p class="person__bio" data-slot="team[3].bio">Lleva la contabilidad, las compras de madera certificada y la tramitación de ayudas.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ PROJECTS ============ -->
+  <section class="sheet ruled series" data-section="projects" data-state="ready">
+    <h2 class="rail"><span class="rail__name">Proyectos</span>Selección 2023–2025</h2>
+    <div class="main">
+      <ol class="works">
+        <li class="work">
+          <div class="frame" data-slot-image="projects[0].imageUrl" data-hint="Foto del proyecto">
+            <svg viewBox="0 0 700 500" role="img" aria-label="Mostrador de la tienda Ultramar">
+              <rect width="700" height="500" fill="#e4e1da"/>
+              <rect y="380" width="700" height="120" fill="#a8a296"/>
+              <rect x="120" y="230" width="460" height="160" fill="#c49a6c"/>
+              <rect x="120" y="230" width="460" height="160" filter="url(#wood)"/>
+              <rect x="100" y="214" width="500" height="18" fill="#7d5c3c"/>
+              <g stroke="#9c774f" stroke-width="2"><path d="M235 240 V380"/><path d="M350 240 V380"/><path d="M465 240 V380"/></g>
+              <circle cx="250" cy="70" r="22" fill="#f3efe5" stroke="#555" stroke-width="2"/><path d="M250 0 V48" stroke="#555" stroke-width="2"/>
+              <circle cx="450" cy="70" r="22" fill="#f3efe5" stroke="#555" stroke-width="2"/><path d="M450 0 V48" stroke="#555" stroke-width="2"/>
+              <rect width="700" height="500" filter="url(#grain)"/>
+            </svg>
+          </div>
+          <div class="label">
+            <p class="label__cat" data-slot="projects[0].client">Ultramar, librería y café</p>
+            <h4 class="label__title"><cite data-slot="projects[0].title">Mostrador y estanterías</cite>, <span data-slot="projects[0].year">2024</span></h4>
+            <p class="label__tech" data-slot="projects[0].scope">Diseño, fabricación y montaje</p>
+            <p class="label__size" data-slot="projects[0].figure">38 m lineales, 9 semanas</p>
+            <p class="label__concept" data-slot="projects[0].summary">Reforma integral de un local de 1920 en la Ciudad Vieja de A Coruña. Castaño macizo recuperado de las vigas originales.</p>
+          </div>
+        </li>
+        <li class="work">
+          <div class="frame" data-slot-image="projects[1].imageUrl" data-hint="Foto del proyecto">
+            <svg viewBox="0 0 520 680" role="img" aria-label="Celosía de la casa en Mera">
+              <rect width="520" height="680" fill="#dfe3e2"/>
+              <rect x="60" y="60" width="400" height="560" fill="#d2b48c"/>
+              <g fill="#dfe3e2">
+                <rect x="80" y="60" width="18" height="560"/><rect x="128" y="60" width="18" height="560"/><rect x="176" y="60" width="18" height="560"/>
+                <rect x="224" y="60" width="18" height="560"/><rect x="272" y="60" width="18" height="560"/><rect x="320" y="60" width="18" height="560"/>
+                <rect x="368" y="60" width="18" height="560"/><rect x="416" y="60" width="18" height="560"/>
+              </g>
+              <rect x="60" y="60" width="400" height="560" filter="url(#wood)"/>
+              <rect width="520" height="680" filter="url(#grain)"/>
+            </svg>
+          </div>
+          <div class="label">
+            <p class="label__cat" data-slot="projects[1].client">Vivienda particular, Mera</p>
+            <h4 class="label__title"><cite data-slot="projects[1].title">Celosía y carpintería interior</cite>, <span data-slot="projects[1].year">2023</span></h4>
+            <p class="label__tech" data-slot="projects[1].scope">Fabricación y montaje</p>
+            <p class="label__size" data-slot="projects[1].figure">64 m², pino del país tratado</p>
+            <p class="label__concept" data-slot="projects[1].summary">Fachada ventilada y puertas interiores para una casa frente al mar, con madera certificada PEFC.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ FIGURES + COMPANY FACTS ============ -->
+  <section class="sheet ruled" data-section="figures" data-state="ready">
+    <h2 class="rail"><span class="rail__name">Cifras</span>y datos de empresa</h2>
+    <div class="main stack">
+      <div>
+        <table class="figures">
+          <thead>
+            <tr><th scope="col"></th><th scope="col">2023</th><th scope="col">2024</th><th scope="col">2025</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Facturación</th><td>268.400 €</td><td>312.900 €</td><td>351.000 €</td></tr>
+            <tr><th scope="row">Plantilla</th><td>4</td><td>5</td><td>6</td></tr>
+            <tr><th scope="row">Proyectos entregados</th><td>31</td><td>38</td><td>42</td></tr>
+            <tr><th scope="row">Madera de origen gallego</th><td>72 %</td><td>78 %</td><td>85 %</td></tr>
+            <tr><th scope="row">Ventas fuera de Galicia</th><td>6 %</td><td>9 %</td><td>14 %</td></tr>
+          </tbody>
+        </table>
+        <p class="figures__note">2025: previsión de cierre a 31 de diciembre.</p>
+      </div>
+      <div>
+        <h3 class="block-title">Datos de empresa</h3>
+        <dl class="facts">
+          <dt>Razón social</dt><dd data-slot="company.legalName">Obradoiro Nordés, S.L.</dd>
+          <dt>NIF</dt><dd data-slot="company.taxId">B00000000</dd>
+          <dt>Constitución</dt><dd data-slot="company.founded">2016</dd>
+          <dt>CNAE</dt><dd data-slot="company.cnae">3109. Fabricación de otros muebles</dd>
+          <dt>Sede y taller</dt><dd data-slot="company.address">Polígono de Piadela, nave 12, 15300 Betanzos (A Coruña)</dd>
+          <dt>Ámbito</dt><dd data-slot="company.area">Galicia y norte de Portugal</dd>
+          <dt>Certificaciones</dt><dd data-slot="company.certifications">PEFC, cadena de custodia</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="sheet contact" data-section="contact" data-state="ready">
+    <div class="ruled">
+      <h2 class="rail"><span class="rail__name">Contacto</span></h2>
+      <div class="main">
+        <p class="contact__name" data-slot="company.name">Obradoiro Nordés</p>
+        <dl class="facts">
+          <dt>Persona de contacto</dt><dd data-slot="contact.person">Iria Varela Novo</dd>
+          <dt>Correo</dt><dd data-slot="contact.email"><a href="mailto:taller@nordes.gal">taller@nordes.gal</a></dd>
+          <dt>Teléfono</dt><dd data-slot="contact.phone">+34 981 000 000</dd>
+          <dt>Web</dt><dd data-slot="contact.web">nordes.gal</dd>
+        </dl>
+      </div>
+    </div>
+    <p class="colophon">Datos facilitados por la empresa. Dossier maquetado con Mecena.</p>
+  </section>
+
+</main>
+</body>
+</html>

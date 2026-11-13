@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Antía Mosquera Bouzas · Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Schibsted+Grotesk:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="dossier.css">
+</head>
+<body>
+
+<!-- Shared SVG filters for the placeholder artworks (paper grain, wet edges). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.06" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="28"/>
+    </filter>
+    <filter id="rough-fine">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="6"/>
+    </filter>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 0.15  0 0 0 0 0.16  0 0 0 0 0.17  0 0 0 0.22 0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+
+<main class="dossier" data-kind="creator">
+
+  <!-- ============ COVER ============ -->
+  <section class="sheet cover" data-section="cover" data-state="ready">
+    <div class="call-header" data-variant="call" hidden>
+      <span>Dossier para: <span class="call-header__name" data-slot="variant.callName"></span></span>
+      <span class="call-header__ref" data-slot="variant.callRef"></span>
+    </div>
+    <header class="cover__head">
+      <span>Dossier artístico</span>
+      <span data-slot="meta.date">Noviembre 2026</span>
+    </header>
+    <figure class="cover__work">
+      <div class="frame" data-slot-image="profile.coverWork.imageUrl" data-hint="Foto de la obra de portada">
+        <svg viewBox="0 0 485 650" role="img" aria-label="Marea baixa III">
+          <rect width="485" height="650" fill="#d9d3c3"/>
+          <g filter="url(#rough)">
+            <rect x="-20" y="-20" width="525" height="250" fill="#5f7280"/>
+            <rect x="-20" y="210" width="525" height="70" fill="#8a9aa1"/>
+            <rect x="-20" y="268" width="525" height="10" fill="#b48b4a"/>
+            <rect x="-20" y="330" width="525" height="120" fill="#c4bca9"/>
+            <rect x="-20" y="440" width="525" height="230" fill="#a99f8a"/>
+          </g>
+          <g filter="url(#rough-fine)" fill="#3c463f">
+            <ellipse cx="120" cy="520" rx="70" ry="18"/>
+            <ellipse cx="330" cy="560" rx="96" ry="14"/>
+            <ellipse cx="250" cy="480" rx="30" ry="8"/>
+          </g>
+          <path d="M0 300 C120 290 200 318 300 300 S440 292 485 304" stroke="#f1eee4" stroke-width="3" fill="none" opacity=".7" filter="url(#rough-fine)"/>
+          <rect width="485" height="650" filter="url(#grain)"/>
+        </svg>
+      </div>
+      <figcaption class="cover__caption"><cite>Marea baixa III</cite>, 2024. Óleo sobre lino, 130 × 97 cm</figcaption>
+    </figure>
+    <div class="cover__text">
+      <h1 class="cover__name" data-slot="profile.name">Antía Mosquera Bouzas</h1>
+      <p class="cover__meta">
+        <span data-slot="profile.discipline">Pintura y obra sobre papel</span>
+        <span data-slot="profile.city">A Coruña</span>
+      </p>
+      <p class="cover__line" data-slot="profile.tagline">Pinto lo que la marea deja al retirarse: restos, sal y el tiempo que tarda en volver.</p>
+    </div>
+  </section>
+
+  <!-- ============ STATEMENT ============ -->
+  <section class="sheet ruled" data-section="statement" data-state="ready">
+    <h2 class="rail"><span class="rail__name">Statement</span></h2>
+    <div class="main prose" data-slot-html="profile.statement">
+      <p class="lead">Crecí en Cee, en una casa desde la que se veía la ría vaciarse dos veces al día. Mi trabajo empieza ahí: en mirar lo que queda cuando el agua se va.</p>
+      <p>Pinto sobre lino y papel de algodón con capas muy diluidas que dejo secar en horizontal, para que el pigmento se deposite como lo hace el limo. Mezclo arena de la playa de Lariño, cera fría y grafito. No busco representar el paisaje, sino repetir su proceso: acumular, borrar, dejar que algo vuelva a aparecer.</p>
+      <p>Las series nacen de caminatas en bajamar por la Costa da Morte y de una pregunta sobre el tiempo lento en un territorio que se vacía de gente. La lousa de los tejados, la línea de algas, el gris que cambia cada hora son para mí un archivo de lo que permanece.</p>
+      <p>Trabajo despacio y en ciclos largos. Cada serie dura entre dos y tres años y termina cuando el material deja de sorprenderme.</p>
+      <p class="signature">Antía Mosquera Bouzas, A Coruña, 2026</p>
+    </div>
+  </section>
+
+  <!-- ============ SERIES 1 ============ -->
+  <section class="sheet ruled series" data-section="series" data-series-id="marea-baixa" data-state="ready">
+    <h2 class="rail"><span class="rail__name">Obra</span>Serie 1 de 2</h2>
+    <div class="main">
+      <header class="series__head">
+        <h3 class="section-title" data-slot="series[0].title">Marea baixa</h3>
+        <p class="series__years" data-slot="series[0].years">2023–2025</p>
+        <p class="series__text prose" data-slot="series[0].description">Doce pinturas y obras sobre papel hechas a partir de caminatas en bajamar entre Corrubedo y Lariño. La superficie se construye en horizontal, por sedimentación, y cada pieza conserva arena del lugar que nombra.</p>
+      </header>
+      <ol class="works">
+        <li class="work" data-work-id="w1">
+          <div class="frame" data-slot-image="series[0].works[0].imageUrl" data-hint="Foto de la obra">
+            <svg viewBox="0 0 560 760" role="img" aria-label="Marea baixa I">
+              <rect width="560" height="760" fill="#ddd7c8"/>
+              <g filter="url(#rough)">
+                <rect x="-20" y="-20" width="600" height="300" fill="#73858f"/>
+                <rect x="-20" y="270" width="600" height="14" fill="#a9874f"/>
+                <rect x="-20" y="330" width="600" height="160" fill="#c9c1ae"/>
+              </g>
+              <g filter="url(#rough-fine)" stroke="#45503f" stroke-width="5" fill="none" opacity=".8">
+                <path d="M40 560 q60 -30 120 0 t120 0 t120 0 t120 0"/>
+                <path d="M20 620 q60 -20 120 0 t120 0 t120 0 t120 0" opacity=".6"/>
+              </g>
+              <rect width="560" height="760" filter="url(#grain)"/>
+            </svg>
+          </div>
+          <div class="label">
+            <p class="label__cat">Cat. 1</p>
+            <h4 class="label__title"><cite data-slot="series[0].works[0].title">Marea baixa I</cite>, <span data-slot="series[0].works[0].year">2023</span></h4>
+            <p class="label__tech" data-slot="series[0].works[0].technique">Acrílico y arena sobre papel de algodón</p>
+            <p class="label__size" data-slot="series[0].works[0].size">76 × 56 cm</p>
+            <p class="label__concept" data-slot="series[0].works[0].concept">La primera de la serie. La línea ocre marca hasta dónde llegó el agua la mañana en que empecé a pintarla.</p>
+          </div>
+        </li>
+        <li class="work" data-work-id="w2">
+          <div class="frame" data-slot-image="series[0].works[1].imageUrl" data-hint="Foto de la obra">
+            <svg viewBox="0 0 700 500" role="img" aria-label="Bajamar en Corrubedo">
+              <rect width="700" height="500" fill="#ebe7dc"/>
+              <g filter="url(#rough)">
+                <rect x="-20" y="140" width="740" height="60" fill="#9fb0b4" opacity=".8"/>
+                <rect x="-20" y="230" width="740" height="40" fill="#c3b79b"/>
+                <rect x="-20" y="300" width="740" height="220" fill="#d8ceb6"/>
+              </g>
+              <g stroke="#2f3638" stroke-width="1.4" fill="none" opacity=".75" filter="url(#rough-fine)">
+                <path d="M60 330 L640 322"/><path d="M60 352 L600 346"/><path d="M90 376 L660 370"/>
+                <path d="M120 404 L540 398"/><path d="M60 430 L620 426"/>
+              </g>
+              <circle cx="520" cy="96" r="34" fill="#c99a52" opacity=".55" filter="url(#rough-fine)"/>
+              <rect width="700" height="500" filter="url(#grain)"/>
+            </svg>
+          </div>
+          <div class="label">
+            <p class="label__cat">Cat. 2</p>
+            <h4 class="label__title"><cite data-slot="series[0].works[1].title">Bajamar en Corrubedo</cite>, <span data-slot="series[0].works[1].year">2024</span></h4>
+            <p class="label__tech" data-slot="series[0].works[1].technique">Gouache y grafito sobre papel</p>
+            <p class="label__size" data-slot="series[0].works[1].size">50 × 70 cm</p>
+            <p class="label__concept" data-slot="series[0].works[1].concept">Dibujada in situ durante las dos horas de bajamar. Las líneas de grafito siguen los surcos que deja el agua en la arena.</p>
+          </div>
+        </li>
+        <li class="work" data-work-id="w3">
+          <div class="frame" data-slot-image="series[0].works[2].imageUrl" data-hint="Foto de la obra">
+            <svg viewBox="0 0 400 400" role="img" aria-label="Marea baixa VII">
+              <rect width="400" height="400" fill="#4f5d63"/>
+              <g filter="url(#rough)">
+                <rect x="-20" y="160" width="440" height="260" fill="#7b8a86"/>
+                <rect x="-20" y="250" width="440" height="170" fill="#b9ae93"/>
+              </g>
+              <g fill="#e9e4d6" opacity=".85" filter="url(#rough-fine)">
+                <circle cx="96" cy="300" r="5"/><circle cx="150" cy="318" r="3"/><circle cx="230" cy="296" r="4"/>
+                <circle cx="300" cy="330" r="6"/><circle cx="330" cy="292" r="3"/>
+              </g>
+              <rect width="400" height="400" filter="url(#grain)"/>
+            </svg>
+          </div>
+          <div class="label">
+            <p class="label__cat">Cat. 3</p>
+            <h4 class="label__title"><cite data-slot="series[0].works[2].title">Marea baixa VII</cite>, <span data-slot="series[0].works[2].year">2025</span></h4>
+            <p class="label__tech" data-slot="series[0].works[2].technique">Óleo y cera fría sobre tabla</p>
+            <p class="label__size" data-slot="series[0].works[2].size">40 × 40 cm</p>
+            <p class="label__concept" data-slot="series[0].works[2].concept">Formato pequeño para mirar de cerca. Las conchas son cera aplicada con espátula sobre el óleo todavía húmedo.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ SERIES 2 ============ -->
+  <section class="sheet ruled series" data-section="series" data-series-id="lousa" data-state="ready">
+    <h2 class="rail"><span class="rail__name">Obra</span>Serie 2 de 2</h2>
+    <div class="main">
+      <header class="series__head">
+        <h3 class="section-title" data-slot="series[1].title">Lousa</h3>
+        <p class="series__years" data-slot="series[1].years">2021–2022</p>
+        <p class="series__text prose" data-slot="series[1].description">Monotipos y grabados sobre los tejados de pizarra de Mondoñedo y la Terra Chá. La lousa como piel de las casas que se cierran: un registro del gris que queda cuando nadie vuelve.</p>
+      </header>
+      <ol class="works">
+        <li class="work" data-work-id="w4">
+          <div class="frame" data-slot-image="series[1].works[0].imageUrl" data-hint="Foto de la obra">
+            <svg viewBox="0 0 500 700" role="img" aria-label="Lousa (Mondoñedo)">
+              <rect width="500" height="700" fill="#efede6"/>
+              <rect x="40" y="40" width="420" height="620" fill="#3d4247" filter="url(#rough-fine)"/>
+              <g fill="none" stroke="#6c747a" stroke-width="2.5" filter="url(#rough-fine)">
+                <path d="M40 140 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0"/>
+                <path d="M40 220 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0"/>
+                <path d="M40 300 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0"/>
+                <path d="M40 380 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0"/>
+                <path d="M40 460 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0"/>
+                <path d="M40 540 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0 q35 30 70 0"/>
+              </g>
+              <rect x="40" y="40" width="420" height="620" filter="url(#grain)"/>
+            </svg>
+          </div>
+          <div class="label">
+            <p class="label__cat">Cat. 4</p>
+            <h4 class="label__title"><cite data-slot="series[1].works[0].title">Lousa (Mondoñedo)</cite>, <span data-slot="series[1].works[0].year">2021</span></h4>
+            <p class="label__tech" data-slot="series[1].works[0].technique">Monotipo sobre papel Hahnemühle</p>
+            <p class="label__size" data-slot="series[1].works[0].size">70 × 50 cm</p>
+            <p class="label__concept" data-slot="series[1].works[0].concept">Estampado directamente desde una pizarra recogida de un tejado caído. Pieza única.</p>
+          </div>
+        </li>
+        <li class="work" data-work-id="w5">
+          <div class="frame" data-slot-image="series[1].works[1].imageUrl" data-hint="Foto de la obra">
+            <svg viewBox="0 0 760 560" role="img" aria-label="Tellado norte">
+              <rect width="760" height="560" fill="#f1efe8"/>
+              <g stroke="#2a2f33" fill="none" filter="url(#rough-fine)">
+                <path d="M60 420 L380 120 L700 420" stroke-width="3"/>
+                <path d="M110 420 L380 168 L650 420" stroke-width="1.2" opacity=".7"/>
+                <path d="M160 420 L380 216 L600 420" stroke-width="1.2" opacity=".55"/>
+                <path d="M210 420 L380 264 L550 420" stroke-width="1.2" opacity=".4"/>
+                <path d="M40 440 L720 440" stroke-width="1"/>
+              </g>
+              <rect x="300" y="300" width="160" height="120" fill="#565d62" opacity=".85" filter="url(#rough-fine)"/>
+              <rect width="760" height="560" filter="url(#grain)"/>
+            </svg>
+          </div>
+          <div class="label">
+            <p class="label__cat">Cat. 5</p>
+            <h4 class="label__title"><cite data-slot="series[1].works[1].title">Tellado norte</cite>, <span data-slot="series[1].works[1].year">2022</span></h4>
+            <p class="label__tech" data-slot="series[1].works[1].technique">Punta seca y carborundo. Edición de 8</p>
+            <p class="label__size" data-slot="series[1].works[1].size">56 × 76 cm</p>
+            <p class="label__concept" data-slot="series[1].works[1].concept">La vertiente norte de un tejado de Vilalba, la que nunca se seca. El carborundo da el negro aterciopelado de la pizarra mojada.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ CV ============ -->
+  <section class="sheet ruled" data-section="cv" data-state="ready">
+    <h2 class="rail"><span class="rail__name">Trayectoria</span></h2>
+    <div class="main">
+      <div class="cv">
+        <div class="cv__group" data-cv="education">
+          <h3 class="cv__title">Formación</h3>
+          <ol class="cv__list">
+            <li><span class="cv__year">2016</span><span>Máster en Arte Contemporáneo, Creación e Investigación. <span class="cv__place">Universidade de Vigo, Pontevedra</span></span></li>
+            <li><span class="cv__year">2014</span><span>Grado en Bellas Artes. <span class="cv__place">Universidade de Vigo, Pontevedra</span></span></li>
+            <li><span class="cv__year">2013</span><span>Erasmus, taller de grabado. <span class="cv__place">Academia de Belas-Artes, Oporto</span></span></li>
+          </ol>
+        </div>
+        <div class="cv__group" data-cv="soloShows">
+          <h3 class="cv__title">Exposiciones individuales</h3>
+          <ol class="cv__list">
+            <li><span class="cv__year">2025</span><span><cite>Bajamar</cite>. <span class="cv__place">Galería Arcada, Vigo</span></span></li>
+            <li><span class="cv__year">2023</span><span><cite>Lo que deja el agua</cite>. <span class="cv__place">Espazo Lavadoiro, Santiago de Compostela</span></span></li>
+            <li><span class="cv__year">2021</span><span><cite>Lousa</cite>. <span class="cv__place">Casa da Cultura de Cee</span></span></li>
+          </ol>
+        </div>
+        <div class="cv__group" data-cv="groupShows">
+          <h3 class="cv__title">Exposiciones colectivas</h3>
+          <ol class="cv__list">
+            <li><span class="cv__year">2025</span><span><cite>Costa adentro</cite>. <span class="cv__place">Sala Nordeste, Ferrol</span></span></li>
+            <li><span class="cv__year">2024</span><span>Mostra Atlántica de Gravado. <span class="cv__place">Lugo y Oporto, itinerante</span></span></li>
+            <li><span class="cv__year">2022</span><span><cite>Papel mollado</cite>. <span class="cv__place">Centro Cultural Ría, Betanzos</span></span></li>
+          </ol>
+        </div>
+        <div class="cv__group" data-cv="awards">
+          <h3 class="cv__title">Premios y becas</h3>
+          <ol class="cv__list">
+            <li><span class="cv__year">2024</span><span>Beca de creación plástica. <span class="cv__place">Fundación Mariñas</span></span></li>
+            <li><span class="cv__year">2022</span><span>Segundo premio, Certamen de Gravado Terra Chá</span></li>
+          </ol>
+        </div>
+        <div class="cv__group" data-cv="residencies">
+          <h3 class="cv__title">Residencias</h3>
+          <ol class="cv__list">
+            <li><span class="cv__year">2023</span><span>Residencia Faro de Lariño, Carnota. <span class="cv__place">Tres meses</span></span></li>
+            <li><span class="cv__year">2022</span><span>Obradoiro de estampación. <span class="cv__place">O Barco de Valdeorras</span></span></li>
+          </ol>
+        </div>
+        <div class="cv__group" data-cv="collections">
+          <h3 class="cv__title">Obra en colecciones</h3>
+          <ol class="cv__list">
+            <li><span class="cv__year">2024</span><span>Colección Fundación Mariñas</span></li>
+            <li><span class="cv__year">2023</span><span>Concello de Cee</span></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="sheet contact" data-section="contact" data-state="ready">
+    <div class="ruled">
+      <h2 class="rail"><span class="rail__name">Contacto</span></h2>
+      <div class="main">
+        <p class="contact__name" data-slot="profile.name">Antía Mosquera Bouzas</p>
+        <dl class="facts">
+          <dt>Correo</dt><dd data-slot="contact.email"><a href="mailto:estudio@antiamosquera.gal">estudio@antiamosquera.gal</a></dd>
+          <dt>Teléfono</dt><dd data-slot="contact.phone">+34 600 000 000</dd>
+          <dt>Web</dt><dd data-slot="contact.web">antiamosquera.gal</dd>
+          <dt>Instagram</dt><dd data-slot="contact.instagram">@antiamosquera</dd>
+          <dt>Estudio</dt><dd data-slot="contact.studio">Monte Alto, A Coruña. Visitas con cita previa</dd>
+        </dl>
+      </div>
+    </div>
+    <p class="colophon">Obras y textos de Antía Mosquera Bouzas. Fotografías de la artista. Dossier maquetado con Mecena.</p>
+  </section>
+
+</main>
+
+<!--
+  Variant hooks, for static preview only (the app applies the same rules from data):
+  creator.html?call=Bolsas%20de%20creación%202026&ref=BDNS%20000000&order=lousa,marea-baixa&max=3
+-->
+<script>
+(() => {
+  const q = new URLSearchParams(location.search);
+  const call = q.get("call");
+  if (call) {
+    const h = document.querySelector('[data-variant="call"]');
+    h.querySelector('[data-slot="variant.callName"]').textContent = call;
+    h.querySelector('[data-slot="variant.callRef"]').textContent = q.get("ref") || "";
+    h.hidden = false;
+  }
+  const order = q.get("order");
+  if (order) {
+    const sheets = [...document.querySelectorAll('[data-series-id]')];
+    const anchor = sheets[0].previousElementSibling;
+    order.split(",").reverse().forEach(id => {
+      const s = sheets.find(el => el.dataset.seriesId === id);
+      if (s) anchor.after(s);
+    });
+  }
+  const max = parseInt(q.get("max"), 10);
+  if (max >= 0) {
+    document.querySelectorAll(".works > .work").forEach((w, i) => { if (i >= max) w.remove(); });
+    document.querySelectorAll("[data-series-id]").forEach(s => { if (!s.querySelector(".work")) s.remove(); });
+  }
+  // Renumber catalogue entries and series counters after any change.
+  document.querySelectorAll(".label__cat").forEach((c, i) => c.textContent = "Cat. " + (i + 1));
+  const series = document.querySelectorAll("[data-series-id]");
+  series.forEach((s, i) => {
+    const r = s.querySelector(".rail");
+    r.lastChild.textContent = "Serie " + (i + 1) + " de " + series.length;
+  });
+})();
+</script>
+</body>
+</html>
