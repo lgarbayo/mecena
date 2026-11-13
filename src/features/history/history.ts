@@ -126,6 +126,8 @@ export function searchTerms(title: string, max = 2): string[] {
  */
 export function isSameSeries(current: { title: string; organizer: string }, candidate: { title: string; organizer: string }): boolean {
   if (fold(current.organizer) !== fold(candidate.organizer)) return false;
+  // BDNS keeps cancelled records ("ANULADA …", "*** ANULADA ***"), usually re-registered under a new id: not an edition.
+  if (/\banulad[ao]\b/.test(fold(candidate.title))) return false;
   const [a, b] = [titleCoreTokens(current.title), titleCoreTokens(candidate.title)];
   const [short, long] = a.length <= b.length ? [a, new Set(b)] : [b, new Set(a)];
   return short.length >= 2 && short.every((t) => long.has(t));
@@ -317,7 +319,7 @@ function evidenceText(h: CallHistory): string {
   }
   if (h.amountRangeEur) parts.push(`Importes entre ${eur(h.amountRangeEur.min)} y ${eur(h.amountRangeEur.max)}.`);
   if (h.repeatWinnerShare !== undefined) parts.push(`${Math.round(h.repeatWinnerShare * 100)} % de los premiados repite.`);
-  if (h.successRate) parts.push(`${h.successRate.awarded} de ${h.successRate.applicants} solicitudes concedidas en la última resolución con datos.`);
+  if (h.successRate) parts.push(`${h.successRate.awarded} de ${h.successRate.applicants} solicitudes concedidas en la última edición con datos.`);
   if (h.cutoff) parts.push(`Último concedido: ${num(h.cutoff.score)}${h.cutoff.maxScore ? `/${h.cutoff.maxScore}` : ""} puntos.`);
   if (h.cutoffRange) parts.push(`Nota de corte entre ${num(h.cutoffRange.min)} y ${num(h.cutoffRange.max)} en ${h.cutoffRange.editions} ediciones.`);
   if (h.editionsWithAwards < 2 && !h.successRate) parts.push("Muestra pequeña: tómalo como orientación.");

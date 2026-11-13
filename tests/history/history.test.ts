@@ -43,6 +43,11 @@ describe("edition linking", () => {
     expect(isSameSeries(cabra, { title: "CONCURSO DE CARTELES DE LA FERIA 2025", organizer: "AYUNTAMIENTO DE CABRA" })).toBe(false);
     expect(isSameSeries({ title: "Concurso de carteles 2027", organizer: "X" }, { title: "Concurso de carteles 2026", organizer: "X" })).toBe(false);
 
+    // cancelled BDNS records are not editions
+    const xc = { title: "Orden de 14 de agosto de 2025 por la que se establecen las bases que rigen los premios del programa Xuventude Crea", organizer: "X" };
+    expect(isSameSeries(xc, { title: "ORDEN de 26 de agosto de 2024 por la que se establecen las bases que rigen los premios del programa Xuventude Crea", organizer: "X" })).toBe(true);
+    expect(isSameSeries(xc, { title: "ANULADA Orden, del 26 de agosto de 2024, por la que se establecen las bases que rigen los premios del programa Xuventude Crea", organizer: "X" })).toBe(false);
+
     // the type word changes between editions (premio → certamen)
     const lv = { title: "XXXIV CERTAMEN LÓPEZ-VILLASEÑOR DE ARTES PLÁSTICAS 2025", organizer: "AYUNTAMIENTO DE CIUDAD REAL" };
     expect(isSameSeries(lv, { title: "CONVOCATORIA XXXII PREMIO LÓPEZ-VILLASEÑOR DE ARTES PLÁSTICAS", organizer: "AYUNTAMIENTO DE CIUDAD REAL" })).toBe(true);
