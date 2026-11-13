@@ -1,0 +1,18 @@
+{
+  "name": "mecena-spike-voice",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Spike: incremental voice -> profile/dossier extraction with Claude",
+  "scripts": {
+    "start": "node replay.js",
+    "fast": "node replay.js --speed 6",
+    "sheet": "node sheet.js",
+    "serve": "node server.js",
+    "test": "node --test test/"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0"
+  }
+}

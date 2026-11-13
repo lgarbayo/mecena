@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mecena · voz</title>
+<style>
+  :root {
+    --bg: #f6f3ee; --surface: #fffdf9; --ink: #1d1b18; --muted: #6f6a62; --line: #e2dcd2;
+    --accent: #b5452b; --ok: #2f6f4e; --warn: #9a6a12; --bad: #a8322a; --interim: #9b958b;
+    --radius: 14px; --font: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #161513; --surface: #1f1d1a; --ink: #f1ece4; --muted: #a39d93; --line: #34312c; --accent: #e07a5f; --ok: #6fbf8f; --warn: #e0b45f; --bad: #e57368; --interim: #7d776e; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--ui); font-size: 15px; line-height: 1.45; }
+  header { padding: 18px 16px 8px; max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: baseline; justify-content: space-between; }
+  h1 { font-family: var(--font); font-weight: 600; font-size: 26px; margin: 0; letter-spacing: .2px; }
+  h1 small { font-family: var(--ui); font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .badge { font-size: 12px; padding: 3px 9px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+  .badge.live { color: var(--ok); border-color: var(--ok); }
+  .badge.mock { color: var(--warn); border-color: var(--warn); }
+  .badge.off { color: var(--bad); border-color: var(--bad); }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 40px; display: grid; gap: 14px; grid-template-columns: 1fr; }
+  @media (min-width: 900px) { main { grid-template-columns: 1.1fr 1fr; } .full { grid-column: 1 / -1; } }
+  section { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; min-width: 0; }
+  h2 { font-family: var(--font); font-size: 18px; font-weight: 600; margin: 0 0 10px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+  .seg button { border: 0; background: transparent; color: var(--ink); padding: 8px 14px; font: inherit; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .mic { width: 64px; height: 64px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 26px; cursor: pointer; box-shadow: 0 2px 10px rgb(0 0 0 / .15); }
+  .mic.on { animation: pulse 1.4s ease-in-out infinite; }
+  .mic:disabled { opacity: .4; cursor: not-allowed; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgb(181 69 43 / .45); } 50% { box-shadow: 0 0 0 12px rgb(181 69 43 / 0); } }
+  .status { color: var(--muted); font-size: 13px; }
+  .transcript { font-family: var(--font); font-size: 19px; line-height: 1.5; min-height: 120px; max-height: 40vh; overflow-y: auto; overflow-wrap: anywhere; }
+  .transcript .interim { color: var(--interim); }
+  .fallback { display: flex; gap: 8px; margin-top: 10px; }
+  .fallback textarea { flex: 1; min-width: 0; resize: vertical; min-height: 44px; font: inherit; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .btn { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 10px; padding: 8px 14px; font: inherit; cursor: pointer; }
+  .ask { margin-top: 10px; padding: 8px 12px; border-left: 3px solid var(--accent); color: var(--ink); font-style: italic; display: none; }
+  .script { font-size: 13px; color: var(--muted); border: 1px dashed var(--warn); border-radius: 10px; padding: 8px 12px; margin-top: 10px; display: none; }
+  .script ol { margin: 4px 0 0; padding-left: 18px; }
+  dl { margin: 0; display: grid; grid-template-columns: minmax(90px, 34%) 1fr; gap: 6px 12px; }
+  dt { color: var(--muted); font-size: 13px; }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  dd q { display: block; color: var(--muted); font-size: 12px; font-style: italic; quotes: "«" "»"; }
+  dd ul { margin: 0; padding-left: 16px; }
+  .flash { animation: flash 1.6s ease-out; }
+  @keyframes flash { from { background: color-mix(in srgb, var(--accent) 22%, transparent); } to { background: transparent; } }
+  .corr { color: var(--warn); font-size: 12px; }
+  .dossier article { border-top: 1px solid var(--line); padding: 10px 0; }
+  .dossier article:first-child { border-top: 0; padding-top: 0; }
+  .dossier h3 { font-family: var(--font); font-size: 16px; margin: 0 0 4px; }
+  .dossier p { margin: 0 0 6px; font-family: var(--font); font-size: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .missing { color: var(--muted); font-size: 12px; }
+  .log { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--muted); max-height: 220px; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .log .bad { color: var(--bad); }
+  .empty { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Mecena <small>onboarding por voz · spike</small></h1>
+  <span id="badge" class="badge">comprobando…</span>
+</header>
+
+<main>
+  <section class="full">
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Modo">
+        <button id="m-creator" aria-pressed="true">Creador/a</button>
+        <button id="m-business" aria-pressed="false">Pyme / autónomo</button>
+      </div>
+      <button id="mic" class="mic" aria-label="Empezar a hablar">🎙</button>
+      <button id="stop" class="btn">Terminar</button>
+      <span id="status" class="status"></span>
+    </div>
+    <div id="script" class="script"></div>
+  </section>
+
+  <section>
+    <h2>Lo que dices</h2>
+    <div id="transcript" class="transcript" aria-live="polite"><span class="empty">Pulsa el micrófono y cuéntanos quién eres y qué haces, durante un minuto.</span></div>
+    <div id="ask" class="ask"></div>
+    <div class="fallback">
+      <textarea id="text" placeholder="¿Sin micrófono? Escribe aquí y pulsa Enviar"></textarea>
+      <button id="send" class="btn">Enviar</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tu perfil</h2>
+    <dl id="profile"><dd class="empty">Se irá rellenando mientras hablas.</dd></dl>
+  </section>
+
+  <section class="full dossier">
+    <h2>Tu dossier</h2>
+    <div id="dossier"><p class="empty">Las secciones aparecen cuando hay datos suficientes.</p></div>
+  </section>
+
+  <section class="full">
+    <h2>Registro técnico</h2>
+    <div id="log" class="log"></div>
+  </section>
+</main>
+
+<script>
+// ---- labels (mirror of src/schemas.js, Spanish UI) ----
+const LABELS = {
+  creator: { name: "Nombre", artistic_name: "Nombre artístico", discipline: "Disciplina", location: "Dónde vive/trabaja", origin: "Origen", birth_year: "Año de nacimiento", practice: "Su práctica", goals: "Qué quiere financiar", website: "Web / redes", techniques: "Técnicas", themes: "Temas", series: "Series", education: "Formación", exhibitions: "Exposiciones", awards: "Premios y becas", residencies: "Residencias", publications: "Publicaciones / clientes" },
+  business: { contact_name: "Contacto", business_name: "Nombre comercial", legal_form: "Forma jurídica", activity: "Actividad", location: "Ubicación", founded_year: "Año de creación", employees: "Plantilla", revenue: "Facturación", goals: "Qué quiere financiar", website: "Web / redes", team: "Equipo", products: "Productos / servicios", markets: "Clientes / canales", projects: "Proyectos", certifications: "Sellos y premios", tools: "Situación digital" },
+};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const log = (msg, bad) => { const d = document.createElement("div"); if (bad) d.className = "bad"; d.textContent = `${new Date().toLocaleTimeString("es-ES")} ${msg}`; $("log").prepend(d); };
+
+let mode = "creator";
+let server = null;        // { live } when the local endpoint answers
+let sessionId = null;
+let events = null;
+let finals = [];          // finalised utterances
+let interim = "";
+let lastFinalAt = 0;
+let state = null;
+let dossier = {};
+
+// ---------------------------------------------------------------- server
+async function detectServer() {
+  if (location.protocol === "file:") return null;
+  try {
+    const r = await fetch("/api/health", { cache: "no-store" });
+    return r.ok ? await r.json() : null;
+  } catch { return null; }
+}
+
+async function ensureSession() {
+  if (!server || sessionId) return;
+  const r = await fetch("/api/session", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode }) });
+  const s = await r.json();
+  sessionId = s.id;
+  if (s.script) {
+    $("script").style.display = "block";
+    $("script").innerHTML = "<strong>Modo simulado:</strong> sin clave de API, el extractor solo reconoce este guion. Léelo en voz alta:<ol>" + s.script.map((l) => `<li>${esc(l)}</li>`).join("") + "</ol>";
+  }
+  events = new EventSource(`/api/events?id=${sessionId}`);
+  events.addEventListener("extracted", (e) => onExtracted(JSON.parse(e.data)));
+  events.addEventListener("dossier", (e) => onDossier(JSON.parse(e.data)));
+  events.addEventListener("rejected", (e) => { const d = JSON.parse(e.data); log(`descartado (${d.reason}): ${d.op.field} = ${d.op.value} «${d.op.source}»`, true); });
+  events.addEventListener("error", (e) => { if (e.data) log("error: " + JSON.parse(e.data).message, true); });
+  events.addEventListener("stopped", () => log("sesión terminada: dossier final listo"));
+}
+
+async function sendFinal(text) {
+  finals.push(text);
+  lastFinalAt = performance.now();
+  renderTranscript();
+  if (!server) { log(`[sin servidor] se enviaría al extractor: "${text}"`); return; }
+  await ensureSession();
+  fetch(`/api/final?id=${sessionId}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) })
+    .catch((e) => log("no se pudo enviar: " + e.message, true));
+}
+
+// ---------------------------------------------------------------- rendering
+function renderTranscript() {
+  const html = finals.map(esc).join(" ") + (interim ? ` <span class="interim">${esc(interim)}</span>` : "");
+  $("transcript").innerHTML = html || '<span class="empty">Escuchando…</span>';
+  $("transcript").scrollTop = $("transcript").scrollHeight;
+}
+
+function onExtracted({ call, changed, ask_next, state: s }) {
+  state = s;
+  const lag = lastFinalAt ? Math.round(performance.now() - lastFinalAt) : "-";
+  log(`extract #${call.n}: ${call.words} palabras → ${call.applied} cambios · ${call.latencyMs} ms modelo · ${call.lagMs} ms desde la frase`);
+  renderProfile(new Set(changed.map((c) => c.field)));
+  $("ask").style.display = ask_next ? "block" : "none";
+  $("ask").textContent = ask_next || "";
+}
+
+function renderProfile(flash = new Set()) {
+  if (!state) return;
+  const rows = [];
+  for (const [k, label] of Object.entries(LABELS[state.kind])) {
+    const f = state.fields[k];
+    const items = Object.values(state.lists[k] || {});
+    if (f) {
+      const corr = f.history.length ? ` <span class="corr">corregido (antes: ${esc(f.history.map((h) => h.value).join(" → "))})</span>` : "";
+      rows.push(`<dt>${label}</dt><dd class="${flash.has(k) ? "flash" : ""}">${esc(f.value)}${corr}<q>${esc(f.source)}</q></dd>`);
+    } else if (items.length) {
+      const lis = items.map((it) => {
+        const meta = [it.year, it.place, it.detail].filter(Boolean).join(" · ");
+        const corr = it.history.length ? ` <span class="corr">corregido</span>` : "";
+        return `<li>${esc(it.title)}${meta ? ` — ${esc(meta)}` : ""}${corr}<q>${esc(it.source)}</q></li>`;
+      }).join("");
+      rows.push(`<dt>${label}</dt><dd class="${flash.has(k) ? "flash" : ""}"><ul>${lis}</ul></dd>`);
+    }
+  }
+  $("profile").innerHTML = rows.join("") || '<dd class="empty">Aún nada.</dd>';
+}
+
+function onDossier({ call, sections }) {
+  log(`${call.type} [${sections.map((s) => s.id).join(", ")}] · ${call.latencyMs} ms`);
+  for (const s of sections) dossier[s.id] = s;
+  $("dossier").innerHTML = Object.values(dossier).map((s) => `<article class="${sections.some((x) => x.id === s.id) ? "flash" : ""}">
+      <h3>${esc(s.title)}</h3>
+      <p>${s.body ? esc(s.body) : '<span class="empty">Todavía no hay datos suficientes.</span>'}</p>
+      ${s.missing && s.missing.length ? `<div class="missing">Falta: ${esc(s.missing.join(", "))}</div>` : ""}
+    </article>`).join("");
+}
+
+// ---------------------------------------------------------------- speech
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null;
+let listening = false;
+let lastFinalText = "";
+
+function startRecognition() {
+  rec = new SR();
+  rec.lang = "es-ES";
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.maxAlternatives = 1;
+  rec.onresult = (ev) => {
+    let nextInterim = "";
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      const r = ev.results[i];
+      const text = r[0].transcript.trim();
+      if (!r.isFinal) { nextInterim += (nextInterim ? " " : "") + text; continue; }
+      // Chrome for Android sometimes re-delivers the previous final as the prefix of the next one,
+      // or repeats it verbatim: forward only the new part.
+      let delta = text;
+      if (lastFinalText && text === lastFinalText) delta = "";
+      else if (lastFinalText && text.startsWith(lastFinalText)) delta = text.slice(lastFinalText.length).trim();
+      lastFinalText = text;
+      if (delta) sendFinal(delta);
+    }
+    interim = nextInterim;
+    renderTranscript();
+  };
+  rec.onerror = (e) => {
+    log(`reconocimiento: ${e.error}`, e.error !== "no-speech");
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") { listening = false; setMic(); $("status").textContent = "Permiso de micrófono denegado. Usa el cuadro de texto."; }
+    if (e.error === "network") $("status").textContent = "El reconocimiento de Chrome necesita conexión. Usa el cuadro de texto.";
+  };
+  // Chrome ends the session after silences (and after every utterance on some Android builds): restart.
+  rec.onend = () => { if (listening) { try { rec.start(); } catch { setTimeout(() => listening && rec.start(), 250); } } };
+  rec.start();
+}
+
+function setMic() {
+  $("mic").classList.toggle("on", listening);
+  $("mic").setAttribute("aria-label", listening ? "Pausar" : "Empezar a hablar");
+  $("mic").textContent = listening ? "⏸" : "🎙";
+  if (listening) $("status").textContent = "Escuchando en español (es-ES)…";
+}
+
+$("mic").onclick = async () => {
+  if (!SR) return;
+  if (listening) { listening = false; rec && rec.stop(); setMic(); $("status").textContent = "En pausa."; return; }
+  await ensureSession();
+  listening = true;
+  setMic();
+  startRecognition();
+};
+
+$("stop").onclick = async () => {
+  listening = false; rec && rec.stop(); setMic();
+  interim = ""; renderTranscript();
+  if (server && sessionId) { await fetch(`/api/stop?id=${sessionId}`, { method: "POST" }); $("status").textContent = "Terminando: generando el dossier completo…"; }
+};
+
+$("send").onclick = () => {
+  const t = $("text").value.trim();
+  if (!t) return;
+  $("text").value = "";
+  // Typed text can be long: split into sentences so the extractor gets natural chunks.
+  for (const part of t.split(/(?<=[.!?])\s+|\n+/).filter(Boolean)) sendFinal(part);
+};
+
+function setMode(m) {
+  if (sessionId && finals.length && !confirm("Cambiar de modo empieza una sesión nueva. ¿Seguro?")) return;
+  mode = m;
+  $("m-creator").setAttribute("aria-pressed", m === "creator");
+  $("m-business").setAttribute("aria-pressed", m === "business");
+  if (events) events.close();
+  sessionId = null; events = null; finals = []; interim = ""; state = null; dossier = {}; lastFinalText = "";
+  $("profile").innerHTML = '<dd class="empty">Se irá rellenando mientras hablas.</dd>';
+  $("dossier").innerHTML = '<p class="empty">Las secciones aparecen cuando hay datos suficientes.</p>';
+  $("script").style.display = "none";
+  renderTranscript();
+}
+$("m-creator").onclick = () => setMode("creator");
+$("m-business").onclick = () => setMode("business");
+
+// ---------------------------------------------------------------- boot
+(async () => {
+  server = await detectServer();
+  const b = $("badge");
+  if (!server) { b.textContent = "sin servidor: solo transcripción"; b.className = "badge off"; }
+  else if (server.live) { b.textContent = "Claude en directo"; b.className = "badge live"; }
+  else { b.textContent = "modo simulado (sin clave)"; b.className = "badge mock"; }
+
+  if (!SR) {
+    $("mic").disabled = true;
+    $("status").textContent = "Este navegador no tiene reconocimiento de voz. Usa Chrome o Edge, o escribe abajo.";
+  } else if (!window.isSecureContext) {
+    $("mic").disabled = true;
+    $("status").textContent = "El micrófono necesita HTTPS o localhost. Escribe abajo o abre la página por HTTPS.";
+  }
+})();
+</script>
+</body>
+</html>
