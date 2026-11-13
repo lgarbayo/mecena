@@ -1,0 +1,45 @@
+{
+  "name": "1hack — AI Weekend 2026",
+  "slug": "1hack-2026",
+  "url": "https://1hack.eu/en/",
+  "theme": "Applied AI. Open challenges: build whatever you want with AI in the mix. 24h in person at FIC (A Coruña).",
+  "deadline": { "iso": "2026-11-14T18:00:00Z", "organizerTz": "Sat 14 Nov 2026, 19:00 CET (end of build)", "spain": "Sat 14 Nov 2026, 19:00 CET" },
+  "judgingPeriod": "Sat 14 Nov 2026 19:00-21:00 CET: after party & voluntary live demos",
+  "winnersAnnounced": "not published",
+  "eligibility": { "excludedRegions": [], "teamSize": "no limit; solo welcome, teams form on site", "notes": "Max 100 spots, 10 EUR ticket. No AI credits provided: bring your own API keys." },
+  "requiredTech": ["AI used meaningfully"],
+  "platformTools": [],
+  "submission": {
+    "video": { "maxSeconds": 0, "platform": "none", "rules": "No video required" },
+    "repo": "not required",
+    "license": "not required",
+    "demo": "Live demo on stage, voluntary, ~2-3 minutes, laptop or phone",
+    "testAccess": "none",
+    "language": "Spanish (castellano) on stage; Galician audience",
+    "other": ["No published prizes, rubric or submission rules: optimise for a live wow demo, a credible real problem and traction (survey data, LOIs)"]
+  },
+  "judging": {
+    "stages": ["Live demos at the after party"],
+    "criteria": [
+      { "name": "Live demo wow", "weight": 0.3, "description": "Assumed: works live, end to end, in under 3 minutes" },
+      { "name": "Real problem and impact", "weight": 0.3, "description": "Assumed: grounded in real data, potential customers and LOIs" },
+      { "name": "Applied AI depth", "weight": 0.2, "description": "Assumed: AI does real work, not a chatbot wrapper" },
+      { "name": "Sponsor fit (RevenueCat)", "weight": 0.2, "description": "Assumed: real in-app monetisation with RevenueCat" }
+    ],
+    "tiebreak": "unknown"
+  },
+  "prizes": [],
+  "stacking": "",
+  "sponsors": [
+    { "name": "RevenueCat", "tool": "In-app subscriptions SDK (web/iOS/Android), Paywalls, Experiments, Charts", "prize": "none published; team target", "credits": "", "docs": "https://www.revenuecat.com/docs" },
+    { "name": "AGASOL", "tool": "", "prize": "", "credits": "", "docs": "" },
+    { "name": "The Agile Monkeys", "tool": "", "prize": "", "credits": "", "docs": "" },
+    { "name": "Innogando", "tool": "", "prize": "", "credits": "", "docs": "" },
+    { "name": "Barkibu", "tool": "", "prize": "", "credits": "", "docs": "" },
+    { "name": "Amtega (Xunta de Galicia)", "tool": "", "prize": "", "credits": "", "docs": "" },
+    { "name": "Xacobeo 2027", "tool": "", "prize": "", "credits": "", "docs": "" },
+    { "name": "FEDER", "tool": "", "prize": "", "credits": "", "docs": "" }
+  ],
+  "sources": ["https://1hack.eu/en/", "https://1hack.eu/"],
+  "conflicts": ["Site shows both 'It's on!' and '1hack 2026 is over' banners (script-toggled)"]
+}
