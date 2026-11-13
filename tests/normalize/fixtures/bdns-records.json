@@ -1,0 +1,486 @@
+[
+ {
+  "codigoBDNS": "910245",
+  "descripcion": "Convocatoria de 2026 de subvenciones para ayudas a la creación artística y cultural del municipio de Elgoibar.",
+  "organo": {
+   "nivel1": "LOCAL",
+   "nivel2": "ELGOIBAR",
+   "nivel3": "AYUNTAMIENTO DE ELGOIBAR"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   },
+   {
+    "descripcion": "PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES212 - Gipuzkoa"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "Actividades de creación artística y artes escénicas",
+    "codigo": "90"
+   }
+  ],
+  "presupuestoTotal": 10000,
+  "fechaRecepcion": "2026-06-03",
+  "fechaInicioSolicitud": null,
+  "fechaFinSolicitud": null,
+  "textInicio": "Al día siguiente de la publicación del extracto de la presente convocatoria en el BOG",
+  "textFin": "30 días hábiles desde el día siguiente al de la publicación del presente extracto en el BOG ",
+  "abierto": false,
+  "anuncios": [
+   {
+    "datPublicacion": "2026-06-16",
+    "desDiarioOficial": "B.O. DE GIPUZKOA"
+   }
+  ]
+ },
+ {
+  "codigoBDNS": "906056",
+  "descripcion": "Convocatoria de becas para la creación artística, la investigación y la innovación en los ámbitos de las artes visuales, de las artes escénicas, de la música, del pensamiento y de los juegos de mesa",
+  "organo": {
+   "nivel1": "AUTONOMICA",
+   "nivel2": "CATALUÑA",
+   "nivel3": "OFICINA DE SUPORT A LA INICIATIVA CULTURAL"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES51 - CATALUÑA"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "Actividades de creación artística y artes escénicas",
+    "codigo": "90"
+   }
+  ],
+  "presupuestoTotal": 1200000,
+  "fechaRecepcion": "2026-05-15",
+  "fechaInicioSolicitud": "2026-05-28",
+  "fechaFinSolicitud": "2026-06-18",
+  "textInicio": null,
+  "textFin": null,
+  "abierto": false,
+  "anuncios": [
+   {
+    "datPublicacion": "2026-05-27",
+    "desDiarioOficial": "DOGC. D.O. DE LA GENERALITAT DE CATALUNYA"
+   }
+  ]
+ },
+ {
+  "codigoBDNS": "939992",
+  "descripcion": "RESOLUCIÓN de la directora general de Patrimonio Cultural por la que se convocan subvenciones a galerías de arte de la Comunitat Valenciana para la dinamización, promoción y difusión de la creación artística.",
+  "organo": {
+   "nivel1": "AUTONOMICA",
+   "nivel2": "COMUNITAT VALENCIANA",
+   "nivel3": "SECRETARÍA AUTONÓMICA DE CULTURA"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES - ESPAÑA "
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "ACTIVIDADES SANITARIAS Y DE SERVICIOS SOCIALES",
+    "codigo": "R"
+   }
+  ],
+  "presupuestoTotal": 300000,
+  "fechaRecepcion": "2026-11-05",
+  "fechaInicioSolicitud": "2026-11-03",
+  "fechaFinSolicitud": "2026-11-13",
+  "textInicio": "al dia siguiente a su publicación en DOGV",
+  "textFin": "10 días hábiles a partir del siguiente al de su publicación",
+  "abierto": false,
+  "anuncios": [
+   {
+    "datPublicacion": "2026-11-09",
+    "desDiarioOficial": "DOCV. D.O. DE LA COMUNITAT VALENCIANA"
+   }
+  ]
+ },
+ {
+  "codigoBDNS": "941218",
+  "descripcion": "Subvención nominativa a las cámaras de comercio por realización de actuaciones en materia de innovación y digitalización.",
+  "organo": {
+   "nivel1": "AUTONOMICA",
+   "nivel2": "ILLES BALEARS",
+   "nivel3": "DIRECCIÓN GENERAL DE INVESTIGACIÓN, INNOVACIÓN Y TRANSFORMACIÓN DIGITAL"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES53 - ILLES BALEARS"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "OTROS SERVICIOS",
+    "codigo": "T"
+   },
+   {
+    "descripcion": "TRANSPORTE Y ALMACENAMIENTO",
+    "codigo": "H"
+   }
+  ],
+  "presupuestoTotal": 31000,
+  "fechaRecepcion": "2026-11-10",
+  "fechaInicioSolicitud": "2026-01-01",
+  "fechaFinSolicitud": "2026-01-26",
+  "textInicio": null,
+  "textFin": null,
+  "abierto": false,
+  "anuncios": []
+ },
+ {
+  "codigoBDNS": "933595",
+  "descripcion": "SUBVENCION NOMINATIVA 2026 - ASOCIACION CREACION ARTISTICA ENFOQUES",
+  "organo": {
+   "nivel1": "LOCAL",
+   "nivel2": "TUI",
+   "nivel3": "AYUNTAMIENTO DE TUI"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES114 - Pontevedra"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "ACTIVIDADES ARTÍSTICAS, DEPORTIVAS Y DE ENTRETENIMIENTO",
+    "codigo": "S"
+   }
+  ],
+  "presupuestoTotal": 30000,
+  "fechaRecepcion": "2026-10-05",
+  "fechaInicioSolicitud": null,
+  "fechaFinSolicitud": null,
+  "textInicio": "Día siguienta a la comunicación de inicio",
+  "textFin": "Diez días hábiles a la comunicación de inicio",
+  "abierto": false,
+  "anuncios": []
+ },
+ {
+  "codigoBDNS": "921101",
+  "descripcion": "Resolución de 24 de julio de 2026, del Rector, por la que se convoca el VI Certamen Complutense de Fotografía Naturalista 2026 para apoyar la creación artística en formato fotografía naturalista de la comunidad universitaria.",
+  "organo": {
+   "nivel1": "OTROS",
+   "nivel2": "UNIVERSIDAD COMPLUTENSE DE MADRID",
+   "nivel3": null
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "XXXX - TODO EL MUNDO"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "Actividades de bibliotecas, archivos, museos y otras actividades culturales",
+    "codigo": "91"
+   },
+   {
+    "descripcion": "Actividades de creación artística y artes escénicas",
+    "codigo": "90"
+   }
+  ],
+  "presupuestoTotal": 1500,
+  "fechaRecepcion": "2026-07-23",
+  "fechaInicioSolicitud": null,
+  "fechaFinSolicitud": null,
+  "textInicio": "A partir del día siguiente a la publicación en el BOCM",
+  "textFin": "20 de septiembre de 2026",
+  "abierto": false,
+  "anuncios": []
+ },
+ {
+  "codigoBDNS": "941711",
+  "descripcion": "Subvención a la Cámara Oficial de Comercio, Industria y Navegación de Alicante para acciones de digitalización e innovación de empresas de la provincia de Alicante",
+  "organo": {
+   "nivel1": "LOCAL",
+   "nivel2": "DIPUTACIÓN PROV. DE ALICANTE",
+   "nivel3": "DIPUTACIÓN PROVINCIAL DE ALACANT/ALICANTE"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES521 - Alicante / Alacant"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "OTROS SERVICIOS",
+    "codigo": "T"
+   }
+  ],
+  "presupuestoTotal": 140500,
+  "fechaRecepcion": "2026-11-12",
+  "fechaInicioSolicitud": null,
+  "fechaFinSolicitud": null,
+  "textInicio": "14/10/2026",
+  "textFin": "12/11/2026",
+  "abierto": false,
+  "anuncios": []
+ },
+ {
+  "codigoBDNS": "941113",
+  "descripcion": "Digitalización y catalogación de los fondos documentales de la Fundación",
+  "organo": {
+   "nivel1": "LOCAL",
+   "nivel2": "DIPUTACIÓN PROV. DE CÁDIZ",
+   "nivel3": "DIPUTACIÓN PROVINCIAL DE CÁDIZ"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES612 - Cádiz"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "ACTIVIDADES ARTÍSTICAS, DEPORTIVAS Y DE ENTRETENIMIENTO",
+    "codigo": "S"
+   }
+  ],
+  "presupuestoTotal": 20000,
+  "fechaRecepcion": "2026-11-10",
+  "fechaInicioSolicitud": null,
+  "fechaFinSolicitud": null,
+  "textInicio": "SIN PLAZO DE SOLICITUD",
+  "textFin": "SIN PLAZO DE SOLICITUD",
+  "abierto": false,
+  "anuncios": []
+ },
+ {
+  "codigoBDNS": "934864",
+  "descripcion": "PREMIOS CON MOTIVO DE LA REALIZACIÓN DE LA V BIENAL DE ARTES VISUALES PLURI-IDENTITATS 2027. CURSO: 2026-2027, DE LA UNIVERSIDAD DE ALICANTE",
+  "organo": {
+   "nivel1": "OTROS",
+   "nivel2": "UNIVERSIDAD DE ALICANTE",
+   "nivel3": null
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES - ESPAÑA "
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "Educación terciaria",
+    "codigo": "85.4"
+   }
+  ],
+  "presupuestoTotal": 2000,
+  "fechaRecepcion": "2026-10-13",
+  "fechaInicioSolicitud": "2026-11-02",
+  "fechaFinSolicitud": "2027-01-08",
+  "textInicio": null,
+  "textFin": null,
+  "abierto": false,
+  "anuncios": [
+   {
+    "datPublicacion": "2026-10-15",
+    "desDiarioOficial": "DOCV. D.O. DE LA COMUNITAT VALENCIANA"
+   }
+  ]
+ },
+ {
+  "codigoBDNS": "907147",
+  "descripcion": "Convocatoria del VI Premio Granada de Fondo a la creación artística.",
+  "organo": {
+   "nivel1": "LOCAL",
+   "nivel2": "DIPUTACIÓN PROV. DE GRANADA",
+   "nivel3": "DIPUTACIÓN PROVINCIAL DE GRANADA"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES614 - Granada"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "Actividades de creación artística y artes escénicas",
+    "codigo": "90"
+   }
+  ],
+  "presupuestoTotal": 15000,
+  "fechaRecepcion": "2026-05-21",
+  "fechaInicioSolicitud": null,
+  "fechaFinSolicitud": "2026-07-31",
+  "textInicio": "Al día siguiente de la publicación de la presente convocatoria en el BOP Granada",
+  "textFin": null,
+  "abierto": false,
+  "anuncios": []
+ },
+ {
+  "codigoBDNS": "920051",
+  "descripcion": "CONCURSO DE ARTES VISUALES TRAS LA PARED 2026",
+  "organo": {
+   "nivel1": "LOCAL",
+   "nivel2": "TORRENT",
+   "nivel3": "AYUNTAMIENTO DE TORRENT"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES523 - Valencia / València"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "ACTIVIDADES SANITARIAS Y DE SERVICIOS SOCIALES",
+    "codigo": "R"
+   }
+  ],
+  "presupuestoTotal": 5000,
+  "fechaRecepcion": "2026-07-17",
+  "fechaInicioSolicitud": "2026-03-24",
+  "fechaFinSolicitud": "2026-12-31",
+  "textInicio": "Concurso artes visuales",
+  "textFin": "Concurso artes visuales",
+  "abierto": false,
+  "anuncios": [
+   {
+    "datPublicacion": "2026-07-28",
+    "desDiarioOficial": "B.O.P. DE VALENCIA"
+   }
+  ]
+ },
+ {
+  "codigoBDNS": "941478",
+  "descripcion": "Resolución de 10/11/2026, por la que se aprueba la convocatoria de las ayudas del Programa de Apoyo a la Digitalización, cofinanciable en el marco del programa Feder de Castilla-La Mancha 2021-2027, para el ejercicio 2026",
+  "organo": {
+   "nivel1": "AUTONOMICA",
+   "nivel2": "CASTILLA-LA MANCHA",
+   "nivel3": "DIRECCIÓN GENERAL DE EMPRESAS"
+  },
+  "tiposBeneficiarios": [
+   {
+    "descripcion": "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+   }
+  ],
+  "regiones": [
+   {
+    "descripcion": "ES42 - CASTILLA LA MANCHA"
+   }
+  ],
+  "sectores": [
+   {
+    "descripcion": "ACTIVIDADES ARTÍSTICAS, DEPORTIVAS Y DE ENTRETENIMIENTO",
+    "codigo": "S"
+   },
+   {
+    "descripcion": "ACTIVIDADES FINANCIERAS Y DE SEGUROS",
+    "codigo": "L"
+   },
+   {
+    "descripcion": "ACTIVIDADES INMOBILIARIAS",
+    "codigo": "M"
+   },
+   {
+    "descripcion": "ACTIVIDADES PROFESIONALES, CIENTÍFICAS Y TÉCNICAS",
+    "codigo": "N"
+   },
+   {
+    "descripcion": "ACTIVIDADES SANITARIAS Y DE SERVICIOS SOCIALES",
+    "codigo": "R"
+   },
+   {
+    "descripcion": "COMERCIO AL POR MAYOR Y AL POR MENOR",
+    "codigo": "G"
+   },
+   {
+    "descripcion": "CONSTRUCCIÓN",
+    "codigo": "F"
+   },
+   {
+    "descripcion": "EDUCACIÓN",
+    "codigo": "Q"
+   },
+   {
+    "descripcion": "INDUSTRIA MANUFACTURERA",
+    "codigo": "C"
+   },
+   {
+    "descripcion": "INDUSTRIAS EXTRACTIVAS",
+    "codigo": "B"
+   },
+   {
+    "descripcion": "OTROS SERVICIOS",
+    "codigo": "T"
+   },
+   {
+    "descripcion": "SUMINISTRO DE AGUA, ACTIVIDADES DE SANEAMIENTO, GESTIÓN DE RESIDUOS Y DESCONTAMINACIÓN",
+    "codigo": "E"
+   },
+   {
+    "descripcion": "TELECOMUNICACIONES, PROGRAMACIÓN INFORMÁTICA, CONSULTORÍA, INFRAESTRUCTURA INFORMÁTICA Y OTROS SERVICIOS DE INFORMACIÓN",
+    "codigo": "K"
+   },
+   {
+    "descripcion": "TRANSPORTE Y ALMACENAMIENTO",
+    "codigo": "H"
+   }
+  ],
+  "presupuestoTotal": 3000000,
+  "fechaRecepcion": "2026-11-11",
+  "fechaInicioSolicitud": null,
+  "fechaFinSolicitud": "2027-01-20",
+  "textInicio": "Desde el día siguiente al de la publicación de esta resolución y de su extracto en el DOCM",
+  "textFin": null,
+  "abierto": false,
+  "anuncios": []
+ }
+]

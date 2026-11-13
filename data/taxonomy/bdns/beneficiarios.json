@@ -1,0 +1,26 @@
+{
+ "source": "https://www.infosubvenciones.es/bdnstrans/api/beneficiarios?vpd=GE",
+ "fetchedAt": "2026-11-13",
+ "items": [
+  {
+   "descripcion": "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA",
+   "id": 3
+  },
+  {
+   "descripcion": "GRAN EMPRESA",
+   "id": 4
+  },
+  {
+   "descripcion": "PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+   "id": 2
+  },
+  {
+   "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+   "id": 1
+  },
+  {
+   "descripcion": "SIN INFORMACION ESPECIFICA",
+   "id": 5
+  }
+ ]
+}
