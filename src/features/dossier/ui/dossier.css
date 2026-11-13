@@ -442,3 +442,22 @@ html, body { background: #fff; }
 .dossier-wall [data-slot]:empty { display: none !important; }
 .dossier-wall .frame:empty { display: none; }
 }
+
+/* ---- App integration (not from the design): neutralise globals.css .sheet (a fixed bottom-sheet modal,
+   rounded, dark in dark mode) and keep the dossier on paper whatever the app theme. Specificity 0,4,0
+   beats ":root:not([data-theme=light]) .sheet". */
+.dossier-wall { color-scheme: light; }
+.dossier-wall .dossier > .sheet.sheet {
+  position: relative; inset: auto; z-index: auto;
+  max-height: none; overflow: visible;
+  border-radius: 0;
+  background: var(--paper);
+}
+.dossier-wall .dossier > .sheet.contact { background: var(--ink); }
+.dossier-wall .dossier > .sheet.cover { overflow: hidden; }
+.dossier-wall .dossier > .sheet.ruled { row-gap: 0; }
+@media print {
+  .dossier-wall .dossier > .sheet.sheet { background: transparent; }
+  .dossier-wall .dossier > .sheet.cover { background: var(--paper); }
+  .dossier-wall .dossier > .sheet.contact { background: var(--ink); }
+}

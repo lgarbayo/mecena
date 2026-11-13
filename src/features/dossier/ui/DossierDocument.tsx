@@ -1,3 +1,4 @@
+"use client";
 /**
  * Editorial dossier (screen + print), a faithful port of fleet/design/dossier/{creator,business}.html.
  * Pure render of a DossierView: no data fetching, no hooks, so WP-01 can reuse it for the progressive build
@@ -83,7 +84,16 @@ function Frame({ work, hint, alt }: { work?: Pick<WorkView, "imageUrl" | "title"
   return (
     <div className="frame" data-hint={hint}>
       {/* eslint-disable-next-line @next/next/no-img-element -- user artwork, never cropped or re-encoded */}
-      {work?.imageUrl ? <img src={work.imageUrl} alt={alt ?? work.title} loading="lazy" decoding="async" /> : null}
+      {work?.imageUrl ? (
+        <img
+          src={work.imageUrl}
+          alt={alt ?? work.title}
+          loading="lazy"
+          decoding="async"
+          // A missing file falls back to the empty frame and its hint, never a broken-image icon.
+          onError={(e) => e.currentTarget.remove()}
+        />
+      ) : null}
     </div>
   );
 }
