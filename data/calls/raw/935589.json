@@ -1,0 +1,84 @@
+{
+  "id": 1137150,
+  "organo": {
+    "nivel1": "LOCAL",
+    "nivel2": "FORNELOS DE MONTES",
+    "nivel3": "AYUNTAMIENTO DE FORNELOS DE MONTES"
+  },
+  "sedeElectronica": "https://fornelos.sedelectronica.gal",
+  "codigoBDNS": "935589",
+  "fechaRecepcion": "2026-10-15",
+  "instrumentos": [
+    {
+      "descripcion": "SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN "
+    }
+  ],
+  "tipoConvocatoria": "Concurrencia competitiva - canónica",
+  "presupuestoTotal": 2500,
+  "mrr": false,
+  "descripcion": "XV Edición del Premio de Poesía Manuel Lueiro Rey",
+  "descripcionLeng": "XV Edición do Premio de Poesía Manuel Lueiro Rey",
+  "tiposBeneficiarios": [
+    {
+      "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+    }
+  ],
+  "sectores": [
+    {
+      "descripcion": "ACTIVIDADES DE EDICIÓN, RADIODIFUSIÓN Y PRODUCCIÓN Y DISTRIBUCIÓN DE CONTENIDOS",
+      "codigo": "J"
+    }
+  ],
+  "regiones": [
+    {
+      "descripcion": "ES11 - GALICIA"
+    }
+  ],
+  "descripcionFinalidad": "Cultura",
+  "descripcionBasesReguladoras": "Convocatoria de la XV Edición del Premio de Poesía Manuel Lueiro Rey",
+  "urlBasesReguladoras": "https://fornelos.sedelectronica.gal/info.0",
+  "sePublicaDiarioOficial": true,
+  "abierto": false,
+  "fechaInicioSolicitud": null,
+  "fechaFinSolicitud": null,
+  "textInicio": "Desde el día siguiente a su publicación de las bases en el BOP",
+  "textFin": "28/12/2026",
+  "ayudaEstado": null,
+  "urlAyudaEstado": null,
+  "fondos": [],
+  "reglamento": null,
+  "objetivos": [],
+  "sectoresProductos": [],
+  "documentos": [
+    {
+      "id": 1537689,
+      "descripcion": "Documento de la convocatoria en lengua cooficial",
+      "nombreFic": "Bases XV Premio de Poesía Manuel Lueiro Rey_galego.pdf",
+      "long": 177378,
+      "datMod": "2026-10-15",
+      "datPublicacion": "2026-10-28"
+    },
+    {
+      "id": 1537688,
+      "descripcion": "Documento de la convocatoria en español",
+      "nombreFic": "Bases XV Premio de Poesía Manuel Lueiro Rey_castellano.pdf",
+      "long": 151939,
+      "datMod": "2026-10-15",
+      "datPublicacion": "2026-10-28"
+    }
+  ],
+  "anuncios": [
+    {
+      "numAnuncio": 223039,
+      "titulo": "CONVOCATORIA DE LA XV EDICION DEL PREMIO DE POESÍA MANUEL LUEIRO REY",
+      "tituloLeng": "CONVOCATORIA DA XV EDICION DO PREMIO DE POESÍA MANUEL LUEIRO REY",
+      "texto": "<p>Extracto de las bases aprobadas por acuerdo de 09 de octubre de 2026 de la Junta de Gobierno Local del Ayuntamiento de Fornelos de Montes por la que se convoca la XV Edición del Premio de Poesía Manuel Lueiro Rey.</p><p> </p><p>Primero.-  Participantes.</p><p> </p><p>Podrán concurrir a este certamen todas las personas mayores de edad que lo deseen y cada participante deberá hacerlo con un único artículo.</p><p> </p><p>No podrán obtener la condición de beneficiarios de los premios las personas en quien concurra alguna de las circunstancias previstas en el artículo 13 de la Ley 38/2003, de 17 de noviembre, General de Subvenciones (LGS).</p><p> </p><p>Quedan expresamente excluidas de esta convocatoria aquellas personas que no se encuentren al corriente en sus deberes tributarios con el Ayuntamiento de Fornelos de Montes, la Tesorería General de la Seguridad Social, la Agencia Estatal de la Administración Tributaria y la Agencia Tributaria de Galicia.</p><p> </p><p>Las personas que hayan conseguido este premio no podrán presentarse hasta pasados cinco años desde la fecha en la que hayan sido ganadores.</p><p> </p><p>Los beneficiarios están sujetos al cumplimiento de las obligaciones establecidas en el art. 14 de la  LGS.</p><p> </p><p>Segundo.- Objeto.</p><p> </p><p>Los poemarios serán de tema y forma libres, con una extensión mínima de 500 versos y máxima de 800. Deberán ser originales y estar inéditos en su totalidad, condición que se extiende al soporte digital.</p><p> </p><p>Tercero.- Bases reguladoras.</p><p> </p><p>Se publicarán en la web del Ayuntamiento y en el tablón de anuncios.</p><p> </p><p>Cuarto.- Cuantía.</p><p> </p><p>La dotación del premio, único e indivisible, que será de dos mil quinientos euros (2.500 euros), con cargo a la partida 334.48 del presupuesto del Ayuntamiento de Fornelos de Montes, estará sujeta al tratamiento fiscal en vigor en el momento de la concesión.</p><p> </p><p>Si el jurado lo considera oportuno, el premio podrá ser declarado desierto. Asimismo, el jurado podrá designar uno o más accésits al premio que en ningún caso comportarán dotación económica.</p><p> </p><p>Quinto.- Plazo de presentación.</p><p> </p><p>El plazo de recepción se iniciará desde el día siguiente de la publicación de estas bases en el BOP hasta el día 28 de diciembre de 2026.</p>",
+      "textoLeng": "<p>Extracto das bases aprobadas por acordo de 09 de outubro de 2026 da Xunta de Goberno Local do Concello de Fornelos de Montes pola que se convoca a XV Edición do Premio de Poesía Manuel Lueiro Rey</p><p> </p><p>Primeiro.-  Participantes.</p><p> </p><p>Poderán concorrer a este certame todas as persoas maiores de idade que o desexen e cada participante deberá facelo cun único artigo.</p><p> </p><p>Non poderán obter a condición de beneficiarios dos premios as persoas en quen concorra algunha das circunstancias previstas no artigo 13 da Lei 38/2003, do 17 de novembro, Xeral de Subvencións (LXS).</p><p> </p><p>Quedan expresamente excluídas desta convocatoria aquelas persoas que non se atopen ao corrente nas súas obrigas tributarias co Concello de Fornelos de Montes, a Tesourería Xeral da Seguridade Social, a Axencia Estatal da Administración Tributaria e a Axencia Tributaria de Galicia.</p><p> </p><p>As persoas que teñan acadado este premio non poderán presentarse ata pasados cinco anos dende a data en que tiñan sido gañadoras.</p><p> </p><p>Os beneficiarios están suxeitos ao cumprimento das obrigacións establecidas no art. 14 da LXS.</p><p> </p><p> </p><p>Segundo.- Obxecto.</p><p> </p><p>Os poemarios serán de tema e forma libres, cunha extensión mínima de 500 versos e máxima de 800. Deberán ser orixinais e estar inéditos na súa totalidade, condición que se extende ao soporte dixital.</p><p> </p><p>Terceiro.- Bases reguladoras.</p><p> </p><p>Publicaranse na web do Concello e no taboleiro de anuncios.</p><p> </p><p>Cuarto.- Contía.</p><p> </p><p>A dotación do premio, único e indivisible, que será de dous mil cincocentos euros (2.500 euros), con cargo á partida 334.48 do orzamento do Concello de Fornelos de Montes, estará suxeita ao tratamento fiscal en vigor no momento da concesión.</p><p> </p><p>Se o xurado o considera oportuno, o premio poderá ser declarado deserto. Así mesmo, o xurado poderá designar un ou máis accésits ao premio que en ningún caso comportarán dotación económica.</p><p> </p><p>Quinto.- Prazo de presentación.</p><p> </p><p>O prazo de recepción iniciarase dende o día seguinte da publicación destas bases no BOP ata o día 28 de decembro de 2026.</p>",
+      "url": "https://boppo.depo.gal/web/boppo/detalle/-/boppo/2026/10/30/2026075919",
+      "cve": "EO745XWRJS77BCR1",
+      "desDiarioOficial": "B.O.P. DE PONTEVEDRA",
+      "datPublicacion": "2026-10-30"
+    }
+  ],
+  "advertencia": "La reutilización de los datos del Sistema Nacional de Publicidad de Subvenciones y Ayudas Públicas está sujeta a una serie de restricciones y consideraciones legales. Consulte el aviso legal en https://www.infosubvenciones.es/bdnstrans/GE/es/avisolegal.Además, el usuario debe ser consciente que la información presentada es de naturaleza dinámica, y que los datos pueden ser sometidos a correcciones, inserciones, modificaciones y eliminaciones en momentos posteriores a su extracción. Accesos al API del sistema Nacional de Publicidad de Subvenciones y Ayudas Públicas. La Administración Presupuestaria, para salvaguardar la protección del acceso libre e irrestricto de los ciudadanos a este Portal y a su información podrá adoptar medidas restrictivas de acceso al API ante situaciones de manifiesto abuso del servicio, riesgos de seguridad, o uso fraudulento de la información descargada, de acuerdo con las buenas prácticas de gestión de datos abiertos (https://datos.gob.es/es/blog/limitaciones-la-consulta-de-una-api) establecidas por el Ministerio para la Transformación Digital y de la Función Pública."
+}

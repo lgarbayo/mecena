@@ -1,0 +1,115 @@
+{
+  "id": 1141440,
+  "organo": {
+    "nivel1": "LOCAL",
+    "nivel2": "LARACHA, A",
+    "nivel3": "AYUNTAMIENTO DE A LARACHA"
+  },
+  "sedeElectronica": "https://sede.alaracha.gal/sxc/es/index.html",
+  "codigoBDNS": "939879",
+  "fechaRecepcion": "2026-11-04",
+  "instrumentos": [
+    {
+      "descripcion": "SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN "
+    }
+  ],
+  "tipoConvocatoria": "Concurrencia competitiva - canónica",
+  "presupuestoTotal": 1500,
+  "mrr": false,
+  "descripcion": "CONOVCATORIA SUBVENCIONES: V CONCURSO DE FOTOGRAFÍA A LARACHA NO OBXECTIVO",
+  "descripcionLeng": "CONVOCATORIA SUBVENCIONES: V CONCURSO DE FOTOGRAFÍA A LARACHA NO OBXECTIVO ",
+  "tiposBeneficiarios": [
+    {
+      "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+    },
+    {
+      "descripcion": "PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA"
+    }
+  ],
+  "sectores": [
+    {
+      "descripcion": "ACTIVIDADES ARTÍSTICAS, DEPORTIVAS Y DE ENTRETENIMIENTO",
+      "codigo": "S"
+    },
+    {
+      "descripcion": "ADMINISTRACIÓN PÚBLICA Y DEFENSA; SEGURIDAD SOCIAL OBLIGATORIA",
+      "codigo": "P"
+    },
+    {
+      "descripcion": "EDUCACIÓN",
+      "codigo": "Q"
+    },
+    {
+      "descripcion": "OTROS SERVICIOS",
+      "codigo": "T"
+    },
+    {
+      "descripcion": "TRANSPORTE Y ALMACENAMIENTO",
+      "codigo": "H"
+    }
+  ],
+  "regiones": [
+    {
+      "descripcion": "ES111 - A Coruña"
+    }
+  ],
+  "descripcionFinalidad": "Cultura",
+  "descripcionBasesReguladoras": "BASES REGULADOREAS V CONCURSO DE FOTOGRAFÍA \"A LARACHA NO OBXECTIVO\"",
+  "urlBasesReguladoras": "https://sede.alaracha.gal/sxc/es/index.html",
+  "sePublicaDiarioOficial": true,
+  "abierto": false,
+  "fechaInicioSolicitud": null,
+  "fechaFinSolicitud": null,
+  "textInicio": "DIA SIGUIENTE AL DE LA PUBLICACIÓN DE EXTRACTO EN EL BOP DE A CORUÑA",
+  "textFin": "25 DÍAS NATURALES A CONTAR DESDE INICIO ",
+  "ayudaEstado": null,
+  "urlAyudaEstado": null,
+  "fondos": [
+    {
+      "descripcion": "FEDER - FONDO EUROPEO DE DESARROLLO REGIONAL"
+    }
+  ],
+  "reglamento": null,
+  "objetivos": [],
+  "sectoresProductos": [],
+  "documentos": [
+    {
+      "id": 1549881,
+      "descripcion": "Documento de la convocatoria en español",
+      "nombreFic": "6- Decreto bases castellano.pdf",
+      "long": 234408,
+      "datMod": "2026-11-04",
+      "datPublicacion": "2026-11-04"
+    },
+    {
+      "id": 1549884,
+      "descripcion": "BASES CONVOCATORIA",
+      "nombreFic": "2.Bases reguladoras (borrador).pdf",
+      "long": 263243,
+      "datMod": "2026-11-04",
+      "datPublicacion": "2026-11-04"
+    },
+    {
+      "id": 1549883,
+      "descripcion": "Documento de la convocatoria en lengua cooficial",
+      "nombreFic": "5. Decreto bases.pdf",
+      "long": 252476,
+      "datMod": "2026-11-04",
+      "datPublicacion": "2026-11-04"
+    }
+  ],
+  "anuncios": [
+    {
+      "numAnuncio": 224419,
+      "titulo": "V CONCURSO DE FOTOGRAFÍA \" A LARACHA NO OBXECTIVO\"",
+      "tituloLeng": "V CONCURSO DE FOTOGRAFÍA \" A LARACHA NO OBXECTIVO\"",
+      "texto": "<p>Anuncio:  V CONCURSO DE FOTOGRAFÍA \" A LARACHA NO OBXECTIVO\"</p><p>Por resolución de alcaldía del 4/11/2026 se apreuban las  BASES REGULADORAS V CONCURSO DE FOTOGRAFÍA \" A LARACHA NO OBXECTIVO\"</p><p>Las bases íntegras podrán consultarse en la página web y en la sede electrónica del Ayuntamiento de A Laracha  (https://sede.alaracha.gal/sxc/es/informacion/).</p><p> </p><p>A Laracha, 04 de novembro de 2026</p><p>O Alcalde, José Manuel López Varela</p>",
+      "textoLeng": "<p>Anuncio:  V CONCURSO DE FOTOGRAFÍA \" A LARACHA NO OBXECTIVO\"</p><p>Por resolución da alcaldía do 4/11/2026 apróbanse as BASES REGULADORAS V CONCURSO DE FOTOGRAFÍA \" A LARACHA NO OBXECTIVO\"</p><p>As bases íntegras poderán consultarse na páxina web e na sede electrónica do Concello da Laracha (https://sede.alaracha.gal/sxc/es/informacion/).</p><p> </p><p>A Laracha, 04 de novembro de 2026</p><p>O Alcalde, José Manuel López Varela</p>",
+      "url": "https://bop.dacoruna.gal/bopportal/descargarPdf.do?fecha=20261110&numRegistro=2026/0000007237.pdf",
+      "cve": "2026/7237",
+      "desDiarioOficial": "B.O.P. DE A CORUÑA",
+      "datPublicacion": "2026-11-10"
+    }
+  ],
+  "advertencia": "La reutilización de los datos del Sistema Nacional de Publicidad de Subvenciones y Ayudas Públicas está sujeta a una serie de restricciones y consideraciones legales. Consulte el aviso legal en https://www.infosubvenciones.es/bdnstrans/GE/es/avisolegal.Además, el usuario debe ser consciente que la información presentada es de naturaleza dinámica, y que los datos pueden ser sometidos a correcciones, inserciones, modificaciones y eliminaciones en momentos posteriores a su extracción. Accesos al API del sistema Nacional de Publicidad de Subvenciones y Ayudas Públicas. La Administración Presupuestaria, para salvaguardar la protección del acceso libre e irrestricto de los ciudadanos a este Portal y a su información podrá adoptar medidas restrictivas de acceso al API ante situaciones de manifiesto abuso del servicio, riesgos de seguridad, o uso fraudulento de la información descargada, de acuerdo con las buenas prácticas de gestión de datos abiertos (https://datos.gob.es/es/blog/limitaciones-la-consulta-de-una-api) establecidas por el Ministerio para la Transformación Digital y de la Función Pública."
+}

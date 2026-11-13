@@ -1,0 +1,1719 @@
+[
+  {
+    "id": "igape-re-acciona-2026",
+    "title": "Programa Re-acciona 2026 (IGAPE): consultoría para pymes y autónomos",
+    "organizer": "GALICIA · INSTITUTO GALLEGO DE PROMOCIÓN ECONÓMICA (IGAPE)",
+    "type": "ayuda",
+    "scope": "autonomico",
+    "region": "Galicia",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "autonomo",
+      "pyme"
+    ],
+    "territories": [
+      "ES11"
+    ],
+    "disciplines": [],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Galicia"
+      ],
+      "legalForms": [
+        "autonomo",
+        "pyme"
+      ],
+      "other": [
+        "Mínimo 3 personas trabajadoras en 2025"
+      ]
+    },
+    "amountEur": {
+      "min": 3024,
+      "max": 5040,
+      "total": 1950000
+    },
+    "amountText": "80 % del servicio: 3.024 € (cat. 1), 4.284 € (cat. 2) o 5.040 € (cat. 3); hasta 2 servicios por pyme",
+    "opensAt": "2026-01-26",
+    "deadline": "2026-11-16",
+    "deadlineText": "Ampliado hasta el 16/11/2026 (el plazo inicial terminaba el 30 de septiembre)",
+    "status": "open",
+    "summary": "Programa Re-acciona del IGAPE: servicios de consultoría para autónomos y pymes gallegas (estrategia, finanzas, talento, ESG, innovación…). El IGAPE paga el 80 % del servicio directamente a la entidad colaboradora que elijas, que además tramita la solicitud. Se concede por orden de llegada.",
+    "requiredDocuments": [
+      "Solicitud presentada por la entidad colaboradora elegida en reacciona.igape.es",
+      "Datos de la empresa y plantilla de 2025",
+      "Declaración de ayudas de minimis recibidas"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Servicios de profesionalización y desarrollo estratégico",
+      "Servicios de innovación (diseño de productos, protección de la innovación, financiación de la innovación)"
+    ],
+    "sourceUrl": "https://reacciona.igape.es",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1517961",
+    "bdnsId": "880749",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "a-laracha-concurso-fotografia-2026",
+    "title": "V Concurso de fotografía «A Laracha en el objetivo»",
+    "organizer": "LARACHA, A · AYUNTAMIENTO DE A LARACHA",
+    "type": "certamen",
+    "scope": "local",
+    "region": "A Coruña",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "fotografia"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "minAge": 18,
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "El lugar fotografiado debe ser del municipio de A Laracha y reconocible",
+        "Fotografías inéditas y no premiadas",
+        "Menores de edad con autorización del tutor (Anexo 2)"
+      ]
+    },
+    "amountEur": {
+      "min": 250,
+      "max": 600,
+      "total": 1500
+    },
+    "amountText": "1.º 600 €, 2.º 400 €, 3.º 250 €",
+    "deadline": "2026-12-01",
+    "deadlineText": "Estimado: 25 días naturales desde la publicación del extracto en el BOP de A Coruña (fecha estimada)",
+    "status": "open",
+    "summary": "Concurso de fotografía del Concello de A Laracha sobre su patrimonio natural y cultural. Puedes presentar hasta 3 fotos inéditas en digital; solo se admiten ajustes básicos y no se aceptan imágenes generadas o alteradas con IA.",
+    "requiredDocuments": [
+      "Anexo 1 (solicitud de participación)",
+      "Documento con título, lugar y fecha de cada fotografía",
+      "Anexo 4: Declaración responsable de no estar incurso en el art. 13 de la Ley 38/2003 y de estar al corriente con Hacienda y Seguridad Social",
+      "Archivos originales si la foto está retocada"
+    ],
+    "dossierRequirements": {
+      "maxImages": 3,
+      "format": "JPG, TIFF o PNG (mín. 3000×2000 px)",
+      "notes": "Solo ajustes básicos; prohibido usar IA para alterar la imagen"
+    },
+    "criteria": [
+      {
+        "id": "impacto-visual",
+        "name": "Impacto visual",
+        "description": "Sensación al ver la imagen por primera vez; capacidad de atraer la atención o evocar un sentimiento.",
+        "maxPoints": 34
+      },
+      {
+        "id": "calidad-tecnico-artistica",
+        "name": "Calidad técnico-artística",
+        "description": "Foco, nitidez, balance de color, iluminación, composición, exposición y presentación.",
+        "maxPoints": 33
+      },
+      {
+        "id": "creatividad",
+        "name": "Creatividad",
+        "description": "Originalidad en el modo de presentar el patrimonio, que debe seguir siendo reconocible.",
+        "maxPoints": 33
+      }
+    ],
+    "criteriaSource": "bases",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.alaracha.gal/",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1549881",
+    "bdnsId": "939879",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "calahorra-cartel-jornadas-verdura-2027",
+    "title": "Concurso de cartel de las XXXI Jornadas Gastronómicas de la Verdura (Calahorra)",
+    "organizer": "CALAHORRA · AYUNTAMIENTO DE CALAHORRA",
+    "type": "certamen",
+    "scope": "local",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "ilustracion",
+      "diseno-grafico"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Obra original, no premiada ni difundida antes como cartel",
+        "Debe incluir los textos obligatorios de las bases"
+      ]
+    },
+    "amountEur": {
+      "min": 800,
+      "max": 800,
+      "total": 800
+    },
+    "amountText": "Premio único de 800 € brutos",
+    "deadline": "2026-12-03",
+    "deadlineText": "2026-12-03",
+    "status": "open",
+    "summary": "Concurso para diseñar el cartel de las XXXI Jornadas Gastronómicas de la Verdura de Calahorra (abril de 2027). Técnica libre, formato vertical de 46,5×65 cm, en digital o en soporte físico.",
+    "requiredDocuments": [
+      "Solicitud oficial",
+      "Cartel en JPG de alta resolución (300 ppp, 3-5 MB)",
+      "Copia del DNI",
+      "Declaración responsable de no estar incurso en el art. 13 de la Ley 38/2003 y de estar al corriente con Hacienda y Seguridad Social"
+    ],
+    "dossierRequirements": {
+      "maxImages": 1,
+      "maxFileMb": 5,
+      "format": "JPG o PNG (300 ppp, 3-5 MB) o soporte rígido 46,5×65 cm"
+    },
+    "criteria": [
+      {
+        "id": "originalidad-y-creatividad",
+        "name": "Originalidad y creatividad",
+        "description": "",
+        "maxPoints": 30
+      },
+      {
+        "id": "calidad-artistica-y-composicion-grafica",
+        "name": "Calidad artística y composición gráfica",
+        "description": "",
+        "maxPoints": 25
+      },
+      {
+        "id": "vinculacion-con-las-jornadas-y-con-calah",
+        "name": "Vinculación con las Jornadas y con Calahorra",
+        "description": "",
+        "maxPoints": 25
+      },
+      {
+        "id": "impacto-visual-y-eficacia-comunicativa",
+        "name": "Impacto visual y eficacia comunicativa",
+        "description": "",
+        "maxPoints": 10
+      },
+      {
+        "id": "adaptabilidad-a-diferentes-soportes-de-d",
+        "name": "Adaptabilidad a diferentes soportes de difusión",
+        "description": "",
+        "maxPoints": 10
+      }
+    ],
+    "criteriaSource": "bases",
+    "allowedExpenses": [],
+    "sourceUrl": "https://calahorra.es/convocado-el-concurso-para-el-diseno-del-cartel-de-las-xxxi-jornadas-gastronomicas-de-la-verdura/",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1548232",
+    "bdnsId": "939239",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "lasalita-gijon-el-paisaje-2026",
+    "title": "Convocatoria de arte plástica «El Paisaje»",
+    "organizer": "Colectivo LaSalita (Gijón)",
+    "type": "convocatoria",
+    "scope": "privado",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
+    "disciplines": [
+      "pintura",
+      "fotografia",
+      "artes-visuales"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica",
+        "autonomo"
+      ],
+      "other": [
+        "Obras de 20×20 a 100×100 cm"
+      ]
+    },
+    "amountEur": {},
+    "amountText": "Sin premio en metálico: exposición colectiva del 18/12/2026 al 13/01/2027 y venta sin comisión · Cuota: Solo si te seleccionan: cuota de participación de 25 € (IVA incluido)",
+    "opensAt": "2026-09-14",
+    "deadline": "2026-12-06",
+    "deadlineText": "Del 14 de septiembre al 6 de diciembre de 2026",
+    "status": "open",
+    "summary": "Convocatoria para exponer obra sobre el paisaje en LaSalita (Gijón). Envías fotos de hasta 3 obras; si te seleccionan, pagas 25 € y expones sin comisión por venta.",
+    "requiredDocuments": [
+      "1 foto por obra en JPG o TIF («Artista – Título»)",
+      "Correo con autor, título, técnica, medidas y precio (opcional)"
+    ],
+    "dossierRequirements": {
+      "maxImages": 3,
+      "format": "JPG o TIF, 1 foto por obra"
+    },
+    "criteria": [
+      {
+        "id": "valoracion-del-jurado",
+        "name": "Valoración del jurado",
+        "description": "Se seleccionan 12-15 obras para la exposición. Criterios no publicados.",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://lasalita.org/convocatoria-de-arte-plastica-tema-el-paisaje-lasalita",
+    "basesUrl": "https://www.arteinformado.com/fichas/publicacion/bases-252759",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "turismo-galicia-eficiencia-energetica-tu986b-2026",
+    "title": "Ayudas de eficiencia energética para empresas turísticas de Galicia (TU986B)",
+    "organizer": "GALICIA · AGENCIA TURISMO DE GALICIA",
+    "type": "subvencion",
+    "scope": "autonomico",
+    "region": "Galicia",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme",
+      "autonomo"
+    ],
+    "territories": [
+      "ES11"
+    ],
+    "disciplines": [],
+    "sectors": [
+      "55",
+      "56"
+    ],
+    "eligibility": {
+      "residence": [
+        "Galicia"
+      ],
+      "legalForms": [
+        "pyme",
+        "autonomo"
+      ],
+      "other": [
+        "Pyme titular de un alojamiento o restaurante inscrito en el REAT",
+        "Auditoría energética previa y ahorro mínimo del 30 %"
+      ]
+    },
+    "amountEur": {
+      "total": 9000000
+    },
+    "amountText": "50 %, 70 % o 90 % de la inversión subvencionable según el ahorro (30 %, 40 % o 50 %)",
+    "opensAt": "2026-09-07",
+    "deadline": "2026-12-07",
+    "deadlineText": "2026-12-07",
+    "status": "open",
+    "summary": "Ayudas de la Agencia Turismo de Galicia (FEDER) para que alojamientos y restaurantes mejoren su eficiencia energética: combinan al menos dos actuaciones de eficiencia y una de renovables con un ahorro mínimo del 30 %. Se conceden por orden de llegada hasta agotar los 9 millones.",
+    "requiredDocuments": [
+      "Solicitud en la sede de la Xunta (TU986B)",
+      "Auditoría energética previa",
+      "Certificados de eficiencia energética (antes y después)",
+      "Presupuestos o facturas proforma",
+      "Declaración de pyme",
+      "Declaración responsable de no estar incurso en el art. 13 de la Ley 38/2003 y de estar al corriente con Hacienda y Seguridad Social"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Auditoría energética, certificados, proyecto técnico y dirección facultativa (hasta 15 % y 25.000 €)",
+      "Mejora de la envolvente térmica",
+      "Iluminación eficiente",
+      "Sustitución de energía convencional por renovables (solar, biomasa, aerotermia…)"
+    ],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/926278",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1514639",
+    "bdnsId": "926278",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "premios-que-arte-2026",
+    "title": "Premios Qué! Arte 2026",
+    "organizer": "Diario Qué!",
+    "type": "premio",
+    "scope": "privado",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
+    "disciplines": [
+      "arte-urbano",
+      "pintura"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "minAge": 18,
+      "residence": [],
+      "legalForms": [
+        "persona-fisica",
+        "autonomo"
+      ],
+      "other": [
+        "Obra figurativa próxima al street art o pop art, de al menos 1,5 m",
+        "Una obra original e inédita por autor"
+      ]
+    },
+    "amountEur": {
+      "min": 3000,
+      "max": 3000
+    },
+    "amountText": "Mejor Obra de Arte Urbano: 3.000 €",
+    "opensAt": "2026-11-06",
+    "deadline": "2026-12-10",
+    "deadlineText": "Del 6 de noviembre al 10 de diciembre de 2026",
+    "status": "open",
+    "summary": "Premio de arte urbano del diario Qué! para obras figurativas de estilo street art o pop art de gran formato (desde 1,5 m). Abierto a artistas mayores de edad de cualquier nacionalidad.",
+    "requiredDocuments": [
+      "Imagen de la obra",
+      "Datos del autor",
+      "Aceptación de las bases"
+    ],
+    "criteria": [
+      {
+        "id": "valoracion-del-jurado",
+        "name": "Valoración del jurado",
+        "description": "Las bases no publican criterios puntuados.",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://premios.que.es/",
+    "basesUrl": "https://www.arteinformado.com/fichas/publicacion/bases-253562",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "photoespana-descubrimientos-2027",
+    "title": "Descubrimientos PHotoEspaña 2027",
+    "organizer": "PHotoEspaña",
+    "type": "convocatoria",
+    "scope": "privado",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
+    "disciplines": [
+      "fotografia"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica",
+        "autonomo"
+      ],
+      "other": []
+    },
+    "amountEur": {},
+    "amountText": "Sin dotación económica: el ganador expone individualmente en el siguiente PHotoESPAÑA; revisiones de portfolio de febrero a mayo de 2027 · Cuota: Preinscripción 10 € (no reembolsable); inscripción final 300 € si te seleccionan",
+    "opensAt": "2026-10-26",
+    "deadline": "2026-12-15",
+    "deadlineText": "Preinscripción hasta el 15 de diciembre de 2026; selección el 16/12; pago final hasta el 18/12",
+    "status": "open",
+    "summary": "Programa de PHotoEspaña para descubrir fotógrafos: envías un dossier con una serie y, si te seleccionan, participas en revisiones de portfolio con profesionales. El ganador expone en el festival de 2027.",
+    "requiredDocuments": [
+      "Dossier digital en PDF (máx. 10 MB) con hasta 15 fotografías de una serie",
+      "Texto de presentación de la serie",
+      "Biografía breve"
+    ],
+    "dossierRequirements": {
+      "maxImages": 15,
+      "maxFileMb": 10,
+      "format": "PDF",
+      "notes": "Una sola serie de hasta 15 fotografías"
+    },
+    "criteria": [
+      {
+        "id": "valoracion-del-jurado",
+        "name": "Valoración del jurado",
+        "description": "Un jurado selecciona hasta 70 participantes; los visionadores eligen al ganador. Las bases no publican criterios puntuados.",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://phe.es/programas/descubrimientos-photoespana-online/",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "arte-intruso-sierra-norte-2027",
+    "title": "Arte Intruso 2027: exposiciones en el Centro Comarcal de Humanidades Sierra Norte",
+    "organizer": "Comunidad de Madrid · Centro Comarcal de Humanidades Cardenal Gonzaga Sierra Norte",
+    "type": "convocatoria",
+    "scope": "autonomico",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo",
+      "colectivo"
+    ],
+    "territories": [],
+    "disciplines": [
+      "artes-visuales",
+      "fotografia",
+      "escultura",
+      "pintura",
+      "ilustracion",
+      "arte-urbano"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica",
+        "autonomo",
+        "colectivo"
+      ],
+      "other": []
+    },
+    "amountEur": {},
+    "amountText": "Sin dotación económica: cesión del espacio expositivo del vestíbulo; montaje y transporte a cargo del artista",
+    "opensAt": "2026-07-01",
+    "deadline": "2026-12-19",
+    "deadlineText": "Del 1 de julio al 19 de diciembre de 2026",
+    "status": "open",
+    "summary": "Convocatoria de la Comunidad de Madrid para exponer en el vestíbulo del Centro de Humanidades Sierra Norte (La Cabrera). No tiene dotación económica: es una oportunidad de exposición para tu currículum.",
+    "requiredDocuments": [
+      "Solicitud Arte Intruso 2027",
+      "Proyecto expositivo adaptado al plano y los recursos del espacio",
+      "Dossier con imágenes de la obra"
+    ],
+    "criteria": [
+      {
+        "id": "valoracion-del-proyecto-expositivo",
+        "name": "Valoración del proyecto expositivo",
+        "description": "Las bases no publican criterios puntuados.",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.comunidad.madrid/centros/centro-comarcal-humanidades-sierra-norte",
+    "basesUrl": "https://www.arteinformado.com/fichas/publicacion/bases-252298",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "cabra-cartel-carnaval-2027",
+    "title": "Concurso de carteles del Carnaval 2027 de Cabra",
+    "organizer": "CABRA · AYUNTAMIENTO DE CABRA",
+    "type": "certamen",
+    "scope": "local",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "ilustracion",
+      "diseno-grafico"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Obra sin firma ni signos que identifiquen al autor",
+        "IA solo como apoyo, máximo 25 % y declarada"
+      ]
+    },
+    "amountEur": {
+      "min": 600,
+      "max": 600,
+      "total": 600
+    },
+    "amountText": "Premio único de 600 €",
+    "deadline": "2026-12-21",
+    "deadlineText": "Hasta el 21 de diciembre de 2026 a las 14:15 h",
+    "status": "open",
+    "summary": "Concurso de carteles para el Carnaval 2027 de Cabra (Córdoba). Abierto a cualquier persona; las obras se presentan sin firma. Se permite IA como apoyo hasta un 25 % si se declara.",
+    "requiredDocuments": [
+      "Cartel impreso (70×50 cm) y archivos originales si es digital",
+      "Plica con datos del autor (sobre n.º 1)",
+      "Declaración de uso de IA, si procede"
+    ],
+    "dossierRequirements": {
+      "maxImages": 1,
+      "format": "Cartel 70×50 cm + archivos originales (PDF, EPS, SVG, AI, PSD, PNG o TIFF)"
+    },
+    "criteria": [
+      {
+        "id": "calidad-artistica",
+        "name": "Calidad artística",
+        "description": "",
+        "maxPoints": 13
+      },
+      {
+        "id": "originalidad-y-creatividad",
+        "name": "Originalidad y creatividad",
+        "description": "",
+        "maxPoints": 13
+      },
+      {
+        "id": "expresividad",
+        "name": "Expresividad",
+        "description": "",
+        "maxPoints": 13
+      },
+      {
+        "id": "impacto-visual",
+        "name": "Impacto visual",
+        "description": "",
+        "maxPoints": 13
+      },
+      {
+        "id": "innovacion",
+        "name": "Innovación",
+        "description": "",
+        "maxPoints": 12
+      },
+      {
+        "id": "diseno",
+        "name": "Diseño",
+        "description": "",
+        "maxPoints": 12
+      },
+      {
+        "id": "facilidad-de-reproduccion",
+        "name": "Facilidad de reproducción",
+        "description": "",
+        "maxPoints": 12
+      },
+      {
+        "id": "identificacion-con-los-valores-del-carna",
+        "name": "Identificación con los valores del Carnaval de Cabra",
+        "description": "",
+        "maxPoints": 12
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/939684",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1549414",
+    "bdnsId": "939684",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "cromawards-2026",
+    "title": "cromAwards 2026 · Concurso internacional de arte y diseño",
+    "organizer": "cromAwards (Gextiona Interproducción, S.L.)",
+    "type": "certamen",
+    "scope": "privado",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
+    "disciplines": [
+      "ilustracion",
+      "diseno-grafico",
+      "pintura",
+      "fotografia",
+      "grabado"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica",
+        "autonomo"
+      ],
+      "other": [
+        "Hasta 5 obras de los últimos 3 años"
+      ]
+    },
+    "amountEur": {},
+    "amountText": "Sin premio en metálico publicado: diploma verificable, difusión, portfolio público y comentarios del jurado · Cuota: Cuota por obra con descuento progresivo (importe no publicado en la ficha)",
+    "opensAt": "2026-06-15",
+    "deadline": "2026-12-21",
+    "deadlineText": "Hasta el 21 de diciembre de 2026 a las 23:59 (hora peninsular)",
+    "status": "open",
+    "summary": "Concurso internacional online de ilustración, diseño, pintura, fotografía y grabado. Se valora a ciegas; los premios son de visibilidad, no económicos, y hay que pagar una cuota por obra.",
+    "requiredDocuments": [
+      "Imágenes digitales de las obras",
+      "Inscripción online y pago de la cuota"
+    ],
+    "criteria": [
+      {
+        "id": "valoracion-del-jurado",
+        "name": "Valoración del jurado",
+        "description": "Jurado internacional de ilustración, diseño y artes gráficas que evalúa a ciegas. Criterios puntuados no publicados.",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://cromawards.com",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "fornelos-premio-poesia-lueiro-rey-2026",
+    "title": "XV Premio de Poesía Manuel Lueiro Rey",
+    "organizer": "FORNELOS DE MONTES · AYUNTAMIENTO DE FORNELOS DE MONTES",
+    "type": "premio",
+    "scope": "local",
+    "region": "Pontevedra",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "poesia"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Poemario inédito en gallego de 500 a 800 versos",
+        "No haber ganado el premio en los últimos cinco años"
+      ]
+    },
+    "amountEur": {
+      "min": 2500,
+      "max": 2500,
+      "total": 2500
+    },
+    "amountText": "Premio único de 2.500 €",
+    "deadline": "2026-12-28",
+    "deadlineText": "Hasta el 28/12/2026",
+    "status": "open",
+    "summary": "XV Premio de Poesía Manuel Lueiro Rey del Concello de Fornelos de Montes para poemarios inéditos en gallego, de tema libre y entre 500 y 800 versos.",
+    "requiredDocuments": [
+      "Poemario (6 copias en papel o en digital) con título y lema, sin identificar",
+      "Sobre cerrado con ficha de participación",
+      "Fotocopia del DNI",
+      "Breve currículo literario"
+    ],
+    "criteria": [
+      {
+        "id": "calidad-literaria-del-poemario",
+        "name": "Calidad literaria del poemario",
+        "description": "Jurado de cinco especialistas en poesía y crítica literaria; las bases no detallan criterios puntuados.",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/935589",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1537688",
+    "bdnsId": "935589",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "benidorm-nuevos-creadores-2026",
+    "title": "XXXVIII Concurso Nuevos Creadores 2026 (pintura y escultura)",
+    "organizer": "Ayuntamiento de Benidorm · Concejalía de Juventud",
+    "type": "certamen",
+    "scope": "local",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "pintura",
+      "escultura"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "minAge": 14,
+      "maxAge": 35,
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Hasta 2 obras originales e inéditas"
+      ]
+    },
+    "amountEur": {
+      "min": 1000,
+      "max": 1000
+    },
+    "amountText": "1.000 € en pintura y 1.000 € en escultura; exposición en el Espai d'Art (3-26 febrero 2027)",
+    "deadline": "2026-12-30",
+    "deadlineText": "Inscripción hasta el 30/12/2026",
+    "status": "open",
+    "summary": "Concurso municipal de Benidorm para jóvenes creadores de 14 a 35 años en pintura y escultura, con un premio de 1.000 € por disciplina y exposición de las obras seleccionadas.",
+    "requiredDocuments": [
+      "Inscripción con datos del artista",
+      "Hasta 2 obras (entrega física para la exposición)"
+    ],
+    "criteria": [
+      {
+        "id": "valoracion-del-jurado",
+        "name": "Valoración del jurado",
+        "description": "Las bases no publican criterios puntuados.",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://benidorm.org/es/ayuntamiento/concejalias/juventud/actividades-juveniles/concurso-de-nuevos-creadores/xxxviii-concurso-nuevos-creadores-2026",
+    "basesUrl": "https://www.coruna.gal/descarga/1453928132968/bases_1.pdf",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "ua-bienal-pluri-identitats-2027",
+    "title": "Premios V Bienal de Artes Visuales Pluri-identitats 2027",
+    "organizer": "UNIVERSIDAD DE ALICANTE",
+    "type": "premio",
+    "scope": "local",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "colectivo"
+    ],
+    "territories": [],
+    "disciplines": [
+      "artes-visuales"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "minAge": 16,
+      "residence": [],
+      "legalForms": [
+        "persona-fisica",
+        "colectivo"
+      ],
+      "other": [
+        "A título individual o como colectivo; cualquier nacionalidad"
+      ]
+    },
+    "amountEur": {
+      "min": 500,
+      "max": 1000,
+      "total": 2000
+    },
+    "amountText": "1 premio de 1.000 € y 2 accésits de 500 €",
+    "opensAt": "2026-11-02",
+    "deadline": "2027-01-08",
+    "deadlineText": "2027-01-08",
+    "status": "open",
+    "summary": "Premios de la V Bienal de Artes Visuales Pluri-identitats de la Universidad de Alicante: propuestas artísticas multidisciplinares que cuestionen y desafíen las identidades. Abierta a cualquier persona mayor de 16 años, también colectivos; las obras seleccionadas se exponen.",
+    "requiredDocuments": [
+      "Datos personales (NIF/NIE, dirección, contacto) de cada artista o integrante",
+      "Descripción y documentación de la obra propuesta",
+      "Declaración responsable de no estar incurso en el art. 13 de la Ley 38/2003 y de estar al corriente con Hacienda y Seguridad Social"
+    ],
+    "criteria": [
+      {
+        "id": "calidad-y-originalidad-de-la-propuesta-a",
+        "name": "Calidad y originalidad de la propuesta artística",
+        "description": "Calidad artística, técnica y conceptual y originalidad.",
+        "maxPoints": 50
+      },
+      {
+        "id": "adecuacion-al-tema-de-la-convocatoria",
+        "name": "Adecuación al tema de la convocatoria",
+        "description": "Ajuste al tema Pluri-identitats: cuestionar, desafiar y superar las identidades.",
+        "maxPoints": 50
+      }
+    ],
+    "criteriaSource": "bases",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.boua.ua.es/Acuerdos/DescargarAcuerdo/69981",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1535737",
+    "bdnsId": "934864",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "cabra-premio-novela-juan-valera-2027",
+    "title": "Premio Juan Valera 2027 de novela",
+    "organizer": "CABRA · AYUNTAMIENTO DE CABRA",
+    "type": "premio",
+    "scope": "local",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "narrativa"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Novela inédita en español de 100 folios a 250 páginas, con seudónimo"
+      ]
+    },
+    "amountEur": {
+      "min": 600,
+      "max": 600,
+      "total": 600
+    },
+    "amountText": "600 € y publicación de la novela",
+    "deadline": "2027-01-08",
+    "deadlineText": "Hasta el 8 de enero de 2027",
+    "status": "open",
+    "summary": "Premio Juan Valera 2027 de novela del Ayuntamiento de Cabra: novelas inéditas en español de 100 a 250 páginas, firmadas con seudónimo. El premio incluye la publicación.",
+    "requiredDocuments": [
+      "Dos copias impresas firmadas con seudónimo",
+      "Plica cerrada con nombre, dirección y teléfono"
+    ],
+    "criteria": [
+      {
+        "id": "calidad-de-la-escritura",
+        "name": "Calidad de la escritura",
+        "description": "Precisión y riqueza del lenguaje, dominio expresivo, adecuación del estilo.",
+        "maxPoints": 20
+      },
+      {
+        "id": "originalidad-de-la-propuesta",
+        "name": "Originalidad de la propuesta",
+        "description": "Singularidad de la mirada, personalidad de la voz narrativa, tratamiento de los temas.",
+        "maxPoints": 20
+      },
+      {
+        "id": "construccion-de-la-novela",
+        "name": "Construcción de la novela",
+        "description": "Coherencia interna, estructura y articulación del relato.",
+        "maxPoints": 20
+      },
+      {
+        "id": "dominio-de-los-recursos-narrativos",
+        "name": "Dominio de los recursos narrativos",
+        "description": "Punto de vista, tiempo y espacio, escenas, diálogos y ritmo.",
+        "maxPoints": 20
+      },
+      {
+        "id": "personajes-y-ambientes",
+        "name": "Personajes y ambientes",
+        "description": "Consistencia y matización de los personajes y del mundo en que se mueven.",
+        "maxPoints": 20
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/938125",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1544862",
+    "bdnsId": "938125",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "carballino-premio-anton-losada-dieguez-2026",
+    "title": "XLII Premio Antón Losada Diéguez",
+    "organizer": "CARBALLIÑO, O · AYUNTAMIENTO DE CARBALLIÑO, O",
+    "type": "premio",
+    "scope": "local",
+    "region": "Ourense",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo"
+    ],
+    "territories": [],
+    "disciplines": [
+      "narrativa",
+      "poesia",
+      "ensayo"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica",
+        "autonomo"
+      ],
+      "other": [
+        "Obra publicada en gallego entre el 1/1/2026 y el 31/12/2026 (no traducciones)"
+      ]
+    },
+    "amountEur": {
+      "min": 6000,
+      "max": 6000,
+      "total": 12000
+    },
+    "amountText": "6.000 € por modalidad (creación literaria e investigación/ensayo)",
+    "deadline": "2027-01-31",
+    "deadlineText": "2027-01-31",
+    "status": "open",
+    "summary": "XLII Premio Antón Losada Diéguez de O Carballiño y Boborás: premia dos obras ya publicadas en gallego durante 2026, una de creación literaria y otra de investigación y ensayo.",
+    "requiredDocuments": [
+      "Ejemplares de la obra publicada",
+      "Datos de autoría y editorial"
+    ],
+    "criteria": [
+      {
+        "id": "calidad-y-aportacion-de-la-obra-a-la-cul",
+        "name": "Calidad y aportación de la obra a la cultura gallega",
+        "description": "El jurado valora las obras publicadas; las bases no detallan una puntuación por criterios.",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/941499",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1553947",
+    "bdnsId": "941499",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "sant-joan-festival-cine-cortometrajes-2027",
+    "title": "XXVII Festival de Cine de Sant Joan d’Alacant: concurso de cortometrajes",
+    "organizer": "SANT JOAN D'ALACANT · AYUNTAMIENTO DE SANT JOAN D'ALACANT",
+    "type": "certamen",
+    "scope": "local",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "autonomo",
+      "pyme"
+    ],
+    "territories": [],
+    "disciplines": [
+      "cine",
+      "animacion",
+      "documental"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica",
+        "autonomo",
+        "pyme"
+      ],
+      "other": [
+        "Cortometraje de hasta 30 minutos (no turístico ni publicitario)",
+        "Máximo 3 obras por participante"
+      ]
+    },
+    "amountEur": {
+      "min": 500,
+      "max": 2000,
+      "total": 3600
+    },
+    "amountText": "Ficus de Oro 2.000 €; Ficus de Plata 1.000 € y 600 €; Ficus de Bronce 500 €; Ficus Palomitas (local) 500 €",
+    "deadline": "2027-02-14",
+    "deadlineText": "Inscripción hasta el 14 de febrero de 2027 a las 23:59",
+    "status": "open",
+    "summary": "XXVII Festival de Cine de Sant Joan d’Alacant: concurso de cortometrajes españoles o internacionales de hasta 30 minutos y tema libre. El premio principal es el Ficus de Oro, de 2.000 €.",
+    "requiredDocuments": [
+      "Inscripción en plataforma con todos los campos obligatorios",
+      "Enlace de visionado online",
+      "Si te seleccionan, copia de proyección (MP4/MOV, máx. 3 GB)"
+    ],
+    "criteria": [
+      {
+        "id": "valoracion-del-comite-de-seleccion-y-del",
+        "name": "Valoración del comité de selección y del jurado",
+        "description": "Las bases no publican criterios puntuados; se valora positivamente la accesibilidad (subtítulos y audiodescripción).",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/939355",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1548497",
+    "bdnsId": "939355",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "getxo-novela-corta-ramiro-pinilla-2027",
+    "title": "10.º Concurso de Novela Corta Ramiro Pinilla",
+    "organizer": "GETXO · AYUNTAMIENTO DE GETXO",
+    "type": "premio",
+    "scope": "local",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [
+      "ES"
+    ],
+    "disciplines": [
+      "narrativa"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "España"
+      ],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Novela corta inédita de 80 a 120 páginas DIN A4, en castellano o euskera"
+      ]
+    },
+    "amountEur": {
+      "min": 6300,
+      "max": 6300,
+      "total": 13600
+    },
+    "amountText": "6.300 € por lengua (castellano y euskera)",
+    "deadline": "2027-02-20",
+    "deadlineText": "Hasta el 20 de febrero de 2027",
+    "status": "open",
+    "summary": "10.º Concurso de Novela Corta Ramiro Pinilla de Getxo Kultura: un premio de 6.300 € para una novela corta inédita en castellano y otro en euskera. Pueden presentarse personas residentes en España, de cualquier nacionalidad.",
+    "requiredDocuments": [
+      "Solicitud en la sede de Getxo Kultura",
+      "Original de la novela",
+      "Declaración de autoría y originalidad"
+    ],
+    "criteria": [
+      {
+        "id": "calidad-creativa-de-la-obra",
+        "name": "Calidad creativa de la obra",
+        "description": "Criterios conceptuales, críticos y de la propia producción de la obra.",
+        "maxPoints": 40
+      },
+      {
+        "id": "singularidad-excelencia-y-originalidad",
+        "name": "Singularidad, excelencia y originalidad",
+        "description": "",
+        "maxPoints": 25
+      },
+      {
+        "id": "resolucion-formal-de-la-obra",
+        "name": "Resolución formal de la obra",
+        "description": "",
+        "maxPoints": 30
+      },
+      {
+        "id": "integracion-de-la-perspectiva-de-genero",
+        "name": "Integración de la perspectiva de género",
+        "description": "",
+        "maxPoints": 5
+      }
+    ],
+    "criteriaSource": "bases",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.getxo-kultura.eus/ramiropinilla",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1539088",
+    "bdnsId": "936011",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "icaa-cortometrajes-realizados-2027",
+    "title": "Ayudas ICAA para cortometrajes realizados 2027",
+    "organizer": "MINISTERIO DE CULTURA · INSTITUTO DE LA CINEMATOGRAFÍA Y DE LAS ARTES AUDIOVISUALES",
+    "type": "ayuda",
+    "scope": "estatal",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme",
+      "autonomo"
+    ],
+    "territories": [],
+    "disciplines": [
+      "cine",
+      "animacion",
+      "documental"
+    ],
+    "sectors": [
+      "59"
+    ],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "pyme",
+        "autonomo"
+      ],
+      "other": [
+        "Empresa productora independiente (art. 4.n Ley 55/2007)",
+        "Puntuación mínima de 40 puntos para acceder a la ayuda"
+      ]
+    },
+    "amountEur": {
+      "max": 70000,
+      "total": 1000000
+    },
+    "amountText": "Hasta 70.000 € por película (130.000 € en animación)",
+    "opensAt": "2027-03-29",
+    "deadline": "2027-04-16",
+    "deadlineText": "2027-04-16",
+    "status": "upcoming",
+    "summary": "Ayudas del ICAA (Ministerio de Cultura) para cortometrajes ya realizados. Las solicitan productoras independientes; la ayuda puede llegar a 70.000 € (130.000 € en animación). La solicitud abre el 29 de marzo de 2027.",
+    "requiredDocuments": [
+      "Solicitud por la sede electrónica del Ministerio de Cultura",
+      "Copia del cortometraje",
+      "Coste declarado de la película",
+      "Acreditación de nacionalidad española y carácter cultural",
+      "Acreditación de festivales y premios (Anexo II)"
+    ],
+    "criteria": [
+      {
+        "id": "calidad-y-valor-artistico-de-la-pelicula",
+        "name": "Calidad y valor artístico de la película",
+        "description": "Guion, dirección, interpretación, aspectos técnicos, autores y equipo.",
+        "maxPoints": 60
+      },
+      {
+        "id": "adecuacion-del-presupuesto-o-coste-decla",
+        "name": "Adecuación del presupuesto o coste declarado",
+        "description": "",
+        "maxPoints": 7
+      },
+      {
+        "id": "seleccion-o-premios-en-festivales-anexo-",
+        "name": "Selección o premios en festivales (Anexo II)",
+        "description": "",
+        "maxPoints": 11
+      },
+      {
+        "id": "ayudas-autonomicas-con-ejecucion-de-gast",
+        "name": "Ayudas autonómicas con ejecución de gasto",
+        "description": "",
+        "maxPoints": 4
+      },
+      {
+        "id": "mujeres-en-puestos-de-responsabilidad",
+        "name": "Mujeres en puestos de responsabilidad",
+        "description": "Baremo del Anexo I.",
+        "maxPoints": 10
+      },
+      {
+        "id": "presencia-de-personas-trans-en-el-equipo",
+        "name": "Presencia de personas trans en el equipo",
+        "description": "",
+        "maxPoints": 1
+      },
+      {
+        "id": "subtitulado-especial-y-audiodescripcion",
+        "name": "Subtitulado especial y audiodescripción",
+        "description": "Medidas de accesibilidad universal.",
+        "maxPoints": 7
+      }
+    ],
+    "criteriaSource": "bases",
+    "allowedExpenses": [
+      "Coste de producción del cortometraje reconocido por el ICAA"
+    ],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/941955",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1555365",
+    "bdnsId": "941955",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "xunta-xuventude-crea-2026",
+    "title": "Premios Xuventude Crea (BS310Q)",
+    "organizer": "Xunta de Galicia · Dirección General de Juventud",
+    "type": "premio",
+    "scope": "autonomico",
+    "region": "Galicia",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica",
+      "colectivo"
+    ],
+    "territories": [],
+    "disciplines": [
+      "artes-visuales",
+      "arte-urbano",
+      "comic",
+      "videojuegos",
+      "danza",
+      "moda",
+      "musica",
+      "teatro",
+      "literatura"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "minAge": 16,
+      "maxAge": 30,
+      "residence": [],
+      "legalForms": [
+        "persona-fisica",
+        "colectivo"
+      ],
+      "other": [
+        "Tener entre 16 y 30 años cumplidos en el año de la convocatoria",
+        "Desarrollar la actividad artística mayoritariamente en Galicia (o ser gallego/a en el exterior)",
+        "Quien ganó el primer premio el año anterior no puede repetir especialidad"
+      ]
+    },
+    "amountEur": {
+      "min": 1000,
+      "max": 2000,
+      "total": 87900
+    },
+    "amountText": "Por especialidad: 1.º 2.000 €, 2.º 1.500 €, 3.º 1.000 €",
+    "deadline": null,
+    "deadlineText": "Se convoca cada año; la edición 2026 ya cerró (plazo de un mes desde su publicación en el DOG, a finales de verano).",
+    "status": "recurring",
+    "summary": "Premios de la Xunta para jóvenes creadores de 16 a 30 años vinculados a Galicia, en especialidades como artes plásticas, arte urbano, cómic, videojuegos, moda, música o teatro. Cada especialidad reparte 2.000, 1.500 y 1.000 €.",
+    "requiredDocuments": [
+      "Solicitud en la sede electrónica de la Xunta (BS310Q)",
+      "Obra y documentación de la especialidad, bajo seudónimo",
+      "Autorización del tutor si eres menor de edad"
+    ],
+    "criteria": [
+      {
+        "id": "originalidad",
+        "name": "Originalidad",
+        "description": "",
+        "maxPoints": 25
+      },
+      {
+        "id": "innovacion",
+        "name": "Innovación",
+        "description": "",
+        "maxPoints": 25
+      },
+      {
+        "id": "presentacion",
+        "name": "Presentación",
+        "description": "",
+        "maxPoints": 25
+      },
+      {
+        "id": "calidad",
+        "name": "Calidad de la obra",
+        "description": "",
+        "maxPoints": 25
+      }
+    ],
+    "criteriaSource": "bases",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.xunta.gal/dog/Publicados/2026/20260831/AnuncioG0766-190826-0001_es.html",
+    "bdnsId": "926016",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "deputacion-coruna-bolsas-perfeccionamento-artistico-2026",
+    "title": "Bolsas de perfeccionamiento de estudios artísticos (Deputación da Coruña)",
+    "organizer": "Deputación da Coruña",
+    "type": "beca",
+    "scope": "provincial",
+    "region": "A Coruña",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [
+      "ES111"
+    ],
+    "disciplines": [
+      "ilustracion",
+      "artes-visuales",
+      "audiovisual",
+      "musica",
+      "teatro"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "maxAge": 35,
+      "residence": [
+        "A Coruña"
+      ],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Tener menos de 36 años al acabar el plazo de solicitud",
+        "Empadronamiento en la provincia de A Coruña con al menos un año de antigüedad",
+        "Estudios presenciales o semipresenciales fuera de Galicia"
+      ]
+    },
+    "amountEur": {
+      "min": 10000,
+      "max": 10000,
+      "total": 280000
+    },
+    "amountText": "10.000 € por beca (4 becas en ilustración, artes plásticas y visuales)",
+    "deadline": null,
+    "deadlineText": "Se convoca cada año; la edición 2026 ya cerró (plazo de un mes, en primavera).",
+    "status": "recurring",
+    "summary": "La Deputación da Coruña concede becas de 10.000 € a jóvenes de la provincia (menores de 36) para estudios artísticos fuera de Galicia; hay 4 para ilustración, artes plásticas y visuales.",
+    "requiredDocuments": [
+      "Solicitud en la sede electrónica (SUBTEL)",
+      "Proyecto de estudios",
+      "Currículo y documentación acreditativa",
+      "Documentación gráfica o audiovisual de tu obra",
+      "Certificado de empadronamiento",
+      "Certificados de estar al corriente con Hacienda y la Seguridad Social"
+    ],
+    "criteria": [
+      {
+        "id": "interes-proyecto",
+        "name": "Interés del proyecto (y entrevista, si la hay)",
+        "description": "",
+        "maxPoints": 50
+      },
+      {
+        "id": "curriculo-academico",
+        "name": "Currículo académico",
+        "description": "",
+        "maxPoints": 30
+      },
+      {
+        "id": "meritos",
+        "name": "Otros méritos extracurriculares",
+        "description": "",
+        "maxPoints": 20
+      }
+    ],
+    "criteriaSource": "bases",
+    "allowedExpenses": [
+      "Matrícula y gastos de los estudios"
+    ],
+    "sourceUrl": "https://www.dacoruna.gal/index.php/download_file/view/76825",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "artesania-galicia-premios-bolsas-eloy-gesto-2026",
+    "title": "Premios Artesanía de Galicia y Bolsas Eloy Gesto",
+    "organizer": "Fundación Pública Artesanía de Galicia",
+    "type": "premio",
+    "scope": "autonomico",
+    "region": "Galicia",
+    "beneficiaryKinds": [
+      "creator",
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "autonomo",
+      "pyme"
+    ],
+    "territories": [
+      "ES11"
+    ],
+    "disciplines": [
+      "artesania"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Galicia"
+      ],
+      "legalForms": [
+        "autonomo",
+        "pyme"
+      ],
+      "other": [
+        "Taller inscrito en el Registro General de Artesanía de Galicia",
+        "Bolsas Eloy Gesto: artesanos/as de hasta 45 años con un proyecto de formación especializada"
+      ]
+    },
+    "amountEur": {
+      "min": 4000,
+      "max": 9000
+    },
+    "amountText": "Premio Artesanía de Galicia 9.000 €; hasta 3 Bolsas Eloy Gesto de 4.000 €",
+    "deadline": null,
+    "deadlineText": "Se convoca cada año; la edición 2026 ya cerró (el plazo suele acabar a principios de otoño).",
+    "status": "recurring",
+    "summary": "Premios anuales para talleres artesanos gallegos: 9.000 € a una obra o colección y hasta tres bolsas de 4.000 € para formación especializada de artesanos de hasta 45 años.",
+    "requiredDocuments": [
+      "Candidatura con la obra o colección",
+      "Inscripción en el Registro General de Artesanía de Galicia",
+      "Proyecto de formación (Bolsas Eloy Gesto)"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://artesaniadegalicia.xunta.gal/",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "igape-ticket-innova-2026",
+    "title": "Ticket Innova (IG408K): servicios de innovación para pymes",
+    "organizer": "IGAPE · Xunta de Galicia",
+    "type": "ayuda",
+    "scope": "autonomico",
+    "region": "Galicia",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme"
+    ],
+    "territories": [
+      "ES11"
+    ],
+    "disciplines": [],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Galicia"
+      ],
+      "legalForms": [
+        "pyme"
+      ],
+      "other": [
+        "Pyme constituida como sociedad mercantil con centro de trabajo en Galicia (no autónomos)",
+        "Una solicitud por empresa"
+      ]
+    },
+    "amountEur": {
+      "min": 4000,
+      "max": 29999,
+      "total": 1000000
+    },
+    "amountText": "80 % del gasto: de 4.000 € a casi 30.000 € (gasto mínimo 5.000 €)",
+    "deadline": null,
+    "deadlineText": "Se convoca cada año; la edición 2026 ya cerró (el plazo suele acabar a finales de septiembre).",
+    "status": "recurring",
+    "summary": "El IGAPE paga el 80 % de servicios externos de innovación para pymes gallegas: diseño de producto y marca, patentes, IA y ciberseguridad, certificaciones o propuestas europeas. Prioriza sectores tradicionales.",
+    "requiredDocuments": [
+      "Solicitud en spiga-sede.igape.es con certificado digital",
+      "Último impuesto de sociedades y cuentas anuales",
+      "Declaración de pyme",
+      "Tres presupuestos si el gasto supera 15.000 €",
+      "Facturas, justificantes de pago y memoria del proyecto"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Estrategia y gestión de la innovación",
+      "Diseño para la innovación (producto, servicio, identidad de marca)",
+      "Protección del conocimiento (patentes, marcas, diseños)",
+      "Tecnologías digitales emergentes (IA, ciberseguridad, robótica)",
+      "Preparación de propuestas a programas europeos"
+    ],
+    "sourceUrl": "https://www.xunta.gal/dog/Publicados/2026/20260116/AnuncioO92-111225-0003_es.html",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "xunta-bono-autonomo-tr341q-2026",
+    "title": "Bono autónomo (TR341Q): inversiones para autónomos consolidados",
+    "organizer": "Xunta de Galicia · Consellería de Emprego, Comercio e Emigración",
+    "type": "ayuda",
+    "scope": "autonomico",
+    "region": "Galicia",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "autonomo"
+    ],
+    "territories": [
+      "ES11"
+    ],
+    "disciplines": [],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Galicia"
+      ],
+      "legalForms": [
+        "autonomo"
+      ],
+      "other": [
+        "Más de 42 meses seguidos de actividad",
+        "Rendimiento neto reducido (IRPF 2024) inferior a 50.000 € y facturación anual de al menos 12.000 €",
+        "No haberla recibido en las convocatorias 2021-2025"
+      ]
+    },
+    "amountEur": {
+      "max": 7000,
+      "total": 8000000
+    },
+    "amountText": "60 % de la inversión, hasta 7.000 €",
+    "deadline": null,
+    "deadlineText": "Se convoca cada año; la edición 2026 ya cerró (el plazo suele acabar a finales de septiembre).",
+    "status": "recurring",
+    "summary": "Ayuda de la Xunta para autónomos con más de 42 meses de actividad: cubre el 60 % de sus inversiones hasta 7.000 €.",
+    "requiredDocuments": [
+      "Facturas (mín. 100 € sin IVA cada una) y justificantes de pago",
+      "Declaraciones fiscales de 2024 (IVA, IRPF o sociedades)",
+      "Fotos del local antes y después si hay reforma"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Inversiones en el negocio facturadas en el periodo subvencionable"
+    ],
+    "sourceUrl": "https://www.xunta.gal/dog/Publicados/2026/20260204/AnuncioG0767-130126-0004_es.html",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "xunta-bono-relevo-tr353d-2026",
+    "title": "Bono relevo (TR353D): coger el relevo de un negocio que cierra por jubilación",
+    "organizer": "Xunta de Galicia · Consellería de Emprego, Comercio e Emigración",
+    "type": "ayuda",
+    "scope": "autonomico",
+    "region": "Galicia",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "autonomo",
+      "pyme"
+    ],
+    "territories": [
+      "ES11"
+    ],
+    "disciplines": [],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Galicia"
+      ],
+      "legalForms": [
+        "autonomo",
+        "pyme"
+      ],
+      "other": [
+        "Negocio con al menos 5 años seguidos de actividad, inscrito en la bolsa de relevo de la Red de polos de emprendimiento",
+        "Persona cedente de 62 años o más, con incapacidad reconocida o heredera",
+        "Traspaso formalizado en escritura pública o contrato firmado"
+      ]
+    },
+    "amountEur": {
+      "max": 30000,
+      "total": 1500000
+    },
+    "amountText": "70-75 % del precio del traspaso, hasta 30.000 € (10.000 € si es solo licencia)",
+    "deadline": null,
+    "deadlineText": "Se convoca cada año; la edición 2026 ya cerró (el plazo suele acabar a finales de septiembre).",
+    "status": "recurring",
+    "summary": "Ayuda para quien se queda con un negocio gallego viable que cerraría por jubilación: cubre el 70-75 % del precio del traspaso, hasta 30.000 €.",
+    "requiredDocuments": [
+      "Plan de empresa (anexo IV.4) con informe de un polo o asociación reconocida",
+      "Escritura o contrato de traspaso",
+      "Modelo 036 y certificado censal",
+      "Justificante de la transferencia del precio"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Precio del traspaso del negocio"
+    ],
+    "sourceUrl": "https://www.xunta.gal/dog/Publicados/2026/20260204/AnuncioG0767-130126-0004_es.html",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "xunta-promocion-empleo-autonomo-tr341d-2026",
+    "title": "Promoción del empleo autónomo (TR341D): ayuda para darte de alta",
+    "organizer": "Xunta de Galicia · Consellería de Emprego, Comercio e Emigración",
+    "type": "ayuda",
+    "scope": "autonomico",
+    "region": "Galicia",
+    "beneficiaryKinds": [
+      "creator",
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "autonomo"
+    ],
+    "territories": [
+      "ES11"
+    ],
+    "disciplines": [],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Galicia"
+      ],
+      "legalForms": [
+        "autonomo"
+      ],
+      "other": [
+        "Estar en paro e inscrito/a como demandante de empleo antes de darte de alta como autónomo/a",
+        "Iniciar la actividad en Galicia"
+      ]
+    },
+    "amountEur": {
+      "total": 28956500
+    },
+    "amountText": "Consultar bases",
+    "deadline": null,
+    "deadlineText": "Se convoca cada año; la edición 2026 ya cerró (el plazo suele acabar a finales de septiembre).",
+    "status": "recurring",
+    "summary": "Ayuda de la Xunta para personas en paro que se dan de alta como autónomas en Galicia, con una línea para la cuota reducida. Es la puerta de entrada para el artista que quiere profesionalizarse.",
+    "requiredDocuments": [
+      "Solicitud en la sede de la Xunta",
+      "Alta en el RETA (modelo 036/037)",
+      "Inscripción como demandante de empleo"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.xunta.gal/dog/Publicados/2026/20260204/AnuncioG0767-130126-0004_es.html",
+    "source": "seed",
+    "verifiedAt": "2026-11-13"
+  }
+]

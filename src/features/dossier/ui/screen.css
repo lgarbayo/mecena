@@ -1,0 +1,21 @@
+/* App chrome around the dossier (toolbar, variant notes). The dossier itself is styled only by dossier.css. */
+.dossier-screen { display: flex; flex-direction: column; gap: 14px; }
+.dossier-bar { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.dossier-bar h1 { margin: 0; font-size: 1.6rem; line-height: 1.1; }
+.dossier-bar__kicker, .dossier-variant__kicker { margin: 0 0 4px; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.7; }
+.dossier-bar__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.dossier-bar__actions a[aria-disabled="true"] { opacity: 0.55; pointer-events: none; }
+.dossier-variant { border-left: 3px solid #a3a05a; background: #f1f0e2; padding: 12px 14px; border-radius: 4px; }
+.dossier-variant__call { margin: 0 0 6px; font-weight: 600; }
+.dossier-variant__notes { margin: 0 0 10px; padding-left: 1.1em; }
+.dossier-variant__notes li + li { margin-top: 4px; }
+.dossier-variant__lock { margin: 0 0 10px; font-size: 0.95rem; }
+.dossier-empty { margin: 0; }
+/* Full-bleed gallery wall: break out of the 720px app column so sheets can reach 940px. */
+.dossier-bleed { width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); }
+@media print {
+  .app-main { max-width: none !important; padding: 0 !important; }
+  header:not(.cover__head), nav, .no-print { display: none !important; }
+  .dossier-screen { display: block; }
+  .dossier-bleed { width: auto; margin: 0; }
+}

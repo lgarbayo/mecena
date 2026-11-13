@@ -3,7 +3,7 @@ import type { Profile } from "@/contracts/domain";
 import { profileBeneficiaryTypes } from "./beneficiary";
 import { normalizeCnae } from "./cnae";
 import { normalizeDiscipline } from "./disciplines";
-import { isWithin, normalizeTerritory, territoryName } from "./territory";
+import { isWithin, normalizeTerritory, territoryName, territoryNode } from "./territory";
 import { type CanonicalProfile, type DataWarning, type Normalized, warn } from "./types";
 
 /**
@@ -40,7 +40,9 @@ export function profileTerritory(profile: Pick<Profile, "city" | "province" | "r
 
 export function normalizeProfile(profile: Profile): Normalized<CanonicalProfile> {
   const warnings: DataWarning[] = [];
-  const territory = profileTerritory(profile);
+  // CCR-1: a stored canonical territory wins; otherwise derive it from the display text.
+  const territory: Normalized<string | null> =
+    profile.territory && territoryNode(profile.territory) ? { value: profile.territory, warnings: [] } : profileTerritory(profile);
   warnings.push(...territory.warnings);
 
   const disc = normalizeDiscipline(profile.disciplines);
@@ -48,7 +50,8 @@ export function normalizeProfile(profile: Profile): Normalized<CanonicalProfile>
   if (profile.kind === "creator" && !profile.disciplines.length)
     warnings.push(warn("unmapped-discipline", "disciplines", "El perfil no indica disciplinas", undefined, "info"));
 
-  const beneficiaryTypes = profileBeneficiaryTypes(profile);
+  // CCR-3: stored canonical types win; otherwise derive them from kind/legalForm/size.
+  const beneficiaryTypes = profile.beneficiaryTypes?.length ? [...profile.beneficiaryTypes] : profileBeneficiaryTypes(profile);
   if (!beneficiaryTypes.length)
     warnings.push(warn("missing-legal-form", "legalForm", "Falta la forma jurídica (autónomo, SL, asociación…): no podemos filtrar por tipo de beneficiario", profile.legalForm));
 

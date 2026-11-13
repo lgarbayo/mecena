@@ -8,6 +8,18 @@ import { z } from "zod";
 export const ProfileKind = z.enum(["creator", "business"]);
 export type ProfileKind = z.infer<typeof ProfileKind>;
 
+/** Canonical beneficiary types (fleet/DATA-STANDARD.md, data/taxonomy/beneficiary-types.json). */
+export const BeneficiaryType = z.enum([
+  "persona-fisica",
+  "autonomo",
+  "pyme",
+  "gran-empresa",
+  "entidad-sin-animo-lucro",
+  "colectivo",
+  "entidad-publica",
+]);
+export type BeneficiaryType = z.infer<typeof BeneficiaryType>;
+
 /** One chunk of what the user said or typed. Drafts quote these to stay in the user's own words. */
 export const TranscriptSegment = z.object({
   id: z.string(),
@@ -30,6 +42,11 @@ export const Profile = z.object({
   city: z.string().optional(),
   province: z.string().optional(),
   region: z.string().optional(), // comunidad autónoma, e.g. "Galicia"
+  // CCR-1: canonical territory id from data/taxonomy/territories.json (mun:15030, ES111, ES11…). Derived from
+  // city/province/region by the store; city/province/region stay as display text.
+  territory: z.string().optional(),
+  // CCR-3: canonical beneficiary types, derived from kind/legalForm/size by the store. Empty = unknown.
+  beneficiaryTypes: z.array(BeneficiaryType).default([]),
   birthYear: z.number().int().optional(),
   // creator
   disciplines: z.array(z.string()).default([]), // "ilustración", "pintura", "fotografía"...
@@ -54,7 +71,7 @@ export const Profile = z.object({
 export type Profile = z.infer<typeof Profile>;
 
 /** Partial update produced by onboarding / update_profile. Arrays are merged (deduped) by the store. */
-export const ProfilePatch = Profile.omit({ id: true, kind: true, updatedAt: true }).partial();
+export const ProfilePatch = Profile.omit({ id: true, kind: true, updatedAt: true, territory: true, beneficiaryTypes: true }).partial();
 export type ProfilePatch = z.infer<typeof ProfilePatch>;
 
 /** Light-touch photo correction only. We never alter the artwork itself. */
@@ -144,6 +161,11 @@ export const Call = z.object({
   scope: CallScope,
   region: z.string().optional(), // "Galicia", "A Coruña"
   beneficiaryKinds: z.array(ProfileKind).min(1),
+  // CCR-6: canonical beneficiary types (from BDNS tiposBeneficiarios / legalForms). Empty = unknown, never a discard.
+  beneficiaryTypes: z.array(BeneficiaryType).default([]),
+  // CCR-5: canonical territory ids the applicant must live in (any of them). [] = state-wide, ["WORLD"] = anyone.
+  // Source of truth for residence; eligibility.residence stays for display.
+  territories: z.array(z.string()).default([]),
   disciplines: z.array(z.string()).default([]), // empty = any
   sectors: z.array(z.string()).default([]), // for business calls; empty = any
   eligibility: z.object({
