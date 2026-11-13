@@ -3,6 +3,8 @@
 > Castellano de España, tú/vosotros (nunca voseo). Tono: claro, cálido, sin jerga de IA.
 > Los textos de pago (sección 6) son también para **Persona B** (B7).
 > Las cifras solo salen de [`fleet/IDEA.md`](../IDEA.md). No inventar ninguna.
+> **Posicionamiento: primero artistas.** El modo pyme existe pero es secundario: nunca abre la app ni encabeza una pantalla común.
+> No nombrar competidores en la app (eso va solo en el pitch).
 > Marcadores `{así}` = variables que rellena la app.
 
 ---
@@ -24,18 +26,23 @@
 - URL: https://www.bolsamania.com/noticias_amp/economia/economia--el-empleo-en-el-sector-cultural-aumenta-un-17-tras-la-pandemia-frente-al-8-del-conjunto-de-la-economia--19731138.html
 
 **Dato 3**
+- Cifra: **< 15 %**
+- Texto: de los artistas vive solo de su arte.
+- Fuente (etiqueta): Encuesta Nebrija/UGR, 2016-17
+- URL: https://masdearte.com/especiales/estudio-sobre-la-situacion-economica-de-los-artistas-en-espana/
+
+**Datos para el modo pyme** (solo dentro del modo pyme, nunca en el arranque)
 - Cifra: **+50 %**
 - Texto: de las pymes no pide ayudas públicas porque no las conoce. Y 1 de cada 4 que empieza una solicitud la abandona por complejidad.
 - Fuente (etiqueta): MuyPymes, oct. 2025
 - URL: https://www.muypymes.com/2025/10/02/mitad-pymes-ayudas-publicas-desconocimiento
 
-**Dato de reserva** (si se quiere rotar en modo pyme)
 - Cifra: **+200.000**
 - Texto: autónomos con 1 o 2 empleados no pidieron el Kit Digital (hasta 3.000 €) porque creían que no era para ellos.
 - Fuente (etiqueta): Autónomos y Emprendedor, abr. 2025
 - URL: https://www.autonomosyemprendedor.es/articulo/todo-digital/kit-digital-mas-200000-autonomos-empleados-aun-han-solicitado-fondos-estan-disponibles/20250423164037042217.html
 
-**Cierre de la pantalla:** Mecena las encuentra y las prepara contigo.
+**Cierre de la pantalla:** Mecena te hace el dossier y te prepara las ayudas públicas.
 **Botón:** Empezar
 **Enlace secundario:** Ver fuentes
 
@@ -51,11 +58,10 @@
 3. **Tú tienes la última palabra.** Cada texto sale de lo que tú cuentas, y puedes cambiarlo todo antes de usarlo.
 4. **Nosotros preparamos; tú presentas.** La solicitud la envías tú, con tu certificado digital o Cl@ve. Nunca presentamos nada en tu nombre.
 
-**Pregunta de modo:** ¿Qué te trae por aquí?
-- **Soy creador/a** — Artista, ilustrador/a, fotógrafo/a, músico/a…
-- **Tengo una pyme o soy autónomo/a** — Ayudas para tu negocio
+**Botón principal:** Soy artista, empezamos
+**Enlace secundario (pequeño, debajo):** ¿Tienes una pyme o eres autónomo/a? Entra aquí
 
-**Botón:** Entendido, empezamos
+> Nota: el modo creador/a es el camino por defecto; el de pyme es un enlace, no un botón al mismo nivel.
 **Letra pequeña:** Puedes cambiar de modo cuando quieras desde tu perfil.
 
 ---
@@ -135,7 +141,8 @@
 ## 5 · Convocatorias
 | Elemento | Texto |
 |---|---|
-| Título feed | Convocatorias para ti |
+| Título feed | Ayudas y convocatorias para ti |
+| Subtítulo feed (creador/a) | Ayudas públicas, becas, premios y residencias en España |
 | Etiquetas de tarjeta | Importe · Plazo · Quién convoca |
 | Plazo cercano | Cierra en {n} días |
 | Bloque 1 | **Por qué encajas** |
@@ -144,7 +151,7 @@
 | Bloque 4 | Documentos que necesitas |
 | Fuente | Ver bases oficiales |
 | Botón principal | Prepárame la solicitud |
-| Cambio de modo | Creador/a · Pyme/autónomo |
+| Cambio de modo (en el perfil, discreto) | Creador/a · Pyme/autónomo |
 | Ganadores parecidos | Proyectos parecidos que ganaron · Orientativo, no es una probabilidad. |
 
 ### Borrador y tribunal

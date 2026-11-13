@@ -2,6 +2,7 @@
 
 > 1hack 2026 · FIC A Coruña · sábado 14/11, demos entre 19:00 y 21:00 · voluntaria, en directo, sin vídeo ni diapositivas obligatorias.
 > Móvil duplicado en el proyector. Castellano de España (tú/vosotros).
+> **Posicionamiento: Mecena es para artistas.** El modo pyme es la expansión: un único toque corto (paso 6), nunca el titular.
 > Fuente de verdad: [`fleet/IDEA.md`](../IDEA.md). Textos de pantalla: [`COPY.md`](COPY.md). Comprobaciones: [`QA_CHECKLIST.md`](QA_CHECKLIST.md).
 
 ## Reparto en el escenario
@@ -24,12 +25,12 @@ Regla de oro: **el presentador nunca toca el móvil y el operador nunca habla**.
 
 | # | Tiempo | En pantalla (móvil) | Se dice (presentador salvo que se indique) | Si tarda / plan B |
 |---|---|---|---|---|
-| 1 | **0:00–0:15** · Gancho | Pantalla de arranque A1: 3 datos con fuente | «La mitad de los artistas en España gana menos del salario mínimo. Un 34 % de quienes trabajan en cultura son autónomos, el doble que en el resto de la economía. Y más de la mitad de las pymes ni siquiera pide ayudas porque no se entera; de las que empiezan, una de cada cuatro abandona por el papeleo. Las ayudas existen. Lo que falta es alguien que las encuentre y las prepare contigo.» | Si la app no carga: los 3 datos están en la diapositiva 2 de [`PITCH.md`](PITCH.md) |
-| 2 | **0:15–0:20** · Confianza | Pantalla A2 «El arte es tuyo; nosotros hacemos el papeleo» → operador toca **Soy creador/a** | «Antes de nada: Mecena no genera ni toca tu obra. Solo endereza y recorta las fotos, no entrena con lo tuyo y la última palabra es siempre tuya.» | — |
+| 1 | **0:00–0:15** · Gancho | Pantalla de arranque A1: 3 datos con fuente | «La mitad de los artistas en España gana menos del salario mínimo, y menos del 15 % vive solo del arte. Un 34 % de quienes trabajan en cultura son autónomos, el doble que en el resto de la economía: sin gestoría, sin nadie que les busque ayudas. Las ayudas existen. Lo que falta es alguien que haga el dossier, las encuentre y las prepare contigo.» | Si la app no carga: los 3 datos están en la diapositiva 2 de [`PITCH.md`](PITCH.md) |
+| 2 | **0:15–0:20** · Confianza | Pantalla A2 «El arte es tuyo; nosotros hacemos el papeleo» → operador toca **Soy artista, empezamos** | «Antes de nada: Mecena no genera ni toca tu obra. Solo endereza y recorta las fotos, no entrena con lo tuyo y la última palabra es siempre tuya.» | — |
 | 3 | **0:20–1:20** · Voz + fotos (estrella) | Transcripción en directo a la izquierda/arriba; **perfil** rellenándose y **dossier** creciendo sección a sección. A mitad, operador abre la cámara y fotografía 2–3 obras; cada foto aparece enderezada con su ficha técnica | Presentador: «[Nombre], cuéntale a Mecena qué haces.» y **se calla**. **Artista** (≈ 60 s, guion orientativo abajo): quién es, dónde vive, técnica, una serie, una exposición o premio. Al enseñar cada obra: título, año, técnica, medidas | Si el micro no reconoce: operador toca **Escribir en vez de hablar** y pega la transcripción preparada (portapapeles). Presentador: «La sala tiene más eco que un estudio; os lo enseño con su texto.» |
 | 4 | **1:20–1:30** · PDF | Operador toca **Descargar PDF** → se abre el dossier maquetado | «Sesenta segundos hablando y tres fotos. Esto es un dossier profesional en PDF, y es gratis.» | Si el PDF no se genera: enseñar la página del dossier en la app («es la misma maqueta») |
-| 5 | **1:30–1:45** · Convocatorias | Feed de convocatorias reales: tarjeta con importe, plazo, **Por qué encajas** / **Qué te falta**. Operador abre una | «Convocatorias reales y vigentes, con la fuente. Y no solo te dice que encajas: te dice por qué, y qué te falta. Aquí: [qué te falta en la tarjeta].» | Si no carga el feed: el usuario de demo precargado ya tiene el feed (ver «Precargado») |
-| 6 | **1:45–1:55** · Modo pyme | Operador toca el cambio **Creador/a ↔ Pyme/autónomo**: cambian perfil y convocatorias. Vuelve a creador | «Y el mismo motor sirve para una pyme o un autónomo: ayudas de digitalización, contratación, internacionalización. Un toque.» | **Recortable** si a 1:35 no estamos en el paso 5 |
+| 5 | **1:30–1:47** · Convocatorias | Feed de ayudas públicas españolas y convocatorias reales: tarjeta con importe, plazo, **Por qué encajas** / **Qué te falta**. Operador abre una | «Ayudas públicas españolas reales y vigentes —BDNS, DOG, diputaciones—, con la fuente. Y no solo te dice que encajas: te dice por qué, y qué te falta. Aquí: [qué te falta en la tarjeta].» | Si no carga el feed: el usuario de demo precargado ya tiene el feed (ver «Precargado») |
+| 6 | **1:47–1:55** · Expansión pyme (8 s) | Operador toca **Creador/a ↔ Pyme/autónomo**: cambian perfil y convocatorias. Vuelve a creador **inmediatamente** | «Empezamos por los artistas porque nadie les hace esto. Pero el motor es el mismo para una pyme o un autónomo: un toque.» | **Recortable** si a 1:35 no estamos en el paso 5. No explicar convocatorias de pyme: solo enseñar que cambian |
 | 7 | **1:55–2:15** · Paywall + compra | En la convocatoria: **Prepárame la solicitud** → paywall RevenueCat (Pro mensual, Pro anual, Solicitud premium) → operador elige **Solicitud premium** o **Pro mensual** → checkout sandbox → desbloqueado | «El dossier es gratis. Preparar la solicitud es lo que vale dinero: una consultora se lleva entre un 10 y un 15 % de tu beca. Nosotros, 9 euros al mes, con garantía: si en 90 días no has presentado 3 solicitudes, te lo devolvemos. Esto es RevenueCat en modo sandbox, compra real de pruebas.» | Si el checkout falla o tarda > 10 s: operador cambia al **usuario de demo ya Pro** (compra hecha antes). Presentador: «Esta compra la hicimos hace una hora con el mismo flujo; os la enseño hecha.» |
 | 8 | **2:15–2:35** · Borrador + tribunal | Borrador de la memoria **con frases literales del artista** resaltadas → **Pasar por el tribunal** → **61/100** con comentarios por criterio → **Aplicar mejoras** → **84/100** | «La memoria está escrita con sus palabras; fijaos, esta frase la ha dicho hace un minuto. Ahora la pasamos por un tribunal simulado con los criterios y los pesos oficiales de las bases: 61. Aplicamos lo que pide… 84. Antes de presentarla.» | Si el borrador o el tribunal tardan > 8 s: abrir la solicitud ya puntuada del usuario de demo precargado |
 | 9 | **2:35–2:50** · MCP *(opcional)* | Cambio al portátil: Claude Desktop, prompt «Hazme el dossier para la convocatoria [X]» → llamadas a `get_profile`, `build_dossier`, `export_dossier_pdf` | «Y todo esto también es un servidor MCP: desde Claude, una frase y tienes el dossier adaptado a esa convocatoria.» | **Recortable** si a 2:35 no hemos llegado. Nunca se improvisa sin haberlo ensayado |
@@ -53,14 +54,24 @@ Para cuando el turno sea corto o el directo se tuerza. Usa el **usuario de demo 
 
 | Tiempo | Pantalla | Se dice |
 |---|---|---|
-| 0:00–0:10 | A1 | «La mitad de los artistas gana menos del salario mínimo y más de la mitad de las pymes no pide ayudas porque no se entera. Las ayudas existen; nadie te las prepara.» |
+| 0:00–0:10 | A1 | «La mitad de los artistas en España gana menos del salario mínimo y casi ninguno tiene quien le busque y le prepare las ayudas. Las ayudas existen; nadie se las prepara.» |
 | 0:10–0:40 | Voz (30 s) + 1 foto | Artista habla 30 s y fotografía una obra. Perfil y dossier crecen. |
-| 0:40–0:50 | Feed | «Convocatorias reales: por qué encajas y qué te falta.» |
+| 0:40–0:50 | Feed | «Ayudas públicas españolas reales: por qué encajas y qué te falta.» (sin cambio a pyme) |
 | 0:50–1:05 | Paywall → compra sandbox (o usuario Pro) | «El dossier es gratis; la solicitud se paga. RevenueCat, compra de pruebas real. Con garantía de 90 días.» |
 | 1:05–1:20 | Tribunal 61 → 84 | «Escrita con sus palabras y puntuada con los criterios oficiales antes de presentarla.» |
 | 1:20–1:30 | Cierre | «[X %] de los artistas encuestados pagaría; [N LOIs] cartas de interés. Tú creas; Mecena hace el papeleo.» |
 
 ---
+
+## Preguntas probables del público
+Según las webs de cada producto (no verificado; decidlo así).
+| Pregunta | Respuesta (≤ 15 s) |
+|---|---|
+| «¿Esto no existe ya?» | «Para pymes, sí: SUBAI, BuscoAyudas… Las pymes ya tienen herramientas; los artistas no tienen a nadie que les haga el dossier y les prepare las ayudas públicas españolas.» |
+| «¿Y Sketchar o OpenCall?» | «Según sus webs, van a *open calls* internacionales y en inglés. Nosotros, ayudas públicas españolas, dossier por voz y tribunal con los criterios oficiales.» |
+| «¿Por qué no empezáis por pymes, que pagan más?» | «Porque ese mercado está lleno y el de artistas, vacío. El motor ya sirve para pymes: lo habéis visto con un toque.» |
+| «¿9 € no es poco?» | «BuscoAyudas cobra 19 € al mes a pymes, según su web; un artista no factura como una pyme. Y una consultora se lleva un 10–15 % de la ayuda.» |
+| «¿La IA toca mi obra?» | «Nunca. Solo endereza y recorta la foto. No entrenamos con tu obra y presentas tú.» |
 
 ## Planes B por paso de riesgo
 | Riesgo | Señal | Qué hace el operador | Qué dice el presentador |

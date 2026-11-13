@@ -25,7 +25,8 @@
 
 **A2 · Confianza**
 - [ ] Aparece **antes** de pedir micro y cámara. Los 4 puntos se leen sin hacer scroll.
-- [ ] Botones «Soy creador/a» y «Tengo una pyme o soy autónomo/a» llevan al modo correcto.
+- [ ] «Soy artista, empezamos» es el botón principal y lleva al modo creador/a; el enlace secundario de pyme lleva al modo pyme.
+- [ ] Ninguna pantalla común (arranque, confianza, paywall) habla primero de pymes; los datos de pymes solo aparecen dentro del modo pyme.
 
 **Voz → perfil + dossier**
 - [ ] Permiso de micrófono ya concedido (no sale el diálogo).
@@ -73,6 +74,7 @@
 - [ ] Ninguna cifra que no esté en [`fleet/IDEA.md`](../IDEA.md); nada de «millones sin reclamar».
 - [ ] Sin textos en inglés ni claves de traducción a la vista (`profile.title`, `TODO`, `lorem`).
 - [ ] Ninguna probabilidad de éxito inventada en «ganadores parecidos».
+- [ ] La app no nombra competidores (solo el pitch, y siempre «según su web»).
 
 ## 5. Planes B listos
 - [ ] Usuario de demo precargado con perfil, dossier, PDF, feed y solicitud con tribunal 61 y 84.
