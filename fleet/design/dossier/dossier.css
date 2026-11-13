@@ -25,7 +25,7 @@
   --fs-small: 0.8125rem;
   --fs-lead: 1.375rem;
   --fs-h2: 2.5rem;
-  --fs-name: clamp(3rem, 10.5vw, 6.75rem);
+  --fs-name: clamp(3rem, 10.5vw, 6rem);
 
   --sheet-w: 940px;     /* screen only; print is A4 */
   --pad: clamp(20px, 6vw, 64px);
@@ -61,6 +61,8 @@ ol, ul { list-style: none; }
 cite { font-style: italic; }
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+::selection { background: var(--accent-soft); color: var(--ink); }
+.contact ::selection { background: var(--accent); color: var(--ink); }
 
 /* ---------- Sheets -------------------------------------------------------- */
 
@@ -94,13 +96,13 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   font-weight: 500;
   letter-spacing: 0.01em;
   color: var(--granite);
-  padding-top: 0.35rem;
+  padding-top: 0.75rem;
   border-top: 2px solid var(--ink);
 }
 
 .rail__name { color: var(--ink); display: block; }
 
-.main { min-width: 0; padding-top: 0.35rem; border-top: 1px solid var(--hair); }
+.main { min-width: 0; padding-top: 0.75rem; border-top: 1px solid var(--hair); }
 
 .section-title {
   font-family: var(--sans);
@@ -172,7 +174,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   font-weight: 500;
   font-size: var(--fs-name);
   line-height: 0.9;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.04em;
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
@@ -253,8 +255,9 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   font-family: var(--sans);
   font-size: var(--fs-small);
   color: var(--granite);
-  margin-bottom: 0.6rem;
+  margin-top: 0.35rem;
 }
+.label__client { font-family: var(--sans); font-size: var(--fs-small); margin: 0.2rem 0 0.35rem; }
 .label__title { font-weight: 400; font-size: 1.1875rem; line-height: 1.25; }
 .label__title cite { font-weight: 500; }
 .label__tech,
@@ -313,7 +316,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   border-top: 0;
 }
 .figures tbody th { text-align: left; font-weight: 400; }
-.figures td { font-family: var(--sans); font-size: 1.0625rem; }
+.figures td { font-family: var(--serif); font-size: 1.0625rem; white-space: nowrap; padding-left: 1rem; }
 .figures td:last-child { font-weight: 600; }
 .figures__note { margin-top: 0.8rem; font-size: var(--fs-small); color: var(--granite); }
 
@@ -369,7 +372,8 @@ h2[data-slot]:empty {
   display: block;
   width: var(--skw, 100%);
   height: calc(var(--lines, 1) * 1lh);
-  background: repeating-linear-gradient(to bottom, var(--skel) 0 0.62lh, transparent 0.62lh 1lh);
+  /* one bar per text line: a single gradient tile, repeated down the block */
+  background: linear-gradient(var(--skel) 62%, transparent 0) 0 0 / 100% 1lh repeat-y;
 }
 h1[data-slot]:empty { --skw: 70%; --lines: 2; }
 
@@ -397,16 +401,18 @@ h1[data-slot]:empty { --skw: 70%; --lines: 2; }
 /* Hint that tells the user what to talk about next */
 .hint {
   display: none;
-  font-family: var(--sans);
-  font-size: var(--fs-small);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: var(--fs-body);
   color: var(--granite);
-  margin-top: 1.5rem;
-  padding-left: 0.8rem;
-  border-left: 2px solid var(--accent);
+  margin-top: 1.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #b7bab6;
+  max-width: 36em;
 }
+.contact .hint { color: #a9aeb2; border-top-color: #4a5157; }
 [data-state="pending"] .hint,
 [data-state="filling"] .hint { display: block; }
-[data-state="pending"] { opacity: 0.72; }
 
 /* Finished sections drop slots that stayed empty */
 [data-state="ready"] [data-slot]:empty { display: none; }
@@ -428,6 +434,7 @@ h1[data-slot]:empty { --skw: 70%; --lines: 2; }
   .cv { columns: 1; }
   .team { grid-template-columns: minmax(0, 1fr); }
   .facts { grid-template-columns: 8.5em minmax(0, 1fr); }
+  .figures td { font-size: 0.9375rem; padding-left: 0.6rem; }
   .contact { min-height: 0; }
 }
 

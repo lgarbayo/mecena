@@ -41,7 +41,7 @@ Every section carries `data-section="<name>"` and `data-state`:
 
 | `data-state` | Look | Use |
 |---|---|---|
-| `pending` | Skeleton bars, dimmed, `.hint` visible ("Cuéntame de dónde viene tu trabajo…") | Nothing known yet |
+| `pending` | Skeleton bars, `.hint` visible ("Cuéntame de dónde viene tu trabajo…") | Nothing known yet |
 | `filling` | Empty slots breathe gently, filled ones show | The AI is writing this section now |
 | `ready` | Empty slots disappear | Section complete |
 
