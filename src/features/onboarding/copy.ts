@@ -21,6 +21,7 @@ export const HOME = {
   title: "Las ayudas existen. Enterarse a tiempo y prepararlas es otro trabajo.",
   closing: "Mecena las encuentra y las prepara contigo.",
   cta: "Empezar hablando",
+  importCta: "Ya tengo dossier: subirlo",
   secondary: "Cómo cuidamos tu obra",
   sourcesLabel: "Fuente",
   dataPoints: [

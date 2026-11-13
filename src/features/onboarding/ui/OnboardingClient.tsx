@@ -6,13 +6,14 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { API, ROUTES, type DossierSection, type Profile, type ProfileKind, type TranscriptSegment } from "@/contracts";
-import type { OnboardingTurnResponse } from "@/contracts/api";
+import type { ImportDossierResponse, OnboardingTurnResponse } from "@/contracts/api";
 import { useApp } from "@/components/shell/AppProvider";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { apiGet, apiSend } from "@/lib/api-client";
 import { FIELD_LABELS, ONBOARDING } from "../copy";
 import { TurnQueue, type QueuedTurn } from "../turnQueue";
 import { DossierPanel } from "./DossierPanel";
+import { ImportDossier } from "./ImportDossier";
 import { MicIcon, PauseIcon } from "./icons";
 import { ProfilePanel } from "./ProfilePanel";
 import { TrustStrip } from "./TrustStrip";
@@ -89,6 +90,22 @@ export function OnboardingClient() {
     if (res.changedProfileFields.length) appRef.current.refresh().catch(() => undefined);
   }, []);
 
+  // Imported dossier: same live update as a turn, plus the new transcript segments (the dossier's own text).
+  const onImported = useCallback(
+    (res: ImportDossierResponse) => {
+      onResult({ ...res, segmentId: res.segmentIds.at(-1) ?? "" });
+      const url = profileId ? `${ONBOARDING_STATE_API}?profileId=${encodeURIComponent(profileId)}` : ONBOARDING_STATE_API;
+      apiGet<State>(url)
+        .then((st) => setHistory(st.transcript))
+        .catch(() => undefined);
+      appRef.current.refresh().catch(() => undefined);
+    },
+    [onResult, profileId],
+  );
+  // /onboarding?subir=1 (home CTA "Ya tengo dossier") opens the upload box. Read after mount: no Suspense needed.
+  const [wantsImport, setWantsImport] = useState(false);
+  useEffect(() => setWantsImport(new URLSearchParams(window.location.search).get("subir") === "1"), []);
+
   const pidRef = useRef(profileId);
   pidRef.current = profileId;
   const queue = useMemo(
@@ -133,6 +150,8 @@ export function OnboardingClient() {
       </header>
 
       <TrustStrip />
+
+      <ImportDossier key={wantsImport ? "open" : "closed"} kind={kind} profileId={profileId} onImported={onImported} defaultOpen={wantsImport} />
 
       <section className={s.controls} aria-label="Habla o escribe">
         {checked && speech.supported ? (
