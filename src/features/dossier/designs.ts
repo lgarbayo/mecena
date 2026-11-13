@@ -7,7 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import type { Call, Profile } from "@/contracts";
-import { dataDir, getCall, getProfile, nowIso } from "@/server/store";
+import { dataDir, getCall, getProfile, getTranscript, nowIso } from "@/server/store";
 import { designDossier, mockDesign } from "./ai";
 import { DossierDesign, guardDesign, presetDesign } from "./design";
 import { isDossierStyle, suggestStyle, type DossierStyle } from "./style";
@@ -51,11 +51,13 @@ export interface DesignChange {
 }
 
 /** Asks the design agent for a new look from the artist's words, guards it and saves it. */
-export async function requestDesign(input: { profileId?: string; callId?: string; request: string; workColors?: string[]; preset?: string }): Promise<DesignChange> {
+export async function requestDesign(input: { profileId?: string; callId?: string; request: string; workColors?: string[]; preset?: string; auto?: boolean }): Promise<DesignChange> {
   const profile = getProfile(input.profileId);
   const call = input.callId ? getCall(input.callId) : undefined;
   const store = read();
   const entry = store[profile.id];
+  // The first design comes by itself from the interview; it never replaces one the artist already has.
+  if (input.auto && entry) return { design: entry.current, adjustments: [], saved: true };
   let next: DossierDesign;
   if (isDossierStyle(input.preset)) {
     next = presetDesign(input.preset, profile.kind, input.workColors?.[0]);
@@ -68,6 +70,7 @@ export async function requestDesign(input: { profileId?: string; callId?: string
       call,
       workColors: (input.workColors ?? []).filter((c) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 5),
       history: entry?.history.map((h) => h.request) ?? [],
+      interview: interviewOf(profile),
     };
     try {
       next = await designDossier(agentInput);
@@ -78,10 +81,17 @@ export async function requestDesign(input: { profileId?: string; callId?: string
     }
   }
   const { design, adjustments } = guardDesign(next, { call });
-  const history = [...(entry?.history ?? []), { request: input.preset ? `Punto de partida: ${input.preset}` : input.request, design, at: nowIso() }].slice(-20);
+  const label = input.preset ? `Punto de partida: ${input.preset}` : input.auto ? "Primer diseño, a partir de tu entrevista" : input.request;
+  const history = [...(entry?.history ?? []), { request: label, design, at: nowIso() }].slice(-20);
   store[profile.id] = { current: design, history };
   write(store);
   return { design, adjustments, saved: true };
+}
+
+/** What the artist told Mecena about their work: statement, project and their own words from the interview. */
+function interviewOf(profile: Profile): string[] {
+  const said = getTranscript(profile.id).map((t) => t.text);
+  return [profile.statement, profile.bio, profile.projectIdea ?? "", ...said].filter(Boolean).slice(-40);
 }
 
 /** Goes back one step. Returns the design now in place (a starting point when history runs out). */

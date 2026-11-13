@@ -5,6 +5,7 @@ import { mockDesign } from "@/features/dossier/ai";
 import { contrast, DossierDesign, guardDesign, presetDesign } from "@/features/dossier/design";
 import { renderDossierPdf } from "@/features/dossier/service";
 import { GET, POST } from "@/app/api/dossier/design/route";
+import { appendSegment } from "@/server/store";
 import { req, seedOnboardedCreator } from "../helpers";
 import { seedUploadWork } from "./fixtures";
 
@@ -92,5 +93,20 @@ describe("design API and PDF", () => {
     const bytes = await renderDossierPdf({});
     expect(bytes.subarray(0, 4).toString()).toBe("%PDF");
     expect(bytes.length).toBeGreaterThan(5000);
+  });
+
+  it("designs the first look by itself from the interview, and never overwrites the artist's own", async () => {
+    await seedOnboardedCreator();
+    await appendSegment(fixtureCreator.id, "Pinto al óleo los bancales de viña de la Ribeira Sacra, sobre todo en otoño, después de la vendimia.", "voice");
+    const first = await (await POST(req("/api/dossier/design", { body: { auto: true, workColors: ["#8c3b26"] } }))).json();
+    expect(first.design.rationale).toMatch(/la tierra y la viña de las que hablas/);
+    expect(first.design.rationale).toMatch(/dímelo con tus palabras/);
+    expect(first.design.palette.paper).toBe("#f6efe3");
+
+    await POST(req("/api/dossier/design", { body: { request: "más oscuro" } }));
+    const again = await (await POST(req("/api/dossier/design", { body: { auto: true } }))).json();
+    expect(again.design.palette.paper).toBe("#16191d");
+    const now = await (await GET(req("/api/dossier/design"))).json();
+    expect(now.history).toEqual(["Primer diseño, a partir de tu entrevista", "más oscuro"]);
   });
 });

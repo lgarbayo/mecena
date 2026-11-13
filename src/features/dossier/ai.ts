@@ -11,7 +11,8 @@ import { DossierDesign, presetDesign, type DossierDesign as Design } from "./des
 import { suggestStyle, tameAccent } from "./style";
 
 export interface DesignDossierInput {
-  request: string; // what the artist said or typed ("más oscuro, como una noche en el puerto")
+  request: string; // what the artist asked for ("más oscuro, como una noche en el puerto"); "" = design from the interview
+  interview?: string[]; // what they told Mecena about their work (statement + transcript), for the first design
   current: Design; // the design on screen; requests are applied on top of it
   profile: Profile;
   call?: Call;
@@ -23,6 +24,7 @@ const SYSTEM = `Eres la directora de arte de Mecena. Diseñas el dossier de un a
 Devuelves un diseño completo (paleta, tipografías, maquetación, ritmo y títulos de sección) que se aplica a las páginas del dossier en la web y en un PDF A4.
 
 Principios:
+- Si "peticion" está vacía, nadie te ha dicho cómo lo quiere: es el primer diseño. Sácalo de cómo habla de su obra en "entrevista" (materiales, lugares, luz, estaciones, oficio, tono) y de los colores de sus fotos. Que se note que es SU dossier y no una plantilla. En "rationale" explica qué de lo que contó te ha llevado a este diseño e invita a pedir cambios.
 - La petición del artista manda. Si pide algo concreto (un color, una letra, "más oscuro", "como un fanzine", "como un catálogo de los 70"), hazlo de verdad y con decisión; no lo diluyas en algo genérico.
 - Partes del diseño actual: cambia lo que la petición pide y mantén lo demás, salvo que pida empezar de cero.
 - La obra es la protagonista. El diseño la enmarca; nunca compite con ella. Los colores de sus fotos (workColors) son buena fuente para el acento y el fondo de las obras.
@@ -38,6 +40,7 @@ function brief(input: DesignDossierInput) {
   const { profile, call } = input;
   return {
     peticion: input.request,
+    entrevista: (input.interview ?? []).join("\n").slice(0, 3000),
     peticionesAnteriores: input.history.slice(-5),
     disenoActual: input.current,
     coloresDeSusObras: input.workColors,
@@ -74,6 +77,7 @@ const COLOURS: Record<string, string> = {
 const has = (text: string, ...words: string[]) => words.some((w) => text.includes(w));
 
 export function mockDesign(input: DesignDossierInput): Design {
+  if (!input.request.trim()) return mockFirstDesign(input);
   const req = input.request.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
   const fresh = has(req, "de cero", "empezar", "nuevo diseno");
   const base: Design = fresh ? presetDesign(suggestStyle({ call: input.call, profile: input.profile }).style, input.profile.kind) : structuredClone(input.current);
@@ -162,6 +166,31 @@ export function mockDesign(input: DesignDossierInput): Design {
   d.rationale = done.length
     ? `He aplicado lo que pedías: ${done.join(", ")}.${input.call ? " Lo he mantenido legible para el jurado de la convocatoria." : ""}`
     : "No he entendido qué cambiar. Prueba con un color, un ambiente («más oscuro», «como un libro», «tipo fanzine») o cómo quieres ver la obra («a sangre», «en rejilla»).";
+  return d;
+}
+
+/** First design with no request: read the mood of the interview and take the accent from the work. */
+function mockFirstDesign(input: DesignDossierInput): Design {
+  const text = (input.interview ?? []).join(" ").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const d = presetDesign(suggestStyle({ call: input.call, profile: input.profile }).style, input.profile.kind, input.workColors[0]);
+  const why: string[] = [];
+  if (has(text, "otono", "vendimia", "vina", "vinedo", "tierra", "barro", "madera")) {
+    d.palette = { ...d.palette, paper: "#f6efe3", ink: "#2b2520", muted: "#6c6258", rule: "#d8cebf", wall: "#ddd2c0", ground: "#ece3d3" };
+    why.push("la tierra y la viña de las que hablas");
+  } else if (has(text, " mar ", "puerto", "costa", "marea")) {
+    if (!input.workColors[0]) d.palette.accent = "#2f5d8a";
+    why.push("el mar que atraviesa tu trabajo");
+  } else if (has(text, "noche", "oscur", "sombra")) {
+    d.palette = { ...d.palette, paper: "#16191d", ink: "#ecebe6", muted: "#a5aab0", rule: "#3a4047", wall: "#0e1013", ground: "#22262b", backPaper: "#ecebe6", backInk: "#16191d" };
+    why.push("la noche y las sombras de tu obra");
+  }
+  if (has(text, "libro", "poesia", "relato", "ilustr", "grabado")) {
+    d.type.display = { family: "Cormorant Garamond", category: "serif", weight: 500, italic: false, tracking: -0.01, uppercase: false };
+    why.push("tu relación con el libro y el papel");
+  }
+  if (input.workColors[0]) why.push("los colores de tus obras");
+  d.name = why.length ? "A partir de tu entrevista" : d.name;
+  d.rationale = `${why.length ? `Lo he diseñado a partir de ${why.join(", ")}.` : "He partido del estilo que mejor encaja con tu trabajo."} Si lo quieres de otra manera, dímelo con tus palabras.`;
   return d;
 }
 

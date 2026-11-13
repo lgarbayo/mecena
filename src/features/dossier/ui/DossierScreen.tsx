@@ -6,7 +6,7 @@
  */
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API, ROUTES, type Call, type Dossier, type Profile, type Work } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
 import { Button, Spinner } from "@/components/ui";
@@ -42,6 +42,9 @@ export function DossierScreen() {
   const profileId = sp.get("profileId") || active?.id || undefined;
   const callId = sp.get("callId") || undefined;
   const [design, setDesign] = useState<DossierDesign | undefined>();
+  const [designSaved, setDesignSaved] = useState<boolean | undefined>();
+  const [autoDesigning, setAutoDesigning] = useState(false);
+  const autoTried = useRef(false);
   const [workColors, setWorkColors] = useState<string[]>([]);
   const [data, setData] = useState<DossierPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -72,8 +75,11 @@ export function DossierScreen() {
   // redesign never reloads the content.
   const loadDesign = useCallback(async () => {
     const q = dossierQuery({ profileId, callId });
-    const res = await apiGet<{ design: DossierDesign }>(`${DESIGN_API}${q}`).catch(() => undefined);
-    if (res) setDesign(res.design);
+    const res = await apiGet<{ design: DossierDesign; saved: boolean }>(`${DESIGN_API}${q}`).catch(() => undefined);
+    if (res) {
+      setDesign(res.design);
+      setDesignSaved(res.saved);
+    }
   }, [profileId, callId]);
   useEffect(() => {
     loadDesign();
@@ -99,6 +105,29 @@ export function DossierScreen() {
       cancelled = true;
     };
   }, [imageKey]);
+
+  // Nobody asks the artist how the dossier should look: the first design comes by itself, from the interview
+  // and the colours of their work, as soon as there is something to design. Asking for changes is optional.
+  const hasContent = !!data && (data.works.length > 0 || !!data.profile.statement);
+  const coloursReady = !imageKey || workColors.length > 0;
+  useEffect(() => {
+    if (!data || designSaved !== false || !hasContent || autoTried.current) return;
+    const go = () => {
+      if (autoTried.current) return;
+      autoTried.current = true;
+      setAutoDesigning(true);
+      apiSend<{ design: DossierDesign }>(DESIGN_API, { auto: true, workColors, profileId: data.profile.id, callId })
+        .then((res) => {
+          setDesign(res.design);
+          setDesignSaved(true);
+        })
+        .catch(() => undefined)
+        .finally(() => setAutoDesigning(false));
+    };
+    // Give the photos a moment to be sampled, but never wait on them for long.
+    const t = setTimeout(go, coloursReady ? 0 : 2500);
+    return () => clearTimeout(t);
+  }, [data, designSaved, hasContent, coloursReady, workColors, callId]);
 
   const suggestion = data ? suggestStyle({ call: data.call, profile: data.profile }) : undefined;
   const fontUrls = design ? googleFontUrls(design) : [];
@@ -150,6 +179,7 @@ export function DossierScreen() {
 
       {suggestion ? (
         <DesignPanel
+          autoDesigning={autoDesigning}
           design={design}
           suggested={suggestion.style}
           suggestedReason={suggestion.reason}
@@ -161,6 +191,7 @@ export function DossierScreen() {
           onUndo={async () => {
             const res = await apiSend<{ design: DossierDesign }>(DESIGN_API, { undo: true, profileId: data.profile.id, callId }).catch(() => undefined);
             if (res) setDesign(res.design);
+            autoTried.current = true; // undoing to the start must not trigger a new automatic design
           }}
         />
       ) : null}

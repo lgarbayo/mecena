@@ -21,6 +21,7 @@ export interface DesignChange {
 
 export function DesignPanel(props: {
   design?: DossierDesign;
+  autoDesigning?: boolean;
   suggested: DossierStyle;
   suggestedReason: string;
   forCall: boolean;
@@ -67,7 +68,13 @@ export function DesignPanel(props: {
           </p>
         ) : null}
       </div>
-      {props.design?.rationale ? <p className="design-panel__why">{props.design.rationale}</p> : null}
+      {props.autoDesigning ? (
+        <p className="design-panel__why" role="status">
+          Estoy preparando tu diseño a partir de lo que me has contado y de los colores de tus obras…
+        </p>
+      ) : props.design?.rationale ? (
+        <p className="design-panel__why">{props.design.rationale}</p>
+      ) : null}
       {adjustments.length ? (
         <ul className="design-panel__adjust">
           {adjustments.map((a, i) => (
@@ -84,7 +91,7 @@ export function DesignPanel(props: {
         }}
       >
         <label htmlFor="design-request" className="design-panel__label">
-          Cuéntame cómo lo quieres, con tus palabras
+          ¿Lo quieres de otra manera? Dímelo con tus palabras
         </label>
         <textarea
           id="design-request"
@@ -98,7 +105,7 @@ export function DesignPanel(props: {
             }
           }}
           placeholder="Por ejemplo: más oscuro y con la letra de un libro antiguo, que la obra respire"
-          disabled={!!busy}
+          disabled={!!busy || props.autoDesigning}
         />
         <div className="design-panel__actions">
           <Button type="submit" disabled={!!busy || !request.trim()}>
