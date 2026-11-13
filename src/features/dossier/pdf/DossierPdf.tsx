@@ -6,7 +6,7 @@
  */
 import path from "node:path";
 import fs from "node:fs";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { Document, Font, Image, Link, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { BusinessView, CreatorView, CvGroup, DossierView, FactRow, WorkView } from "../model";
 import type { PdfImage } from "./images";
@@ -83,7 +83,7 @@ function makeStyles(fonts: boolean) {
       // cover
       coverHead: { flexDirection: "row", justifyContent: "space-between", fontFamily: sans, fontSize: 7.5, color: C.granite },
       callHeader: { flexDirection: "row", justifyContent: "space-between", fontFamily: sans, fontSize: 7.5, marginTop: -M.top, marginHorizontal: -M.side, marginBottom: mm(10), paddingVertical: mm(4), paddingHorizontal: M.side, borderBottomWidth: 0.8 },
-      coverFigure: { flexGrow: 1, marginTop: mm(8), marginBottom: mm(7) },
+      coverFigure: { marginTop: mm(8), marginBottom: mm(7) },
       frame: { backgroundColor: C.ground, alignItems: "center", justifyContent: "center", padding: 14 },
       frameImg: { objectFit: "contain", width: "100%", height: "100%" },
       frameEmpty: { fontFamily: serif, fontStyle: "italic", fontSize: 10, color: C.granite, textAlign: "center", paddingHorizontal: 20 },
@@ -172,7 +172,7 @@ function Prose({ st, paras, leadFirst = true }: { st: S; paras: string[]; leadFi
   );
 }
 
-function Frame({ st, work, images, style }: { st: S; work?: WorkView; images: ImageMap; style: object }) {
+function Frame({ st, work, images, style }: { st: S; work?: WorkView; images: ImageMap; style: ComponentProps<typeof View>["style"] }) {
   const img = work ? images[work.imageUrl] : undefined;
   return (
     <View style={[st.s.frame, style]}>
@@ -239,6 +239,9 @@ function CallHeader({ st, view, kind }: { st: S; view: DossierView; kind: "creat
 
 function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; images: ImageMap; kicker: string; meta: string[] }) {
   const w = view.cover;
+  // Fixed frame height so the cover is always exactly one page (long names take two lines).
+  const nameLines = (view.name || "Dossier").length > 15 ? 2 : 1;
+  const frameH = mm(184) - (nameLines - 1) * 48 - (view.variant ? mm(14) : 0) - (view.tagline.length > 120 ? 16 : 0);
   const caption = w ? [`${w.title}${w.year ? `, ${w.year}` : ""}`, [w.technique, w.size].filter(Boolean).join(", ")].filter(Boolean) : [];
   return (
     <Page size="A4" style={st.s.full}>
@@ -250,7 +253,7 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
       <View style={st.s.coverFigure}>
         {w && images[w.imageUrl] ? (
           <>
-            <Frame st={st} work={w} images={images} style={{ flexGrow: 1, padding: 24 }} />
+            <Frame st={st} work={w} images={images} style={{ height: frameH, padding: 24 }} />
             <Text style={st.s.caption}>
               <Text style={{ fontStyle: "italic" }}>{caption[0]}</Text>
               {caption[1] ? `. ${caption[1]}` : ""}
@@ -258,7 +261,7 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
           </>
         ) : null}
       </View>
-      <View style={st.s.coverText}>
+      <View style={[st.s.coverText, { marginTop: "auto" }]}>
         <Text style={st.s.coverName}>{view.name || "Dossier"}</Text>
         <View style={st.s.coverRow}>
           <View style={st.s.coverMeta}>

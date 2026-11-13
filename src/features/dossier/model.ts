@@ -119,12 +119,15 @@ export function joinEs(items: string[]): string {
   return capitalize(out);
 }
 
+/** Straight quotes around a phrase -> Spanish angle quotes: 'Redeiras' -> «Redeiras». */
+export const typo = (s: string) => s.replace(/(^|[\s(])['"]([^'"\n]{1,80}?)['"](?=$|[\s.,;:!?)])/g, "$1«$2»");
+
 /** markdown-lite body -> paragraphs (bullets are kept as their own lines without the dash). */
 export function paragraphs(body: string | undefined): string[] {
   if (!body) return [];
   return body
     .split(/\n\s*\n|\n(?=\s*[-•]\s)/)
-    .map((p) => p.replace(/^\s*[-•]\s+/, "").replace(/\s*\n\s*/g, " ").trim())
+    .map((p) => typo(p.replace(/^\s*[-•]\s+/, "").replace(/\s*\n\s*/g, " ").trim()))
     .filter(Boolean);
 }
 
@@ -213,7 +216,7 @@ export function groupSeries(works: Work[], ctx: { seriesBody?: string; projectId
     if (g.title) {
       description = paras.filter((p) => norm(p).includes(norm(g.title)));
       if (!description.length && named === 1 && paras.length) description = paras;
-      if (!description.length && ctx.projectIdea && norm(ctx.projectIdea).includes(norm(g.title))) description = [ctx.projectIdea.trim()];
+      if (!description.length && ctx.projectIdea && norm(ctx.projectIdea).includes(norm(g.title))) description = [typo(ctx.projectIdea.trim())];
     } else if (groups.size === 1) {
       description = paras;
     }

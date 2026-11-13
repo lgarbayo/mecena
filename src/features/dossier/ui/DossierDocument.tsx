@@ -1,0 +1,465 @@
+/**
+ * Editorial dossier (screen + print), a faithful port of fleet/design/dossier/{creator,business}.html.
+ * Pure render of a DossierView: no data fetching, no hooks, so WP-01 can reuse it for the progressive build
+ * (pass `progressive` and the per-section states; empty slots render as skeletons, never as placeholder text).
+ * Styles live in ./dossier.css, scoped under .dossier-wall.
+ */
+import type { CSSProperties, ReactNode } from "react";
+import type { BusinessView, CreatorView, DossierView, FactRow, SectionState, WorkView } from "../model";
+import "./dossier.css";
+
+type Slot = CSSProperties & { "--lines"?: number; "--skw"?: string };
+
+export interface DossierDocumentProps {
+  view: DossierView;
+  /** Show pending sections as skeletons with hints (progressive build). Otherwise empty sections are hidden. */
+  progressive?: boolean;
+  className?: string;
+}
+
+const HINTS: Record<string, string> = {
+  cover: "Dime tu nombre, tu disciplina y dónde trabajas.",
+  statement: "Cuéntame de dónde viene tu trabajo y qué te mueve a hacerlo.",
+  bio: "¿Dónde te formaste y cómo llegaste a lo que haces hoy?",
+  series: "Haz una foto de cada obra y dime título, año, técnica y medidas.",
+  cv: "Exposiciones, premios, becas, residencias: con el año basta.",
+  contact: "¿Cómo quieres que te escriban? Correo, web, Instagram…",
+  activity: "Cuéntame a qué se dedica tu empresa y para quién trabajáis.",
+  team: "¿Quién forma el equipo y qué hace cada persona?",
+  projects: "Enséñame dos o tres proyectos de los que estés orgulloso u orgullosa.",
+  figures: "Facturación, plantilla, año de fundación y CNAE.",
+};
+
+function Section({
+  name,
+  state,
+  progressive,
+  className = "sheet ruled",
+  children,
+  extra,
+}: {
+  name: string;
+  state: SectionState;
+  progressive?: boolean;
+  className?: string;
+  children: ReactNode;
+  extra?: Record<string, string>;
+}) {
+  if (state === "pending" && !progressive) return null;
+  return (
+    <section className={className} data-section={name} data-state={state} {...extra}>
+      {children}
+    </section>
+  );
+}
+
+function Rail({ name, sub }: { name: string; sub?: string }) {
+  return (
+    <h2 className="rail">
+      <span className="rail__name">{name}</span>
+      {sub}
+    </h2>
+  );
+}
+
+function Hint({ k }: { k: string }) {
+  return <p className="hint">{HINTS[k]}</p>;
+}
+
+function Prose({ paras, slot, lines = 4 }: { paras: string[]; slot: string; lines?: number }) {
+  if (!paras.length) return <p data-slot={slot} style={{ "--lines": lines } as Slot} />;
+  return (
+    <>
+      {paras.map((p, i) => (
+        <p key={i} className={i === 0 ? "lead" : undefined}>
+          {p}
+        </p>
+      ))}
+    </>
+  );
+}
+
+function Frame({ work, hint, alt }: { work?: Pick<WorkView, "imageUrl" | "title">; hint: string; alt?: string }) {
+  return (
+    <div className="frame" data-hint={hint}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- user artwork, never cropped or re-encoded */}
+      {work?.imageUrl ? <img src={work.imageUrl} alt={alt ?? work.title} loading="lazy" decoding="async" /> : null}
+    </div>
+  );
+}
+
+function CallHeader({ view }: { view: DossierView }) {
+  if (!view.variant) return null;
+  return (
+    <div className="call-header" data-variant="call">
+      <span>
+        Dossier para: <span className="call-header__name">{view.variant.callName}</span>
+      </span>
+      {view.variant.callRef ? <span className="call-header__ref">{view.variant.callRef}</span> : null}
+    </div>
+  );
+}
+
+function workCaption(w: WorkView): ReactNode {
+  const rest = [w.technique, w.size].filter(Boolean).join(", ");
+  return (
+    <>
+      <cite>{w.title}</cite>
+      {w.year ? `, ${w.year}` : ""}
+      {rest ? `. ${rest}` : ""}
+    </>
+  );
+}
+
+function Cover({ view, kicker, sub, progressive }: { view: DossierView; kicker: string; sub: [string, string]; progressive?: boolean }) {
+  const w = view.cover;
+  return (
+    <Section name="cover" state={view.states.cover} progressive={progressive} className="sheet cover">
+      <CallHeader view={view} />
+      <header className="cover__head">
+        <span>{kicker}</span>
+        <span data-slot="meta.date">{view.date}</span>
+      </header>
+      {w || progressive ? (
+        <figure className="cover__work">
+          <Frame work={w} hint={view.kind === "creator" ? "Foto de la obra de portada" : "Foto del taller o de un proyecto"} />
+          {w ? <figcaption className="cover__caption">{workCaption(w)}</figcaption> : null}
+        </figure>
+      ) : (
+        <div />
+      )}
+      <div className="cover__text">
+        <h1 className="cover__name" data-slot="profile.name">
+          {view.name}
+        </h1>
+        <p className="cover__meta">
+          <span data-slot="profile.discipline" style={{ "--skw": "16ch" } as Slot}>
+            {sub[0]}
+          </span>
+          <span data-slot="profile.city" style={{ "--skw": "9ch" } as Slot}>
+            {sub[1]}
+          </span>
+        </p>
+        <p className="cover__line" data-slot="profile.tagline" style={{ "--lines": 2 } as Slot}>
+          {view.tagline}
+        </p>
+      </div>
+      {view.states.cover !== "ready" ? <Hint k="cover" /> : null}
+    </Section>
+  );
+}
+
+function Facts({ rows }: { rows: FactRow[] }) {
+  return (
+    <dl className="facts">
+      {rows.map((r, i) => (
+        <FactPair key={`${r.label}-${i}`} row={r} />
+      ))}
+    </dl>
+  );
+}
+
+function FactPair({ row }: { row: FactRow }) {
+  return (
+    <>
+      <dt>{row.label}</dt>
+      <dd>
+        {row.href ? (
+          <a href={row.href} target={row.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
+            {row.value}
+          </a>
+        ) : (
+          row.value
+        )}
+      </dd>
+    </>
+  );
+}
+
+function Contact({ view, colophon, progressive }: { view: DossierView; colophon: string; progressive?: boolean }) {
+  return (
+    <Section name="contact" state={view.states.contact} progressive={progressive} className="sheet contact">
+      <div className="ruled">
+        <Rail name="Contacto" />
+        <div className="main">
+          <p className="contact__name" data-slot="profile.name">
+            {view.name}
+          </p>
+          {view.contact.length ? <Facts rows={view.contact} /> : <p data-slot="contact.email" style={{ "--lines": 3, "--skw": "60%" } as Slot} />}
+          {view.states.contact !== "ready" ? <Hint k="contact" /> : null}
+        </div>
+      </div>
+      <p className="colophon">{colophon}</p>
+    </Section>
+  );
+}
+
+function Work({ w }: { w: WorkView }) {
+  return (
+    <li className="work" data-work-id={w.id}>
+      <Frame work={w} hint="Foto de la obra" />
+      <div className="label">
+        <p className="label__cat">Cat. {w.catNo}</p>
+        <h4 className="label__title">
+          <cite>{w.title || "Sin título"}</cite>
+          {w.year ? <>, {w.year}</> : null}
+        </h4>
+        {w.technique ? <p className="label__tech">{w.technique}</p> : null}
+        {w.size ? <p className="label__size">{w.size}</p> : null}
+        {w.concept ? <p className="label__concept">{w.concept}</p> : null}
+      </div>
+    </li>
+  );
+}
+
+// ---------------------------------------------------------------- creator
+
+function CreatorDossier({ view, progressive }: { view: CreatorView; progressive?: boolean }) {
+  const { states } = view;
+  const signature = [view.name, view.city, view.date.split(" ").pop()].filter(Boolean).join(", ");
+  return (
+    <>
+      <Cover view={view} kicker="Dossier artístico" sub={[view.discipline, view.city]} progressive={progressive} />
+
+      <Section name="statement" state={states.statement} progressive={progressive}>
+        <Rail name="Statement" />
+        <div className="main prose">
+          <Prose paras={view.statement} slot="profile.statement" lines={6} />
+          {view.statement.length && view.name ? <p className="signature">{signature}</p> : null}
+          {states.statement !== "ready" ? <Hint k="statement" /> : null}
+        </div>
+      </Section>
+
+      <Section name="bio" state={states.bio} progressive={progressive}>
+        <Rail name="Biografía" />
+        <div className="main prose">
+          <Prose paras={view.bio} slot="profile.bio" lines={4} />
+          {states.bio !== "ready" ? <Hint k="bio" /> : null}
+        </div>
+      </Section>
+
+      {view.series.length ? (
+        view.series.map((s, i) => (
+          <Section key={s.id} name="series" state={states.series} progressive={progressive} className="sheet ruled series" extra={{ "data-series-id": s.id }}>
+            <Rail name="Obra" sub={view.series.length > 1 ? `Serie ${i + 1} de ${view.series.length}` : undefined} />
+            <div className="main">
+              {s.title || s.years || s.description.length ? (
+                <header className="series__head">
+                  {s.title ? <h3 className="section-title">{s.title}</h3> : null}
+                  {s.years ? <p className="series__years">{s.years}</p> : null}
+                  {s.description.length ? (
+                    <div className="series__text prose">
+                      {s.description.map((p, j) => (
+                        <p key={j}>{p}</p>
+                      ))}
+                    </div>
+                  ) : null}
+                </header>
+              ) : null}
+              <ol className="works">
+                {s.works.map((w) => (
+                  <Work key={w.id} w={w} />
+                ))}
+              </ol>
+            </div>
+          </Section>
+        ))
+      ) : (
+        <Section name="series" state={states.series} progressive={progressive} className="sheet ruled series">
+          <Rail name="Obra" />
+          <div className="main">
+            <header className="series__head">
+              <h3 className="section-title" data-slot="series[0].title" style={{ "--skw": "40%" } as Slot} />
+            </header>
+            <ol className="works">
+              <li className="work">
+                <Frame hint="Haz una foto de la obra" />
+                <div className="label">
+                  <p data-slot="series[0].works[0].title" style={{ "--lines": 3 } as Slot} />
+                </div>
+              </li>
+            </ol>
+            <Hint k="series" />
+          </div>
+        </Section>
+      )}
+
+      <Section name="cv" state={states.cv} progressive={progressive}>
+        <Rail name="Trayectoria" />
+        <div className="main">
+          {view.cv.length ? (
+            <div className="cv">
+              {view.cv.map((g) => (
+                <div key={g.key} className="cv__group" data-cv={g.key}>
+                  <h3 className="cv__title">{g.title}</h3>
+                  <ol className="cv__list">
+                    {g.items.map((it, j) => (
+                      <li key={j}>
+                        <span className="cv__year">{it.year}</span>
+                        <span>
+                          {it.text}
+                          {it.place ? (
+                            <>
+                              {". "}
+                              <span className="cv__place">{it.place}</span>
+                            </>
+                          ) : null}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p data-slot="cv" style={{ "--lines": 5 } as Slot} />
+          )}
+          {states.cv !== "ready" ? <Hint k="cv" /> : null}
+        </div>
+      </Section>
+
+      <Contact
+        view={view}
+        progressive={progressive}
+        colophon={`Obras y textos de ${view.name || "la artista o el artista"}. Dossier maquetado con Mecena.`}
+      />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------- business
+
+function BusinessDossier({ view, progressive }: { view: BusinessView; progressive?: boolean }) {
+  const { states } = view;
+  const people = view.team.people;
+  const teamSub =
+    view.team.size !== undefined && people.length
+      ? `${people.length} de ${view.team.size} ${view.team.size === 1 ? "persona" : "personas"}`
+      : view.team.size !== undefined
+        ? `${view.team.size} ${view.team.size === 1 ? "persona" : "personas"}`
+        : undefined;
+  const years = view.projects.works.map((w) => Number(w.year)).filter((n) => n > 1900);
+  const projSub = years.length ? (Math.min(...years) === Math.max(...years) ? `Selección ${years[0]}` : `Selección ${Math.min(...years)}–${Math.max(...years)}`) : undefined;
+  return (
+    <>
+      <Cover view={view} kicker="Dossier de empresa" sub={[view.activityShort, view.city]} progressive={progressive} />
+
+      <Section name="activity" state={states.activity} progressive={progressive}>
+        <Rail name="Actividad" />
+        <div className="main stack">
+          <div className="prose">
+            <Prose paras={view.activity} slot="company.activity" lines={5} />
+          </div>
+          {view.plan.idea || view.plan.needs.length ? (
+            <div>
+              <h3 className="block-title">Proyecto que buscamos financiar</h3>
+              <dl className="facts">
+                {view.plan.idea ? <FactPair row={{ label: "Idea", value: view.plan.idea }} /> : null}
+                {view.plan.needs.length ? <FactPair row={{ label: "Necesidades", value: view.plan.needs.join(", ") }} /> : null}
+              </dl>
+            </div>
+          ) : null}
+          {states.activity !== "ready" ? <Hint k="activity" /> : null}
+        </div>
+      </Section>
+
+      <Section name="team" state={states.team} progressive={progressive}>
+        <Rail name="Equipo" sub={teamSub} />
+        <div className="main stack">
+          {people.length ? (
+            <ul className="team">
+              {people.map((p, i) => (
+                <li key={i} className="person">
+                  <p className="person__name">{p.name}</p>
+                  {p.role ? <p className="person__role">{p.role}</p> : null}
+                  {p.bio ? <p className="person__bio">{p.bio}</p> : null}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {view.team.text.length ? (
+            <div className="prose">
+              {view.team.text.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+          ) : null}
+          {!people.length && !view.team.text.length ? (
+            view.team.size !== undefined ? (
+              <p className="section-title">{teamSub}</p>
+            ) : (
+              <p data-slot="team" style={{ "--lines": 3 } as Slot} />
+            )
+          ) : null}
+          {states.team !== "ready" ? <Hint k="team" /> : null}
+        </div>
+      </Section>
+
+      <Section name="projects" state={states.projects} progressive={progressive} className="sheet ruled series">
+        <Rail name="Proyectos" sub={projSub} />
+        <div className="main stack">
+          {view.projects.text.length ? (
+            <div className="prose">
+              {view.projects.text.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+          ) : null}
+          {view.projects.works.length ? (
+            <ol className="works">
+              {view.projects.works.map((w) => (
+                <Work key={w.id} w={w} />
+              ))}
+            </ol>
+          ) : null}
+          {view.projects.milestones.length ? (
+            <div>
+              <h3 className="block-title">Hitos</h3>
+              <ol className="cv__list">
+                {view.projects.milestones.map((m, i) => (
+                  <li key={i}>
+                    <span className="cv__year">{/^\d{4}/.exec(m)?.[0] ?? "·"}</span>
+                    <span>{m.replace(/^\d{4}\s*[:.,–-]?\s*/, "")}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
+          {states.projects !== "ready" ? <Hint k="projects" /> : null}
+        </div>
+      </Section>
+
+      <Section name="figures" state={states.figures} progressive={progressive}>
+        <Rail name="Cifras" sub="y datos de empresa" />
+        <div className="main stack">
+          {view.facts.length ? (
+            <div>
+              <h3 className="block-title">Datos de empresa</h3>
+              <Facts rows={view.facts} />
+            </div>
+          ) : null}
+          {view.location.length ? (
+            <div>
+              <h3 className="block-title">Ubicación</h3>
+              <Facts rows={view.location} />
+            </div>
+          ) : null}
+          {!view.facts.length && !view.location.length ? <p data-slot="company.figures" style={{ "--lines": 4 } as Slot} /> : null}
+          {states.figures !== "ready" ? <Hint k="figures" /> : null}
+        </div>
+      </Section>
+
+      <Contact view={view} progressive={progressive} colophon="Datos facilitados por la empresa. Dossier maquetado con Mecena." />
+    </>
+  );
+}
+
+export function DossierDocument({ view, progressive, className = "" }: DossierDocumentProps) {
+  return (
+    <div className={`dossier-wall ${className}`.trim()}>
+      <article className="dossier" data-kind={view.kind} lang="es">
+        {view.kind === "creator" ? <CreatorDossier view={view} progressive={progressive} /> : <BusinessDossier view={view} progressive={progressive} />}
+      </article>
+    </div>
+  );
+}

@@ -1,0 +1,444 @@
+/* Mecena dossier: port of fleet/design/dossier/dossier.css (design branch), scoped under .dossier-wall so it
+   never fights the app chrome (globals.css also has .sheet/.card). Regenerate by prefixing, do not restyle here.
+   Screen: A4-proportioned sheets on a gallery-wall grey. Print: clean A4. States: data-state pending|filling|ready. */
+.dossier-wall {
+  
+  --paper: #f4f4f1;      
+  --ink: #262b30;        
+  --granite: #6b7075;    
+  --hair: #c8cbc8;       
+  --wall: #d6d8d5;       
+  --ground: #e6e7e3;     
+  --accent: #a3a05a;     
+  --accent-soft: #e4e3c7;
+  --skel: #dfe0dc;
+
+  
+  --sans: var(--font-dossier-sans, "Schibsted Grotesk"), "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --serif: var(--font-dossier-serif, "Newsreader"), "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+
+  
+  --fs-body: 1.0625rem;
+  --fs-small: 0.8125rem;
+  --fs-lead: 1.375rem;
+  --fs-h2: 2.5rem;
+  --fs-name: clamp(3rem, 10.5vw, 6.75rem);
+
+  --sheet-w: 940px;     
+  --pad: clamp(20px, 6vw, 64px);
+  --rail: 10rem;
+  --frame-h: clamp(260px, 62vw, 560px);
+}
+.dossier-wall .dossier[data-kind="business"] {
+  --accent: #4f6e7d;     
+  --accent-soft: #d3dee2;
+}
+.dossier-wall *,
+.dossier-wall *::before,
+.dossier-wall *::after { box-sizing: border-box; }
+.dossier-wall {
+  margin: 0;
+  background: var(--wall);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+.dossier-wall h1,
+.dossier-wall h2,
+.dossier-wall h3,
+.dossier-wall p,
+.dossier-wall ol,
+.dossier-wall ul,
+.dossier-wall dl,
+.dossier-wall dd,
+.dossier-wall figure { margin: 0; padding: 0; }
+.dossier-wall ol,
+.dossier-wall ul { list-style: none; }
+.dossier-wall cite { font-style: italic; }
+.dossier-wall a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.dossier-wall a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.dossier-wall .dossier {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 40px 16px 80px;
+  align-items: center;
+}
+.dossier-wall .sheet {
+  position: relative;
+  width: 100%;
+  max-width: var(--sheet-w);
+  background: var(--paper);
+  padding: var(--pad);
+  box-shadow: 0 1px 2px rgba(38, 43, 48, 0.08), 0 12px 32px -18px rgba(38, 43, 48, 0.35);
+}
+.dossier-wall .ruled {
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  column-gap: 2rem;
+}
+.dossier-wall .rail {
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--granite);
+  padding-top: 0.35rem;
+  border-top: 2px solid var(--ink);
+}
+.dossier-wall .rail__name { color: var(--ink); display: block; }
+.dossier-wall .main { min-width: 0; padding-top: 0.35rem; border-top: 1px solid var(--hair); }
+.dossier-wall .section-title {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: var(--fs-h2);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  margin-bottom: 1.5rem;
+}
+.dossier-wall .call-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  background: var(--accent-soft);
+  margin: calc(var(--pad) * -1) calc(var(--pad) * -1) var(--pad);
+  padding: 0.7rem var(--pad);
+  border-bottom: 1px solid var(--accent);
+}
+.dossier-wall .call-header[hidden] { display: none; }
+.dossier-wall .call-header__name { font-weight: 600; }
+.dossier-wall .call-header__ref { color: var(--granite); }
+.dossier-wall .cover {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  row-gap: 2rem;
+}
+.dossier-wall .cover__head {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  color: var(--granite);
+}
+.dossier-wall .cover__work {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  min-height: 0;
+}
+.dossier-wall .cover__work .frame { height: clamp(320px, 66vh, 680px); }
+.dossier-wall .cover__caption {
+  font-size: var(--fs-small);
+  color: var(--granite);
+  text-align: right;
+}
+.dossier-wall .cover__text {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem 2rem;
+  border-top: 2px solid var(--ink);
+  padding-top: 1.1rem;
+}
+.dossier-wall .cover__name {
+  grid-column: 1 / -1;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: var(--fs-name);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.dossier-wall .cover__meta {
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+.dossier-wall .cover__meta > * { display: block; }
+.dossier-wall .cover__meta > * + * { color: var(--granite); }
+.dossier-wall .cover__line {
+  font-size: var(--fs-lead);
+  line-height: 1.3;
+  font-style: italic;
+  text-wrap: pretty;
+}
+.dossier-wall .prose { max-width: 36em; }
+.dossier-wall .prose p + p { margin-top: 0.9em; }
+.dossier-wall .prose p { text-wrap: pretty; hyphens: auto; }
+.dossier-wall .prose .lead {
+  hyphens: manual;
+  font-size: var(--fs-lead);
+  line-height: 1.4;
+}
+.dossier-wall .signature {
+  margin-top: 2rem;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  color: var(--granite);
+}
+.dossier-wall .series__head { margin-bottom: 2.5rem; }
+.dossier-wall .series__years {
+  font-family: var(--sans);
+  font-size: 1rem;
+  color: var(--granite);
+  margin: -0.9rem 0 1.25rem;
+}
+.dossier-wall .series__text { max-width: 34em; }
+.dossier-wall .works { display: flex; flex-direction: column; gap: 3rem; }
+.dossier-wall .work {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
+  column-gap: 1.75rem;
+  align-items: end;
+}
+.dossier-wall .frame {
+  position: relative;
+  height: var(--frame-h);
+  background: var(--ground);
+  display: grid;
+  place-items: center;
+  padding: clamp(14px, 5%, 40px);
+  overflow: hidden;
+}
+.dossier-wall .frame > svg,
+.dossier-wall .frame > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;          
+  filter: drop-shadow(0 6px 10px rgba(38, 43, 48, 0.22));
+}
+.dossier-wall .label { font-size: 0.9375rem; line-height: 1.45; padding-bottom: 0.2rem; }
+.dossier-wall .label__cat {
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  color: var(--granite);
+  margin-bottom: 0.6rem;
+}
+.dossier-wall .label__title { font-weight: 400; font-size: 1.1875rem; line-height: 1.25; }
+.dossier-wall .label__title cite { font-weight: 500; }
+.dossier-wall .label__tech,
+.dossier-wall .label__size { color: var(--granite); }
+.dossier-wall .label__size { font-variant-numeric: tabular-nums; }
+.dossier-wall .label__concept {
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--hair);
+  text-wrap: pretty;
+}
+.dossier-wall .cv { columns: 2; column-gap: 2.5rem; }
+.dossier-wall .cv__group { break-inside: avoid; margin-bottom: 2rem; }
+.dossier-wall .cv__title,
+.dossier-wall .block-title {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-bottom: 0.6rem;
+}
+.dossier-wall .cv__list li {
+  display: grid;
+  grid-template-columns: 3.2em minmax(0, 1fr);
+  gap: 0.6rem;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--hair);
+}
+.dossier-wall .cv__year {
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--granite);
+  padding-top: 0.12em;
+}
+.dossier-wall .cv__place { color: var(--granite); }
+.dossier-wall .team { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem 2rem; }
+.dossier-wall .person { border-top: 1px solid var(--hair); padding-top: 0.6rem; }
+.dossier-wall .person__name { font-family: var(--sans); font-weight: 500; font-size: 1.0625rem; }
+.dossier-wall .person__role { font-family: var(--sans); font-size: var(--fs-small); color: var(--granite); margin-bottom: 0.4rem; }
+.dossier-wall .person__bio { font-size: 0.9375rem; line-height: 1.45; }
+.dossier-wall .figures { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums lining-nums; }
+.dossier-wall .figures caption { text-align: left; }
+.dossier-wall .figures th,
+.dossier-wall .figures td { padding: 0.55rem 0; border-top: 1px solid var(--hair); text-align: right; }
+.dossier-wall .figures thead th {
+  font-family: var(--sans); font-weight: 500; font-size: var(--fs-small); color: var(--granite);
+  border-top: 0;
+}
+.dossier-wall .figures tbody th { text-align: left; font-weight: 400; }
+.dossier-wall .figures td { font-family: var(--sans); font-size: 1.0625rem; }
+.dossier-wall .figures td:last-child { font-weight: 600; }
+.dossier-wall .figures__note { margin-top: 0.8rem; font-size: var(--fs-small); color: var(--granite); }
+.dossier-wall .facts { display: grid; grid-template-columns: 11em minmax(0, 1fr); }
+.dossier-wall .facts dt,
+.dossier-wall .facts dd { padding: 0.5rem 0; border-top: 1px solid var(--hair); }
+.dossier-wall .facts dt { font-family: var(--sans); font-size: var(--fs-small); color: var(--granite); padding-top: 0.62rem; }
+.dossier-wall .stack > * + * { margin-top: 3rem; }
+.dossier-wall .contact {
+  background: var(--ink);
+  color: var(--paper);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  min-height: min(150mm, 120vw);
+  row-gap: 3rem;
+}
+.dossier-wall .contact .rail { border-top-color: var(--paper); color: #a9aeb2; }
+.dossier-wall .contact .rail__name { color: var(--paper); }
+.dossier-wall .contact .main { border-top-color: #4a5157; }
+.dossier-wall .contact__name {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  margin-bottom: 2rem;
+}
+.dossier-wall .contact .facts dt { color: #a9aeb2; }
+.dossier-wall .contact .facts dt,
+.dossier-wall .contact .facts dd { border-top-color: #4a5157; }
+.dossier-wall .colophon { font-family: var(--sans); font-size: 0.75rem; color: #a9aeb2; max-width: 40em; }
+.dossier-wall [data-slot]:empty {
+  display: inline-block;
+  vertical-align: middle;
+  width: var(--skw, 12ch);
+  max-width: 100%;
+  height: 0.72em;
+  background: var(--skel);
+  border-radius: 2px;
+}
+.dossier-wall p[data-slot]:empty,
+.dossier-wall h1[data-slot]:empty,
+.dossier-wall h2[data-slot]:empty {
+  display: block;
+  width: var(--skw, 100%);
+  height: calc(var(--lines, 1) * 1lh);
+  background: repeating-linear-gradient(to bottom, var(--skel) 0 0.62lh, transparent 0.62lh 1lh);
+}
+.dossier-wall h1[data-slot]:empty { --skw: 70%; --lines: 2; }
+.dossier-wall .frame:empty::after,
+.dossier-wall .frame[data-empty]::after {
+  content: attr(data-hint);
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  color: var(--granite);
+}
+.dossier-wall .frame:empty { outline: 1px dashed #b7bab6; outline-offset: -10px; }
+.dossier-wall [data-state="filling"] [data-slot]:empty,
+.dossier-wall [data-state="filling"] .frame:empty {
+  animation: dos-breathe 1.4s ease-in-out infinite;
+}
+@keyframes dos-breathe { 50% { opacity: 0.45; } }
+.dossier-wall .just-filled { animation: dos-arrive 1.6s ease-out; }
+@keyframes dos-arrive { from { background-color: var(--accent-soft); } to { background-color: transparent; } }
+.dossier-wall .hint {
+  display: none;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  color: var(--granite);
+  margin-top: 1.5rem;
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--accent);
+}
+.dossier-wall [data-state="pending"] .hint,
+.dossier-wall [data-state="filling"] .hint { display: block; }
+.dossier-wall [data-state="pending"] { opacity: 0.72; }
+.dossier-wall [data-state="ready"] [data-slot]:empty { display: none; }
+@media (max-width: 720px) {
+.dossier-wall { --fs-h2: 2rem; --fs-lead: 1.2rem; --fs-body: 1rem; }
+.dossier-wall .dossier { padding: 0 0 48px; gap: 10px; }
+.dossier-wall .sheet { box-shadow: none; padding: 28px 16px 36px; }
+.dossier-wall .call-header { margin: -28px -16px 24px; padding: 0.7rem 16px; flex-direction: column; gap: 0.1rem; }
+.dossier-wall .ruled { grid-template-columns: minmax(0, 1fr); }
+.dossier-wall .rail { margin-bottom: 1.25rem; padding-bottom: 0.35rem; }
+.dossier-wall .main { border-top: 0; padding-top: 0; }
+.dossier-wall .cover { min-height: 0; }
+.dossier-wall .cover__work .frame { min-height: 0; height: 92vw; }
+.dossier-wall .cover__text { grid-template-columns: minmax(0, 1fr); }
+.dossier-wall .work { grid-template-columns: minmax(0, 1fr); row-gap: 1rem; }
+.dossier-wall .cv { columns: 1; }
+.dossier-wall .team { grid-template-columns: minmax(0, 1fr); }
+.dossier-wall .facts { grid-template-columns: 8.5em minmax(0, 1fr); }
+.dossier-wall .contact { min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+.dossier-wall *,
+.dossier-wall *::before,
+.dossier-wall *::after { animation: none !important; transition: none !important; }
+}
+@page {
+  size: A4;
+  margin: 18mm 17mm 20mm;
+  @bottom-right {
+    content: counter(page);
+    font-family: "Schibsted Grotesk", Arial, sans-serif;
+    font-size: 7.5pt;
+    color: #6b7075;
+  }
+}
+@page full { margin: 0; @bottom-right { content: none; } }
+@media print {
+.dossier-wall {
+    --fs-body: 9.5pt;
+    --fs-small: 7.5pt;
+    --fs-lead: 12.5pt;
+    --fs-h2: 24pt;
+    --fs-name: 50pt;
+    --pad: 0mm;
+    --rail: 34mm;
+    --frame-h: 98mm;
+  }
+html, body { background: #fff; }
+.dossier-wall { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+.dossier-wall .dossier { display: block; padding: 0; }
+.dossier-wall .sheet {
+    max-width: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+    break-before: page;
+  }
+.dossier-wall .sheet:first-child { break-before: auto; }
+.dossier-wall .cover,
+.dossier-wall .contact {
+    page: full;
+    height: 296mm;            
+    min-height: 0;
+    overflow: hidden;
+    padding: 18mm 17mm;
+  }
+.dossier-wall .cover { background: var(--paper); }
+.dossier-wall .contact { background: var(--ink); }
+.dossier-wall .call-header { margin: -18mm -17mm 10mm; padding: 4mm 17mm; }
+.dossier-wall .cover__work .frame { min-height: 0; height: 100%; }
+.dossier-wall .contact { break-before: page; }
+.dossier-wall .ruled { column-gap: 7mm; }
+.dossier-wall .label { font-size: 8.5pt; }
+.dossier-wall .label__title { font-size: 10.5pt; }
+.dossier-wall .works { gap: 9mm; }
+.dossier-wall .work { break-inside: avoid; column-gap: 7mm; }
+.dossier-wall .series + .series { break-before: page; }
+.dossier-wall .series__head { margin-bottom: 8mm; break-after: avoid; }
+.dossier-wall .cv__list li,
+.dossier-wall .person,
+.dossier-wall .figures tr { break-inside: avoid; }
+.dossier-wall .person__name,
+.dossier-wall .person__role { break-after: avoid; }
+.dossier-wall .section-title,
+.dossier-wall .block-title,
+.dossier-wall .cv__title,
+.dossier-wall h2,
+.dossier-wall h3 { break-after: avoid; }
+.dossier-wall p { orphans: 3; widows: 3; }
+.dossier-wall .stack > * { break-inside: avoid; }
+.dossier-wall [data-state="pending"],
+.dossier-wall .hint,
+.dossier-wall .no-print { display: none !important; }
+.dossier-wall [data-slot]:empty { display: none !important; }
+.dossier-wall .frame:empty { display: none; }
+}
