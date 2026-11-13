@@ -1,0 +1,90 @@
+/* Mecena design tokens (scaffold-owned). Editorial, mobile-first. Feature styles go in CSS modules next to the feature. */
+:root {
+  --paper: #f6f1e7;
+  --paper-2: #efe7d8;
+  --ink: #1d1a16;
+  --ink-2: #5b544a;
+  --line: #d9cfbd;
+  --accent: #b4532a; /* terracotta */
+  --accent-ink: #fff8f0;
+  --ok: #2f6b4f;
+  --warn: #a8661a;
+  --radius: 14px;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --gutter: 16px;
+  --maxw: 720px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+h1, h2, h3, .brand { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; }
+h1 { font-size: clamp(1.9rem, 6vw, 2.8rem); margin: 0 0 0.5rem; }
+h2 { font-size: 1.4rem; margin: 1.5rem 0 0.5rem; }
+a { color: inherit; }
+main.app-main { max-width: var(--maxw); margin: 0 auto; padding: 12px var(--gutter) 96px; }
+
+.app-header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px var(--gutter);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-size: 1.5rem; text-decoration: none; }
+.mode-switch { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; background: var(--paper-2); }
+.mode-switch button { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; font: 600 0.85rem var(--sans); color: var(--ink-2); cursor: pointer; }
+.mode-switch button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+  display: flex; justify-content: space-around;
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+  background: var(--paper); border-top: 1px solid var(--line);
+}
+.bottom-nav a { text-decoration: none; font-size: 0.8rem; color: var(--ink-2); padding: 6px 8px; }
+.bottom-nav a.active { color: var(--accent); font-weight: 700; }
+
+.page-title { margin: 16px 0 20px; }
+.kicker { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.72rem; color: var(--accent); font-weight: 700; margin: 0 0 6px; }
+
+.card { background: #fffdf8; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin: 12px 0; }
+.card.pending { border-style: dashed; color: var(--ink-2); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 18px; border-radius: 999px; font: 600 1rem var(--sans); cursor: pointer; border: 1px solid transparent; text-decoration: none; }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-ghost { background: transparent; border-color: var(--ink); color: var(--ink); }
+.btn-quiet { background: transparent; color: var(--ink-2); }
+
+.tag { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); }
+.tag-ok { background: #e2efe7; color: var(--ok); }
+.tag-warn { background: #f6e8d3; color: var(--warn); }
+.tag-accent { background: var(--accent); color: var(--accent-ink); }
+
+.spinner { color: var(--ink-2); font-style: italic; }
+
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  max-height: 92vh; overflow-y: auto;
+  background: #fffdf8; border-top-left-radius: 20px; border-top-right-radius: 20px;
+  box-shadow: 0 -12px 40px rgb(0 0 0 / 0.2);
+  padding: 20px var(--gutter) calc(20px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #17140f; --paper-2: #221e17; --ink: #f2ebdd; --ink-2: #b5ab9a; --line: #3a3328; color-scheme: dark;
+  }
+  :root:not([data-theme="light"]) .card, :root:not([data-theme="light"]) .sheet { background: #1f1b15; }
+}
+:root[data-theme="dark"] { --paper: #17140f; --paper-2: #221e17; --ink: #f2ebdd; --ink-2: #b5ab9a; --line: #3a3328; color-scheme: dark; }

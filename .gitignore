@@ -11,3 +11,6 @@ __pycache__/
 *.log
 coverage/
 .claude/worktrees/
+data/runtime/
+next-env.d.ts
+*.tsbuildinfo
