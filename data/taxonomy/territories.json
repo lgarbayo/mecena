@@ -1,0 +1,3646 @@
+{
+"version": "2026-11-13",
+"description": "Canonical territory tree. Ids are NUTS-2024 codes as used by BDNS regiones (ES, ES1, ES11, ES111), 'WORLD' for BDNS 'XXXX - TODO EL MUNDO', and 'mun:<INE 5-digit>' for the 313 Galician municipalities (INE relación de municipios a 1-1-2026). Containment follows parent links: mun:15030 ⊂ ES111 ⊂ ES11 ⊂ ES1 ⊂ ES ⊂ WORLD. Note: NUTS2 ids are the comunidades autónomas; NUTS3 are provinces except Baleares and Canarias (islands), where INE province code is shared.",
+"sources": [
+"https://www.infosubvenciones.es/bdnstrans/api/regiones?vpd=GE",
+"https://www.ine.es/daco/daco42/codmun/diccionario26.xlsx"
+],
+"items": [
+{
+"id": "WORLD",
+"parent": null,
+"level": "world",
+"name": "Todo el mundo",
+"names": [
+"Todo el mundo",
+"Internacional",
+"Cualquier país",
+"sin restricción territorial"
+]
+},
+{
+"id": "ES",
+"parent": "WORLD",
+"level": "country",
+"name": "España",
+"bdnsId": 1,
+"names": [
+"España",
+"Espanha",
+"Spain",
+"todo el territorio nacional",
+"territorio nacional",
+"ámbito estatal",
+"estatal",
+"nacional",
+"toda España",
+"todo el Estado",
+"ámbito nacional",
+"Estado español"
+]
+},
+{
+"id": "ES2",
+"parent": "ES",
+"level": "nuts1",
+"name": "Noreste",
+"bdnsId": 12,
+"names": []
+},
+{
+"id": "ES21",
+"parent": "ES2",
+"level": "ccaa",
+"name": "País Vasco",
+"bdnsId": 13,
+"names": [
+"País Vasco",
+"Euskadi",
+"Comunidad Autónoma del País Vasco",
+"Euskal Herria"
+],
+"ine": "16"
+},
+{
+"id": "ES211",
+"parent": "ES21",
+"level": "province",
+"name": "Araba/Álava",
+"bdnsId": 14,
+"names": [
+"Araba/Álava",
+"Álava",
+"Araba"
+],
+"ine": "01"
+},
+{
+"id": "ES213",
+"parent": "ES21",
+"level": "province",
+"name": "Bizkaia",
+"bdnsId": 16,
+"names": [
+"Bizkaia",
+"Vizcaya"
+],
+"ine": "48"
+},
+{
+"id": "ES212",
+"parent": "ES21",
+"level": "province",
+"name": "Gipuzkoa",
+"bdnsId": 15,
+"names": [
+"Gipuzkoa",
+"Guipúzcoa"
+],
+"ine": "20"
+},
+{
+"id": "ES22",
+"parent": "ES2",
+"level": "ccaa",
+"name": "Navarra",
+"bdnsId": 17,
+"names": [
+"Navarra",
+"Comunidad Foral de Navarra",
+"Nafarroa"
+],
+"ine": "15"
+},
+{
+"id": "ES220",
+"parent": "ES22",
+"level": "province",
+"name": "Navarra",
+"bdnsId": 18,
+"names": [
+"Navarra"
+],
+"ine": "31"
+},
+{
+"id": "ES23",
+"parent": "ES2",
+"level": "ccaa",
+"name": "La Rioja",
+"bdnsId": 19,
+"names": [
+"La Rioja",
+"Rioja"
+],
+"ine": "17"
+},
+{
+"id": "ES230",
+"parent": "ES23",
+"level": "province",
+"name": "La Rioja",
+"bdnsId": 20,
+"names": [
+"La Rioja"
+],
+"ine": "26"
+},
+{
+"id": "ES24",
+"parent": "ES2",
+"level": "ccaa",
+"name": "Aragón",
+"bdnsId": 21,
+"names": [
+"Aragón"
+],
+"ine": "02"
+},
+{
+"id": "ES241",
+"parent": "ES24",
+"level": "province",
+"name": "Huesca",
+"bdnsId": 22,
+"names": [
+"Huesca"
+],
+"ine": "22"
+},
+{
+"id": "ES242",
+"parent": "ES24",
+"level": "province",
+"name": "Teruel",
+"bdnsId": 23,
+"names": [
+"Teruel"
+],
+"ine": "44"
+},
+{
+"id": "ES243",
+"parent": "ES24",
+"level": "province",
+"name": "Zaragoza",
+"bdnsId": 24,
+"names": [
+"Zaragoza"
+],
+"ine": "50"
+},
+{
+"id": "ES4",
+"parent": "ES",
+"level": "nuts1",
+"name": "Centro (Es)",
+"bdnsId": 28,
+"names": []
+},
+{
+"id": "ES41",
+"parent": "ES4",
+"level": "ccaa",
+"name": "Castilla y León",
+"bdnsId": 29,
+"names": [
+"Castilla y León"
+],
+"ine": "07"
+},
+{
+"id": "ES412",
+"parent": "ES41",
+"level": "province",
+"name": "Burgos",
+"bdnsId": 31,
+"names": [
+"Burgos"
+],
+"ine": "09"
+},
+{
+"id": "ES414",
+"parent": "ES41",
+"level": "province",
+"name": "Palencia",
+"bdnsId": 33,
+"names": [
+"Palencia"
+],
+"ine": "34"
+},
+{
+"id": "ES417",
+"parent": "ES41",
+"level": "province",
+"name": "Soria",
+"bdnsId": 36,
+"names": [
+"Soria"
+],
+"ine": "42"
+},
+{
+"id": "ES411",
+"parent": "ES41",
+"level": "province",
+"name": "Ávila",
+"bdnsId": 30,
+"names": [
+"Ávila"
+],
+"ine": "05"
+},
+{
+"id": "ES413",
+"parent": "ES41",
+"level": "province",
+"name": "León",
+"bdnsId": 32,
+"names": [
+"León"
+],
+"ine": "24"
+},
+{
+"id": "ES415",
+"parent": "ES41",
+"level": "province",
+"name": "Salamanca",
+"bdnsId": 34,
+"names": [
+"Salamanca"
+],
+"ine": "37"
+},
+{
+"id": "ES416",
+"parent": "ES41",
+"level": "province",
+"name": "Segovia",
+"bdnsId": 35,
+"names": [
+"Segovia"
+],
+"ine": "40"
+},
+{
+"id": "ES418",
+"parent": "ES41",
+"level": "province",
+"name": "Valladolid",
+"bdnsId": 37,
+"names": [
+"Valladolid"
+],
+"ine": "47"
+},
+{
+"id": "ES419",
+"parent": "ES41",
+"level": "province",
+"name": "Zamora",
+"bdnsId": 38,
+"names": [
+"Zamora"
+],
+"ine": "49"
+},
+{
+"id": "ES42",
+"parent": "ES4",
+"level": "ccaa",
+"name": "Castilla-La Mancha",
+"bdnsId": 39,
+"names": [
+"Castilla-La Mancha",
+"Castilla La Mancha"
+],
+"ine": "08"
+},
+{
+"id": "ES421",
+"parent": "ES42",
+"level": "province",
+"name": "Albacete",
+"bdnsId": 40,
+"names": [
+"Albacete"
+],
+"ine": "02"
+},
+{
+"id": "ES424",
+"parent": "ES42",
+"level": "province",
+"name": "Guadalajara",
+"bdnsId": 43,
+"names": [
+"Guadalajara"
+],
+"ine": "19"
+},
+{
+"id": "ES425",
+"parent": "ES42",
+"level": "province",
+"name": "Toledo",
+"bdnsId": 44,
+"names": [
+"Toledo"
+],
+"ine": "45"
+},
+{
+"id": "ES422",
+"parent": "ES42",
+"level": "province",
+"name": "Ciudad Real",
+"bdnsId": 41,
+"names": [
+"Ciudad Real"
+],
+"ine": "13"
+},
+{
+"id": "ES423",
+"parent": "ES42",
+"level": "province",
+"name": "Cuenca",
+"bdnsId": 42,
+"names": [
+"Cuenca"
+],
+"ine": "16"
+},
+{
+"id": "ES43",
+"parent": "ES4",
+"level": "ccaa",
+"name": "Extremadura",
+"bdnsId": 45,
+"names": [
+"Extremadura"
+],
+"ine": "11"
+},
+{
+"id": "ES432",
+"parent": "ES43",
+"level": "province",
+"name": "Cáceres",
+"bdnsId": 47,
+"names": [
+"Cáceres"
+],
+"ine": "10"
+},
+{
+"id": "ES431",
+"parent": "ES43",
+"level": "province",
+"name": "Badajoz",
+"bdnsId": 46,
+"names": [
+"Badajoz"
+],
+"ine": "06"
+},
+{
+"id": "ES7",
+"parent": "ES",
+"level": "nuts1",
+"name": "Canarias",
+"bdnsId": 78,
+"names": []
+},
+{
+"id": "ES70",
+"parent": "ES7",
+"level": "ccaa",
+"name": "Canarias",
+"bdnsId": 79,
+"names": [
+"Canarias",
+"Islas Canarias"
+],
+"ine": "05"
+},
+{
+"id": "ES704",
+"parent": "ES70",
+"level": "province",
+"name": "Fuerteventura",
+"bdnsId": 81,
+"names": [
+"Fuerteventura"
+],
+"ine": "35"
+},
+{
+"id": "ES707",
+"parent": "ES70",
+"level": "province",
+"name": "La Palma",
+"bdnsId": 84,
+"names": [
+"La Palma"
+],
+"ine": "38"
+},
+{
+"id": "ES709",
+"parent": "ES70",
+"level": "province",
+"name": "Tenerife",
+"bdnsId": 86,
+"names": [
+"Tenerife"
+],
+"ine": "38"
+},
+{
+"id": "ES703",
+"parent": "ES70",
+"level": "province",
+"name": "El Hierro",
+"bdnsId": 80,
+"names": [
+"El Hierro"
+],
+"ine": "38"
+},
+{
+"id": "ES705",
+"parent": "ES70",
+"level": "province",
+"name": "Gran Canaria",
+"bdnsId": 82,
+"names": [
+"Gran Canaria"
+],
+"ine": "35"
+},
+{
+"id": "ES706",
+"parent": "ES70",
+"level": "province",
+"name": "La Gomera",
+"bdnsId": 83,
+"names": [
+"La Gomera"
+],
+"ine": "38"
+},
+{
+"id": "ES708",
+"parent": "ES70",
+"level": "province",
+"name": "Lanzarote",
+"bdnsId": 85,
+"names": [
+"Lanzarote"
+],
+"ine": "35"
+},
+{
+"id": "ES1",
+"parent": "ES",
+"level": "nuts1",
+"name": "Noroeste",
+"bdnsId": 2,
+"names": []
+},
+{
+"id": "ES11",
+"parent": "ES1",
+"level": "ccaa",
+"name": "Galicia",
+"bdnsId": 3,
+"names": [
+"Galicia",
+"Galiza",
+"Comunidad Autónoma de Galicia",
+"Comunidade Autónoma de Galicia",
+"Xunta de Galicia"
+],
+"ine": "12"
+},
+{
+"id": "ES111",
+"parent": "ES11",
+"level": "province",
+"name": "A Coruña",
+"bdnsId": 4,
+"names": [
+"A Coruña",
+"La Coruña",
+"Coruña (A)",
+"Coruña",
+"Provincia de A Coruña",
+"Deputación da Coruña",
+"Diputación de A Coruña"
+],
+"ine": "15"
+},
+{
+"id": "ES113",
+"parent": "ES11",
+"level": "province",
+"name": "Ourense",
+"bdnsId": 6,
+"names": [
+"Ourense",
+"Orense",
+"Provincia de Ourense",
+"Deputación de Ourense"
+],
+"ine": "32"
+},
+{
+"id": "ES112",
+"parent": "ES11",
+"level": "province",
+"name": "Lugo",
+"bdnsId": 5,
+"names": [
+"Lugo",
+"Provincia de Lugo",
+"Deputación de Lugo"
+],
+"ine": "27"
+},
+{
+"id": "ES114",
+"parent": "ES11",
+"level": "province",
+"name": "Pontevedra",
+"bdnsId": 7,
+"names": [
+"Pontevedra",
+"Provincia de Pontevedra",
+"Deputación de Pontevedra"
+],
+"ine": "36"
+},
+{
+"id": "ES13",
+"parent": "ES1",
+"level": "ccaa",
+"name": "Cantabria",
+"bdnsId": 10,
+"names": [
+"Cantabria"
+],
+"ine": "06"
+},
+{
+"id": "ES130",
+"parent": "ES13",
+"level": "province",
+"name": "Cantabria",
+"bdnsId": 11,
+"names": [
+"Cantabria"
+],
+"ine": "39"
+},
+{
+"id": "ES12",
+"parent": "ES1",
+"level": "ccaa",
+"name": "Asturias",
+"bdnsId": 8,
+"names": [
+"Asturias",
+"Principado de Asturias"
+],
+"ine": "03"
+},
+{
+"id": "ES120",
+"parent": "ES12",
+"level": "province",
+"name": "Asturias",
+"bdnsId": 9,
+"names": [
+"Asturias"
+],
+"ine": "33"
+},
+{
+"id": "ES3",
+"parent": "ES",
+"level": "nuts1",
+"name": "Comunidad De Madrid",
+"bdnsId": 25,
+"names": []
+},
+{
+"id": "ES30",
+"parent": "ES3",
+"level": "ccaa",
+"name": "Comunidad de Madrid",
+"bdnsId": 26,
+"names": [
+"Comunidad de Madrid",
+"Madrid (comunidad)"
+],
+"ine": "13"
+},
+{
+"id": "ES300",
+"parent": "ES30",
+"level": "province",
+"name": "Madrid",
+"bdnsId": 27,
+"names": [
+"Madrid",
+"Provincia de Madrid"
+],
+"ine": "28"
+},
+{
+"id": "ES5",
+"parent": "ES",
+"level": "nuts1",
+"name": "Este",
+"bdnsId": 48,
+"names": []
+},
+{
+"id": "ES51",
+"parent": "ES5",
+"level": "ccaa",
+"name": "Cataluña",
+"bdnsId": 49,
+"names": [
+"Cataluña",
+"Catalunya",
+"Cataluña/Catalunya"
+],
+"ine": "09"
+},
+{
+"id": "ES514",
+"parent": "ES51",
+"level": "province",
+"name": "Tarragona",
+"bdnsId": 53,
+"names": [
+"Tarragona"
+],
+"ine": "43"
+},
+{
+"id": "ES511",
+"parent": "ES51",
+"level": "province",
+"name": "Barcelona",
+"bdnsId": 50,
+"names": [
+"Barcelona"
+],
+"ine": "08"
+},
+{
+"id": "ES512",
+"parent": "ES51",
+"level": "province",
+"name": "Girona",
+"bdnsId": 51,
+"names": [
+"Girona",
+"Gerona"
+],
+"ine": "17"
+},
+{
+"id": "ES513",
+"parent": "ES51",
+"level": "province",
+"name": "Lleida",
+"bdnsId": 52,
+"names": [
+"Lleida",
+"Lérida"
+],
+"ine": "25"
+},
+{
+"id": "ES53",
+"parent": "ES5",
+"level": "ccaa",
+"name": "Illes Balears",
+"bdnsId": 58,
+"names": [
+"Illes Balears",
+"Islas Baleares",
+"Baleares",
+"Balears"
+],
+"ine": "04"
+},
+{
+"id": "ES531",
+"parent": "ES53",
+"level": "province",
+"name": "Eivissa y Formentera",
+"bdnsId": 59,
+"names": [
+"Eivissa y Formentera",
+"Ibiza",
+"Eivissa",
+"Formentera",
+"Ibiza y Formentera"
+],
+"ine": "07"
+},
+{
+"id": "ES532",
+"parent": "ES53",
+"level": "province",
+"name": "Mallorca",
+"bdnsId": 60,
+"names": [
+"Mallorca"
+],
+"ine": "07"
+},
+{
+"id": "ES533",
+"parent": "ES53",
+"level": "province",
+"name": "Menorca",
+"bdnsId": 61,
+"names": [
+"Menorca"
+],
+"ine": "07"
+},
+{
+"id": "ES52",
+"parent": "ES5",
+"level": "ccaa",
+"name": "Comunidad Valenciana",
+"bdnsId": 54,
+"names": [
+"Comunidad Valenciana",
+"Comunitat Valenciana",
+"País Valenciano"
+],
+"ine": "10"
+},
+{
+"id": "ES522",
+"parent": "ES52",
+"level": "province",
+"name": "Castellón / Castelló",
+"bdnsId": 56,
+"names": [
+"Castellón",
+"Castelló",
+"Castellón/Castelló"
+],
+"ine": "12"
+},
+{
+"id": "ES521",
+"parent": "ES52",
+"level": "province",
+"name": "Alicante / Alacant",
+"bdnsId": 55,
+"names": [
+"Alicante",
+"Alacant",
+"Alicante/Alacant"
+],
+"ine": "03"
+},
+{
+"id": "ES523",
+"parent": "ES52",
+"level": "province",
+"name": "Valencia / València",
+"bdnsId": 57,
+"names": [
+"Valencia",
+"València",
+"Valencia/València"
+],
+"ine": "46"
+},
+{
+"id": "ES6",
+"parent": "ES",
+"level": "nuts1",
+"name": "Sur",
+"bdnsId": 62,
+"names": []
+},
+{
+"id": "ES62",
+"parent": "ES6",
+"level": "ccaa",
+"name": "Región de Murcia",
+"bdnsId": 72,
+"names": [
+"Región de Murcia",
+"Murcia (región)"
+],
+"ine": "14"
+},
+{
+"id": "ES620",
+"parent": "ES62",
+"level": "province",
+"name": "Murcia",
+"bdnsId": 73,
+"names": [
+"Murcia"
+],
+"ine": "30"
+},
+{
+"id": "ES63",
+"parent": "ES6",
+"level": "ccaa",
+"name": "Ceuta",
+"bdnsId": 74,
+"names": [
+"Ceuta",
+"Ciudad Autónoma de Ceuta"
+],
+"ine": "18"
+},
+{
+"id": "ES630",
+"parent": "ES63",
+"level": "province",
+"name": "Ceuta",
+"bdnsId": 75,
+"names": [
+"Ceuta"
+],
+"ine": "51"
+},
+{
+"id": "ES64",
+"parent": "ES6",
+"level": "ccaa",
+"name": "Melilla",
+"bdnsId": 76,
+"names": [
+"Melilla",
+"Ciudad Autónoma de Melilla"
+],
+"ine": "19"
+},
+{
+"id": "ES640",
+"parent": "ES64",
+"level": "province",
+"name": "Melilla",
+"bdnsId": 77,
+"names": [
+"Melilla"
+],
+"ine": "52"
+},
+{
+"id": "ES61",
+"parent": "ES6",
+"level": "ccaa",
+"name": "Andalucía",
+"bdnsId": 63,
+"names": [
+"Andalucía"
+],
+"ine": "01"
+},
+{
+"id": "ES611",
+"parent": "ES61",
+"level": "province",
+"name": "Almería",
+"bdnsId": 64,
+"names": [
+"Almería"
+],
+"ine": "04"
+},
+{
+"id": "ES612",
+"parent": "ES61",
+"level": "province",
+"name": "Cádiz",
+"bdnsId": 65,
+"names": [
+"Cádiz"
+],
+"ine": "11"
+},
+{
+"id": "ES613",
+"parent": "ES61",
+"level": "province",
+"name": "Córdoba",
+"bdnsId": 66,
+"names": [
+"Córdoba"
+],
+"ine": "14"
+},
+{
+"id": "ES617",
+"parent": "ES61",
+"level": "province",
+"name": "Málaga",
+"bdnsId": 70,
+"names": [
+"Málaga"
+],
+"ine": "29"
+},
+{
+"id": "ES614",
+"parent": "ES61",
+"level": "province",
+"name": "Granada",
+"bdnsId": 67,
+"names": [
+"Granada"
+],
+"ine": "18"
+},
+{
+"id": "ES615",
+"parent": "ES61",
+"level": "province",
+"name": "Huelva",
+"bdnsId": 68,
+"names": [
+"Huelva"
+],
+"ine": "21"
+},
+{
+"id": "ES616",
+"parent": "ES61",
+"level": "province",
+"name": "Jaén",
+"bdnsId": 69,
+"names": [
+"Jaén"
+],
+"ine": "23"
+},
+{
+"id": "ES618",
+"parent": "ES61",
+"level": "province",
+"name": "Sevilla",
+"bdnsId": 71,
+"names": [
+"Sevilla"
+],
+"ine": "41"
+},
+{
+"id": "mun:15001",
+"parent": "ES111",
+"level": "municipality",
+"name": "Abegondo",
+"ine": "15001",
+"names": []
+},
+{
+"id": "mun:15002",
+"parent": "ES111",
+"level": "municipality",
+"name": "Ames",
+"ine": "15002",
+"names": []
+},
+{
+"id": "mun:15003",
+"parent": "ES111",
+"level": "municipality",
+"name": "Aranga",
+"ine": "15003",
+"names": []
+},
+{
+"id": "mun:15004",
+"parent": "ES111",
+"level": "municipality",
+"name": "Ares",
+"ine": "15004",
+"names": []
+},
+{
+"id": "mun:15005",
+"parent": "ES111",
+"level": "municipality",
+"name": "Arteixo",
+"ine": "15005",
+"names": []
+},
+{
+"id": "mun:15006",
+"parent": "ES111",
+"level": "municipality",
+"name": "Arzúa",
+"ine": "15006",
+"names": []
+},
+{
+"id": "mun:15007",
+"parent": "ES111",
+"level": "municipality",
+"name": "A Baña",
+"ine": "15007",
+"names": [
+"Baña, A"
+]
+},
+{
+"id": "mun:15008",
+"parent": "ES111",
+"level": "municipality",
+"name": "Bergondo",
+"ine": "15008",
+"names": []
+},
+{
+"id": "mun:15009",
+"parent": "ES111",
+"level": "municipality",
+"name": "Betanzos",
+"ine": "15009",
+"names": []
+},
+{
+"id": "mun:15010",
+"parent": "ES111",
+"level": "municipality",
+"name": "Boimorto",
+"ine": "15010",
+"names": []
+},
+{
+"id": "mun:15011",
+"parent": "ES111",
+"level": "municipality",
+"name": "Boiro",
+"ine": "15011",
+"names": []
+},
+{
+"id": "mun:15012",
+"parent": "ES111",
+"level": "municipality",
+"name": "Boqueixón",
+"ine": "15012",
+"names": []
+},
+{
+"id": "mun:15013",
+"parent": "ES111",
+"level": "municipality",
+"name": "Brión",
+"ine": "15013",
+"names": []
+},
+{
+"id": "mun:15014",
+"parent": "ES111",
+"level": "municipality",
+"name": "Cabana de Bergantiños",
+"ine": "15014",
+"names": []
+},
+{
+"id": "mun:15015",
+"parent": "ES111",
+"level": "municipality",
+"name": "Cabanas",
+"ine": "15015",
+"names": []
+},
+{
+"id": "mun:15016",
+"parent": "ES111",
+"level": "municipality",
+"name": "Camariñas",
+"ine": "15016",
+"names": []
+},
+{
+"id": "mun:15017",
+"parent": "ES111",
+"level": "municipality",
+"name": "Cambre",
+"ine": "15017",
+"names": []
+},
+{
+"id": "mun:15018",
+"parent": "ES111",
+"level": "municipality",
+"name": "A Capela",
+"ine": "15018",
+"names": [
+"Capela, A"
+]
+},
+{
+"id": "mun:15019",
+"parent": "ES111",
+"level": "municipality",
+"name": "Carballo",
+"ine": "15019",
+"names": []
+},
+{
+"id": "mun:15901",
+"parent": "ES111",
+"level": "municipality",
+"name": "Cariño",
+"ine": "15901",
+"names": []
+},
+{
+"id": "mun:15020",
+"parent": "ES111",
+"level": "municipality",
+"name": "Carnota",
+"ine": "15020",
+"names": []
+},
+{
+"id": "mun:15021",
+"parent": "ES111",
+"level": "municipality",
+"name": "Carral",
+"ine": "15021",
+"names": []
+},
+{
+"id": "mun:15022",
+"parent": "ES111",
+"level": "municipality",
+"name": "Cedeira",
+"ine": "15022",
+"names": []
+},
+{
+"id": "mun:15023",
+"parent": "ES111",
+"level": "municipality",
+"name": "Cee",
+"ine": "15023",
+"names": []
+},
+{
+"id": "mun:15024",
+"parent": "ES111",
+"level": "municipality",
+"name": "Cerceda",
+"ine": "15024",
+"names": []
+},
+{
+"id": "mun:15025",
+"parent": "ES111",
+"level": "municipality",
+"name": "Cerdido",
+"ine": "15025",
+"names": []
+},
+{
+"id": "mun:15027",
+"parent": "ES111",
+"level": "municipality",
+"name": "Coirós",
+"ine": "15027",
+"names": []
+},
+{
+"id": "mun:15028",
+"parent": "ES111",
+"level": "municipality",
+"name": "Corcubión",
+"ine": "15028",
+"names": []
+},
+{
+"id": "mun:15029",
+"parent": "ES111",
+"level": "municipality",
+"name": "Coristanco",
+"ine": "15029",
+"names": []
+},
+{
+"id": "mun:15030",
+"parent": "ES111",
+"level": "municipality",
+"name": "A Coruña",
+"ine": "15030",
+"names": [
+"Coruña",
+"Coruña, A",
+"La Coruña"
+]
+},
+{
+"id": "mun:15031",
+"parent": "ES111",
+"level": "municipality",
+"name": "Culleredo",
+"ine": "15031",
+"names": []
+},
+{
+"id": "mun:15032",
+"parent": "ES111",
+"level": "municipality",
+"name": "Curtis",
+"ine": "15032",
+"names": []
+},
+{
+"id": "mun:15033",
+"parent": "ES111",
+"level": "municipality",
+"name": "Dodro",
+"ine": "15033",
+"names": []
+},
+{
+"id": "mun:15034",
+"parent": "ES111",
+"level": "municipality",
+"name": "Dumbría",
+"ine": "15034",
+"names": []
+},
+{
+"id": "mun:15035",
+"parent": "ES111",
+"level": "municipality",
+"name": "Fene",
+"ine": "15035",
+"names": []
+},
+{
+"id": "mun:15036",
+"parent": "ES111",
+"level": "municipality",
+"name": "Ferrol",
+"ine": "15036",
+"names": [
+"El Ferrol",
+"Ferrol"
+]
+},
+{
+"id": "mun:15037",
+"parent": "ES111",
+"level": "municipality",
+"name": "Fisterra",
+"ine": "15037",
+"names": []
+},
+{
+"id": "mun:15038",
+"parent": "ES111",
+"level": "municipality",
+"name": "Frades",
+"ine": "15038",
+"names": []
+},
+{
+"id": "mun:15039",
+"parent": "ES111",
+"level": "municipality",
+"name": "Irixoa",
+"ine": "15039",
+"names": []
+},
+{
+"id": "mun:15041",
+"parent": "ES111",
+"level": "municipality",
+"name": "A Laracha",
+"ine": "15041",
+"names": [
+"Laracha, A"
+]
+},
+{
+"id": "mun:15040",
+"parent": "ES111",
+"level": "municipality",
+"name": "Laxe",
+"ine": "15040",
+"names": []
+},
+{
+"id": "mun:15042",
+"parent": "ES111",
+"level": "municipality",
+"name": "Lousame",
+"ine": "15042",
+"names": []
+},
+{
+"id": "mun:15043",
+"parent": "ES111",
+"level": "municipality",
+"name": "Malpica de Bergantiños",
+"ine": "15043",
+"names": []
+},
+{
+"id": "mun:15044",
+"parent": "ES111",
+"level": "municipality",
+"name": "Mañón",
+"ine": "15044",
+"names": []
+},
+{
+"id": "mun:15045",
+"parent": "ES111",
+"level": "municipality",
+"name": "Mazaricos",
+"ine": "15045",
+"names": []
+},
+{
+"id": "mun:15046",
+"parent": "ES111",
+"level": "municipality",
+"name": "Melide",
+"ine": "15046",
+"names": []
+},
+{
+"id": "mun:15047",
+"parent": "ES111",
+"level": "municipality",
+"name": "Mesía",
+"ine": "15047",
+"names": []
+},
+{
+"id": "mun:15048",
+"parent": "ES111",
+"level": "municipality",
+"name": "Miño",
+"ine": "15048",
+"names": []
+},
+{
+"id": "mun:15049",
+"parent": "ES111",
+"level": "municipality",
+"name": "Moeche",
+"ine": "15049",
+"names": []
+},
+{
+"id": "mun:15050",
+"parent": "ES111",
+"level": "municipality",
+"name": "Monfero",
+"ine": "15050",
+"names": []
+},
+{
+"id": "mun:15051",
+"parent": "ES111",
+"level": "municipality",
+"name": "Mugardos",
+"ine": "15051",
+"names": []
+},
+{
+"id": "mun:15053",
+"parent": "ES111",
+"level": "municipality",
+"name": "Muros",
+"ine": "15053",
+"names": []
+},
+{
+"id": "mun:15052",
+"parent": "ES111",
+"level": "municipality",
+"name": "Muxía",
+"ine": "15052",
+"names": []
+},
+{
+"id": "mun:15054",
+"parent": "ES111",
+"level": "municipality",
+"name": "Narón",
+"ine": "15054",
+"names": []
+},
+{
+"id": "mun:15055",
+"parent": "ES111",
+"level": "municipality",
+"name": "Neda",
+"ine": "15055",
+"names": []
+},
+{
+"id": "mun:15056",
+"parent": "ES111",
+"level": "municipality",
+"name": "Negreira",
+"ine": "15056",
+"names": []
+},
+{
+"id": "mun:15057",
+"parent": "ES111",
+"level": "municipality",
+"name": "Noia",
+"ine": "15057",
+"names": []
+},
+{
+"id": "mun:15058",
+"parent": "ES111",
+"level": "municipality",
+"name": "Oleiros",
+"ine": "15058",
+"names": []
+},
+{
+"id": "mun:15059",
+"parent": "ES111",
+"level": "municipality",
+"name": "Ordes",
+"ine": "15059",
+"names": []
+},
+{
+"id": "mun:15060",
+"parent": "ES111",
+"level": "municipality",
+"name": "Oroso",
+"ine": "15060",
+"names": []
+},
+{
+"id": "mun:15061",
+"parent": "ES111",
+"level": "municipality",
+"name": "Ortigueira",
+"ine": "15061",
+"names": []
+},
+{
+"id": "mun:15062",
+"parent": "ES111",
+"level": "municipality",
+"name": "Outes",
+"ine": "15062",
+"names": []
+},
+{
+"id": "mun:15902",
+"parent": "ES111",
+"level": "municipality",
+"name": "Oza-Cesuras",
+"ine": "15902",
+"names": []
+},
+{
+"id": "mun:15064",
+"parent": "ES111",
+"level": "municipality",
+"name": "Paderne",
+"ine": "15064",
+"names": []
+},
+{
+"id": "mun:15065",
+"parent": "ES111",
+"level": "municipality",
+"name": "Padrón",
+"ine": "15065",
+"names": []
+},
+{
+"id": "mun:15066",
+"parent": "ES111",
+"level": "municipality",
+"name": "O Pino",
+"ine": "15066",
+"names": [
+"Pino, O"
+]
+},
+{
+"id": "mun:15067",
+"parent": "ES111",
+"level": "municipality",
+"name": "A Pobra do Caramiñal",
+"ine": "15067",
+"names": [
+"Pobra do Caramiñal, A"
+]
+},
+{
+"id": "mun:15068",
+"parent": "ES111",
+"level": "municipality",
+"name": "Ponteceso",
+"ine": "15068",
+"names": []
+},
+{
+"id": "mun:15069",
+"parent": "ES111",
+"level": "municipality",
+"name": "Pontedeume",
+"ine": "15069",
+"names": [
+"Puentedeume"
+]
+},
+{
+"id": "mun:15070",
+"parent": "ES111",
+"level": "municipality",
+"name": "As Pontes de García Rodríguez",
+"ine": "15070",
+"names": [
+"As Pontes",
+"Pontes de García Rodríguez, As",
+"Puentes de García Rodríguez"
+]
+},
+{
+"id": "mun:15071",
+"parent": "ES111",
+"level": "municipality",
+"name": "Porto do Son",
+"ine": "15071",
+"names": []
+},
+{
+"id": "mun:15072",
+"parent": "ES111",
+"level": "municipality",
+"name": "Rianxo",
+"ine": "15072",
+"names": []
+},
+{
+"id": "mun:15073",
+"parent": "ES111",
+"level": "municipality",
+"name": "Ribeira",
+"ine": "15073",
+"names": [
+"Riveira",
+"Santa Uxía de Ribeira"
+]
+},
+{
+"id": "mun:15074",
+"parent": "ES111",
+"level": "municipality",
+"name": "Rois",
+"ine": "15074",
+"names": []
+},
+{
+"id": "mun:15075",
+"parent": "ES111",
+"level": "municipality",
+"name": "Sada",
+"ine": "15075",
+"names": []
+},
+{
+"id": "mun:15076",
+"parent": "ES111",
+"level": "municipality",
+"name": "San Sadurniño",
+"ine": "15076",
+"names": []
+},
+{
+"id": "mun:15077",
+"parent": "ES111",
+"level": "municipality",
+"name": "Santa Comba",
+"ine": "15077",
+"names": []
+},
+{
+"id": "mun:15078",
+"parent": "ES111",
+"level": "municipality",
+"name": "Santiago de Compostela",
+"ine": "15078",
+"names": [
+"Compostela",
+"Santiago"
+]
+},
+{
+"id": "mun:15079",
+"parent": "ES111",
+"level": "municipality",
+"name": "Santiso",
+"ine": "15079",
+"names": []
+},
+{
+"id": "mun:15080",
+"parent": "ES111",
+"level": "municipality",
+"name": "Sobrado",
+"ine": "15080",
+"names": []
+},
+{
+"id": "mun:15081",
+"parent": "ES111",
+"level": "municipality",
+"name": "As Somozas",
+"ine": "15081",
+"names": [
+"Somozas, As"
+]
+},
+{
+"id": "mun:15082",
+"parent": "ES111",
+"level": "municipality",
+"name": "Teo",
+"ine": "15082",
+"names": []
+},
+{
+"id": "mun:15083",
+"parent": "ES111",
+"level": "municipality",
+"name": "Toques",
+"ine": "15083",
+"names": []
+},
+{
+"id": "mun:15084",
+"parent": "ES111",
+"level": "municipality",
+"name": "Tordoia",
+"ine": "15084",
+"names": []
+},
+{
+"id": "mun:15085",
+"parent": "ES111",
+"level": "municipality",
+"name": "Touro",
+"ine": "15085",
+"names": []
+},
+{
+"id": "mun:15086",
+"parent": "ES111",
+"level": "municipality",
+"name": "Trazo",
+"ine": "15086",
+"names": []
+},
+{
+"id": "mun:15088",
+"parent": "ES111",
+"level": "municipality",
+"name": "Val do Dubra",
+"ine": "15088",
+"names": []
+},
+{
+"id": "mun:15087",
+"parent": "ES111",
+"level": "municipality",
+"name": "Valdoviño",
+"ine": "15087",
+"names": []
+},
+{
+"id": "mun:15089",
+"parent": "ES111",
+"level": "municipality",
+"name": "Vedra",
+"ine": "15089",
+"names": []
+},
+{
+"id": "mun:15091",
+"parent": "ES111",
+"level": "municipality",
+"name": "Vilarmaior",
+"ine": "15091",
+"names": []
+},
+{
+"id": "mun:15090",
+"parent": "ES111",
+"level": "municipality",
+"name": "Vilasantar",
+"ine": "15090",
+"names": []
+},
+{
+"id": "mun:15092",
+"parent": "ES111",
+"level": "municipality",
+"name": "Vimianzo",
+"ine": "15092",
+"names": []
+},
+{
+"id": "mun:15093",
+"parent": "ES111",
+"level": "municipality",
+"name": "Zas",
+"ine": "15093",
+"names": []
+},
+{
+"id": "mun:27001",
+"parent": "ES112",
+"level": "municipality",
+"name": "Abadín",
+"ine": "27001",
+"names": []
+},
+{
+"id": "mun:27002",
+"parent": "ES112",
+"level": "municipality",
+"name": "Alfoz",
+"ine": "27002",
+"names": []
+},
+{
+"id": "mun:27003",
+"parent": "ES112",
+"level": "municipality",
+"name": "Antas de Ulla",
+"ine": "27003",
+"names": []
+},
+{
+"id": "mun:27004",
+"parent": "ES112",
+"level": "municipality",
+"name": "Baleira",
+"ine": "27004",
+"names": []
+},
+{
+"id": "mun:27901",
+"parent": "ES112",
+"level": "municipality",
+"name": "Baralla",
+"ine": "27901",
+"names": []
+},
+{
+"id": "mun:27005",
+"parent": "ES112",
+"level": "municipality",
+"name": "Barreiros",
+"ine": "27005",
+"names": []
+},
+{
+"id": "mun:27006",
+"parent": "ES112",
+"level": "municipality",
+"name": "Becerreá",
+"ine": "27006",
+"names": []
+},
+{
+"id": "mun:27007",
+"parent": "ES112",
+"level": "municipality",
+"name": "Begonte",
+"ine": "27007",
+"names": []
+},
+{
+"id": "mun:27008",
+"parent": "ES112",
+"level": "municipality",
+"name": "Bóveda",
+"ine": "27008",
+"names": []
+},
+{
+"id": "mun:27902",
+"parent": "ES112",
+"level": "municipality",
+"name": "Burela",
+"ine": "27902",
+"names": []
+},
+{
+"id": "mun:27009",
+"parent": "ES112",
+"level": "municipality",
+"name": "Carballedo",
+"ine": "27009",
+"names": []
+},
+{
+"id": "mun:27010",
+"parent": "ES112",
+"level": "municipality",
+"name": "Castro de Rei",
+"ine": "27010",
+"names": []
+},
+{
+"id": "mun:27011",
+"parent": "ES112",
+"level": "municipality",
+"name": "Castroverde",
+"ine": "27011",
+"names": []
+},
+{
+"id": "mun:27012",
+"parent": "ES112",
+"level": "municipality",
+"name": "Cervantes",
+"ine": "27012",
+"names": []
+},
+{
+"id": "mun:27013",
+"parent": "ES112",
+"level": "municipality",
+"name": "Cervo",
+"ine": "27013",
+"names": []
+},
+{
+"id": "mun:27016",
+"parent": "ES112",
+"level": "municipality",
+"name": "Chantada",
+"ine": "27016",
+"names": []
+},
+{
+"id": "mun:27014",
+"parent": "ES112",
+"level": "municipality",
+"name": "O Corgo",
+"ine": "27014",
+"names": [
+"Corgo, O"
+]
+},
+{
+"id": "mun:27015",
+"parent": "ES112",
+"level": "municipality",
+"name": "Cospeito",
+"ine": "27015",
+"names": []
+},
+{
+"id": "mun:27017",
+"parent": "ES112",
+"level": "municipality",
+"name": "Folgoso do Courel",
+"ine": "27017",
+"names": []
+},
+{
+"id": "mun:27018",
+"parent": "ES112",
+"level": "municipality",
+"name": "A Fonsagrada",
+"ine": "27018",
+"names": [
+"Fonsagrada, A"
+]
+},
+{
+"id": "mun:27019",
+"parent": "ES112",
+"level": "municipality",
+"name": "Foz",
+"ine": "27019",
+"names": []
+},
+{
+"id": "mun:27020",
+"parent": "ES112",
+"level": "municipality",
+"name": "Friol",
+"ine": "27020",
+"names": []
+},
+{
+"id": "mun:27022",
+"parent": "ES112",
+"level": "municipality",
+"name": "Guitiriz",
+"ine": "27022",
+"names": []
+},
+{
+"id": "mun:27023",
+"parent": "ES112",
+"level": "municipality",
+"name": "Guntín",
+"ine": "27023",
+"names": []
+},
+{
+"id": "mun:27024",
+"parent": "ES112",
+"level": "municipality",
+"name": "O Incio",
+"ine": "27024",
+"names": [
+"Incio, O"
+]
+},
+{
+"id": "mun:27026",
+"parent": "ES112",
+"level": "municipality",
+"name": "Láncara",
+"ine": "27026",
+"names": []
+},
+{
+"id": "mun:27027",
+"parent": "ES112",
+"level": "municipality",
+"name": "Lourenzá",
+"ine": "27027",
+"names": []
+},
+{
+"id": "mun:27028",
+"parent": "ES112",
+"level": "municipality",
+"name": "Lugo",
+"ine": "27028",
+"names": []
+},
+{
+"id": "mun:27029",
+"parent": "ES112",
+"level": "municipality",
+"name": "Meira",
+"ine": "27029",
+"names": []
+},
+{
+"id": "mun:27030",
+"parent": "ES112",
+"level": "municipality",
+"name": "Mondoñedo",
+"ine": "27030",
+"names": []
+},
+{
+"id": "mun:27031",
+"parent": "ES112",
+"level": "municipality",
+"name": "Monforte de Lemos",
+"ine": "27031",
+"names": [
+"Monforte"
+]
+},
+{
+"id": "mun:27032",
+"parent": "ES112",
+"level": "municipality",
+"name": "Monterroso",
+"ine": "27032",
+"names": []
+},
+{
+"id": "mun:27033",
+"parent": "ES112",
+"level": "municipality",
+"name": "Muras",
+"ine": "27033",
+"names": []
+},
+{
+"id": "mun:27034",
+"parent": "ES112",
+"level": "municipality",
+"name": "Navia de Suarna",
+"ine": "27034",
+"names": []
+},
+{
+"id": "mun:27035",
+"parent": "ES112",
+"level": "municipality",
+"name": "Negueira de Muñiz",
+"ine": "27035",
+"names": []
+},
+{
+"id": "mun:27037",
+"parent": "ES112",
+"level": "municipality",
+"name": "As Nogais",
+"ine": "27037",
+"names": [
+"Nogais, As"
+]
+},
+{
+"id": "mun:27038",
+"parent": "ES112",
+"level": "municipality",
+"name": "Ourol",
+"ine": "27038",
+"names": []
+},
+{
+"id": "mun:27039",
+"parent": "ES112",
+"level": "municipality",
+"name": "Outeiro de Rei",
+"ine": "27039",
+"names": []
+},
+{
+"id": "mun:27040",
+"parent": "ES112",
+"level": "municipality",
+"name": "Palas de Rei",
+"ine": "27040",
+"names": []
+},
+{
+"id": "mun:27041",
+"parent": "ES112",
+"level": "municipality",
+"name": "Pantón",
+"ine": "27041",
+"names": []
+},
+{
+"id": "mun:27042",
+"parent": "ES112",
+"level": "municipality",
+"name": "Paradela",
+"ine": "27042",
+"names": []
+},
+{
+"id": "mun:27043",
+"parent": "ES112",
+"level": "municipality",
+"name": "O Páramo",
+"ine": "27043",
+"names": [
+"Páramo, O"
+]
+},
+{
+"id": "mun:27044",
+"parent": "ES112",
+"level": "municipality",
+"name": "A Pastoriza",
+"ine": "27044",
+"names": [
+"Pastoriza, A"
+]
+},
+{
+"id": "mun:27045",
+"parent": "ES112",
+"level": "municipality",
+"name": "Pedrafita do Cebreiro",
+"ine": "27045",
+"names": []
+},
+{
+"id": "mun:27047",
+"parent": "ES112",
+"level": "municipality",
+"name": "A Pobra do Brollón",
+"ine": "27047",
+"names": [
+"Pobra do Brollón, A"
+]
+},
+{
+"id": "mun:27046",
+"parent": "ES112",
+"level": "municipality",
+"name": "Pol",
+"ine": "27046",
+"names": []
+},
+{
+"id": "mun:27048",
+"parent": "ES112",
+"level": "municipality",
+"name": "A Pontenova",
+"ine": "27048",
+"names": [
+"Pontenova, A"
+]
+},
+{
+"id": "mun:27049",
+"parent": "ES112",
+"level": "municipality",
+"name": "Portomarín",
+"ine": "27049",
+"names": []
+},
+{
+"id": "mun:27050",
+"parent": "ES112",
+"level": "municipality",
+"name": "Quiroga",
+"ine": "27050",
+"names": []
+},
+{
+"id": "mun:27056",
+"parent": "ES112",
+"level": "municipality",
+"name": "Rábade",
+"ine": "27056",
+"names": []
+},
+{
+"id": "mun:27051",
+"parent": "ES112",
+"level": "municipality",
+"name": "Ribadeo",
+"ine": "27051",
+"names": []
+},
+{
+"id": "mun:27052",
+"parent": "ES112",
+"level": "municipality",
+"name": "Ribas de Sil",
+"ine": "27052",
+"names": []
+},
+{
+"id": "mun:27053",
+"parent": "ES112",
+"level": "municipality",
+"name": "Ribeira de Piquín",
+"ine": "27053",
+"names": []
+},
+{
+"id": "mun:27054",
+"parent": "ES112",
+"level": "municipality",
+"name": "Riotorto",
+"ine": "27054",
+"names": []
+},
+{
+"id": "mun:27055",
+"parent": "ES112",
+"level": "municipality",
+"name": "Samos",
+"ine": "27055",
+"names": []
+},
+{
+"id": "mun:27057",
+"parent": "ES112",
+"level": "municipality",
+"name": "Sarria",
+"ine": "27057",
+"names": []
+},
+{
+"id": "mun:27058",
+"parent": "ES112",
+"level": "municipality",
+"name": "O Saviñao",
+"ine": "27058",
+"names": [
+"Saviñao, O"
+]
+},
+{
+"id": "mun:27059",
+"parent": "ES112",
+"level": "municipality",
+"name": "Sober",
+"ine": "27059",
+"names": []
+},
+{
+"id": "mun:27060",
+"parent": "ES112",
+"level": "municipality",
+"name": "Taboada",
+"ine": "27060",
+"names": []
+},
+{
+"id": "mun:27061",
+"parent": "ES112",
+"level": "municipality",
+"name": "Trabada",
+"ine": "27061",
+"names": []
+},
+{
+"id": "mun:27062",
+"parent": "ES112",
+"level": "municipality",
+"name": "Triacastela",
+"ine": "27062",
+"names": []
+},
+{
+"id": "mun:27063",
+"parent": "ES112",
+"level": "municipality",
+"name": "O Valadouro",
+"ine": "27063",
+"names": [
+"Valadouro, O"
+]
+},
+{
+"id": "mun:27064",
+"parent": "ES112",
+"level": "municipality",
+"name": "O Vicedo",
+"ine": "27064",
+"names": [
+"Vicedo, O"
+]
+},
+{
+"id": "mun:27065",
+"parent": "ES112",
+"level": "municipality",
+"name": "Vilalba",
+"ine": "27065",
+"names": [
+"Villalba"
+]
+},
+{
+"id": "mun:27066",
+"parent": "ES112",
+"level": "municipality",
+"name": "Viveiro",
+"ine": "27066",
+"names": [
+"Vivero"
+]
+},
+{
+"id": "mun:27021",
+"parent": "ES112",
+"level": "municipality",
+"name": "Xermade",
+"ine": "27021",
+"names": []
+},
+{
+"id": "mun:27025",
+"parent": "ES112",
+"level": "municipality",
+"name": "Xove",
+"ine": "27025",
+"names": []
+},
+{
+"id": "mun:32001",
+"parent": "ES113",
+"level": "municipality",
+"name": "Allariz",
+"ine": "32001",
+"names": []
+},
+{
+"id": "mun:32002",
+"parent": "ES113",
+"level": "municipality",
+"name": "Amoeiro",
+"ine": "32002",
+"names": []
+},
+{
+"id": "mun:32003",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Arnoia",
+"ine": "32003",
+"names": [
+"Arnoia, A"
+]
+},
+{
+"id": "mun:32004",
+"parent": "ES113",
+"level": "municipality",
+"name": "Avión",
+"ine": "32004",
+"names": []
+},
+{
+"id": "mun:32005",
+"parent": "ES113",
+"level": "municipality",
+"name": "Baltar",
+"ine": "32005",
+"names": []
+},
+{
+"id": "mun:32006",
+"parent": "ES113",
+"level": "municipality",
+"name": "Bande",
+"ine": "32006",
+"names": []
+},
+{
+"id": "mun:32007",
+"parent": "ES113",
+"level": "municipality",
+"name": "Baños de Molgas",
+"ine": "32007",
+"names": []
+},
+{
+"id": "mun:32008",
+"parent": "ES113",
+"level": "municipality",
+"name": "Barbadás",
+"ine": "32008",
+"names": []
+},
+{
+"id": "mun:32009",
+"parent": "ES113",
+"level": "municipality",
+"name": "O Barco de Valdeorras",
+"ine": "32009",
+"names": [
+"Barco de Valdeorras, O",
+"El Barco",
+"El Barco de Valdeorras"
+]
+},
+{
+"id": "mun:32010",
+"parent": "ES113",
+"level": "municipality",
+"name": "Beade",
+"ine": "32010",
+"names": []
+},
+{
+"id": "mun:32011",
+"parent": "ES113",
+"level": "municipality",
+"name": "Beariz",
+"ine": "32011",
+"names": []
+},
+{
+"id": "mun:32012",
+"parent": "ES113",
+"level": "municipality",
+"name": "Os Blancos",
+"ine": "32012",
+"names": [
+"Blancos, Os"
+]
+},
+{
+"id": "mun:32013",
+"parent": "ES113",
+"level": "municipality",
+"name": "Boborás",
+"ine": "32013",
+"names": []
+},
+{
+"id": "mun:32014",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Bola",
+"ine": "32014",
+"names": [
+"Bola, A"
+]
+},
+{
+"id": "mun:32015",
+"parent": "ES113",
+"level": "municipality",
+"name": "O Bolo",
+"ine": "32015",
+"names": [
+"Bolo, O"
+]
+},
+{
+"id": "mun:32016",
+"parent": "ES113",
+"level": "municipality",
+"name": "Calvos de Randín",
+"ine": "32016",
+"names": []
+},
+{
+"id": "mun:32018",
+"parent": "ES113",
+"level": "municipality",
+"name": "Carballeda de Avia",
+"ine": "32018",
+"names": []
+},
+{
+"id": "mun:32017",
+"parent": "ES113",
+"level": "municipality",
+"name": "Carballeda de Valdeorras",
+"ine": "32017",
+"names": []
+},
+{
+"id": "mun:32019",
+"parent": "ES113",
+"level": "municipality",
+"name": "O Carballiño",
+"ine": "32019",
+"names": [
+"Carballiño, O",
+"El Carballino"
+]
+},
+{
+"id": "mun:32020",
+"parent": "ES113",
+"level": "municipality",
+"name": "Cartelle",
+"ine": "32020",
+"names": []
+},
+{
+"id": "mun:32022",
+"parent": "ES113",
+"level": "municipality",
+"name": "Castrelo de Miño",
+"ine": "32022",
+"names": []
+},
+{
+"id": "mun:32021",
+"parent": "ES113",
+"level": "municipality",
+"name": "Castrelo do Val",
+"ine": "32021",
+"names": []
+},
+{
+"id": "mun:32023",
+"parent": "ES113",
+"level": "municipality",
+"name": "Castro Caldelas",
+"ine": "32023",
+"names": []
+},
+{
+"id": "mun:32024",
+"parent": "ES113",
+"level": "municipality",
+"name": "Celanova",
+"ine": "32024",
+"names": []
+},
+{
+"id": "mun:32025",
+"parent": "ES113",
+"level": "municipality",
+"name": "Cenlle",
+"ine": "32025",
+"names": []
+},
+{
+"id": "mun:32029",
+"parent": "ES113",
+"level": "municipality",
+"name": "Chandrexa de Queixa",
+"ine": "32029",
+"names": []
+},
+{
+"id": "mun:32026",
+"parent": "ES113",
+"level": "municipality",
+"name": "Coles",
+"ine": "32026",
+"names": []
+},
+{
+"id": "mun:32027",
+"parent": "ES113",
+"level": "municipality",
+"name": "Cortegada",
+"ine": "32027",
+"names": []
+},
+{
+"id": "mun:32028",
+"parent": "ES113",
+"level": "municipality",
+"name": "Cualedro",
+"ine": "32028",
+"names": []
+},
+{
+"id": "mun:32030",
+"parent": "ES113",
+"level": "municipality",
+"name": "Entrimo",
+"ine": "32030",
+"names": []
+},
+{
+"id": "mun:32031",
+"parent": "ES113",
+"level": "municipality",
+"name": "Esgos",
+"ine": "32031",
+"names": []
+},
+{
+"id": "mun:32033",
+"parent": "ES113",
+"level": "municipality",
+"name": "Gomesende",
+"ine": "32033",
+"names": []
+},
+{
+"id": "mun:32034",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Gudiña",
+"ine": "32034",
+"names": [
+"Gudiña, A"
+]
+},
+{
+"id": "mun:32035",
+"parent": "ES113",
+"level": "municipality",
+"name": "O Irixo",
+"ine": "32035",
+"names": [
+"Irixo, O"
+]
+},
+{
+"id": "mun:32038",
+"parent": "ES113",
+"level": "municipality",
+"name": "Larouco",
+"ine": "32038",
+"names": []
+},
+{
+"id": "mun:32039",
+"parent": "ES113",
+"level": "municipality",
+"name": "Laza",
+"ine": "32039",
+"names": []
+},
+{
+"id": "mun:32040",
+"parent": "ES113",
+"level": "municipality",
+"name": "Leiro",
+"ine": "32040",
+"names": []
+},
+{
+"id": "mun:32041",
+"parent": "ES113",
+"level": "municipality",
+"name": "Lobeira",
+"ine": "32041",
+"names": []
+},
+{
+"id": "mun:32042",
+"parent": "ES113",
+"level": "municipality",
+"name": "Lobios",
+"ine": "32042",
+"names": []
+},
+{
+"id": "mun:32043",
+"parent": "ES113",
+"level": "municipality",
+"name": "Maceda",
+"ine": "32043",
+"names": []
+},
+{
+"id": "mun:32044",
+"parent": "ES113",
+"level": "municipality",
+"name": "Manzaneda",
+"ine": "32044",
+"names": []
+},
+{
+"id": "mun:32045",
+"parent": "ES113",
+"level": "municipality",
+"name": "Maside",
+"ine": "32045",
+"names": []
+},
+{
+"id": "mun:32046",
+"parent": "ES113",
+"level": "municipality",
+"name": "Melón",
+"ine": "32046",
+"names": []
+},
+{
+"id": "mun:32047",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Merca",
+"ine": "32047",
+"names": [
+"Merca, A"
+]
+},
+{
+"id": "mun:32048",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Mezquita",
+"ine": "32048",
+"names": [
+"Mezquita, A"
+]
+},
+{
+"id": "mun:32049",
+"parent": "ES113",
+"level": "municipality",
+"name": "Montederramo",
+"ine": "32049",
+"names": []
+},
+{
+"id": "mun:32050",
+"parent": "ES113",
+"level": "municipality",
+"name": "Monterrei",
+"ine": "32050",
+"names": []
+},
+{
+"id": "mun:32051",
+"parent": "ES113",
+"level": "municipality",
+"name": "Muíños",
+"ine": "32051",
+"names": []
+},
+{
+"id": "mun:32052",
+"parent": "ES113",
+"level": "municipality",
+"name": "Nogueira de Ramuín",
+"ine": "32052",
+"names": []
+},
+{
+"id": "mun:32053",
+"parent": "ES113",
+"level": "municipality",
+"name": "Oímbra",
+"ine": "32053",
+"names": []
+},
+{
+"id": "mun:32054",
+"parent": "ES113",
+"level": "municipality",
+"name": "Ourense",
+"ine": "32054",
+"names": [
+"Orense"
+]
+},
+{
+"id": "mun:32055",
+"parent": "ES113",
+"level": "municipality",
+"name": "Paderne de Allariz",
+"ine": "32055",
+"names": []
+},
+{
+"id": "mun:32056",
+"parent": "ES113",
+"level": "municipality",
+"name": "Padrenda",
+"ine": "32056",
+"names": []
+},
+{
+"id": "mun:32057",
+"parent": "ES113",
+"level": "municipality",
+"name": "Parada de Sil",
+"ine": "32057",
+"names": []
+},
+{
+"id": "mun:32058",
+"parent": "ES113",
+"level": "municipality",
+"name": "O Pereiro de Aguiar",
+"ine": "32058",
+"names": [
+"Pereiro de Aguiar, O"
+]
+},
+{
+"id": "mun:32059",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Peroxa",
+"ine": "32059",
+"names": [
+"Peroxa, A"
+]
+},
+{
+"id": "mun:32060",
+"parent": "ES113",
+"level": "municipality",
+"name": "Petín",
+"ine": "32060",
+"names": []
+},
+{
+"id": "mun:32061",
+"parent": "ES113",
+"level": "municipality",
+"name": "Piñor",
+"ine": "32061",
+"names": []
+},
+{
+"id": "mun:32063",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Pobra de Trives",
+"ine": "32063",
+"names": [
+"Pobra de Trives, A"
+]
+},
+{
+"id": "mun:32064",
+"parent": "ES113",
+"level": "municipality",
+"name": "Pontedeva",
+"ine": "32064",
+"names": []
+},
+{
+"id": "mun:32062",
+"parent": "ES113",
+"level": "municipality",
+"name": "Porqueira",
+"ine": "32062",
+"names": []
+},
+{
+"id": "mun:32065",
+"parent": "ES113",
+"level": "municipality",
+"name": "Punxín",
+"ine": "32065",
+"names": []
+},
+{
+"id": "mun:32066",
+"parent": "ES113",
+"level": "municipality",
+"name": "Quintela de Leirado",
+"ine": "32066",
+"names": []
+},
+{
+"id": "mun:32067",
+"parent": "ES113",
+"level": "municipality",
+"name": "Rairiz de Veiga",
+"ine": "32067",
+"names": []
+},
+{
+"id": "mun:32068",
+"parent": "ES113",
+"level": "municipality",
+"name": "Ramirás",
+"ine": "32068",
+"names": []
+},
+{
+"id": "mun:32069",
+"parent": "ES113",
+"level": "municipality",
+"name": "Ribadavia",
+"ine": "32069",
+"names": []
+},
+{
+"id": "mun:32071",
+"parent": "ES113",
+"level": "municipality",
+"name": "Riós",
+"ine": "32071",
+"names": []
+},
+{
+"id": "mun:32072",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Rúa",
+"ine": "32072",
+"names": [
+"Rúa, A"
+]
+},
+{
+"id": "mun:32073",
+"parent": "ES113",
+"level": "municipality",
+"name": "Rubiá",
+"ine": "32073",
+"names": []
+},
+{
+"id": "mun:32074",
+"parent": "ES113",
+"level": "municipality",
+"name": "San Amaro",
+"ine": "32074",
+"names": []
+},
+{
+"id": "mun:32075",
+"parent": "ES113",
+"level": "municipality",
+"name": "San Cibrao das Viñas",
+"ine": "32075",
+"names": []
+},
+{
+"id": "mun:32076",
+"parent": "ES113",
+"level": "municipality",
+"name": "San Cristovo de Cea",
+"ine": "32076",
+"names": []
+},
+{
+"id": "mun:32070",
+"parent": "ES113",
+"level": "municipality",
+"name": "San Xoán de Río",
+"ine": "32070",
+"names": []
+},
+{
+"id": "mun:32077",
+"parent": "ES113",
+"level": "municipality",
+"name": "Sandiás",
+"ine": "32077",
+"names": []
+},
+{
+"id": "mun:32078",
+"parent": "ES113",
+"level": "municipality",
+"name": "Sarreaus",
+"ine": "32078",
+"names": []
+},
+{
+"id": "mun:32079",
+"parent": "ES113",
+"level": "municipality",
+"name": "Taboadela",
+"ine": "32079",
+"names": []
+},
+{
+"id": "mun:32080",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Teixeira",
+"ine": "32080",
+"names": [
+"Teixeira, A"
+]
+},
+{
+"id": "mun:32081",
+"parent": "ES113",
+"level": "municipality",
+"name": "Toén",
+"ine": "32081",
+"names": []
+},
+{
+"id": "mun:32082",
+"parent": "ES113",
+"level": "municipality",
+"name": "Trasmiras",
+"ine": "32082",
+"names": []
+},
+{
+"id": "mun:32083",
+"parent": "ES113",
+"level": "municipality",
+"name": "A Veiga",
+"ine": "32083",
+"names": [
+"Veiga, A"
+]
+},
+{
+"id": "mun:32084",
+"parent": "ES113",
+"level": "municipality",
+"name": "Verea",
+"ine": "32084",
+"names": []
+},
+{
+"id": "mun:32085",
+"parent": "ES113",
+"level": "municipality",
+"name": "Verín",
+"ine": "32085",
+"names": []
+},
+{
+"id": "mun:32086",
+"parent": "ES113",
+"level": "municipality",
+"name": "Viana do Bolo",
+"ine": "32086",
+"names": []
+},
+{
+"id": "mun:32087",
+"parent": "ES113",
+"level": "municipality",
+"name": "Vilamarín",
+"ine": "32087",
+"names": []
+},
+{
+"id": "mun:32088",
+"parent": "ES113",
+"level": "municipality",
+"name": "Vilamartín de Valdeorras",
+"ine": "32088",
+"names": []
+},
+{
+"id": "mun:32089",
+"parent": "ES113",
+"level": "municipality",
+"name": "Vilar de Barrio",
+"ine": "32089",
+"names": []
+},
+{
+"id": "mun:32090",
+"parent": "ES113",
+"level": "municipality",
+"name": "Vilar de Santos",
+"ine": "32090",
+"names": []
+},
+{
+"id": "mun:32091",
+"parent": "ES113",
+"level": "municipality",
+"name": "Vilardevós",
+"ine": "32091",
+"names": []
+},
+{
+"id": "mun:32092",
+"parent": "ES113",
+"level": "municipality",
+"name": "Vilariño de Conso",
+"ine": "32092",
+"names": []
+},
+{
+"id": "mun:32032",
+"parent": "ES113",
+"level": "municipality",
+"name": "Xinzo de Limia",
+"ine": "32032",
+"names": [
+"Ginzo de Limia"
+]
+},
+{
+"id": "mun:32036",
+"parent": "ES113",
+"level": "municipality",
+"name": "Xunqueira de Ambía",
+"ine": "32036",
+"names": []
+},
+{
+"id": "mun:32037",
+"parent": "ES113",
+"level": "municipality",
+"name": "Xunqueira de Espadanedo",
+"ine": "32037",
+"names": []
+},
+{
+"id": "mun:36020",
+"parent": "ES114",
+"level": "municipality",
+"name": "Agolada",
+"ine": "36020",
+"names": []
+},
+{
+"id": "mun:36001",
+"parent": "ES114",
+"level": "municipality",
+"name": "Arbo",
+"ine": "36001",
+"names": []
+},
+{
+"id": "mun:36003",
+"parent": "ES114",
+"level": "municipality",
+"name": "Baiona",
+"ine": "36003",
+"names": [
+"Bayona"
+]
+},
+{
+"id": "mun:36002",
+"parent": "ES114",
+"level": "municipality",
+"name": "Barro",
+"ine": "36002",
+"names": []
+},
+{
+"id": "mun:36004",
+"parent": "ES114",
+"level": "municipality",
+"name": "Bueu",
+"ine": "36004",
+"names": []
+},
+{
+"id": "mun:36005",
+"parent": "ES114",
+"level": "municipality",
+"name": "Caldas de Reis",
+"ine": "36005",
+"names": []
+},
+{
+"id": "mun:36006",
+"parent": "ES114",
+"level": "municipality",
+"name": "Cambados",
+"ine": "36006",
+"names": []
+},
+{
+"id": "mun:36007",
+"parent": "ES114",
+"level": "municipality",
+"name": "Campo Lameiro",
+"ine": "36007",
+"names": []
+},
+{
+"id": "mun:36008",
+"parent": "ES114",
+"level": "municipality",
+"name": "Cangas",
+"ine": "36008",
+"names": [
+"Cangas do Morrazo"
+]
+},
+{
+"id": "mun:36009",
+"parent": "ES114",
+"level": "municipality",
+"name": "A Cañiza",
+"ine": "36009",
+"names": [
+"Cañiza, A"
+]
+},
+{
+"id": "mun:36010",
+"parent": "ES114",
+"level": "municipality",
+"name": "Catoira",
+"ine": "36010",
+"names": []
+},
+{
+"id": "mun:36902",
+"parent": "ES114",
+"level": "municipality",
+"name": "Cerdedo-Cotobade",
+"ine": "36902",
+"names": []
+},
+{
+"id": "mun:36013",
+"parent": "ES114",
+"level": "municipality",
+"name": "Covelo",
+"ine": "36013",
+"names": []
+},
+{
+"id": "mun:36014",
+"parent": "ES114",
+"level": "municipality",
+"name": "Crecente",
+"ine": "36014",
+"names": []
+},
+{
+"id": "mun:36015",
+"parent": "ES114",
+"level": "municipality",
+"name": "Cuntis",
+"ine": "36015",
+"names": []
+},
+{
+"id": "mun:36016",
+"parent": "ES114",
+"level": "municipality",
+"name": "Dozón",
+"ine": "36016",
+"names": []
+},
+{
+"id": "mun:36017",
+"parent": "ES114",
+"level": "municipality",
+"name": "A Estrada",
+"ine": "36017",
+"names": [
+"Estrada, A",
+"La Estrada"
+]
+},
+{
+"id": "mun:36018",
+"parent": "ES114",
+"level": "municipality",
+"name": "Forcarei",
+"ine": "36018",
+"names": []
+},
+{
+"id": "mun:36019",
+"parent": "ES114",
+"level": "municipality",
+"name": "Fornelos de Montes",
+"ine": "36019",
+"names": []
+},
+{
+"id": "mun:36021",
+"parent": "ES114",
+"level": "municipality",
+"name": "Gondomar",
+"ine": "36021",
+"names": []
+},
+{
+"id": "mun:36022",
+"parent": "ES114",
+"level": "municipality",
+"name": "O Grove",
+"ine": "36022",
+"names": [
+"El Grove",
+"Grove, O"
+]
+},
+{
+"id": "mun:36023",
+"parent": "ES114",
+"level": "municipality",
+"name": "A Guarda",
+"ine": "36023",
+"names": [
+"Guarda, A",
+"La Guardia"
+]
+},
+{
+"id": "mun:36901",
+"parent": "ES114",
+"level": "municipality",
+"name": "A Illa de Arousa",
+"ine": "36901",
+"names": [
+"Illa de Arousa, A"
+]
+},
+{
+"id": "mun:36024",
+"parent": "ES114",
+"level": "municipality",
+"name": "Lalín",
+"ine": "36024",
+"names": []
+},
+{
+"id": "mun:36025",
+"parent": "ES114",
+"level": "municipality",
+"name": "A Lama",
+"ine": "36025",
+"names": [
+"Lama, A"
+]
+},
+{
+"id": "mun:36026",
+"parent": "ES114",
+"level": "municipality",
+"name": "Marín",
+"ine": "36026",
+"names": []
+},
+{
+"id": "mun:36027",
+"parent": "ES114",
+"level": "municipality",
+"name": "Meaño",
+"ine": "36027",
+"names": []
+},
+{
+"id": "mun:36028",
+"parent": "ES114",
+"level": "municipality",
+"name": "Meis",
+"ine": "36028",
+"names": []
+},
+{
+"id": "mun:36029",
+"parent": "ES114",
+"level": "municipality",
+"name": "Moaña",
+"ine": "36029",
+"names": []
+},
+{
+"id": "mun:36030",
+"parent": "ES114",
+"level": "municipality",
+"name": "Mondariz",
+"ine": "36030",
+"names": []
+},
+{
+"id": "mun:36031",
+"parent": "ES114",
+"level": "municipality",
+"name": "Mondariz-Balneario",
+"ine": "36031",
+"names": []
+},
+{
+"id": "mun:36032",
+"parent": "ES114",
+"level": "municipality",
+"name": "Moraña",
+"ine": "36032",
+"names": []
+},
+{
+"id": "mun:36033",
+"parent": "ES114",
+"level": "municipality",
+"name": "Mos",
+"ine": "36033",
+"names": []
+},
+{
+"id": "mun:36034",
+"parent": "ES114",
+"level": "municipality",
+"name": "As Neves",
+"ine": "36034",
+"names": [
+"Neves, As"
+]
+},
+{
+"id": "mun:36035",
+"parent": "ES114",
+"level": "municipality",
+"name": "Nigrán",
+"ine": "36035",
+"names": []
+},
+{
+"id": "mun:36036",
+"parent": "ES114",
+"level": "municipality",
+"name": "Oia",
+"ine": "36036",
+"names": []
+},
+{
+"id": "mun:36037",
+"parent": "ES114",
+"level": "municipality",
+"name": "Pazos de Borbén",
+"ine": "36037",
+"names": []
+},
+{
+"id": "mun:36041",
+"parent": "ES114",
+"level": "municipality",
+"name": "Poio",
+"ine": "36041",
+"names": []
+},
+{
+"id": "mun:36043",
+"parent": "ES114",
+"level": "municipality",
+"name": "Ponte Caldelas",
+"ine": "36043",
+"names": []
+},
+{
+"id": "mun:36042",
+"parent": "ES114",
+"level": "municipality",
+"name": "Ponteareas",
+"ine": "36042",
+"names": [
+"Puenteareas"
+]
+},
+{
+"id": "mun:36044",
+"parent": "ES114",
+"level": "municipality",
+"name": "Pontecesures",
+"ine": "36044",
+"names": []
+},
+{
+"id": "mun:36038",
+"parent": "ES114",
+"level": "municipality",
+"name": "Pontevedra",
+"ine": "36038",
+"names": []
+},
+{
+"id": "mun:36039",
+"parent": "ES114",
+"level": "municipality",
+"name": "O Porriño",
+"ine": "36039",
+"names": [
+"Porriño, O"
+]
+},
+{
+"id": "mun:36040",
+"parent": "ES114",
+"level": "municipality",
+"name": "Portas",
+"ine": "36040",
+"names": []
+},
+{
+"id": "mun:36045",
+"parent": "ES114",
+"level": "municipality",
+"name": "Redondela",
+"ine": "36045",
+"names": []
+},
+{
+"id": "mun:36046",
+"parent": "ES114",
+"level": "municipality",
+"name": "Ribadumia",
+"ine": "36046",
+"names": []
+},
+{
+"id": "mun:36047",
+"parent": "ES114",
+"level": "municipality",
+"name": "Rodeiro",
+"ine": "36047",
+"names": []
+},
+{
+"id": "mun:36048",
+"parent": "ES114",
+"level": "municipality",
+"name": "O Rosal",
+"ine": "36048",
+"names": [
+"Rosal, O"
+]
+},
+{
+"id": "mun:36049",
+"parent": "ES114",
+"level": "municipality",
+"name": "Salceda de Caselas",
+"ine": "36049",
+"names": []
+},
+{
+"id": "mun:36050",
+"parent": "ES114",
+"level": "municipality",
+"name": "Salvaterra de Miño",
+"ine": "36050",
+"names": []
+},
+{
+"id": "mun:36051",
+"parent": "ES114",
+"level": "municipality",
+"name": "Sanxenxo",
+"ine": "36051",
+"names": [
+"Sangenjo"
+]
+},
+{
+"id": "mun:36052",
+"parent": "ES114",
+"level": "municipality",
+"name": "Silleda",
+"ine": "36052",
+"names": []
+},
+{
+"id": "mun:36053",
+"parent": "ES114",
+"level": "municipality",
+"name": "Soutomaior",
+"ine": "36053",
+"names": []
+},
+{
+"id": "mun:36054",
+"parent": "ES114",
+"level": "municipality",
+"name": "Tomiño",
+"ine": "36054",
+"names": []
+},
+{
+"id": "mun:36055",
+"parent": "ES114",
+"level": "municipality",
+"name": "Tui",
+"ine": "36055",
+"names": []
+},
+{
+"id": "mun:36056",
+"parent": "ES114",
+"level": "municipality",
+"name": "Valga",
+"ine": "36056",
+"names": []
+},
+{
+"id": "mun:36057",
+"parent": "ES114",
+"level": "municipality",
+"name": "Vigo",
+"ine": "36057",
+"names": [
+"Vigo"
+]
+},
+{
+"id": "mun:36059",
+"parent": "ES114",
+"level": "municipality",
+"name": "Vila de Cruces",
+"ine": "36059",
+"names": []
+},
+{
+"id": "mun:36058",
+"parent": "ES114",
+"level": "municipality",
+"name": "Vilaboa",
+"ine": "36058",
+"names": []
+},
+{
+"id": "mun:36060",
+"parent": "ES114",
+"level": "municipality",
+"name": "Vilagarcía de Arousa",
+"ine": "36060",
+"names": [
+"Villagarcía de Arosa"
+]
+},
+{
+"id": "mun:36061",
+"parent": "ES114",
+"level": "municipality",
+"name": "Vilanova de Arousa",
+"ine": "36061",
+"names": []
+}
+]
+}

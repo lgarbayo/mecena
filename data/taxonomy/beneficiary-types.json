@@ -1,0 +1,36 @@
+{
+  "version": "2026-11-13",
+  "description": "Canonical beneficiary types. bdns = exact BDNS tiposBeneficiarios ids/strings (api/beneficiarios). profileKinds = which Mecena ProfileKind each type belongs to. A BDNS type expands to several canonical types; eligibility = non-empty intersection between profile types and call types.",
+  "items": [
+    { "id": "persona-fisica", "label": { "es": "Persona física sin actividad económica", "gl": "Persoa física sen actividade económica" }, "profileKinds": ["creator"],
+      "synonyms": ["personas fisicas que no desarrollan actividad economica", "persona fisica", "personas fisicas", "artista", "artistas", "creador", "creadora", "creadores", "particular", "particulares", "persoas fisicas", "persona fisica sin actividad", "personas fisicas no empresarias", "joven creador", "jovenes creadores", "estudiante", "estudiantes"] },
+    { "id": "autonomo", "label": { "es": "Autónomo (persona física con actividad económica)", "gl": "Autónomo" }, "profileKinds": ["creator", "business"],
+      "synonyms": ["autonomo", "autonomos", "autonoma", "autonomas", "trabajador autonomo", "trabajadora autonoma", "trabajadores autonomos", "traballador autonomo", "persoas autonomas", "reta", "alta en reta", "empresario individual", "empresaria individual", "persona fisica con actividad economica", "personas fisicas que desarrollan actividad economica", "profesional", "profesionales", "freelance", "emprendedor", "emprendedora", "emprendedores"] },
+    { "id": "pyme", "label": { "es": "Pyme (micro, pequeña o mediana empresa)", "gl": "Peme" }, "profileKinds": ["business"],
+      "synonyms": ["pyme", "pymes", "peme", "pemes", "microempresa", "microempresas", "pequena empresa", "pequenas empresas", "mediana empresa", "medianas empresas", "pequenas y medianas empresas", "pequenas e medianas empresas", "sociedad limitada", "sl", "sociedad anonima", "sa", "cooperativa", "cooperativas", "sociedad cooperativa", "empresa", "empresas", "sociedad mercantil", "sociedades mercantiles", "industrias culturales", "empresas culturales", "galerias de arte", "galeria de arte"] },
+    { "id": "gran-empresa", "label": { "es": "Gran empresa", "gl": "Gran empresa" }, "profileKinds": ["business"],
+      "synonyms": ["gran empresa", "grandes empresas"] },
+    { "id": "entidad-sin-animo-lucro", "label": { "es": "Asociación o entidad sin ánimo de lucro", "gl": "Asociación ou entidade sen ánimo de lucro" }, "profileKinds": ["business"],
+      "synonyms": ["asociacion", "asociaciones", "asociacion cultural", "asociaciones culturales", "fundacion", "fundaciones", "entidad sin animo de lucro", "entidades sin animo de lucro", "entidade sen animo de lucro", "entidades sen animo de lucro", "esal", "ong", "federacion", "federaciones", "personas juridicas que no desarrollan actividad economica", "persona juridica sin animo de lucro", "tercer sector"] },
+    { "id": "colectivo", "label": { "es": "Colectivo o agrupación sin personalidad jurídica", "gl": "Colectivo ou agrupación" }, "profileKinds": ["creator"],
+      "synonyms": ["colectivo", "colectivos", "colectivo artistico", "colectivos artisticos", "agrupacion", "agrupaciones", "agrupacion de personas fisicas", "agrupaciones de personas fisicas", "agrupacion sin personalidad juridica", "grupo de artistas", "compania sin personalidad juridica"] },
+    { "id": "entidad-publica", "label": { "es": "Entidad pública", "gl": "Entidade pública" }, "profileKinds": [],
+      "synonyms": ["ayuntamiento", "ayuntamientos", "concello", "concellos", "entidad local", "entidades locales", "administracion publica", "camara de comercio", "camaras de comercio", "universidad", "universidades", "diputacion", "deputacion"] }
+  ],
+  "bdns": [
+    { "id": 1, "descripcion": "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA", "canonical": ["persona-fisica"] },
+    { "id": 2, "descripcion": "PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA", "canonical": ["entidad-sin-animo-lucro", "entidad-publica"] },
+    { "id": 3, "descripcion": "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA", "canonical": ["autonomo", "pyme"] },
+    { "id": 4, "descripcion": "GRAN EMPRESA", "canonical": ["gran-empresa"] },
+    { "id": 5, "descripcion": "SIN INFORMACION ESPECIFICA", "canonical": [] }
+  ],
+  "legalForms": {
+    "autonomo": "autonomo",
+    "sl": "pyme",
+    "sa": "pyme",
+    "cooperativa": "pyme",
+    "asociacion": "entidad-sin-animo-lucro",
+    "otra": null
+  },
+  "pymeLimits": { "maxEmployees": 249, "maxAnnualRevenueEur": 50000000, "source": "Reglamento (UE) 651/2014, anexo I" }
+}

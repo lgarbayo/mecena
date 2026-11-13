@@ -1,0 +1,20 @@
+{
+  "version": "2026-11-13",
+  "description": "Non-working days (días inhábiles) for computing administrative deadlines (Ley 39/2015, art. 30). Saturdays and Sundays are always inhábiles. 'national' = holidays common to every comunidad autónoma that fall on a weekday; regional lists are keyed by NUTS2 code and add the region's own holidays (including Jueves Santo when the region keeps it). Local (municipal) holidays are NOT included.",
+  "sources": [
+    "BOE: Resolución de la Dirección General de Trabajo, relación de fiestas laborales para 2026 (anexo por CCAA)",
+    "DOG Decreto de fiestas de Galicia 2026 (19/03, 02/04, 24/06, 25/07)",
+    "DOG 02/07/2026, Decreto 68/2026 (fiestas de Galicia 2027: 19/03, 17/05)"
+  ],
+  "coverage": { "from": "2026-01-01", "to": "2027-12-31" },
+  "national": {
+    "2026": ["2026-01-01", "2026-01-06", "2026-04-03", "2026-05-01", "2026-08-15", "2026-10-12", "2026-12-08", "2026-12-25"],
+    "2027": ["2027-01-01", "2027-01-06", "2027-03-26", "2027-05-01", "2027-10-12", "2027-11-01", "2027-12-06", "2027-12-08", "2027-12-25"]
+  },
+  "regional": {
+    "ES11": {
+      "2026": ["2026-03-19", "2026-04-02", "2026-06-24", "2026-07-25"],
+      "2027": ["2027-03-19", "2027-03-25", "2027-05-17"]
+    }
+  }
+}
