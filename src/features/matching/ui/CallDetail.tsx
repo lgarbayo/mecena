@@ -7,6 +7,7 @@ import { useApp } from "@/components/shell/AppProvider";
 import { Card, PageTitle, Spinner, Tag } from "@/components/ui";
 import { apiGet } from "@/lib/api-client";
 import { daysLeft, fitLabel } from "../labels";
+import type { CallHistory } from "@/features/history/history";
 import type { ScoreBreakdown } from "../rules";
 import s from "./calls.module.css";
 import { FIT_COPY, deadlineLabel, formatDate, isUrgent } from "./format";
@@ -18,7 +19,12 @@ interface Detail {
   checklistItems: { item: string; done: boolean }[];
   breakdown: ScoreBreakdown;
   similarAwards: PastAward[];
+  history: CallHistory | null;
+  winnerShare: { compatible: number; total: number; share: number } | null;
 }
+
+const pct = (x: number) => `${Math.round(x * 100)} %`;
+const pts = (x: number) => x.toLocaleString("es-ES");
 
 const PARTS: { key: keyof ScoreBreakdown; label: string; max: number }[] = [
   { key: "base", label: "Cumples los requisitos", max: 40 },
@@ -157,6 +163,52 @@ export function CallDetail({ id }: { id: string }) {
             ))}
           </ul>
           {call.criteriaSource === "estimated" && <p className={s.note}>Las bases no publican puntuaciones: el peso es orientativo.</p>}
+        </Card>
+      )}
+
+      {d.history && d.history.editionsFound > 0 && (
+        <Card>
+          <h2 className={s.title}>Historial de esta convocatoria</h2>
+          <ul className={s.criteria}>
+            {d.history.successRate && (
+              <li>
+                <span>
+                  Solicitudes concedidas ({d.history.successRate.awarded} de {d.history.successRate.applicants})
+                </span>
+                <strong>{pct(d.history.successRate.rate)}</strong>
+              </li>
+            )}
+            {d.history.cutoff && (
+              <li>
+                <span>Nota del último concedido</span>
+                <strong>
+                  {pts(d.history.cutoff.score)}
+                  {d.history.cutoff.maxScore ? `/${d.history.cutoff.maxScore}` : ""}
+                </strong>
+              </li>
+            )}
+            {d.winnerShare && (
+              <li>
+                <span>Premiados de tu mismo tipo</span>
+                <strong>{pct(d.winnerShare.share)}</strong>
+              </li>
+            )}
+            <li>
+              <span>Ediciones anteriores</span>
+              <strong>{d.history.editionsFound}</strong>
+            </li>
+          </ul>
+          <p className={s.note}>
+            {d.history.evidence} Orientativo, no es una probabilidad.
+            {d.history.cutoff && (
+              <>
+                {" "}
+                <a href={d.history.cutoff.sourceUrl} target="_blank" rel="noreferrer">
+                  Ver la resolución
+                </a>
+              </>
+            )}
+          </p>
         </Card>
       )}
 
