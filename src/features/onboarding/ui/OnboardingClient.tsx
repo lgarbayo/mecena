@@ -11,6 +11,7 @@ import { useApp } from "@/components/shell/AppProvider";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { apiGet, apiSend } from "@/lib/api-client";
 import { FIELD_LABELS, ONBOARDING } from "../copy";
+import { isVisualFamily, onboardingFamily } from "../family";
 import { TurnQueue, type QueuedTurn } from "../turnQueue";
 import { DossierPanel } from "./DossierPanel";
 import { ImportDossier } from "./ImportDossier";
@@ -139,6 +140,8 @@ export function OnboardingClient() {
   const busy = turns.some((t) => t.status === "sending" || t.status === "queued");
   const hasContent = history.length > 0 || turns.some((t) => t.status === "done");
   const hints = ONBOARDING.hints[kind];
+  // Music, stage, film and books: same /obras step, but photos of shows/covers and links instead of "photograph your work".
+  const finishCopy = kind === "creator" && !isVisualFamily(onboardingFamily(profile?.disciplines)) ? ONBOARDING.finish.creatorLive : ONBOARDING.finish[kind];
   const lastSaid = speech.interim || [...turns].reverse().find((t) => t.source === "voice")?.text || "";
 
   return (
@@ -270,10 +273,10 @@ export function OnboardingClient() {
 
       {hasContent && (
         <div ref={finishRef} className={s.finish}>
-          <h2>{ONBOARDING.finish[kind].title}</h2>
-          <p>{ONBOARDING.finish[kind].body}</p>
+          <h2>{finishCopy.title}</h2>
+          <p>{finishCopy.body}</p>
           <Link className="btn btn-primary" href={kind === "creator" ? ROUTES.works : ROUTES.dossier} data-testid="finish-cta">
-            {ONBOARDING.finish[kind].cta}
+            {finishCopy.cta}
           </Link>
         </div>
       )}

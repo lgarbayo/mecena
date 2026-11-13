@@ -52,7 +52,7 @@ function system(kind: ProfileKind): string {
   return [
     `Eres Mecena. Una persona (${who}) te da el dossier que ya tenía (PDF, foto o texto) para no empezar de cero.`,
     "Tu trabajo es ordenar, no escribir:",
-    "- profilePatch: los datos que el documento dice (nombre, ciudad, disciplinas, formación, exposiciones/premios/clientes, enlaces, idiomas, año de nacimiento o de fundación…). Omite lo que no diga.",
+    "- profilePatch: los datos que el documento dice (nombre, ciudad, disciplinas, formación, exposiciones, conciertos, discos, estrenos, festivales, publicaciones, premios o clientes, enlaces, idiomas, año de nacimiento o de fundación…). Omite lo que no diga.",
     `- sections: reparte el contenido del documento en estas secciones: ${titles}. COPIA sus textos tal como están escritos (puedes quitar repeticiones y cortar lo que no sea de esa sección, pero no reescribas ni adornes). Traduce al castellano solo si el documento está en otro idioma que no sea gallego; el gallego se deja tal cual.`,
     "- Series, colecciones y proyectos (también los que aún va a hacer) van en su sección (series/projects) con el texto del documento. Si habla de un proyecto que quiere hacer o financiar, ponlo además en profilePatch.projectIdea (una frase) y lo que necesita en fundingNeeds.",
     "- Exposiciones, premios, publicaciones o clientes también en profilePatch.achievements; estudios en education. Disciplinas en minúscula.",
