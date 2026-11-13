@@ -281,6 +281,17 @@ not re-measured):
 
 ## 9. Call-specific dossier variant (layer 2)
 
+> **Scope note: experiment only, do not port as-is.** This section went beyond the voice spike. Ownership on main:
+> - **Fit / matching is WP-06** (`wp/WP-06`). Its rule (DATA-PIPELINE §4) is that *code decides eligibility and score,
+>   Claude only explains*. `FIT_SYSTEM` below asks Claude to estimate per-criterion points, which contradicts that rule,
+>   so it must **not** become the matcher. At most, its "questions that would raise the score" idea can feed WP-06's *qué te falta*.
+> - **The call-specific dossier variant is WP-03.** Its contract `DossierVariant` has only `notes`, `maxImages` and `maxFileMb`. The variant
+>   prompt/schema here are a proposal for an AI upgrade of that variant; adopting them needs a contract change request
+>   (sections tagged by criterion + questions).
+> - **The criteria-aware memoria, `[Completa: …]` gaps and per-criterion scoring are WP-08.** Two lessons for it: mirror
+>   the structure the bases prescribe (Rega A–E), and keep a server-side check for numbers not backed by the profile.
+> - **Calls data is WP-05** (`data/calls/calls.json`). `src/calls.js` is a throwaway fixture of three closed editions.
+
 Two layers: the **base dossier** is built live from voice and does not depend on any call (it is the free lead
 magnet and matching needs the profile first). The **variant** is generated per call after matching and is the
 differentiator: the same facts, re-structured and re-weighted for the committee that will score them.
