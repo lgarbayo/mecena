@@ -87,17 +87,28 @@ export type CropSuggestion = z.infer<typeof CropSuggestion>;
 export const TechnicalSheet = z.object({
   title: z.string(),
   year: z.number().int().optional(),
-  technique: z.string().optional(), // "acuarela sobre papel", "óleo sobre lienzo"
-  dimensions: z.string().optional(), // "50 x 70 cm"
+  // Technique / medium / format: "óleo sobre lino", "cuarteto de cuerda", "danza contemporánea", "novela".
+  technique: z.string().optional(),
+  dimensions: z.string().optional(), // "50 x 70 cm" (visual arts and objects only)
   series: z.string().optional(),
   concept: z.string().optional(), // 1-3 sentences, from the user's words
+  // CCR-arts: for music, performing arts, audiovisual, literature…
+  duration: z.string().optional(), // "12 min", "3:45", "90 min"
+  credits: z.string().optional(), // line-up / performers / publisher / crew, free text
+  venue: z.string().optional(), // where it premiered, was published or shown
 });
 export type TechnicalSheet = z.infer<typeof TechnicalSheet>;
+
+/** CCR-arts: what the work is, so the dossier can show a player, a link or a cover. */
+export const MediaKind = z.enum(["image", "video", "audio", "text", "performance", "object"]);
+export type MediaKind = z.infer<typeof MediaKind>;
 
 export const Work = z.object({
   id: z.string(),
   profileId: z.string(),
-  imageUrl: z.string(), // served URL (e.g. /api/works/<id>/image or /demo/...)
+  // Served URL (e.g. /api/works/<id>/image or /demo/...): the photo, still, cover, poster or stage photo
+  // that represents the work, whatever its art.
+  imageUrl: z.string(),
   originalImageUrl: z.string().optional(),
   crop: CropSuggestion.optional(),
   sheet: TechnicalSheet,
@@ -105,8 +116,15 @@ export const Work = z.object({
   confirmed: z.boolean().default(false), // user validated the sheet
   order: z.number().int().default(0),
   createdAt: z.string(),
+  // CCR-arts
+  mediaKind: MediaKind.default("image"),
+  links: z.array(z.string().url()).default([]), // YouTube, Vimeo, Bandcamp, SoundCloud, Spotify, publisher page…
 });
-export type Work = z.infer<typeof Work>;
+/**
+ * mediaKind/links are optional in the TS type so Work literals written before CCR-arts still compile;
+ * anything parsed with the schema has them filled. Read them as `w.mediaKind ?? "image"`, `w.links ?? []`.
+ */
+export type Work = Omit<z.infer<typeof Work>, "mediaKind" | "links"> & { mediaKind?: MediaKind; links?: string[] };
 
 export const CreatorSectionKey = z.enum(["statement", "bio", "series", "works", "cv", "contact"]);
 export const BusinessSectionKey = z.enum(["activity", "team", "projects", "figures", "location", "contact"]);
@@ -323,4 +341,4 @@ export const Db = z.object({
   usage: z.array(Usage),
   matchCache: z.array(MatchResult.extend({ cacheKey: z.string() })),
 });
-export type Db = z.infer<typeof Db>;
+export type Db = Omit<z.infer<typeof Db>, "works"> & { works: Work[] };

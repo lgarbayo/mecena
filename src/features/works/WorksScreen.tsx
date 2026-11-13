@@ -2,17 +2,19 @@
 /** /obras (WP-02): capture works, review their sheets, order them for the dossier. */
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { ROUTES, type TechnicalSheet, type Work } from "@/contracts";
+import { artFamily, ROUTES, type Work } from "@/contracts";
 import { PageTitle, Spinner } from "@/components/ui";
 import { useApp } from "@/components/shell/AppProvider";
 import { CaptureWork } from "./CaptureWork";
-import { errorText, worksClient } from "./client";
+import { artCopy } from "./arts";
+import { errorText, worksClient, type WorkPatch } from "./client";
 import { WorkCard } from "./WorkCard";
 import s from "./works.module.css";
 
 export function WorksScreen() {
   const { profile } = useApp();
   const business = profile?.kind === "business";
+  const copy = artCopy(artFamily(profile?.disciplines), business);
   const [works, setWorks] = useState<Work[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fresh, setFresh] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export function WorksScreen() {
 
   const replace = (w: Work) => setWorks((ws) => (ws ?? []).map((x) => (x.id === w.id ? w : x)));
 
-  async function onSave(id: string, patch: { sheet?: Partial<TechnicalSheet>; confirmed?: boolean; crop?: Work["crop"] }) {
+  async function onSave(id: string, patch: WorkPatch) {
     try {
       replace(await worksClient.update(id, patch));
     } catch (e) {
@@ -73,15 +75,9 @@ export function WorksScreen() {
 
   return (
     <>
-      <PageTitle kicker={business ? "Fotos (opcional)" : "Tus obras"}>{business ? "Enseña lo que haces" : "Fotografía tus obras"}</PageTitle>
+      <PageTitle kicker={copy.kicker}>{copy.title}</PageTitle>
 
-      {business ? (
-        <p className={s.intro}>
-          Las fotos son opcionales en una pyme: si quieres, añade productos, tu taller o tu local y aparecerán en tu dossier. Si no, pasa directamente al dossier.
-        </p>
-      ) : (
-        <p className={s.intro}>Una foto con el móvil y una frase por obra. Mecena escribe la ficha técnica; tú la revisas y confirmas.</p>
-      )}
+      <p className={s.intro}>{copy.intro}</p>
 
       <div className={s.trust} role="note">
         <strong>Solo recortamos y enderezamos la foto. Tu obra no se toca.</strong>
@@ -89,7 +85,7 @@ export function WorksScreen() {
       </div>
 
       <CaptureWork
-        business={business}
+        copy={copy}
         profileId={profile?.id}
         onCreated={(w) => {
           setWorks((ws) => [...(ws ?? []).filter((x) => x.id !== w.id), w]);
@@ -108,20 +104,20 @@ export function WorksScreen() {
       ) : works && works.length > 0 ? (
         <>
           <div className={s.listHead}>
-            <h2>{business ? "Tus fotos" : "Tus obras"}</h2>
+            <h2>{copy.kicker.replace(/\s*\(.*\)$/, "")}</h2>
             <span className={s.muted}>
-              {works.length} {works.length === 1 ? (business ? "foto" : "obra") : business ? "fotos" : "obras"} · {confirmed} {confirmed === 1 ? "confirmada" : "confirmadas"}
+              {works.length} {works.length === 1 ? copy.noun : copy.nounPlural} · {confirmed} {confirmed === 1 ? "confirmada" : "confirmadas"}
             </span>
           </div>
           <p className={s.hint}>El orden de aquí es el orden de tu dossier.</p>
           {works.map((w, i) => (
-            <WorkCard key={w.id} work={w} index={i} total={works.length} business={business} highlight={w.id === fresh} onSave={onSave} onMove={onMove} onRemove={onRemove} />
+            <WorkCard key={w.id} work={w} index={i} total={works.length} copy={copy} highlight={w.id === fresh} onSave={onSave} onMove={onMove} onRemove={onRemove} />
           ))}
         </>
       ) : (
         works && (
           <div className={s.empty}>
-            <p>{business ? "Todavía no has añadido fotos. No pasa nada: son opcionales." : "Aún no hay obras. Haz la primera foto: con dos o tres basta para empezar."}</p>
+            <p>{copy.empty}</p>
           </div>
         )
       )}

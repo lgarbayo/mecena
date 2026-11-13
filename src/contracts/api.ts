@@ -8,6 +8,7 @@ import {
   DossierSection,
   EntitlementState,
   JuryScore,
+  MediaKind,
   MatchResult,
   PastAward,
   Profile,
@@ -66,8 +67,19 @@ export const CreateWorkRequest = z.object({
   profileId: z.string().optional(),
   imageDataUrl: z.string().startsWith("data:image/"),
   voiceDescription: z.string().optional(),
+  // CCR-arts
+  mediaKind: MediaKind.optional(),
+  links: z.array(z.string().url()).optional(),
 });
-export const UpdateWorkRequest = z.object({ sheet: TechnicalSheet.partial().optional(), crop: CropSuggestion.optional(), confirmed: z.boolean().optional(), order: z.number().int().optional() });
+export const UpdateWorkRequest = z.object({
+  sheet: TechnicalSheet.partial().optional(),
+  crop: CropSuggestion.optional(),
+  confirmed: z.boolean().optional(),
+  order: z.number().int().optional(),
+  // CCR-arts: links replaces the whole list; mediaKind set explicitly by the artist.
+  mediaKind: MediaKind.optional(),
+  links: z.array(z.string().url()).optional(),
+});
 export const WorkResponse = z.object({ work: Work });
 export const WorksResponse = z.object({ works: z.array(Work) });
 

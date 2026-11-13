@@ -1,33 +1,28 @@
 "use client";
 /** One work: photo (crop shown with CSS, original one tap away) + its editable technical sheet. */
 import { useEffect, useState } from "react";
-import type { TechnicalSheet, Work } from "@/contracts";
+import { MediaKind, type TechnicalSheet, type Work } from "@/contracts";
 import { Button, Tag } from "@/components/ui";
+import { MEDIA_KIND_LABEL, type ArtCopy, type Field, type SheetKey } from "./arts";
+import type { WorkPatch } from "./client";
 import { IDENTITY_CROP } from "./crop";
 import { isIdentityCrop } from "./image";
+import { linkLabel, normalizeLink } from "./links";
 import { WorkPhoto } from "./WorkPhoto";
 import s from "./works.module.css";
 
-type Field = { key: Exclude<keyof TechnicalSheet, "year"> | "year"; label: string; placeholder: string; wide?: boolean; multiline?: boolean };
-
-const CREATOR_FIELDS: Field[] = [
-  { key: "title", label: "Título", placeholder: "Sin título", wide: true },
-  { key: "year", label: "Año", placeholder: "2025" },
-  { key: "dimensions", label: "Medidas", placeholder: "50 x 70 cm" },
-  { key: "technique", label: "Técnica", placeholder: "acuarela sobre papel", wide: true },
-  { key: "series", label: "Serie", placeholder: "Redeiras", wide: true },
-  { key: "concept", label: "Concepto", placeholder: "Qué cuenta esta obra, con tus palabras", wide: true, multiline: true },
-];
-const BUSINESS_FIELDS: Field[] = [
-  { key: "title", label: "Nombre", placeholder: "Producto, taller o local", wide: true },
-  { key: "year", label: "Año", placeholder: "2025" },
-  { key: "dimensions", label: "Medidas", placeholder: "Opcional" },
-  { key: "technique", label: "Material o proceso", placeholder: "cerámica esmaltada", wide: true },
-  { key: "series", label: "Línea o colección", placeholder: "Opcional", wide: true },
-  { key: "concept", label: "Descripción", placeholder: "Para qué sirve, qué lo hace especial", wide: true, multiline: true },
+/** Fields a family does not show, but that are kept visible when the sheet already has them. */
+const SPARE_FIELDS: Field[] = [
+  { key: "technique", label: "Técnica o formato", placeholder: "", wide: true },
+  { key: "dimensions", label: "Medidas", placeholder: "" },
+  { key: "duration", label: "Duración", placeholder: "" },
+  { key: "credits", label: "Créditos", placeholder: "", wide: true },
+  { key: "venue", label: "Estreno o lugar", placeholder: "", wide: true },
+  { key: "series", label: "Serie", placeholder: "", wide: true },
+  { key: "concept", label: "Concepto", placeholder: "", wide: true, multiline: true },
 ];
 
-type Draft = Record<Field["key"], string>;
+type Draft = Record<SheetKey, string>;
 const toDraft = (sh: TechnicalSheet): Draft => ({
   title: sh.title === "Sin título" ? "" : sh.title,
   year: sh.year ? String(sh.year) : "",
@@ -35,21 +30,28 @@ const toDraft = (sh: TechnicalSheet): Draft => ({
   dimensions: sh.dimensions ?? "",
   series: sh.series ?? "",
   concept: sh.concept ?? "",
+  duration: sh.duration ?? "",
+  credits: sh.credits ?? "",
+  venue: sh.venue ?? "",
 });
 
 export interface WorkCardProps {
   work: Work;
   index: number;
   total: number;
-  business?: boolean;
+  copy: ArtCopy;
   highlight?: boolean;
-  onSave(id: string, patch: { sheet?: Partial<TechnicalSheet>; confirmed?: boolean; crop?: Work["crop"] }): Promise<void>;
+  onSave(id: string, patch: WorkPatch): Promise<void>;
   onMove(id: string, direction: -1 | 1): void;
   onRemove(id: string): void;
 }
 
-export function WorkCard({ work, index, total, business, highlight, onSave, onMove, onRemove }: WorkCardProps) {
-  const fields = business ? BUSINESS_FIELDS : CREATOR_FIELDS;
+export function WorkCard({ work, index, total, copy, highlight, onSave, onMove, onRemove }: WorkCardProps) {
+  const shown = new Set(copy.fields.map((f) => f.key));
+  const fields = [...copy.fields, ...SPARE_FIELDS.filter((f) => !shown.has(f.key) && work.sheet[f.key])];
+  const [newLink, setNewLink] = useState("");
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const links = work.links ?? [];
   const [draft, setDraft] = useState<Draft>(() => toDraft(work.sheet));
   const [showOriginal, setShowOriginal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -62,15 +64,25 @@ export function WorkCard({ work, index, total, business, highlight, onSave, onMo
 
   function sheetPatch(): Partial<TechnicalSheet> {
     const year = Number.parseInt(draft.year, 10);
-    return {
+    const out: Partial<TechnicalSheet> = {
       title: draft.title.trim() || "Sin título",
       // 0 = "cleared" (JSON cannot carry undefined); the server drops it.
       year: Number.isFinite(year) && year > 1000 && year < 3000 ? year : 0,
-      technique: draft.technique.trim(),
-      dimensions: draft.dimensions.trim(),
-      series: draft.series.trim(),
-      concept: draft.concept.trim(),
     };
+    // Only fields on screen: a hidden field is never wiped by accident.
+    for (const f of fields) if (f.key !== "title" && f.key !== "year") out[f.key] = draft[f.key].trim();
+    return out;
+  }
+
+  function addLink() {
+    const url = normalizeLink(newLink);
+    if (!url) {
+      setLinkError("Ese enlace no parece válido. Cópialo entero, por ejemplo https://vimeo.com/…");
+      return;
+    }
+    setLinkError(null);
+    setNewLink("");
+    if (!links.includes(url)) void onSave(work.id, { links: [...links, url] });
   }
 
   async function save(extra: { confirmed?: boolean } = {}) {
@@ -83,7 +95,7 @@ export function WorkCard({ work, index, total, business, highlight, onSave, onMo
   }
 
   return (
-    <article className={`card ${s.workCard} ${highlight ? s.highlight : ""}`} aria-label={`Obra: ${title}`}>
+    <article className={`card ${s.workCard} ${highlight ? s.highlight : ""}`} aria-label={`${copy.noun[0].toUpperCase()}${copy.noun.slice(1)}: ${title}`}>
       <div className={s.workMedia}>
         <WorkPhoto src={work.imageUrl} alt={title} crop={work.crop} showOriginal={showOriginal} />
         <div className={s.photoActions}>
@@ -140,6 +152,59 @@ export function WorkCard({ work, index, total, business, highlight, onSave, onMo
               )}
             </label>
           ))}
+          <div className={`${s.field} ${s.wide}`}>
+            <span>Enlaces</span>
+            {links.length > 0 && (
+              <ul className={s.links}>
+                {links.map((l) => (
+                  <li key={l}>
+                    <a href={l} target="_blank" rel="noopener noreferrer">
+                      {linkLabel(l)}
+                    </a>
+                    <button type="button" className={s.linkBtn} aria-label={`Quitar enlace ${linkLabel(l)}`} onClick={() => onSave(work.id, { links: links.filter((x) => x !== l) })}>
+                      Quitar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className={s.linkAdd}>
+              <input
+                type="url"
+                inputMode="url"
+                value={newLink}
+                placeholder="https://…"
+                aria-label="Nuevo enlace"
+                onChange={(e) => (setNewLink(e.target.value), setLinkError(null))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addLink();
+                  }
+                }}
+              />
+              <Button type="button" variant="ghost" onClick={addLink} disabled={!newLink.trim()}>
+                Añadir
+              </Button>
+            </div>
+            {linkError ? (
+              <p className={s.error} role="alert">
+                {linkError}
+              </p>
+            ) : (
+              <p className={s.muted}>{copy.linksHint}</p>
+            )}
+          </div>
+          <label className={s.field}>
+            <span>Tipo de obra</span>
+            <select value={work.mediaKind ?? "image"} onChange={(e) => onSave(work.id, { mediaKind: MediaKind.parse(e.target.value) })}>
+              {MediaKind.options.map((k) => (
+                <option key={k} value={k}>
+                  {MEDIA_KIND_LABEL[k]}
+                </option>
+              ))}
+            </select>
+          </label>
           <div className={s.cardActions}>
             {work.confirmed && !dirty ? (
               <Button type="button" variant="ghost" onClick={() => onSave(work.id, { confirmed: false })}>
@@ -152,7 +217,7 @@ export function WorkCard({ work, index, total, business, highlight, onSave, onMo
             )}
             {confirmRemove ? (
               <span className={s.confirmRemove}>
-                ¿Quitar esta obra?
+                {copy.noun === "foto" ? "¿Quitar esta foto?" : copy.noun === "obra" ? "¿Quitar esta obra?" : copy.noun === "pieza" ? "¿Quitar esta pieza?" : `¿Quitar este ${copy.noun}?`}
                 <Button type="button" variant="quiet" onClick={() => onRemove(work.id)}>
                   Sí, quitar
                 </Button>
