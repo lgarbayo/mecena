@@ -1,38 +1,86 @@
-// STUB (scaffold, working baseline). Owned by WP-01.
-import type { DossierSection, ProfileKind } from "@/contracts";
+/**
+ * Onboarding turn (WP-01): one transcript chunk -> stored segment -> AI extraction -> merged profile +
+ * replace-by-key dossier sections. The transcript is persisted BEFORE the AI runs, so a failure never
+ * loses what the user said; a client retry of the same chunk reuses that segment instead of duplicating it.
+ */
+import { OnboardingTurnResult, type DossierSection, type OnboardingTurnInput, type Profile, type TranscriptSegment } from "@/contracts";
 import type { OnboardingTurnResponse } from "@/contracts/api";
-import { getAi } from "@/server/ai";
+import { getAi, mockAi } from "@/server/ai";
 import { appendSegment, getDossier, getProfile, getTranscript, listWorks, mergeProfile, nowIso, saveDossier, saveProfile } from "@/server/store";
+import { sectionTitles } from "./copy";
+
+/** A retry of the same chunk within this window reuses the last segment. */
+const RETRY_WINDOW_MS = 5 * 60_000;
+
+async function segmentFor(profileId: string, text: string, source: "voice" | "text"): Promise<TranscriptSegment> {
+  const last = getTranscript(profileId).at(-1);
+  if (last && last.text === text && last.source === source && Date.now() - Date.parse(last.at) < RETRY_WINDOW_MS) return last;
+  return appendSegment(profileId, text, source);
+}
+
+async function runAi(input: OnboardingTurnInput): Promise<OnboardingTurnResult> {
+  try {
+    return OnboardingTurnResult.parse(await getAi().onboardingTurn(input));
+  } catch (e) {
+    console.warn("[onboarding] AI turn failed, using the deterministic extractor:", e instanceof Error ? e.message : e);
+    return mockAi().onboardingTurn(input);
+  }
+}
+
+const comparable = (v: unknown) => JSON.stringify(v ?? null);
+
+export function changedFields(before: Profile, after: Profile): string[] {
+  return (Object.keys(after) as (keyof Profile)[]).filter((k) => k !== "updatedAt" && comparable(before[k]) !== comparable(after[k]));
+}
 
 export async function processTurn(input: { profileId?: string; text: string; source: "voice" | "text" }): Promise<OnboardingTurnResponse> {
   const profile = getProfile(input.profileId);
-  const segment = await appendSegment(profile.id, input.text, input.source);
+  const segment = await segmentFor(profile.id, input.text.trim(), input.source);
   const dossier = getDossier(profile.id);
   const sections: DossierSection[] = dossier?.sections ?? [];
-  const result = await getAi().onboardingTurn({
-    kind: profile.kind as ProfileKind,
+  const result = await runAi({
+    kind: profile.kind,
     profile,
     sections,
     transcript: getTranscript(profile.id),
     newSegment: segment,
   });
+
   const nextProfile = await saveProfile(mergeProfile(profile, result.profilePatch));
+
+  const allowed = sectionTitles(profile.kind);
+  const updates = result.sectionUpdates.filter((s) => s.key in allowed);
   const byKey = new Map(sections.map((s) => [s.key, s]));
-  for (const s of result.sectionUpdates) byKey.set(s.key, { ...s, updatedAt: nowIso() });
-  const nextSections = [...byKey.values()];
+  const changedSectionKeys: string[] = [];
+  for (const s of updates) {
+    const prev = byKey.get(s.key);
+    if (prev && prev.body === s.body) continue;
+    byKey.set(s.key, { ...s, updatedAt: nowIso() });
+    changedSectionKeys.push(s.key);
+  }
+  // Keep the dossier in the canonical section order for the profile kind.
+  const order = Object.keys(allowed);
+  const nextSections = [...byKey.values()].sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
   await saveDossier({
     profileId: profile.id,
     kind: profile.kind,
     sections: nextSections,
     workIds: dossier?.workIds ?? listWorks(profile.id).map((w) => w.id),
+    variant: dossier?.variant,
     generatedAt: nowIso(),
   });
   return {
     profile: nextProfile,
     sections: nextSections,
-    changedSectionKeys: result.sectionUpdates.map((s) => s.key),
-    changedProfileFields: Object.keys(result.profilePatch),
+    changedSectionKeys,
+    changedProfileFields: changedFields(profile, nextProfile),
     followUpQuestion: result.followUpQuestion,
     segmentId: segment.id,
   };
+}
+
+/** Current onboarding state for the active (or given) profile: lets /onboarding resume after a reload. */
+export function getOnboardingState(profileId?: string) {
+  const profile = getProfile(profileId);
+  return { profile, sections: getDossier(profile.id)?.sections ?? [], transcript: getTranscript(profile.id) };
 }
