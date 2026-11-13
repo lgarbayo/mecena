@@ -8,7 +8,7 @@ owns:
   - src/features/purchases/**
   - docs/revenuecat.md
   - tests/purchases/**
-status: pending
+status: review
 hours: 3
 criteria: [Sponsor fit (RevenueCat), Live demo wow]
 ---
