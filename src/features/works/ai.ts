@@ -7,6 +7,7 @@
 import { z } from "zod";
 import { artFamily, CropSuggestion, DescribeWorkResult, foldText, TechnicalSheet, type AiSlice, type DescribeWorkInput } from "@/contracts";
 import { imageBlock, structured } from "@/server/ai/llm";
+import { WORDING_RULE } from "@/server/ai/wording";
 import { IDENTITY_CROP } from "./crop";
 import { FAMILY_PROMPT } from "./arts";
 import { mentionsDimensions, mentionsDuration, parseVoiceSheet, sheetFromVoice, UNTITLED } from "./parse";
@@ -27,6 +28,8 @@ export const DESCRIBE_WORK_SYSTEM = [
   "- Solo recortamos y enderezamos la foto: nunca propongas retocar, repintar, limpiar ni completar la obra.",
   "- confidence: 0..1, tu seguridad global en la ficha.",
   "- Si es una pyme (producto, taller, local), title es el nombre del producto o espacio y technique el material o proceso.",
+  "- El título y la serie son nombres propios: respeta su grafía (como mucho corrige mayúsculas).",
+  WORDING_RULE,
 ].join("\n");
 
 // Model-facing schema: plain numbers (the contract's .default() and bounds are re-applied by normalise()).

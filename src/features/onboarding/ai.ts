@@ -31,8 +31,15 @@ export function toTurnResult(input: OnboardingTurnInput, out: LlmTurn): Onboardi
     (profilePatch as Record<string, unknown>)[k] = v;
   }
   // Backstop: Claude skips "busco/quiero…" needs about half the time (manual run), and matching depends on them.
+  // Read the needs from Claude's corrected text (what this turn added to the sections), not from the raw segment, so the
+  // person's typos never reach the profile; the raw segment only when Claude wrote nothing (deterministic floor applies).
   if (!profilePatch.fundingNeeds?.length) {
-    const needs = extractProfilePatch(input.newSegment.text, input.kind, input.profile).fundingNeeds;
+    const added = sectionUpdates.flatMap((s) => {
+      const had = new Set((current.get(s.key)?.body ?? "").split(/\n+/).map((p) => p.trim()));
+      return s.body.split(/\n+/).filter((p) => p.trim() && !had.has(p.trim()));
+    });
+    const source = added.length ? added.join("\n") : input.newSegment.text;
+    const needs = extractProfilePatch(source, input.kind, input.profile).fundingNeeds;
     if (needs?.length) profilePatch.fundingNeeds = needs;
   }
   // The optional dossier-look question is ours, asked once when the core profile becomes complete.

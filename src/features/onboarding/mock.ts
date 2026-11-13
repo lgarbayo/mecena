@@ -2,10 +2,11 @@
  * Deterministic onboarding extraction (no AI). Used in tests, offline demo mode and as the per-turn
  * fallback when Claude fails. Spanish keyword rules: names after "me llamo/soy", cities, disciplines of every art
  * (visual arts, music, stage, film, literature, design, crafts),
- * years, "quiero…" -> fundingNeeds/projectIdea, business figures. Sentences are kept verbatim
- * (the user's own words) and routed to the dossier section keys of the profile kind.
+ * years, "quiero…" -> fundingNeeds/projectIdea, business figures. Sentences keep the user's own words
+ * (only unambiguous typos are fixed, see wording.ts) and are routed to the dossier section keys of the profile kind.
  */
 import type { DossierSection, OnboardingTurnInput, OnboardingTurnResult, Profile, ProfileKind, ProfilePatch } from "@/contracts";
+import { fixWording, polishProse } from "@/server/ai/wording";
 import { familyInterview, sectionTitles } from "./copy";
 import { onboardingFamily } from "./family";
 import { dossierLookQuestion, isDossierLookSentence } from "./interview";
@@ -32,7 +33,6 @@ const titleCase = (s: string) =>
     .map((w, i) => (i > 0 && /^(de|del|da|do|dos|das|la|las|y|e)$/i.test(w) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1)))
     .join(" ");
 
-const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const stripEnd = (s: string) => s.replace(/[\s,.;:!?…]+$/, "").trim();
 
 // ---------- dictionaries ----------
@@ -253,19 +253,34 @@ export function extractProfilePatch(rawText: string, kind: ProfileKind, current:
     const sector = SECTORS.find(([re]) => re.test(n));
     if (sector && (!current.sector || /\b(nos dedicamos|me dedico)\b/.test(n))) patch.sector = sector[1];
     const founded = /\b(?:desde|fundad[oa] en|abrimos en|abri en|empece en|empezamos en|en marcha desde)(?: el(?: ano)?)? (19[5-9]\d|20[0-3]\d)\b/.exec(n);
+    const ago = /\b(?:llevamos|llevo|hace) (\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte) anos\b/.exec(n);
+    const bareYear = /^(?:en |desde )?(?:el )?(19[5-9]\d|20[0-3]\d)\b/.exec(n.trim());
     if (founded) patch.foundedYear = Number(founded[1]);
+    else if (bareYear) patch.foundedYear = Number(bareYear[1]); // answer to "¿Desde qué año…?"
+    else if (ago) {
+      const k = wordNumber(ago[1]);
+      if (k !== undefined) patch.foundedYear = new Date().getFullYear() - k;
+    }
     const team = /\b(?:somos|tengo|tenemos|hay) (\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte) (?:personas|trabajador\w*|emplead\w*)/.exec(n);
     if (team) {
       const k = wordNumber(team[1]);
       // "tengo dos empleados" = me + 2 employees; "somos dos personas" = 2 in total.
       if (k !== undefined) patch.employees = /^(tengo|tenemos|hay)/.test(team[0]) && /emplead|trabajador/.test(team[0]) ? k + 1 : k;
-    } else if (/\btrabajo sol[oa]\b/.test(n)) patch.employees = 1;
+    } else if (/\btrabajo sol[oa]\b|\bsolo yo\b/.test(n)) patch.employees = 1;
+    else {
+      // Bare answer to "¿Cuántas personas trabajáis?": "somos tres", "tres", "5 contándome".
+      const bare = /^(?:somos )?(\d+|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte)(?: (?:personas|en total|contandome|conmigo))?[.!]?$/.exec(n.trim());
+      const k = bare && (current.legalForm || current.city) ? wordNumber(bare[1]) : undefined;
+      if (k !== undefined && k > 0 && k < 500) patch.employees = k;
+    }
     if (FIGURES.test(n) && /factur|ingres|ventas|vendemos/.test(n)) {
       const eur = parseEuros(n);
       if (eur) patch.annualRevenueEur = eur;
     }
     if (/\bautonom[oa]\b/.test(n)) patch.legalForm = "autonomo";
     else if (/\b(sociedad limitada|s\.? ?l\.?)\b/.test(n)) patch.legalForm = "sl";
+    else if (/\b(sociedad anonima|s\.? ?a\.?)(?=\s|$|[.,])/.test(n)) patch.legalForm = "sa";
+    else if (/\b(comunidad de bienes|sociedad civil)\b/.test(n)) patch.legalForm = "otra";
     else if (/\bcooperativa\b/.test(n)) patch.legalForm = "cooperativa";
     else if (/\basociacion\b/.test(n)) patch.legalForm = "asociacion";
   }
@@ -279,15 +294,15 @@ export function extractProfilePatch(rawText: string, kind: ProfileKind, current:
     if (WANT.test(sn)) {
       const clause = clauseAfter(WANT, s);
       if (clause) {
-        needs.push(clause);
-        idea ??= capitalise(stripEnd(s));
+        needs.push(fixWording(clause));
+        idea ??= polishProse(stripEnd(s));
       }
       continue;
     }
     if (EDUCATION.test(sn)) {
       const at = sn.search(/\b(estudie|me forme)\b/);
-      education.push(capitalise(stripEnd(at > 0 ? s.slice(at) : s)));
-    } else if (ACHIEVEMENT.test(sn)) achievements.push(capitalise(stripEnd(s)));
+      education.push(polishProse(stripEnd(at > 0 ? s.slice(at) : s)));
+    } else if (ACHIEVEMENT.test(sn)) achievements.push(polishProse(stripEnd(s)));
   }
   if (achievements.length) patch.achievements = achievements;
   if (education.length) patch.education = education;
@@ -335,7 +350,7 @@ export function classifySentence(sentence: string, kind: ProfileKind): string[] 
 }
 
 function appendParagraph(body: string, sentence: string): string {
-  const clean = capitalise(sentence.trim());
+  const clean = polishProse(sentence);
   if (norm(body).includes(norm(stripEnd(clean)))) return body;
   return body ? `${body}\n\n${clean}` : clean;
 }
@@ -365,9 +380,10 @@ export function buildSectionUpdates(input: OnboardingTurnInput): DossierSection[
 }
 
 // ---------- follow-up ----------
-type FollowUpProfile = Pick<Profile, "displayName" | "city" | "disciplines" | "projectIdea" | "fundingNeeds" | "achievements" | "education" | "sector" | "employees" | "annualRevenueEur">;
+type FollowUpProfile = Pick<Profile, "displayName" | "city" | "disciplines" | "projectIdea" | "fundingNeeds" | "achievements" | "education" | "sector" | "employees" | "annualRevenueEur"> &
+  Partial<Pick<Profile, "legalForm" | "foundedYear">>;
 
-/** Next question about what is still missing, in the words of the creator's art (family from their disciplines). */
+/** Next question about what is still missing: in the words of the creator's art, or in eligibility order for a pyme. */
 export function followUpFor(kind: ProfileKind, p: FollowUpProfile, opts: { hasWorks?: boolean } = {}): string {
   if (kind === "creator") {
     const q = familyInterview(onboardingFamily(p.disciplines));
@@ -380,13 +396,16 @@ export function followUpFor(kind: ProfileKind, p: FollowUpProfile, opts: { hasWo
     if (!p.education.length) return q.education;
     return "¿Qué te gustaría que un jurado supiera de ti que aún no me hayas contado?";
   }
-  if (!p.displayName) return "¿Cómo se llama tu negocio y a qué os dedicáis?";
-  if (!p.sector) return "¿A qué se dedica exactamente tu negocio?";
-  if (!p.city) return "¿Dónde estáis?";
-  if (!p.employees) return "¿Cuántas personas sois?";
-  if (!p.projectIdea && !p.fundingNeeds.length) return "¿Qué necesitas ahora: digitalizar, contratar, exportar…?";
+  // Pyme: ask first for what decides which aid it can apply for (activity, place, legal form, size), then what to finance.
+  if (!p.displayName) return p.sector ? "¿Cómo se llama tu negocio?" : "¿Cómo se llama tu negocio y a qué os dedicáis?";
+  if (!p.sector) return "¿Qué vendéis o qué servicio dais?";
+  if (!p.city) return "¿En qué municipio estáis?";
+  if (!p.legalForm) return "¿Eres autónomo/a o tenéis una sociedad (S.L., cooperativa…)?";
+  if (!p.employees) return "¿Cuántas personas trabajáis, contándote a ti?";
+  if (!p.projectIdea && !p.fundingNeeds.length) return "¿Qué queréis financiar: maquinaria, digitalizar, contratar, exportar…?";
+  if (!p.foundedYear) return "¿Desde qué año existe el negocio?";
   if (!p.annualRevenueEur) return "Si quieres, dime la facturación aproximada del último año.";
-  return "¿Algún cliente o proyecto del que estés especialmente orgulloso/a?";
+  return "¿Hay algo más que queráis hacer este año y para lo que necesitéis financiación?";
 }
 
 /** The full deterministic turn: profile patch + changed sections + one follow-up question. */

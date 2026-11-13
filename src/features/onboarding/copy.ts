@@ -104,10 +104,10 @@ export interface Hint {
 
 export const ONBOARDING = {
   kicker: { creator: "Paso 1 · Tu perfil", business: "Paso 1 · Tu empresa" },
-  title: { creator: "Cuéntanos qué haces.", business: "Cuéntanos a qué se dedica tu negocio." },
+  title: { creator: "Cuéntanos qué haces.", business: "Cuéntanos qué hace tu empresa." },
   subtitle: {
     creator: "Habla como si se lo contaras a alguien en tu estudio, tu local de ensayo o tu taller. Mientras hablas, montamos tu perfil y tu dossier.",
-    business: "Habla con naturalidad. Mientras hablas, montamos el perfil de tu empresa y su memoria de capacidades.",
+    business: "Habla con naturalidad. Mientras hablas, rellenamos la ficha de tu empresa y te enseñamos las ayudas que ya puedes pedir.",
   },
   hints: {
     creator: [
@@ -118,11 +118,11 @@ export const ONBOARDING = {
       { label: "Qué buscas ahora (beca, residencia, producción, gira, edición…)", fields: ["fundingNeeds"] },
     ],
     business: [
-      { label: "Qué hacéis y desde cuándo", fields: ["sector", "foundedYear"] },
-      { label: "Dónde estáis y cuántas personas sois", fields: ["city", "employees"] },
-      { label: "Proyectos o clientes de los que estés orgulloso/a", fields: ["achievements"] },
-      { label: "Facturación aproximada (si quieres)", fields: ["annualRevenueEur"] },
-      { label: "Qué necesitas: digitalizar, contratar, exportar…", fields: ["fundingNeeds", "projectIdea"] },
+      { label: "Qué vendéis o qué servicio dais", fields: ["sector", "cnae"] },
+      { label: "Dónde estáis", fields: ["city", "region"] },
+      { label: "Autónomo/a, S.L., cooperativa…", fields: ["legalForm"] },
+      { label: "Cuántas personas sois y desde cuándo", fields: ["employees", "foundedYear"] },
+      { label: "Qué queréis financiar: digitalizar, contratar, invertir, exportar…", fields: ["fundingNeeds", "projectIdea"] },
     ],
   } satisfies Record<ProfileKind, Hint[]>,
   record: "Empezar a hablar",
@@ -137,7 +137,7 @@ export const ONBOARDING = {
   micDenied: "No tenemos acceso al micrófono. Actívalo en los ajustes del navegador o escribe tu historia.",
   noSpeech: "No te hemos oído bien. Acércate un poco o prueba a escribir.",
   unsupported: "Este navegador no reconoce la voz. Escríbelo y hacemos lo mismo.",
-  profilePanel: { creator: "Tu perfil", business: "Perfil de tu empresa" },
+  profilePanel: { creator: "Tu perfil", business: "Ficha de tu empresa" },
   dossierPanel: { creator: "Tu dossier, en construcción", business: "Memoria de tu empresa, en construcción" },
   transcriptPanel: "Lo que nos has contado",
   transcriptEmpty: "Aquí aparecerá lo que digas, palabra por palabra.",
@@ -147,6 +147,7 @@ export const ONBOARDING = {
   },
   sectionPending: "Pendiente",
   noted: (field: string) => `Anotado: ${field}`,
+  finishBusinessCount: (n: number) => (n === 1 ? "Ver la ayuda que encaja" : `Ver las ${n} ayudas que encajan`),
   followUpKicker: "Para seguir",
   sending: "Anotando…",
   failed: "Algo ha fallado por nuestra parte. Vuelve a intentarlo; no has perdido nada.",
@@ -160,7 +161,7 @@ export const ONBOARDING = {
       body: "Sube fotos de tus conciertos, funciones o portadas y enlaza tus vídeos o grabaciones.",
       cta: "Subir fotos y enlaces",
     },
-    business: { title: "Tu memoria ya tiene forma.", body: "Revísala y descárgala en PDF cuando quieras.", cta: "Ver la memoria" },
+    business: { title: "Ya podemos buscarte ayudas.", body: "Con esta ficha comprobamos en qué ayudas encajas y qué te falta para pedirlas. Cuanto más nos cuentes, mejor afinamos.", cta: "Ver ayudas para mi empresa" },
   },
 } as const;
 
@@ -191,7 +192,7 @@ export const FIELD_LABELS: Record<string, string> = {
 /** Profile rows shown in the live panel, in order. */
 export const PROFILE_ROWS: Record<ProfileKind, string[]> = {
   creator: ["displayName", "city", "disciplines", "projectIdea", "fundingNeeds", "achievements", "education", "languages", "links"],
-  business: ["displayName", "sector", "city", "legalForm", "employees", "foundedYear", "annualRevenueEur", "projectIdea", "fundingNeeds", "achievements", "links"],
+  business: ["displayName", "sector", "city", "legalForm", "employees", "foundedYear", "annualRevenueEur", "fundingNeeds", "projectIdea", "achievements", "links"],
 };
 
 export const LEGAL_FORM_LABELS: Record<string, string> = {
@@ -293,3 +294,57 @@ export function familyInterview(family: OnboardingArtFamily | undefined): Family
 
 /** Optional, light question asked once near the end; the answer only stays in the transcript (the dossier design agent reads it). */
 export const DOSSIER_LOOK_QUESTION = "Si te apetece: ¿cómo te imaginas tu dossier? Sobrio, con mucha imagen, como un fanzine…";
+
+/** Business-only labels where the shared FIELD_LABELS read as an artist's profile. */
+export const BUSINESS_FIELD_LABELS: Record<string, string> = {
+  displayName: "Empresa",
+  sector: "Actividad",
+  fundingNeeds: "Qué queréis financiar",
+  projectIdea: "Proyecto",
+  achievements: "Clientes y logros",
+};
+export function fieldLabel(kind: ProfileKind, field: string): string {
+  return (kind === "business" && BUSINESS_FIELD_LABELS[field]) || FIELD_LABELS[field] || "";
+}
+
+/** Live "ayudas que ya encajan" panel shown beside the company card while a pyme talks (instead of a dossier). */
+export const MATCHES_PANEL = {
+  title: "Ayudas que ya encajan",
+  loading: "Buscando ayudas…",
+  empty: "Todavía no sabemos lo suficiente. Cuéntanos a qué os dedicáis y dónde estáis, y empezamos a buscar.",
+  none: "Por ahora no hay ayudas abiertas que encajen. Cuéntanos qué queréis financiar y seguimos buscando.",
+  count: (n: number) => (n === 1 ? "1 ayuda encaja con tu empresa" : `${n} ayudas encajan con tu empresa`),
+  more: (n: number) => (n === 1 ? "Ver 1 más" : `Ver ${n} más`),
+  seeAll: "Ver todas las ayudas",
+  failed: "No hemos podido buscar ayudas ahora. Lo intentamos en el siguiente paso.",
+} as const;
+
+/** Home actions for a pyme (the creator ones live in HOME). */
+export const HOME_BUSINESS = {
+  cta: "Cuéntanos qué hace tu empresa",
+  calls: "Ver ayudas para mi empresa",
+  secondary: "Cómo cuidamos tus datos",
+} as const;
+
+/** Trust strip for a pyme: there is no artwork to protect, but there are company data and a submission to sign. */
+export const TRUST_BUSINESS = {
+  title: "Tu negocio es tuyo; nosotros hacemos el papeleo.",
+  strip: ["No entrenamos con los datos de tu empresa.", "Nosotros preparamos; tú presentas la solicitud.", "Tú tienes la última palabra."],
+  stripMore: "Cómo cuidamos tus datos",
+} as const;
+
+/** Main navigation per mode: a pyme has no works or dossier to build; it looks for aid and applies. */
+export const NAV: Record<ProfileKind, { key: "onboarding" | "works" | "dossier" | "calls" | "pricing"; label: string }[]> = {
+  creator: [
+    { key: "onboarding", label: "Hablar" },
+    { key: "works", label: "Obras" },
+    { key: "dossier", label: "Dossier" },
+    { key: "calls", label: "Convocatorias" },
+    { key: "pricing", label: "Pro" },
+  ],
+  business: [
+    { key: "onboarding", label: "Tu empresa" },
+    { key: "calls", label: "Ayudas" },
+    { key: "pricing", label: "Pro" },
+  ],
+};

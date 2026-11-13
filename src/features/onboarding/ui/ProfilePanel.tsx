@@ -1,6 +1,6 @@
 "use client";
 import type { Profile, ProfileKind } from "@/contracts";
-import { FIELD_LABELS, LEGAL_FORM_LABELS, ONBOARDING, PROFILE_ROWS } from "../copy";
+import { LEGAL_FORM_LABELS, ONBOARDING, PROFILE_ROWS, fieldLabel } from "../copy";
 import s from "./onboarding.module.css";
 
 function values(profile: Profile | null, field: string): string[] {
@@ -31,7 +31,7 @@ export function ProfilePanel({ kind, profile, changed, version }: { kind: Profil
           const isNew = changed.has(field);
           return (
             <div key={field} className={`${s.row} ${vs.length ? s.rowFilled : ""}`} data-field={field} data-changed={isNew || undefined}>
-              <dt>{FIELD_LABELS[field]}</dt>
+              <dt>{fieldLabel(kind, field)}</dt>
               <dd>
                 {vs.length === 0 ? (
                   <span className={s.chipEmpty}>—</span>

@@ -59,16 +59,16 @@ export function CallCard({ call, match }: Result) {
   );
 }
 
-function LockedCard({ onOpen }: { onOpen(): void }) {
+function LockedCard({ onOpen, business }: { onOpen(): void; business?: boolean }) {
   return (
-    <button type="button" className={s.locked} onClick={onOpen} aria-label="Ver más convocatorias con Mecena Pro">
+    <button type="button" className={s.locked} onClick={onOpen} aria-label={business ? "Ver más ayudas con Mecena Pro" : "Ver más convocatorias con Mecena Pro"}>
       <div className={s.lockedBody} aria-hidden>
         <div className={s.lockedBar} style={{ width: "70%" }} />
         <div className={s.lockedBar} style={{ width: "45%" }} />
         <div className={s.lockedBar} style={{ width: "85%" }} />
       </div>
       <span className={s.lockedOverlay}>
-        <strong>Otra convocatoria encaja contigo</strong>
+        <strong>{business ? "Otra ayuda encaja con tu empresa" : "Otra convocatoria encaja contigo"}</strong>
         <span>Desbloquéala con Mecena Pro</span>
       </span>
     </button>
@@ -106,7 +106,8 @@ export function CallsFeed() {
         </Button>
       </p>
     );
-  if (!data) return <Spinner label="Buscando convocatorias para ti…" />;
+  const business = (data?.mode ?? profile?.kind) === "business";
+  if (!data) return <Spinner label={business ? "Buscando ayudas para tu empresa…" : "Buscando convocatorias para ti…"} />;
 
   const total = data.results.length + data.lockedCount;
   return (
@@ -119,14 +120,22 @@ export function CallsFeed() {
       </p>
       {total === 0 && (
         <p className={s.empty}>
-          Aún no encontramos convocatorias para tu perfil. Cuéntanos más sobre ti en el <Link href={ROUTES.onboarding}>alta</Link>.
+          {business ? (
+            <>
+              Aún no encontramos ayudas para tu empresa. <Link href={ROUTES.onboarding}>Cuéntanos más</Link>: a qué os dedicáis, dónde estáis y qué queréis financiar.
+            </>
+          ) : (
+            <>
+              Aún no encontramos convocatorias para tu perfil. Cuéntanos más sobre ti en el <Link href={ROUTES.onboarding}>alta</Link>.
+            </>
+          )}
         </p>
       )}
       {data.results.map((r) => (
         <CallCard key={r.call.id} {...r} />
       ))}
       {Array.from({ length: data.lockedCount }, (_, i) => (
-        <LockedCard key={i} onOpen={() => setPaywall(true)} />
+        <LockedCard key={i} business={business} onOpen={() => setPaywall(true)} />
       ))}
       <Paywall
         open={paywall}

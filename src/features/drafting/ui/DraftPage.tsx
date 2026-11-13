@@ -179,9 +179,9 @@ export function DraftPage({ callId }: { callId: string }) {
         ) : (
           <Card>
             <p>
-              Mecena redacta la memoria, tu declaración y el presupuesto con lo
-              que nos has contado, siguiendo los criterios de las bases. Tú
-              revisas y tienes la última palabra.
+              {profile?.kind === "business"
+                ? "Mecena redacta la presentación de tu empresa, la memoria del proyecto, los objetivos y el presupuesto con lo que nos has contado, siguiendo los criterios de las bases. Tú revisas y tienes la última palabra."
+                : "Mecena redacta la memoria, tu declaración y el presupuesto con lo que nos has contado, siguiendo los criterios de las bases. Tú revisas y tienes la última palabra."}
             </p>
             <Button onClick={draft}>Prepárame la solicitud</Button>
             {error && (

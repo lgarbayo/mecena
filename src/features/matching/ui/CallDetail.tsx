@@ -36,6 +36,7 @@ const PARTS: { key: keyof ScoreBreakdown; label: string; max: number }[] = [
 
 export function CallDetail({ id }: { id: string }) {
   const { profile } = useApp();
+  const business = profile?.kind === "business";
   const [d, setD] = useState<Detail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -232,7 +233,7 @@ export function CallDetail({ id }: { id: string }) {
 
       {call.status === "recurring" && (
         <p>
-          <Tag tone="warn">Edición 2026 cerrada</Tag> Puedes preparar el dossier y la memoria para la próxima.
+          <Tag tone="warn">Edición 2026 cerrada</Tag> {business ? "Puedes dejar preparada la solicitud para la próxima." : "Puedes preparar el dossier y la memoria para la próxima."}
         </p>
       )}
 
@@ -240,9 +241,11 @@ export function CallDetail({ id }: { id: string }) {
         <Link href={ROUTES.application(call.id)} className="btn btn-primary">
           Prepárame la solicitud
         </Link>
-        <Link href={`${ROUTES.dossier}?callId=${encodeURIComponent(call.id)}`} className="btn btn-ghost">
-          Dossier para esta convocatoria
-        </Link>
+        {!business && (
+          <Link href={`${ROUTES.dossier}?callId=${encodeURIComponent(call.id)}`} className="btn btn-ghost">
+            Dossier para esta convocatoria
+          </Link>
+        )}
       </div>
     </>
   );

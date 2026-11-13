@@ -37,3 +37,8 @@ export function useApp(): AppState {
   if (!v) throw new Error("useApp must be used inside <AppProvider>");
   return v;
 }
+
+/** Same state, or null outside <AppProvider> (components that also render standalone, e.g. the home screen in tests). */
+export function useOptionalApp(): AppState | null {
+  return useContext(Ctx);
+}

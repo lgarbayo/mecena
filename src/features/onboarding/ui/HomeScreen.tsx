@@ -1,7 +1,6 @@
 /** Opening data screen (/): three sourced data points, the slogan and the CTA to the voice onboarding. */
-import Link from "next/link";
-import { ROUTES } from "@/contracts";
 import { HOME, SLOGAN } from "../copy";
+import { HomeActions } from "./HomeActions";
 import s from "./home.module.css";
 
 export function HomeScreen() {
@@ -27,17 +26,7 @@ export function HomeScreen() {
       <p className={s.closing}>{HOME.closing}</p>
       <p className={s.slogan}>{SLOGAN}</p>
 
-      <div className={s.actions}>
-        <Link className="btn btn-primary" href={ROUTES.onboarding} data-testid="home-cta">
-          {HOME.cta}
-        </Link>
-        <Link className="btn btn-ghost" href={`${ROUTES.onboarding}?subir=1`} data-testid="home-import">
-          {HOME.importCta}
-        </Link>
-        <Link className="btn btn-quiet" href={ROUTES.trust}>
-          {HOME.secondary}
-        </Link>
-      </div>
+      <HomeActions />
     </div>
   );
 }
