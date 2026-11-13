@@ -31,7 +31,10 @@ export function HomeScreen() {
         <Link className="btn btn-primary" href={ROUTES.onboarding} data-testid="home-cta">
           {HOME.cta}
         </Link>
-        <Link className="btn btn-ghost" href={ROUTES.trust}>
+        <Link className="btn btn-ghost" href={`${ROUTES.onboarding}?subir=1`} data-testid="home-import">
+          {HOME.importCta}
+        </Link>
+        <Link className="btn btn-quiet" href={ROUTES.trust}>
           {HOME.secondary}
         </Link>
       </div>

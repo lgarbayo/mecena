@@ -44,6 +44,23 @@ export const OnboardingTurnResponse = z.object({
 });
 export type OnboardingTurnResponse = z.infer<typeof OnboardingTurnResponse>;
 
+// /api/onboarding/import (CCR-8): the user's existing dossier (PDF, photo of it, or pasted text) as the starting point.
+export const ImportDossierRequest = z
+  .object({
+    profileId: z.string().optional(),
+    fileDataUrl: z.string().regex(/^data:(application\/pdf|image\/(jpeg|png|webp));base64,/).optional(),
+    fileName: z.string().max(200).optional(),
+    text: z.string().max(60_000).optional(),
+  })
+  .refine((r) => !!r.fileDataUrl || !!r.text?.trim(), { message: "Sube un archivo o pega el texto de tu dossier" });
+export type ImportDossierRequest = z.infer<typeof ImportDossierRequest>;
+export const ImportDossierResponse = OnboardingTurnResponse.omit({ segmentId: true }).extend({
+  segmentIds: z.array(z.string()), // transcript segments holding the dossier's own text (provenance for drafts)
+  worksFound: z.array(z.string()), // works named in the dossier, so the UI can invite the user to photograph them
+  mode: z.enum(["ai", "mock"]),
+});
+export type ImportDossierResponse = z.infer<typeof ImportDossierResponse>;
+
 // /api/works
 export const CreateWorkRequest = z.object({
   profileId: z.string().optional(),

@@ -20,6 +20,7 @@ export const API = {
   profile: "/api/profile", // GET active profile; PATCH patch
   profileMode: "/api/profile/mode", // POST { kind } switch creator/business demo profile
   onboardingTurn: "/api/onboarding/turn",
+  onboardingImport: "/api/onboarding/import", // POST { fileDataUrl? | text? } -> profile + dossier from the user's own dossier
   works: "/api/works", // GET ?profileId, POST create
   work: (id: string) => `/api/works/${encodeURIComponent(id)}`,
   workImage: (id: string) => `/api/works/${encodeURIComponent(id)}/image`,
