@@ -94,7 +94,7 @@ export function ImportDossier({ kind, profileId, onImported, defaultOpen }: { ki
             {done.worksFound.length > 0 && kind === "creator" ? (
               <>
                 {" "}
-                {done.worksFound.length === 1 ? "Aparece 1 obra" : `Aparecen ${done.worksFound.length} obras`}: <Link href={ROUTES.works}>{done.worksFound.length === 1 ? "fotografíala" : "fotografíalas"}</Link> para que{" "}
+                {done.worksFound.length === 1 ? "Aparece 1 obra" : `Aparecen ${done.worksFound.length} obras`}: <Link href={ROUTES.works}>{done.worksFound.length === 1 ? "añade una imagen" : "añade sus imágenes"}</Link> para que{" "}
                 {done.worksFound.length === 1 ? "salga" : "salgan"} con su ficha.
               </>
             ) : null}

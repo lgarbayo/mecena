@@ -46,6 +46,18 @@ describe("/onboarding client", () => {
     await waitFor(() => expect(screen.getByTestId("transcript").querySelectorAll("li")).toHaveLength(3));
     expect(document.body.textContent).toContain("A Coruña");
     await waitFor(() => expect(screen.getByTestId("finish-cta").getAttribute("href")).toBe("/obras"));
+    expect(screen.getByTestId("finish-cta").textContent).toBe("Fotografiar mi obra");
+  });
+
+  it("a musician gets the same /obras step, worded for concerts and recordings", async () => {
+    render(<OnboardingClient />);
+    await screen.findByTestId("mic-button");
+    act(() => onFinal!("Me llamo Iria Souto, soy violinista y compositora de Vigo."));
+    const cta = await screen.findByTestId("finish-cta", {}, { timeout: 5000 });
+    await waitFor(() => expect(cta.textContent).toBe("Subir fotos y enlaces"));
+    expect(cta.getAttribute("href")).toBe("/obras");
+    expect(document.body.textContent).toContain("Sube fotos de tus conciertos, funciones o portadas y enlaza tus vídeos o grabaciones.");
+    expect(document.body.textContent).not.toContain("Fotografiar mi obra");
   });
 
   it("typed text works as a fallback input", async () => {

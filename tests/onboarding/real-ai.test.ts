@@ -10,6 +10,7 @@ import { AiError, structured } from "@/server/ai/llm";
 import { realOnboardingTurn, warmOnboardingAi } from "@/features/onboarding/ai";
 import { systemPrompt, userPayload, CONTEXT_SEGMENTS } from "@/features/onboarding/prompt";
 import { blankCreator, FIXTURE_NOW } from "@/fixtures";
+import { DOSSIER_LOOK_QUESTION } from "@/features/onboarding/copy";
 import type { OnboardingTurnInput, TranscriptSegment } from "@/contracts";
 
 const mocked = vi.mocked(structured);
@@ -77,6 +78,28 @@ describe("onboarding real AI path", () => {
     expect(r.profilePatch.fundingNeeds?.join(" ")).toMatch(/beca de producción/);
     mocked.mockResolvedValue({ profilePatch: { fundingNeeds: ["Una beca de producción"] }, sectionUpdates: [], followUpQuestion: "¿Y?" });
     expect((await realOnboardingTurn(input("Busco una beca de producción."))).profilePatch.fundingNeeds).toEqual(["Una beca de producción"]);
+  });
+
+  it("the creator prompt covers every art and asks in the language of each one", () => {
+    const sys = systemPrompt("creator");
+    for (const f of ["musica", "artes-escenicas", "audiovisual", "literatura", "diseno", "artesania", "artes-visuales"]) expect(sys).toContain(`(${f})`);
+    expect(sys).toMatch(/repertorio o canciones propias/);
+    expect(sys).toMatch(/editoriales/);
+    expect(sys).toMatch(/estrenos/);
+    expect(sys).toMatch(/festivales/);
+    expect(sys).toMatch(/sin dar por hecho que pinta/);
+    expect(systemPrompt("business")).not.toMatch(/canciones/);
+    const musician = { ...input(), profile: { ...blankCreator, disciplines: ["guitarrista"] } };
+    expect(JSON.parse(userPayload(musician)).familia).toBe("musica");
+    expect(JSON.parse(userPayload(input())).familia).toBeUndefined();
+  });
+
+  it("asks the optional dossier-look question once the core profile becomes complete", async () => {
+    mocked.mockResolvedValue({ profilePatch: { fundingNeeds: ["grabar un disco"] }, sectionUpdates: [], followUpQuestion: "¿Dónde has tocado?" });
+    const ready = { ...input("Quiero grabar un disco."), profile: { ...blankCreator, displayName: "Iria", city: "Vigo", disciplines: ["música"] } };
+    expect((await realOnboardingTurn(ready)).followUpQuestion).toBe(DOSSIER_LOOK_QUESTION);
+    const after = { ...ready, profile: { ...ready.profile, fundingNeeds: ["grabar un disco"] } };
+    expect((await realOnboardingTurn(after)).followUpQuestion).toBe("¿Dónde has tocado?");
   });
 
   it("the schema warm-up is a no-op in mock mode", () => {
