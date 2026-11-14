@@ -203,7 +203,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
     if (el.ref) paragraphs = catalog.texts[el.ref]?.paragraphs;
     if (!paragraphs && el.quote) {
       if (isVerbatim(el.quote, catalog)) paragraphs = [el.quote.replace(/\s+/g, " ").trim()];
-      else note("He quitado una cita que no estaba en lo que me contaste: solo uso tus palabras.");
+      else note("He quitado una cita porque ya no aparece tal cual en tus textos (solo uso tus palabras). Si los has editado, pídeme que ajuste la maquetación.");
     } else if (!paragraphs && el.ref) {
       note("He quitado un texto que no existe en tu dossier.");
     }

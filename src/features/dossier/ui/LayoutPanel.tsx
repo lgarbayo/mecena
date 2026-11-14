@@ -171,6 +171,19 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
           ))}
         </ul>
       ) : null}
+      {chosen && state.adjustments.length ? (
+        <div className="design-panel__actions">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={working}
+            onClick={() => send({ request: `Ajusta la maquetación a mis textos actuales: ${state.adjustments.join(" ")}` }, "ask")}
+            data-testid="layout-refit"
+          >
+            Ajustar la maquetación a mis textos
+          </Button>
+        </div>
+      ) : null}
 
       {!chosen ? proposalList : null}
 
