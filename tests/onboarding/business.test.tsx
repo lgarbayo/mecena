@@ -24,7 +24,7 @@ vi.mock("@/lib/api-client", async () => {
     apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) => onboarding.processTurn({ ...body, profileId: body.profileId ?? activeProfileId }),
   };
 });
-const speech = { supported: true, listening: false, interim: "", error: null as string | null, errorCode: null as string | null, tapToResume: false, ios: false, start: vi.fn(), stop: vi.fn(), flush: vi.fn() };
+const speech = { supported: true, listening: false, interim: "", error: null as string | null, errorCode: null as string | null, tapToResume: false, ios: false, start: vi.fn(), stop: vi.fn(), flush: vi.fn(), restart: vi.fn() };
 let onFinal: ((t: string) => void) | undefined;
 vi.mock("@/components/voice/useSpeechRecognition", async (orig) => ({
   ...(await orig<typeof import("@/components/voice/useSpeechRecognition")>()),

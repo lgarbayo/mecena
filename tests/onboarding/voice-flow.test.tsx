@@ -120,4 +120,21 @@ describe("spoken onboarding", () => {
     }
     await waitFor(() => expect(sent).toEqual(["Me llamo Antía Varela y soy ilustradora de A Coruña.", "Respuesta 2: pinto marinas.", "Respuesta 3: pinto marinas."]), { timeout: 5000 });
   });
+
+  it("on iPhone a session that stops hearing without ending: 'Siguiente' swaps it for a fresh one", async () => {
+    vi.spyOn(navigator, "userAgent", "get").mockReturnValue(
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
+    );
+    render(<StepOnboarding />);
+    fireEvent.click(screen.getByTestId("choose-voice"));
+    act(() => FakeRecognition.latest.interim("Me llamo Antía Varela"));
+    const stuck = FakeRecognition.latest; // still "listening", never ends, hears nothing more
+    fireEvent.click(screen.getByTestId("next"));
+    expect(FakeRecognition.latest).not.toBe(stuck);
+    expect(FakeRecognition.latest.state).toBe("listening");
+    // The stuck session's late final of the phrase flush() already handed out is ignored.
+    act(() => stuck.final("Me llamo Antía Varela"));
+    act(() => FakeRecognition.latest.final("Pinto marinas en Ferrol."));
+    await waitFor(() => expect(sent).toEqual(["Me llamo Antía Varela", "Pinto marinas en Ferrol."]), { timeout: 5000 });
+  });
 });

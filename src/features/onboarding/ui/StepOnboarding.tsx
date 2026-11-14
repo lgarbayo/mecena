@@ -12,6 +12,7 @@ import { API, ROUTES, type DossierSection, type Profile, type ProfileKind, type 
 import type { ImportDossierResponse, OnboardingTurnResponse } from "@/contracts/api";
 import { useApp } from "@/components/shell/AppProvider";
 import { MIC_BLOCKED, useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
+import { VoiceDebug } from "@/components/voice/VoiceDebug";
 import { worksClient } from "@/features/works/client";
 import { apiGet, apiSend } from "@/lib/api-client";
 import { DOSSIER_LOOK_QUESTION, ONBOARDING, fieldLabel } from "../copy";
@@ -333,9 +334,9 @@ export function StepOnboarding() {
       setPhase({ at: "choose" });
     } else {
       setPhase({ at: "step", i });
-      // The tap on "Siguiente" is a user gesture: reopen the microphone if the browser closed it (iPhone ends each
-      // session after a pause; Chrome gives up after repeated errors), so the next answer is heard without another tap.
-      if (mode === "voice" && !speech.listening) speech.start();
+      // Each question gets a fresh dictation session, opened in this tap (a user gesture, which iOS requires): iPhone
+      // Safari stops hearing after a session's first phrase without ending it, and Chrome may have given up.
+      if (mode === "voice") speech.restart();
     }
   };
 
@@ -403,6 +404,7 @@ export function StepOnboarding() {
 
   return (
     <Stage label="Cuéntanos">
+      <VoiceDebug />
       <div className={s.wrap}>
         <header className={s.top}>
           <div className={s.topRow}>

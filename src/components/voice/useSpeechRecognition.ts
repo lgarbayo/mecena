@@ -19,6 +19,7 @@
  * out by flush() is trimmed, on every browser.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { voiceLog } from "./voiceLog";
 
 type Rec = {
   lang: string;
@@ -26,6 +27,10 @@ type Rec = {
   interimResults: boolean;
   start(): void;
   stop(): void;
+  abort?(): void;
+  onstart?: (() => void) | null;
+  onaudiostart?: (() => void) | null;
+  onspeechstart?: (() => void) | null;
   onresult: ((e: { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> }) => void) | null;
   onend: (() => void) | null;
   onerror: ((e: { error: string }) => void) | null;
@@ -118,6 +123,8 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
   const code = useRef<string | null>(null);
   /** Counts consecutive error-triggered restarts without any speech result to prevent infinite restart loops. */
   const errorStreak = useRef(0);
+  /** Session counter, for the debug trace only. */
+  const sessions = useRef(0);
   const onFinal = useRef(opts.onFinal);
   onFinal.current = opts.onFinal;
   const lang = opts.lang ?? "es-ES";
@@ -145,7 +152,15 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
       // while WebKit/desktop may reuse index 0 after internal compaction or emit empty final tokens).
       const emittedAt = new Map<number, string>();
       const openedAt = Date.now();
+      const sid = ++sessions.current;
+      r.onstart = () => voiceLog(`#${sid} onstart`);
+      r.onaudiostart = () => voiceLog(`#${sid} onaudiostart`);
+      r.onspeechstart = () => voiceLog(`#${sid} onspeechstart`);
       r.onresult = (e) => {
+        const last = e.results[e.results.length - 1];
+        voiceLog(`#${sid} result ${last?.isFinal ? "final" : "interim"} [${e.resultIndex}/${e.results.length}] «${(last?.[0].transcript ?? "").slice(-40)}»${rec.current === r ? "" : " IGNORADO (sesión vieja)"}`);
+        // A session replaced by restart() is gone: its late results were already handed out by flush().
+        if (rec.current !== r) return;
         errorStreak.current = 0;
         for (const k of [...emittedAt.keys()]) {
           if (k >= e.results.length) emittedAt.delete(k);
@@ -176,6 +191,7 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
         }
       };
       r.onerror = (e) => {
+        voiceLog(`#${sid} error ${e.error}`);
         if (rec.current !== r) return; // a replaced session's late error is not the live one's
         if (e.error === "aborted" && resumeOnEnd.current) return; // old session aborted while a new tap is already queued
         if (FATAL.has(e.error)) wanted.current = false;
@@ -186,6 +202,7 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
         setFailure(e.error, speechErrorText(e.error));
       };
       r.onend = () => {
+        voiceLog(`#${sid} onend${rec.current === r ? "" : " (sesión vieja)"}`);
         if (rec.current !== r) return; // a replaced session never restarts (it would fight the live one)
         rec.current = null;
         const pending = interimRef.current.trim();
@@ -217,9 +234,11 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
         }
       };
       rec.current = r;
+      voiceLog(`#${sid} start() ${onIOS ? "iOS" : onAndroid ? "Android" : "desktop"} continuous=${r.continuous}`);
       try {
         r.start();
-      } catch {
+      } catch (err) {
+        voiceLog(`#${sid} start() FALLÓ: ${err instanceof Error ? err.message : String(err)}`);
         rec.current = null;
         wanted.current = false;
         setListening(false);
@@ -231,6 +250,7 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
 
   const flush = useCallback(() => {
     const pending = interimRef.current.trim();
+    voiceLog(`flush() ${pending ? `«${pending.slice(-40)}»` : "nada pendiente"}`);
     if (!pending) return;
     interimRef.current = "";
     setInterim("");
@@ -243,6 +263,7 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
   const start = useCallback(() => {
     const Ctor = getCtor();
     if (!Ctor) return setFailure(null, UNSUPPORTED);
+    voiceLog(`start() pedido; sesión abierta: ${rec.current ? "sí" : "no"}`);
     if (stopped.current) lastFinal.current = flushed.current = ""; // a fresh conversation after an explicit stop
     stopped.current = false;
     errorStreak.current = 0;
@@ -255,7 +276,37 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
     if (!rec.current) open(Ctor);
   }, [open, setFailure]);
 
+  /**
+   * A fresh session now, inside the current tap (call flush() first). iPhone Safari stops hearing after the first
+   * phrase of a session without ending it, so the hook still looks like it is listening while nothing gets through;
+   * each question therefore gets its own session, opened in the "Siguiente" tap that iOS requires.
+   */
+  const restart = useCallback(() => {
+    const Ctor = getCtor();
+    if (!Ctor) return setFailure(null, UNSUPPORTED);
+    const old = rec.current;
+    voiceLog(`restart() ${old ? "descarta la sesión anterior" : "sin sesión abierta"}`);
+    rec.current = null; // detached: its late events are ignored
+    try {
+      if (old?.abort) old.abort();
+      else old?.stop();
+    } catch {
+      /* already ended */
+    }
+    interimRef.current = "";
+    setInterim("");
+    stopped.current = false;
+    errorStreak.current = 0;
+    resumeOnEnd.current = false;
+    wanted.current = true;
+    setFailure(null, null);
+    setTapToResume(false);
+    setListening(true);
+    open(Ctor);
+  }, [open, setFailure]);
+
   const stop = useCallback(() => {
+    voiceLog("stop()");
     wanted.current = false;
     stopped.current = true;
     resumeOnEnd.current = false;
@@ -271,5 +322,5 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
     rec.current?.stop();
   }, []);
 
-  return { supported, listening, interim, error, errorCode, tapToResume, ios, start, stop, flush };
+  return { supported, listening, interim, error, errorCode, tapToResume, ios, start, stop, flush, restart };
 }
