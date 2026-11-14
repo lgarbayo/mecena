@@ -1,0 +1,22 @@
+/* /entrar: sign in or create an account. Same tokens as the rest of the app (globals.css). */
+.wrap { max-width: 420px; margin: 8px auto 0; }
+.lead { color: var(--ink-2); margin: 0 0 8px; }
+.tabs { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; background: var(--paper-2); margin: 0 0 16px; }
+.tabs button { flex: 1; border: 0; background: transparent; padding: 8px 12px; border-radius: 999px; font: 600 0.95rem var(--sans); color: var(--ink-2); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.form { display: flex; flex-direction: column; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > span { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); font-weight: 700; }
+.field input {
+  width: 100%; font: 16px/1.4 var(--sans); color: var(--ink);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.field input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+.hint { font-size: 0.82rem; color: var(--ink-2); margin: 0; }
+.error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #f6e3da; color: #8a3517; font-size: 0.92rem; }
+.submit { width: 100%; }
+.foot { font-size: 0.85rem; color: var(--ink-2); margin: 16px 0 0; text-align: center; }
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .error { background: #3a2119; color: #f2b9a2; }
+}
+:global(:root[data-theme="dark"]) .error { background: #3a2119; color: #f2b9a2; }

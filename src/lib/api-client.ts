@@ -1,5 +1,17 @@
-/** Browser fetch helpers (scaffold-owned). Throws ApiClientError; status 402 means "show the paywall". */
+/**
+ * Browser fetch helpers (scaffold-owned). Throws ApiClientError; status 402 means "show the paywall".
+ * A 401 (no session, or it expired) sends the browser to /entrar?next=<here> (except on /entrar itself).
+ */
 import type { ApiError } from "@/contracts/api";
+import { loginUrl, ROUTES } from "@/contracts/routes";
+
+/** Go to the sign-in page, coming back here afterwards. No-op on the server and on /entrar. */
+export function redirectToLogin(): void {
+  if (typeof window === "undefined") return;
+  const { pathname, search } = window.location;
+  if (pathname.startsWith(ROUTES.login)) return;
+  window.location.assign(loginUrl(`${pathname}${search}`));
+}
 
 export class ApiClientError extends Error {
   constructor(readonly status: number, readonly code: ApiError["error"] | "network", message: string) {
@@ -14,6 +26,7 @@ export class ApiClientError extends Error {
 async function handle<T>(res: Response): Promise<T> {
   if (res.ok) return (await res.json()) as T;
   const err = (await res.json().catch(() => null)) as ApiError | null;
+  if (res.status === 401) redirectToLogin();
   throw new ApiClientError(res.status, err?.error ?? "internal", err?.message ?? `Error ${res.status}`);
 }
 

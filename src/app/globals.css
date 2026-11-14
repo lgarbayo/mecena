@@ -88,3 +88,18 @@ main.app-main { max-width: var(--maxw); margin: 0 auto; padding: 12px var(--gutt
   :root:not([data-theme="light"]) .card, :root:not([data-theme="light"]) .sheet { background: #1f1b15; }
 }
 :root[data-theme="dark"] { --paper: #17140f; --paper-2: #221e17; --ink: #f2ebdd; --ink-2: #b5ab9a; --line: #3a3328; color-scheme: dark; }
+
+/* Account (header): initial on phones, email from tablet up, and "Salir". */
+.header-end { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.account { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.account-initial {
+  display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; flex: none;
+  border-radius: 999px; background: var(--paper-2); border: 1px solid var(--line); font: 700 0.85rem var(--sans); color: var(--ink);
+}
+.account-email { display: none; font-size: 0.85rem; color: var(--ink-2); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-out { border: 0; background: transparent; padding: 6px 4px; font: 600 0.85rem var(--sans); color: var(--ink-2); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.account-out:hover { color: var(--accent); }
+@media (min-width: 640px) {
+  .account-initial { display: none; }
+  .account-email { display: inline; }
+}
