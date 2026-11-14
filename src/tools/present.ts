@@ -4,7 +4,7 @@
  * and a user-facing message for each error type.
  */
 import { ZodError, z } from "zod";
-import { NotFoundError, PaymentRequiredError, ROUTES, serverEnv, toolSchemas, type ToolName, type ToolOutput } from "@/contracts";
+import { NotFoundError, PaymentRequiredError, ROUTES, serverEnv, toolSchemas, UnauthorizedError, type ToolName, type ToolOutput } from "@/contracts";
 import { AiError } from "@/server/ai/llm";
 
 const base = () => serverEnv().publicUrl;
@@ -71,6 +71,7 @@ export function toolErrorMessage(e: unknown): string {
     return `Necesitas Mecena Pro o una Solicitud premium para preparar la solicitud. Desbloquéalo aquí: ${pricingUrl()} (una compra hecha en el móvil también desbloquea Claude Desktop).`;
   if (e instanceof ZodError) return `Datos de entrada no válidos: ${e.issues.map((i) => `${i.path.join(".") || "(entrada)"}: ${i.message}`).join("; ")}`;
   if (e instanceof NotFoundError) return e.message.charAt(0).toUpperCase() + e.message.slice(1) + ".";
+  if (e instanceof UnauthorizedError) return e.message;
   if (e instanceof AiError) return "La IA no ha podido completar esta tarea ahora mismo. Inténtalo de nuevo en unos segundos.";
   return `Error inesperado: ${e instanceof Error ? e.message : String(e)}`;
 }

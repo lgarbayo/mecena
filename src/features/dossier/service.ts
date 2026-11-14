@@ -38,7 +38,7 @@ async function imageSizer(): Promise<(w: Work) => number | undefined> {
  * With callId: the rules plan (order, image limits, notes) and, unless `ai: false`, the content adaptation
  * (sections rewritten for the call's criteria, cached). `ai: false` is the free preview: no model call.
  */
-export async function buildDossier(input: { profileId?: string; callId?: string; ai?: boolean }): Promise<Dossier> {
+export async function buildDossier(input: { profileId: string; callId?: string; ai?: boolean }): Promise<Dossier> {
   const profile = getProfile(input.profileId);
   const saved = getDossier(profile.id);
   const works = sortWorks(listWorks(profile.id));
@@ -59,7 +59,7 @@ export async function buildDossier(input: { profileId?: string; callId?: string;
 }
 
 /** Everything the page and the PDF need. `adapt: false` keeps the plain ordering but still returns the notes. */
-export async function loadDossierData(input: { profileId?: string; callId?: string; adapt?: boolean }): Promise<DossierData> {
+export async function loadDossierData(input: { profileId: string; callId?: string; adapt?: boolean }): Promise<DossierData> {
   const dossier = await buildDossier({ ...input, ai: input.adapt !== false });
   const profile = getProfile(dossier.profileId);
   const all = listWorks(profile.id);
@@ -143,7 +143,7 @@ export function pdfTokens(data: DossierData, look: PdfLook = {}): PdfTokens {
 }
 
 /** Returns PDF bytes. Never throws for a known profile: renderer errors fall back to a minimal PDF. */
-export async function renderDossierPdf(input: { profileId?: string; callId?: string; adapt?: boolean } & PdfLook): Promise<Buffer> {
+export async function renderDossierPdf(input: { profileId: string; callId?: string; adapt?: boolean } & PdfLook): Promise<Buffer> {
   const data = await loadDossierData(input);
   try {
     const tokens = pdfTokens(data, input);
@@ -156,7 +156,7 @@ export async function renderDossierPdf(input: { profileId?: string; callId?: str
   }
 }
 
-export async function exportDossierPdf(input: { profileId?: string; callId?: string }): Promise<{ url: string; filePath: string; pages?: number }> {
+export async function exportDossierPdf(input: { profileId: string; callId?: string }): Promise<{ url: string; filePath: string; pages?: number }> {
   const profile = getProfile(input.profileId);
   const bytes = await renderDossierPdf({ ...input, profileId: profile.id });
   const filePath = path.join(exportsDir(), `dossier-${profile.id}${input.callId ? `-${input.callId}` : ""}.pdf`);

@@ -27,6 +27,13 @@ export const blankCreator: Profile = {
   updatedAt: FIXTURE_NOW,
 };
 
+/** Business profile a new account starts from when it switches to Pyme: empty, onboarding fills it. */
+export const blankBusiness: Profile = {
+  ...blankCreator,
+  id: DEMO_BUSINESS_ID,
+  kind: "business",
+};
+
 /** Creator profile after onboarding (used by tests of matching, dossier, drafting, jury). */
 export const fixtureCreator: Profile = {
   ...blankCreator,
@@ -225,10 +232,15 @@ export const fixtureApplication: Application = {
   updatedAt: FIXTURE_NOW,
 };
 
-/** Default DB when no data/demo/seed.json exists. */
+/**
+ * Default DB when no data/demo/seed.json exists. The two demo profiles have no owner, so no account can reach
+ * them (tests claim them with tests/helpers.ts loginDemo); every new account gets its own blank profiles.
+ */
 export function defaultDb(): Db {
   return {
     meta: { activeProfileId: DEMO_CREATOR_ID, appUserId: DEMO_APP_USER_ID },
+    users: [],
+    sessions: [],
     profiles: [structuredClone(blankCreator), structuredClone(fixtureBusiness)],
     transcripts: [],
     works: [],

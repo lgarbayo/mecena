@@ -5,16 +5,17 @@ import { renderDossierPdf } from "@/features/dossier/service";
 import { slug } from "@/features/dossier/model";
 import { resolveEntitlement } from "@/features/purchases/server";
 import { route } from "@/server/http";
-import { getProfile } from "@/server/store";
+import { requireProfile } from "@/server/auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const GET = route(async (req: Request) => {
   const sp = new URL(req.url).searchParams;
-  const profile = getProfile(sp.get("profileId") || undefined);
+  // Only the owner gets the PDF (the link carries a profileId, but without the owner's session it is a 401/404).
+  const { user, profile } = await requireProfile(req, sp.get("profileId"));
   const callId = sp.get("callId") || undefined;
-  const pro = callId ? (await resolveEntitlement(sp.get("appUserId") || undefined).catch(() => undefined))?.pro === true : false;
+  const pro = callId ? (await resolveEntitlement(user.appUserId).catch(() => undefined))?.pro === true : false;
   // The design comes from the design agent (saved per profile); ?estilo forces a starting point.
   const bytes = await renderDossierPdf({ profileId: profile.id, callId: pro ? callId : undefined, style: sp.get("estilo") });
   const name = `dossier-${slug(profile.displayName || "mecena")}${pro && callId ? `-${slug(callId)}` : ""}.pdf`;

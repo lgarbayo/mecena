@@ -1,7 +1,9 @@
 /**
  * JSON-file persistence (scaffold-owned). One file: <MECENA_DATA_DIR>/db.json.
  * Read-through on every call so the MCP server process and the Next app see each other's writes.
- * Writes are serialised in-process and atomic (tmp + rename). Good enough for a single-user demo.
+ * Writes are serialised in-process and atomic (tmp + rename). Good enough for one machine.
+ * Multi-user: every profile has an ownerId (User.id) and everything else hangs from a profile. This module does NOT
+ * check ownership; callers resolve the signed-in user first (src/server/auth) and pass explicit, owned ids.
  * Calls are read-only data: data/calls/calls.json (+ data/calls/bdns-cache.json if present).
  */
 import fs from "node:fs";
@@ -16,14 +18,13 @@ import {
   type EntitlementState,
   type JuryScore,
   type Profile,
-  type ProfileKind,
   type ProfilePatch,
   type TranscriptSegment,
   type Work,
   NotFoundError,
   serverEnv,
 } from "@/contracts";
-import { DEMO_BUSINESS_ID, DEMO_CREATOR_ID, defaultDb, fixtureCalls } from "@/fixtures";
+import { defaultDb, fixtureCalls } from "@/fixtures";
 import { profileBeneficiaryTypes, profileTerritory, withCanonicalCallFields } from "@/features/normalize";
 import { CallHistory } from "@/features/history/history";
 
@@ -88,15 +89,7 @@ export function updateDb<T>(mutate: (db: Db) => T): Promise<T> {
   return run;
 }
 
-/** Rotate the RevenueCat app user id (demo reset: a fresh sandbox customer so the paywall shows again). */
-export function rotateAppUserId(): Promise<string> {
-  return updateDb((db) => {
-    db.meta.appUserId = `mecena-demo-${randomUUID().slice(0, 8)}`;
-    return db.meta.appUserId;
-  });
-}
-
-/** Replace the whole DB (demo reset). */
+/** Replace the whole DB (admin CLI reset: wipes every user). */
 export async function resetDb(db: Db = initialDb()): Promise<Db> {
   return updateDb((cur) => {
     Object.assign(cur, structuredClone(db));
@@ -104,28 +97,16 @@ export async function resetDb(db: Db = initialDb()): Promise<Db> {
   });
 }
 
-// ---------- meta / profiles ----------
-export function getMeta() {
-  return readDb().meta;
-}
-export function getProfile(id?: string): Profile {
-  const db = readDb();
-  const pid = id ?? db.meta.activeProfileId;
-  const p = db.profiles.find((x) => x.id === pid);
-  if (!p) throw new NotFoundError(`Perfil ${pid}`);
+// ---------- profiles ----------
+/** A profile by id. The id is required: there is no global "active profile" any more (it lives on each User). */
+export function getProfile(id: string): Profile {
+  const p = readDb().profiles.find((x) => x.id === id);
+  if (!p) throw new NotFoundError(`Perfil ${id}`);
   return p;
 }
-export function getActiveProfile(): Profile {
-  return getProfile();
-}
-export function setActiveMode(kind: ProfileKind): Promise<Profile> {
-  return updateDb((db) => {
-    const id = kind === "creator" ? DEMO_CREATOR_ID : DEMO_BUSINESS_ID;
-    const p = db.profiles.find((x) => x.id === id) ?? db.profiles.find((x) => x.kind === kind);
-    if (!p) throw new NotFoundError(`Perfil ${kind}`);
-    db.meta.activeProfileId = p.id;
-    return p;
-  });
+/** Every profile an account owns. */
+export function listProfilesOf(ownerId: string): Profile[] {
+  return readDb().profiles.filter((p) => p.ownerId === ownerId);
 }
 
 const ARRAY_FIELDS = ["disciplines", "achievements", "education", "links", "fundingNeeds", "languages"] as const;
@@ -135,6 +116,7 @@ export function mergeProfile(p: Profile, patch: ProfilePatch): Profile {
   const next: Profile = { ...p };
   for (const [k, v] of Object.entries(patch)) {
     if (v === undefined || v === null || v === "") continue;
+    if (k === "id" || k === "ownerId" || k === "kind") continue; // identity and ownership never change through a patch
     if ((ARRAY_FIELDS as readonly string[]).includes(k) && Array.isArray(v)) {
       const cur = (next as Record<string, unknown>)[k] as string[];
       const seen = new Set(cur.map((s) => s.toLowerCase().trim()));
@@ -159,20 +141,21 @@ export function withCanonicalFields(p: Profile): Profile {
   return next;
 }
 
-export function patchProfile(id: string | undefined, patch: ProfilePatch): Promise<Profile> {
+export function patchProfile(id: string, patch: ProfilePatch): Promise<Profile> {
   return updateDb((db) => {
-    const pid = id ?? db.meta.activeProfileId;
-    const i = db.profiles.findIndex((x) => x.id === pid);
-    if (i < 0) throw new NotFoundError(`Perfil ${pid}`);
+    const i = db.profiles.findIndex((x) => x.id === id);
+    if (i < 0) throw new NotFoundError(`Perfil ${id}`);
     db.profiles[i] = mergeProfile(db.profiles[i], patch);
     return db.profiles[i];
   });
 }
 
+/** Insert or replace a profile. Replacing never changes its owner: ownership is set once, when the profile is created. */
 export function saveProfile(input: Profile): Promise<Profile> {
-  const p = withCanonicalFields(input);
   return updateDb((db) => {
-    const i = db.profiles.findIndex((x) => x.id === p.id);
+    const i = db.profiles.findIndex((x) => x.id === input.id);
+    const p = withCanonicalFields(i < 0 ? input : { ...input, ownerId: db.profiles[i].ownerId });
+    if (p.ownerId === undefined) delete p.ownerId;
     if (i < 0) db.profiles.push(p);
     else db.profiles[i] = p;
     return p;

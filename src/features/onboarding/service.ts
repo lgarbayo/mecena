@@ -34,7 +34,7 @@ export function changedFields(before: Profile, after: Profile): string[] {
   return (Object.keys(after) as (keyof Profile)[]).filter((k) => k !== "updatedAt" && comparable(before[k]) !== comparable(after[k]));
 }
 
-export async function processTurn(input: { profileId?: string; text: string; source: "voice" | "text" }): Promise<OnboardingTurnResponse> {
+export async function processTurn(input: { profileId: string; text: string; source: "voice" | "text" }): Promise<OnboardingTurnResponse> {
   const profile = getProfile(input.profileId);
   const segment = await segmentFor(profile.id, input.text.trim(), input.source);
   const dossier = getDossier(profile.id);
@@ -87,8 +87,8 @@ export async function processTurn(input: { profileId?: string; text: string; sou
   };
 }
 
-/** Current onboarding state for the active (or given) profile: lets /onboarding resume after a reload. */
-export function getOnboardingState(profileId?: string) {
+/** Current onboarding state for this profile: lets /onboarding resume after a reload. */
+export function getOnboardingState(profileId: string) {
   const profile = getProfile(profileId);
   warmOnboardingAi(profile.kind);
   return { profile, sections: getDossier(profile.id)?.sections ?? [], transcript: getTranscript(profile.id) };

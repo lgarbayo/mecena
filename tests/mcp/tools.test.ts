@@ -1,16 +1,19 @@
 /** WP-04: the MCP front door, end to end over an in-memory transport, on AI mocks. */
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { TOOL_NAMES, toolSchemas } from "@/contracts";
 import { createMcpServer, type McpServerOptions } from "@/mcp/server";
-import { getMeta } from "@/server/store";
-import { grantPro, seedOnboardedCreator } from "../helpers";
+import { DEMO_APP_USER_ID } from "@/fixtures";
+import { createUser, DEMO_EMAIL, grantPro, loginDemo, seedOnboardedCreator } from "../helpers";
 
 type TextBlock = { type: "text"; text: string };
 const CALL_ID = "fixture-beca-artes-plasticas";
 
 let client: Client | undefined;
+beforeEach(async () => {
+  await loginDemo(); // the MCP server acts as this account (MECENA_USER_EMAIL in real life)
+});
 afterEach(async () => {
   await client?.close();
   client = undefined;
@@ -18,7 +21,7 @@ afterEach(async () => {
 
 async function connect(opts?: McpServerOptions) {
   const [a, b] = InMemoryTransport.createLinkedPair();
-  const server = createMcpServer(opts);
+  const server = createMcpServer({ userEmail: DEMO_EMAIL, ...opts });
   client = new Client({ name: "test", version: "0.0.0" });
   await Promise.all([server.connect(a), client.connect(b)]);
   return client;
@@ -91,7 +94,7 @@ describe("MCP server tools", () => {
     expect(denied.blocks[0].text).toMatch(/^Necesitas Mecena Pro/);
     expect(denied.blocks[0].text).toContain("http://localhost:3000/pro");
 
-    await grantPro(getMeta().appUserId); // a purchase on the phone is stored for meta.appUserId and unlocks MCP
+    await grantPro(DEMO_APP_USER_ID); // a purchase on the phone is stored for the account's appUserId and unlocks MCP
     const ok = await call(c, "draft_application", { callId: CALL_ID });
     expect(ok.isError).toBe(false);
     const out = json(ok.blocks);
@@ -153,5 +156,24 @@ describe("MCP server tools", () => {
     const r = await call(c, "score_application", { applicationId: "x" });
     expect(r.blocks[0].text).toContain("84/100");
     expect(seen).toEqual(['score_application:mcp:{"applicationId":"x"}']);
+  });
+
+  it("only ever sees its own account: another user's profile id is 'not found'", async () => {
+    const other = await createUser("otra@mecena.test");
+    const c = await connect();
+    const r = await call(c, "get_profile", { profileId: other.user.activeProfileId });
+    expect(r.isError).toBe(true);
+    expect(r.blocks[0].text).toMatch(/no encontrad/i);
+    const mine = await call(c, "get_profile");
+    expect(json(mine.blocks).profile.id).toBe("demo-creator");
+  });
+
+  it("without a configured account every tool call is an error that explains MECENA_USER_EMAIL", async () => {
+    const c = await connect({ userEmail: "" });
+    const r = await call(c, "get_profile");
+    expect(r.isError).toBe(true);
+    expect(r.blocks[0].text).toContain("MECENA_USER_EMAIL");
+    const unknown = await connect({ userEmail: "nadie@mecena.test" });
+    expect((await call(unknown, "get_profile")).blocks[0].text).toMatch(/No hay ninguna cuenta/);
   });
 });

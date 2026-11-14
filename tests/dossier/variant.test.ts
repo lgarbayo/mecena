@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import type { Call, Work } from "@/contracts";
 import { DEMO_APP_USER_ID, DEMO_CREATOR_ID, FIXTURE_NOW, fixtureCalls } from "@/fixtures";
 import { planVariant, scoreSeries } from "@/features/dossier/variant";
 import { buildDossier, loadDossierData } from "@/features/dossier/service";
 import { GET as dossierRoute } from "@/app/api/dossier/route";
 import { saveWork } from "@/server/store";
-import { grantPro, req, seedOnboardedCreator } from "../helpers";
+import { grantPro, req, seedOnboardedCreator, loginDemo } from "../helpers";
 import { writeCalls } from "./fixtures";
 
 const work = (id: string, series: string, order: number, extra: Partial<Work["sheet"]> = {}): Work => ({
@@ -37,6 +37,11 @@ const seaCall: Call = {
   dossierRequirements: { maxImages: 3, maxFileMb: 5, format: "PDF" },
 };
 const openCall: Call = { ...baseCall, id: "test-libre", title: "Convocatoria abierta de creación", summary: "Tema libre.", dossierRequirements: undefined, criteria: [] };
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
 
 describe("dossier variant planning", () => {
   it("puts the series closest to the call first and explains why in Spanish", () => {

@@ -8,7 +8,7 @@ import { consumeDraftCredit, requireDraftEntitlement } from "@/features/purchase
  * Returns the existing draft for this call if there is one (no new credit is used, nothing is re-drafted);
  * otherwise checks the entitlement (402 without Pro / Solicitud premium), drafts, saves and consumes a credit.
  */
-export async function draftApplication(input: { callId: string; profileId?: string }, ctx: ToolContext): Promise<Application> {
+export async function draftApplication(input: { callId: string; profileId: string }, ctx: Pick<ToolContext, "appUserId"> & Partial<Pick<ToolContext, "caller">>): Promise<Application> {
   const profile = getProfile(input.profileId);
   const call = getCall(input.callId);
   const existing = findApplication(profile.id, call.id);
@@ -30,7 +30,7 @@ export async function draftApplication(input: { callId: string; profileId?: stri
 }
 
 /** The draft for a call, if any (page load: show it instead of offering to draft again). */
-export function findDraft(input: { callId: string; profileId?: string }): Application | null {
+export function findDraft(input: { callId: string; profileId: string }): Application | null {
   const profile = getProfile(input.profileId);
   return findApplication(profile.id, input.callId) ?? null;
 }

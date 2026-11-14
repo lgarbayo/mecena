@@ -13,7 +13,7 @@ let hangNext = false;
 vi.mock("@/lib/api-client", async () => {
   const svc = await import("@/features/onboarding/service");
   return {
-    apiGet: async (url: string) => svc.getOnboardingState(new URL(url, "http://x").searchParams.get("profileId") ?? undefined),
+    apiGet: async (url: string) => svc.getOnboardingState(new URL(url, "http://x").searchParams.get("profileId") ?? "demo-creator"),
     apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }, _m?: string, signal?: AbortSignal) => {
       if (hangNext) {
         hangNext = false;
@@ -21,7 +21,7 @@ vi.mock("@/lib/api-client", async () => {
         return new Promise((_, reject) => signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError"))));
       }
       sent.push(body.text);
-      return svc.processTurn(body);
+      return svc.processTurn({ ...body, profileId: body.profileId ?? "demo-creator" });
     },
   };
 });

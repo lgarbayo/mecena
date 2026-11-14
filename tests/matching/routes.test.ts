@@ -6,13 +6,18 @@ import { GET as getCall } from "@/app/api/calls/[id]/route";
 import { FREE_MATCHES_PER_MONTH } from "@/contracts";
 import { DEMO_APP_USER_ID, DEMO_BUSINESS_ID, DEMO_CREATOR_ID, fixtureCalls, fixtureCreator } from "@/fixtures";
 import { saveProfile } from "@/server/store";
-import { ctx, grantPro, req, seedOnboardedCreator } from "../helpers";
+import { ctx, grantPro, req, seedOnboardedCreator, loginDemo } from "../helpers";
 
 // 6 eligible creator calls (clones of the fictional beca) + the 3 fixtures, so the free limit kicks in.
 beforeEach(() => {
   const beca = fixtureCalls[0];
   const extra = Array.from({ length: 4 }, (_, i) => ({ ...beca, id: `fixture-beca-extra-${i + 1}`, title: `[FIXTURE] Beca extra ${i + 1}`, amountEur: { max: 1000 * (i + 1) } }));
   fs.writeFileSync(path.join(process.env.MECENA_CALLS_DIR!, "calls.json"), JSON.stringify([...fixtureCalls, ...extra]));
+});
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
 });
 
 describe("GET /api/calls", () => {

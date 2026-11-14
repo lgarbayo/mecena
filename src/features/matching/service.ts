@@ -18,7 +18,7 @@ export function ruleMatch(profile: Profile, call: Call, ctx?: MatchContext): Mat
   return evaluate(profile, call, ctx ?? contextFor(profile)).match;
 }
 
-export async function searchCalls(input: { profileId?: string; query?: string; kind?: ProfileKind; limit?: number }): Promise<{ call: Call; match: MatchResult }[]> {
+export async function searchCalls(input: { profileId: string; query?: string; kind?: ProfileKind; limit?: number }): Promise<{ call: Call; match: MatchResult }[]> {
   const profile = getProfile(input.profileId);
   const ctx = contextFor(profile);
   const q = input.query?.trim().toLowerCase();
@@ -55,7 +55,7 @@ const STATUS_RANK: Record<Call["status"], number> = { open: 0, upcoming: 1, recu
 const cacheKey = (profile: Profile, call: Call) => `${profile.id}|${profile.updatedAt}|${call.id}|${call.verifiedAt}`;
 
 /** Rule match + AI explanation (cached per profile version × call version). Eligibility and score stay the rules'. */
-export async function explainCall(input: { callId: string; profileId?: string }): Promise<{ call: Call; match: MatchResult; checklist: string[] }> {
+export async function explainCall(input: { callId: string; profileId: string }): Promise<{ call: Call; match: MatchResult; checklist: string[] }> {
   const profile = getProfile(input.profileId);
   const call = getCall(input.callId);
   const base = ruleMatch(profile, call);
@@ -84,7 +84,7 @@ export async function explainCall(input: { callId: string; profileId?: string })
 }
 
 /** Feed for GET /api/calls: Pro sees every match; the free plan sees the top FREE_MATCHES_PER_MONTH, the rest only as a count. */
-export async function callsFeed(input: { profileId?: string; appUserId?: string; query?: string }) {
+export async function callsFeed(input: { profileId: string; appUserId: string; query?: string }) {
   const profile = getProfile(input.profileId);
   const all = await searchCalls({ profileId: profile.id, query: input.query });
   const { pro } = await resolveEntitlement(input.appUserId);
@@ -105,7 +105,7 @@ export function similarAwards(call: Call, max = 3, kind?: ProfileKind): PastAwar
 }
 
 /** Detail for GET /api/calls/[id]: explanation + visible score breakdown + checklist with what the user already has. */
-export async function callDetail(input: { callId: string; profileId?: string }) {
+export async function callDetail(input: { callId: string; profileId: string }) {
   const profile = getProfile(input.profileId);
   const base = await explainCall({ callId: input.callId, profileId: profile.id });
   const ctx = contextFor(profile);

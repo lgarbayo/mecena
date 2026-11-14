@@ -1,12 +1,16 @@
 /** Route-handler helpers (scaffold-owned): consistent JSON errors for every API route. */
 import { NextResponse } from "next/server";
 import { ZodError, type z } from "zod";
-import { NotFoundError, PaymentRequiredError } from "@/contracts";
+import { ConflictError, ForbiddenError, NotFoundError, PaymentRequiredError, TooManyRequestsError, UnauthorizedError } from "@/contracts";
 import type { ApiError } from "@/contracts/api";
 import { AiError } from "@/server/ai/llm";
 
 export function errorResponse(e: unknown): NextResponse<ApiError> {
   if (e instanceof ZodError) return NextResponse.json({ error: "bad_request", message: e.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 400 });
+  if (e instanceof UnauthorizedError) return NextResponse.json({ error: "unauthorized", message: e.message }, { status: 401 });
+  if (e instanceof ForbiddenError) return NextResponse.json({ error: "forbidden", message: e.message }, { status: 403 });
+  if (e instanceof ConflictError) return NextResponse.json({ error: "conflict", message: e.message }, { status: 409 });
+  if (e instanceof TooManyRequestsError) return NextResponse.json({ error: "too_many_requests", message: e.message }, { status: 429 });
   if (e instanceof PaymentRequiredError) return NextResponse.json({ error: "payment_required", message: e.message }, { status: 402 });
   if (e instanceof NotFoundError) return NextResponse.json({ error: "not_found", message: e.message }, { status: 404 });
   if (e instanceof AiError) return NextResponse.json({ error: "ai_failed", message: e.message }, { status: 502 });

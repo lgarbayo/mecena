@@ -1,12 +1,17 @@
 /** WP-04: in-app agent in mock mode (keyword router) and the /api/agent route. */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import { AgentResponse } from "@/contracts/api";
 import { POST } from "@/app/api/agent/route";
 import { planMockTurn, resolveCallId, MOCK_HELP } from "@/features/agent/mock";
 import { runAgent } from "@/features/agent/service";
-import { grantPro, req, seedOnboardedCreator } from "../helpers";
+import { grantPro, req, seedOnboardedCreator, loginDemo, demoToolCtx } from "../helpers";
 
 const CALL_ID = "fixture-beca-artes-plasticas";
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
 
 describe("mock router", () => {
   it.each([
@@ -47,39 +52,39 @@ describe("mock router", () => {
 describe("runAgent (mock mode)", () => {
   it("search: Spanish reply with results and the tool call", async () => {
     await seedOnboardedCreator();
-    const turn = await runAgent("¿Qué convocatorias encajan conmigo?");
+    const turn = await runAgent("¿Qué convocatorias encajan conmigo?", [], await demoToolCtx());
     expect(turn.toolCalls).toEqual([{ name: "search_calls", input: { limit: 5 }, ok: true }]);
     expect(turn.reply).toMatch(/He encontrado \d+ convocatoria/);
   });
 
   it("dossier for call X returns the dossier link", async () => {
     await seedOnboardedCreator();
-    const turn = await runAgent("Hazme el dossier para la convocatoria de artes plásticas");
+    const turn = await runAgent("Hazme el dossier para la convocatoria de artes plásticas", [], await demoToolCtx());
     expect(turn.toolCalls[0]).toMatchObject({ name: "build_dossier", input: { callId: CALL_ID }, ok: true });
     expect(turn.reply).toContain("http://localhost:3000/dossier?");
   });
 
   it("solicitud without entitlement → paywall message (ok: false); with Pro → draft; then tribunal scores it", async () => {
     await seedOnboardedCreator();
-    const denied = await runAgent("Prepárame la solicitud de la beca de artes plásticas");
+    const denied = await runAgent("Prepárame la solicitud de la beca de artes plásticas", [], await demoToolCtx());
     expect(denied.toolCalls[0]).toMatchObject({ name: "draft_application", ok: false });
     expect(denied.reply).toMatch(/^Necesitas Mecena Pro/);
     expect(denied.reply).toContain("/pro");
 
     await grantPro();
-    const drafted = await runAgent("Prepárame la solicitud de la beca de artes plásticas");
+    const drafted = await runAgent("Prepárame la solicitud de la beca de artes plásticas", [], await demoToolCtx());
     expect(drafted.toolCalls[0]).toMatchObject({ name: "draft_application", ok: true });
     expect(drafted.reply).toMatch(/Mecena prepara; tú presentas/);
 
-    const scored = await runAgent("Que la puntúe el tribunal");
+    const scored = await runAgent("Que la puntúe el tribunal", [], await demoToolCtx());
     expect(scored.toolCalls[0]).toMatchObject({ name: "score_application", ok: true });
     expect(scored.reply).toMatch(/\d+\/100/);
   });
 
-  it("uses the caller's appUserId for entitlement when given", async () => {
+  it("uses the caller's appUserId (from the tool context) for entitlement", async () => {
     await seedOnboardedCreator();
     await grantPro("someone-else");
-    const mine = await runAgent("Prepárame la solicitud de la beca de artes plásticas", [], { appUserId: "someone-else" });
+    const mine = await runAgent("Prepárame la solicitud de la beca de artes plásticas", [], { ...(await demoToolCtx()), appUserId: "someone-else" });
     expect(mine.toolCalls[0].ok).toBe(true);
   });
 });

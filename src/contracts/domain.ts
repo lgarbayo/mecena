@@ -37,6 +37,9 @@ export type Transcript = z.infer<typeof Transcript>;
 
 export const Profile = z.object({
   id: z.string(),
+  // Account (User.id) that owns this profile. Optional only so a db.json written before accounts still parses;
+  // a profile without an owner is unreachable for every user.
+  ownerId: z.string().optional(),
   kind: ProfileKind,
   displayName: z.string(), // artist name or trade name
   city: z.string().optional(),
@@ -71,7 +74,7 @@ export const Profile = z.object({
 export type Profile = z.infer<typeof Profile>;
 
 /** Partial update produced by onboarding / update_profile. Arrays are merged (deduped) by the store. */
-export const ProfilePatch = Profile.omit({ id: true, kind: true, updatedAt: true, territory: true, beneficiaryTypes: true }).partial();
+export const ProfilePatch = Profile.omit({ id: true, ownerId: true, kind: true, updatedAt: true, territory: true, beneficiaryTypes: true }).partial();
 export type ProfilePatch = z.infer<typeof ProfilePatch>;
 
 /** Light-touch photo correction only. We never alter the artwork itself. */
@@ -344,15 +347,42 @@ export type EntitlementState = z.infer<typeof EntitlementState>;
 export const Usage = z.object({ appUserId: z.string(), month: z.string(), matchesViewed: z.number().int() });
 export type Usage = z.infer<typeof Usage>;
 
+/**
+ * Legacy single-user state. Still parsed so an old db.json loads, but nothing user-facing reads it any more:
+ * the active profile and the RevenueCat app user id live on each User.
+ */
 export const AppMeta = z.object({
   activeProfileId: z.string(),
-  appUserId: z.string(), // RevenueCat app user id; demo reset rotates it so the paywall shows again
+  appUserId: z.string(),
 });
 export type AppMeta = z.infer<typeof AppMeta>;
+
+/** An account (email + password). Every profile, work, dossier, application and entitlement hangs from one. */
+export const User = z.object({
+  id: z.string(),
+  email: z.string(), // normalised: trimmed, lowercase
+  passwordHash: z.string(), // "scrypt$N$r$p$saltB64$hashB64"
+  createdAt: z.string(),
+  activeProfileId: z.string(), // one of the user's own profiles (creator or business)
+  appUserId: z.string(), // RevenueCat app user id, unique per user; demo reset rotates it so the paywall shows again
+});
+export type User = z.infer<typeof User>;
+
+/** A login session. Only sha256(token) is stored; the token itself lives in the httpOnly cookie. */
+export const Session = z.object({
+  tokenHash: z.string(),
+  userId: z.string(),
+  createdAt: z.string(),
+  expiresAt: z.string(),
+});
+export type Session = z.infer<typeof Session>;
 
 /** Whole JSON database. */
 export const Db = z.object({
   meta: AppMeta,
+  // Accounts and sessions; default [] so a db.json written before accounts existed still parses.
+  users: z.array(User).default([]),
+  sessions: z.array(Session).default([]),
   profiles: z.array(Profile),
   transcripts: z.array(Transcript),
   works: z.array(Work),

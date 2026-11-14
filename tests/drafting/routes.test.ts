@@ -1,12 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import { GET as getApps, POST as postApp } from "@/app/api/applications/route";
 import { GET as getApp, PATCH as patchApp } from "@/app/api/applications/[id]/route";
 import { GET as getJury, POST as postJury } from "@/app/api/jury/route";
 import { POST as postImprove } from "@/app/api/jury/improve/route";
 import { DEMO_APP_USER_ID, DEMO_CREATOR_ID } from "@/fixtures";
-import { ctx, grantPro, req, seedOnboardedCreator } from "../helpers";
+import { ctx, grantPro, req, seedOnboardedCreator, loginDemo } from "../helpers";
 
 const CALL = "fixture-beca-artes-plasticas";
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
 
 describe("demo beats 6-7 through the API", () => {
   it("402 → Pro → draft (with sources) → reload without re-drafting → jury 61 → improve 84", async () => {

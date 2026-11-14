@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /** Call-adapted dossier content (layer 2, CCR-7): mock adaptation, number guard, cache, Pro gate, view and render. */
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { Call } from "@/contracts";
 import { DEMO_APP_USER_ID, DEMO_CREATOR_ID, fixtureCalls } from "@/fixtures";
 import { __test, dossierAi, formatChecks } from "@/features/dossier/adapt-ai";
@@ -13,7 +13,7 @@ import { VariantPanel } from "@/features/dossier/ui/DossierScreen";
 import { GET as dossierRoute } from "@/app/api/dossier/route";
 import { getProfile, readDb, saveDossier } from "@/server/store";
 import { ruleMatch } from "@/features/matching/service";
-import { grantPro, req, seedOnboardedCreator } from "../helpers";
+import { grantPro, req, seedOnboardedCreator, loginDemo } from "../helpers";
 import { writeCalls } from "./fixtures";
 
 const beca: Call = structuredClone(fixtureCalls[0]); // criteria: calidad 40, proyecto 40 (calendario y presupuesto), territorio 20
@@ -35,6 +35,11 @@ async function seed() {
   writeCalls([beca]);
   return getProfile(DEMO_CREATOR_ID);
 }
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
 
 describe("mock adaptation", () => {
   it("orders sections by criterion weight, fills them from the base dossier and never invents the budget", async () => {

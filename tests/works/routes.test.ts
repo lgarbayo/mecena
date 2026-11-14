@@ -1,12 +1,12 @@
 import fs from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import { GET as listRoute, POST as createRoute } from "@/app/api/works/route";
 import { DELETE as deleteRoute, GET as getRoute, PATCH as patchRoute } from "@/app/api/works/[id]/route";
 import { GET as imageRoute } from "@/app/api/works/[id]/image/route";
 import { POST as describeRoute } from "@/app/api/works/[id]/describe/route";
 import { POST as moveRoute } from "@/app/api/works/[id]/move/route";
 import type { Work } from "@/contracts";
-import { ctx, req } from "../helpers";
+import { ctx, req, loginDemo } from "../helpers";
 
 const PNG_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 const PNG = `data:image/png;base64,${PNG_B64}`;
@@ -16,6 +16,11 @@ async function create(voiceDescription?: string): Promise<Work> {
   expect(r.status).toBe(201);
   return (await r.json()).work;
 }
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
 
 describe("/api/works", () => {
   it("POST a tiny PNG -> 201 with imageUrl, sheet from the voice note", async () => {
