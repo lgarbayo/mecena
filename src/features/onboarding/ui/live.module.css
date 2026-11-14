@@ -11,20 +11,20 @@
 .transcript { width: 100%; min-width: 0; }
 /* about two lines tall; follows the newest line (Transcript scrolls it), the rest is a swipe away */
 .lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 4.6em; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; }
-.line { display: flex; align-items: baseline; gap: 8px; padding: 2px 0 2px 12px; border-left: 2px solid var(--border); font-size: 15px; line-height: 1.45; color: var(--text-3); animation: rise 0.3s var(--ease-out) both; }
+.line { display: flex; align-items: baseline; gap: 8px; padding: 2px 0; font-size: 15px; line-height: 1.45; color: var(--text-3); animation: rise 0.3s var(--ease-out) both; }
 .lineText { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .lineStatus { flex: none; width: 12px; color: var(--text-3); }
 .lineStatus::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid currentColor; }
-.line[data-status="sending"], .line[data-status="queued"] { border-left-color: var(--gray-400); color: var(--text-2); }
+.line[data-status="sending"], .line[data-status="queued"] { color: var(--text-2); }
 .line[data-status="sending"] .lineStatus { color: var(--text-2); }
 .line[data-status="done"] .lineStatus { color: var(--ok-fg); }
 .line[data-status="sending"] .lineStatus::before { background: currentColor; animation: blink 1s ease-in-out infinite; }
 .line[data-status="done"] .lineStatus::before { width: 12px; height: 12px; border: 0; border-radius: 0; vertical-align: -1px; background: currentColor; -webkit-mask: var(--icon-check) center / contain no-repeat; mask: var(--icon-check) center / contain no-repeat; }
-.line[data-status="failed"] { border-left-color: var(--err-fg); color: var(--text-2); }
+.line[data-status="failed"] { color: var(--text-2); }
 .lineFailed { flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--err-fg); white-space: nowrap; }
 .retry { all: unset; cursor: pointer; padding: 4px 12px; border-radius: var(--radius-pill); background: var(--surface); border: 1px solid var(--border); color: var(--text-1); font-weight: 500; }
 .retry:focus-visible { outline: 1.5px solid var(--focus); outline-offset: 2px; }
-.interim { color: var(--text-2); border-left-style: dotted; }
+.interim { color: var(--text-2); }
 .word { display: inline; animation: wordIn 280ms var(--ease-out) both; }
 
 /* ---- live dossier card ---- */
