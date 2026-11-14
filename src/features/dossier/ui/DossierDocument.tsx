@@ -261,7 +261,7 @@ function coverLine(view: DossierView): string {
 function Cover({ view, kicker, sub, progressive }: { view: DossierView; kicker: string; sub: [string, string]; progressive?: boolean }) {
   const w = view.cover;
   return (
-    <Section name="cover" state={view.states.cover} progressive={progressive} className="sheet cover">
+    <Section name="cover" state={view.states.cover} progressive={progressive} className={`sheet cover${w || progressive ? "" : " cover--text"}`}>
       <CallHeader view={view} />
       <header className="cover__head">
         <span>{kicker}</span>

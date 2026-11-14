@@ -272,6 +272,7 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
   // Fixed frame height so the cover is always exactly one page (long names take two lines).
   const nameLines = (view.name || "Dossier").length > 15 ? 2 : 1;
   const frameH = mm(184) - (nameLines - 1) * 48 - (view.variant ? mm(14) : 0) - (view.tagline.length > 120 ? 16 : 0);
+  const textOnly = !(w && imageOf(images, w));
   const caption = w ? [`${w.title}${w.year ? `, ${w.year}` : ""}`, [w.technique, w.size].filter(Boolean).join(", ")].filter(Boolean) : [];
   return (
     <Page size="A4" style={st.s.full}>
@@ -280,8 +281,9 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
         <Text>{kicker}</Text>
         <Text>{view.date}</Text>
       </View>
-      {st.nameFirst ? <CoverText st={st} view={view} meta={meta} first /> : null}
-      <View style={st.s.coverFigure}>
+      {textOnly ? <CoverTextOnly st={st} view={view} meta={meta} /> : null}
+      {textOnly ? null : st.nameFirst ? <CoverText st={st} view={view} meta={meta} first /> : null}
+      <View style={textOnly ? { display: "none" } : st.s.coverFigure}>
         {w && imageOf(images, w) ? (
           <>
             <Frame st={st} work={w} images={images} style={{ height: frameH, padding: 24 }} />
@@ -292,8 +294,25 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
           </>
         ) : null}
       </View>
-      {st.nameFirst ? null : <CoverText st={st} view={view} meta={meta} />}
+      {textOnly || st.nameFirst ? null : <CoverText st={st} view={view} meta={meta} />}
     </Page>
+  );
+}
+
+/** No cover work: the cover is a composition of type (huge name, line, tagline), never an empty page with a name at the bottom. */
+function CoverTextOnly({ st, view, meta }: { st: S; view: DossierView; meta: string[] }) {
+  const long = (view.name || "Dossier").length;
+  const size = long > 22 ? 44 : long > 14 ? 58 : 76;
+  return (
+    <View style={{ flexGrow: 1, justifyContent: "center", borderTopWidth: 2, borderTopColor: st.t.ink, marginTop: mm(8) }}>
+      <Text style={[st.s.coverName, { fontSize: size, lineHeight: 1, marginTop: mm(10), marginBottom: mm(8) }]}>{view.name || "Dossier"}</Text>
+      {meta.filter(Boolean).map((m, i) => (
+        <Text key={i} style={[st.s.coverMeta, { flex: undefined, marginRight: 0 }, i ? st.s.muted : {}]}>
+          {m}
+        </Text>
+      ))}
+      {view.tagline ? <Text style={[st.s.coverLine, { flex: undefined, fontSize: 17, lineHeight: 1.3, marginTop: mm(10), maxWidth: mm(130) }]}>{view.tagline}</Text> : null}
+    </View>
   );
 }
 
