@@ -54,8 +54,8 @@ export const handlers: ToolHandlers = {
     const adapted = Boolean(input.callId) && (await canAdaptDossier(ctx));
     if (adapted) limitAi({ id: ctx.userId }, "dossier-variant");
     // The URL is the authenticated download route (same Pro rule); the server-side file path never leaves the server.
-    const { url, pages } = await exportDossierPdf({ profileId, callId: adapted ? input.callId : undefined });
-    return { url, ...(pages ? { pages } : {}), adapted, ...(input.callId ? { callId: input.callId } : {}) };
+    const { url, pages, sizeMb, note } = await exportDossierPdf({ profileId, callId: adapted ? input.callId : undefined });
+    return { url, ...(pages ? { pages } : {}), ...(sizeMb !== undefined ? { sizeMb } : {}), ...(note ? { note } : {}), adapted, ...(input.callId ? { callId: input.callId } : {}) };
   },
   search_calls: async (input, ctx) => {
     const profileId = profileFor(input, ctx);

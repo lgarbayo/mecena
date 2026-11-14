@@ -85,11 +85,12 @@ const summarizers: Summarizers = {
     }
     return `${done} Es tu dossier general, con las notas de «${title}» como vista previa. ${proNote("Adaptarlo a esta convocatoria (orden, límite de imágenes y textos según sus criterios)")}. Ábrelo aquí: ${url}`;
   },
-  export_dossier_pdf: ({ url, pages, adapted, callId }) => {
+  export_dossier_pdf: ({ url, pages, adapted, callId, note }) => {
     const size = pages ? ` (${plural(pages, "página", "páginas")})` : "";
-    if (callId && adapted) return `PDF del dossier adaptado a «${callTitle(callId)}» generado${size}. Descárgalo aquí (con tu sesión de Mecena): ${url}`;
+    const tail = note ? ` ${note}` : "";
+    if (callId && adapted) return `PDF del dossier adaptado a «${callTitle(callId)}» generado${size}. Descárgalo aquí (con tu sesión de Mecena): ${url}${tail}`;
     const pro = callId ? ` Es tu dossier general: ${proNote(`la versión adaptada a «${callTitle(callId)}»`)}.` : "";
-    return `PDF del dossier generado${size}.${pro} Descárgalo aquí (con tu sesión de Mecena): ${url}`;
+    return `PDF del dossier generado${size}.${pro} Descárgalo aquí (con tu sesión de Mecena): ${url}${tail}`;
   },
   search_calls: ({ results, lockedCount, pro, closedCount }) => {
     const tail = [
