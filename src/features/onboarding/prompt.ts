@@ -6,7 +6,9 @@
  * finals only (interims never sent), corrections win, nothing invented, schema pre-warm (ai.ts).
  * Their words, without their typos: sections and profile texts are lexically corrected (WORDING_RULE) while the
  * transcript keeps exactly what was said.
- * TODO(WP-01 follow-up): the spike's verbatim per-op source quotes and server-side coalescing are not ported yet.
+ * Section updates are patches (mode append | replace), merged server-side into full bodies (ai.ts mergeSectionBody);
+ * coalescing is client-side (turnQueue.ts).
+ * TODO(WP-01 follow-up): the spike's verbatim per-op source quotes are not ported yet.
  */
 import { z } from "zod";
 import { BusinessSectionKey, CreatorSectionKey, type OnboardingTurnInput, type ProfileKind, type ProfilePatch } from "@/contracts";
@@ -19,6 +21,13 @@ export const CONTEXT_SEGMENTS = 10;
 
 /** "" = not said yet (every profilePatch field is required, see llmTurnSchema). */
 const LegalForm = z.enum(["", "autonomo", "sl", "sa", "cooperativa", "asociacion", "otra"]);
+
+/**
+ * How a section update applies (ai.ts mergeSectionBody): "append" adds only the new paragraphs to what is there,
+ * "replace" rewrites the section. Appends keep the output short, and output tokens drive latency (FINDINGS.md 1.3).
+ */
+export const SectionMode = z.enum(["append", "replace"]);
+export type SectionMode = z.infer<typeof SectionMode>;
 
 /** Fields where 0 is the "not said" sentinel (cleanProfilePatch drops it). */
 export const NUMERIC_PATCH_FIELDS = ["birthYear", "employees", "foundedYear", "annualRevenueEur"] as const;
@@ -69,7 +78,10 @@ export function llmTurnSchema(kind: ProfileKind) {
     sectionUpdates: z.array(
       z.object({
         key,
-        body: z.string().describe("Texto completo de la sección tras este fragmento, en primera persona, sin erratas, párrafos y viñetas '- '"),
+        mode: SectionMode.describe(
+          "append = body trae SOLO los párrafos o viñetas nuevos que este fragmento añade; replace = body trae la sección entera reescrita (solo si hay que cambiar algo ya escrito)",
+        ),
+        body: z.string().describe("append: solo lo nuevo; replace: la sección completa. En primera persona, sin erratas, párrafos y viñetas '- '"),
         sourceSegmentIds: z.array(z.string()).describe("Ids de los fragmentos de los que sale el texto"),
       }),
     ),
@@ -77,6 +89,9 @@ export function llmTurnSchema(kind: ProfileKind) {
   });
 }
 export type LlmTurn = z.infer<ReturnType<typeof llmTurnSchema>>;
+export type LlmSectionUpdate = LlmTurn["sectionUpdates"][number];
+/** What toTurnResult accepts: a missing mode (hand-written fixtures, older outputs) means "replace". */
+export type LlmTurnLike = Omit<LlmTurn, "sectionUpdates"> & { sectionUpdates: (Omit<LlmSectionUpdate, "mode"> & { mode?: SectionMode })[] };
 
 /**
  * Claude's profilePatch → ProfilePatch without the "not said" sentinels: "" (and blank) texts, legalForm "",
@@ -149,7 +164,10 @@ function intro(goal: string, keys: string): string[] {
     "Devuelve solo lo que el nuevo fragmento aporta:",
     "- profilePatch: rellena solo los campos que el fragmento dice o corrige. Si corrige algo (\"no, quería decir…\"), devuelve el valor corregido. Todos los demás van vacíos: \"\" en los textos (también legalForm), [] en las listas y 0 en los números (0 = no lo ha dicho).",
     "- Si dice lo que busca o necesita (\"busco…\", \"quiero…\", \"necesito…\", \"me gustaría…\": una beca, una residencia, producir, grabar, girar, publicar, estrenar, exponer, digitalizar, contratar…), ponlo en fundingNeeds con sus palabras, aunque también lo uses en projectIdea.",
-    "- sectionUpdates: solo las secciones que cambian, con el texto COMPLETO de la sección (lo que ya había más lo nuevo), reescrito en primera persona, con sus palabras pero bien escritas (sin erratas ni fallos del dictado), sin adornos ni adjetivos que no haya dicho. Si lo que ya había tiene erratas, corrígelas también. Cada sección lista en sourceSegmentIds los ids de los fragmentos de los que sale (incluye el nuevo si lo usas).",
+    "- sectionUpdates: solo las secciones que cambian, en primera persona, con sus palabras pero bien escritas (sin erratas ni fallos del dictado), sin adornos ni adjetivos que no haya dicho. Cada una lleva mode:",
+    "  · mode \"append\" (lo normal): body trae SOLO los párrafos o viñetas nuevos que aporta este fragmento. No repitas nada de lo que ya hay en seccionesActuales: se añade al final.",
+    "  · mode \"replace\": body trae la sección COMPLETA reescrita. Úsalo solo si hay que cambiar algo ya escrito (una corrección, \"no, quería decir…\", o una errata que cambia el sentido) o si la sección todavía no existe.",
+    "  Cada sección lista en sourceSegmentIds los ids de los fragmentos de los que sale lo que escribes (incluye el nuevo si lo usas).",
     `- Claves de sección permitidas: ${keys}.`,
   ];
 }

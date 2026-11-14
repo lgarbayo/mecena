@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /** Pyme mode: no dossier to build. The onboarding fills the company card and shows the aid it already fits. */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { Profile } from "@/contracts";
 import { DEMO_BUSINESS_ID, DEMO_CREATOR_ID, fixtureBusiness } from "@/fixtures";
 import { saveProfile } from "@/server/store";
@@ -16,6 +16,7 @@ vi.mock("@/lib/api-client", async () => {
   return {
     apiGet: async (url: string) => {
       const u = new URL(url, "http://x");
+      if (u.pathname === "/api/works") return { works: [] };
       const profileId = u.searchParams.get("profileId") ?? activeProfileId;
       if (u.pathname === "/api/calls") return matching.callsFeed({ profileId, appUserId: "u" });
       return onboarding.getOnboardingState(profileId);
@@ -23,9 +24,10 @@ vi.mock("@/lib/api-client", async () => {
     apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) => onboarding.processTurn({ ...body, profileId: body.profileId ?? activeProfileId }),
   };
 });
-const speech = { supported: true, listening: false, interim: "", error: null as string | null, start: vi.fn(), stop: vi.fn() };
+const speech = { supported: true, listening: false, interim: "", error: null as string | null, errorCode: null as string | null, tapToResume: false, ios: false, start: vi.fn(), stop: vi.fn(), flush: vi.fn() };
 let onFinal: ((t: string) => void) | undefined;
-vi.mock("@/components/voice/useSpeechRecognition", () => ({
+vi.mock("@/components/voice/useSpeechRecognition", async (orig) => ({
+  ...(await orig<typeof import("@/components/voice/useSpeechRecognition")>()),
   useSpeechRecognition: (o: { onFinal: (t: string) => void }) => {
     onFinal = o.onFinal;
     return speech;
@@ -35,7 +37,7 @@ const app = { profile: null as Profile | null, appUserId: "u", refresh: async ()
 vi.mock("@/components/shell/AppProvider", () => ({ useApp: () => app, useOptionalApp: () => app }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/onboarding", useRouter: () => ({ push: vi.fn() }) }));
 
-const { OnboardingClient } = await import("@/features/onboarding/ui/OnboardingClient");
+const { StepOnboarding } = await import("@/features/onboarding/ui/StepOnboarding");
 const { BottomNav } = await import("@/components/shell/BottomNav");
 const { HomeActions } = await import("@/features/onboarding/ui/HomeActions");
 
@@ -62,39 +64,47 @@ const blankBusiness: Profile = {
   links: [],
 };
 
+/** Type the first answer, then walk the steps to the final screen (where the company card and the aid appear). */
+async function toDone(text: string) {
+  fireEvent.click(screen.getByTestId("choose-text"));
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: text } });
+  for (let i = 0; i < 8 && screen.queryByTestId("next"); i++) fireEvent.click(screen.getByTestId("next"));
+}
+
 describe("/onboarding in pyme mode", () => {
   beforeEach(async () => {
     activeProfileId = DEMO_BUSINESS_ID;
-    app.profile = null;
+    app.profile = { ...fixtureBusiness };
   });
 
   it("shows the company card and the aid it already fits, never a dossier", async () => {
-    render(<OnboardingClient />);
-    const panel = await screen.findByTestId("matches-panel");
+    render(<StepOnboarding />);
+    await toDone("Hacemos conservas artesanales en Pontevedra.");
+    const panel = await screen.findByTestId("matches-panel", undefined, { timeout: 5000 });
     await waitFor(() => expect(within(panel).getByTestId("matches-count").textContent).toBe("1"));
     expect(panel.textContent).toContain("[FIXTURE] Ayudas a la digitalización de pequeños negocios");
-    expect(document.body.textContent).toContain("Ficha de tu empresa");
-    expect(document.body.textContent).not.toMatch(/dossier|Memoria de tu empresa/i);
-    expect(document.querySelector("[data-section]")).toBeNull();
+    // The live "memoria" grows next to the company card; the artist's dossier wording never shows up.
+    expect(document.body.textContent).toContain("Memoria de tu empresa");
+    expect(document.body.textContent).not.toMatch(/dossier/i);
   });
 
   it("the matches refresh while the owner talks, and the finish CTA goes to the aid", async () => {
     await saveProfile(structuredClone(blankBusiness));
-    render(<OnboardingClient />);
-    const panel = await screen.findByTestId("matches-panel");
+    app.profile = { ...blankBusiness };
+    render(<StepOnboarding />);
+    await toDone(
+      "Mi taller se llama Cerámica Mareira, hacemos cerámica artesanal en Lugo desde 2019 y somos dos personas. Soy autónoma y queremos montar una tienda online.",
+    );
+    const panel = await screen.findByTestId("matches-panel", undefined, { timeout: 5000 });
     const score = () => Number(within(panel).getByLabelText(/de 100$/).textContent);
     await waitFor(() => expect(within(panel).getByTestId("matches-count").textContent).toBe("1"));
     const before = score();
 
-    act(() => {
-      onFinal!("Mi taller se llama Cerámica Mareira, hacemos cerámica artesanal en Lugo desde 2019 y somos dos personas.");
-      onFinal!("Soy autónoma y queremos montar una tienda online.");
-    });
     // Place, legal form and size now pass the call's checks instead of "Confírmalo": the fit goes up live.
     await waitFor(() => expect(score()).toBeGreaterThan(before), { timeout: 5000 });
     const cta = await screen.findByTestId("finish-cta");
     expect(cta.getAttribute("href")).toBe("/convocatorias");
-    expect(cta.textContent).toBe("Ver la ayuda que encaja");
+    expect(cta.textContent).toBe("Ver ayudas para mi empresa");
   });
 
   it("a pyme is never offered artist-only calls", async () => {

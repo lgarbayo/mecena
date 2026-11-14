@@ -7,7 +7,14 @@ vi.mock("@/server/ai/llm", async (orig) => {
 });
 
 import { AiError, structured } from "@/server/ai/llm";
-import { realOnboardingTurn, warmOnboardingAi } from "@/features/onboarding/ai";
+import {
+  ONBOARDING_DEADLINE_MS,
+  ONBOARDING_MAX_TOKENS,
+  ONBOARDING_TIMEOUT_MS,
+  ONBOARDING_WARMUP_TIMEOUT_MS,
+  realOnboardingTurn,
+  warmOnboardingAi,
+} from "@/features/onboarding/ai";
 import { systemPrompt, userPayload, CONTEXT_SEGMENTS } from "@/features/onboarding/prompt";
 import { blankCreator, FIXTURE_NOW } from "@/fixtures";
 import { DOSSIER_LOOK_QUESTION } from "@/features/onboarding/copy";
@@ -33,8 +40,8 @@ describe("onboarding real AI path", () => {
     mocked.mockResolvedValue({
       profilePatch: { displayName: "Antía Varela", city: "A Coruña", disciplines: ["ilustración"], achievements: [] },
       sectionUpdates: [
-        { key: "bio", body: "Antes.\n\nSoy ilustradora de A Coruña.", sourceSegmentIds: ["seg-new", "invented-id"] },
-        { key: "cv", body: "", sourceSegmentIds: [] },
+        { key: "bio", mode: "append", body: "Soy ilustradora de A Coruña.", sourceSegmentIds: ["seg-new", "invented-id"] },
+        { key: "cv", mode: "replace", body: "", sourceSegmentIds: [] },
       ],
       followUpQuestion: "¿Qué proyecto te gustaría financiar?",
     });
@@ -42,6 +49,14 @@ describe("onboarding real AI path", () => {
     const call = mocked.mock.calls[0][0];
     expect(call.tier).toBe("fast");
     expect(call.effort).toBe("low");
+    // Fast onboarding model (Haiku 5.5, thinking off) with a bounded call: per-attempt timeout, one retry, hard deadline.
+    expect(call.model).toBe("claude-haiku-5-5");
+    expect(call.thinking).toBe("disabled");
+    expect(call.timeoutMs).toBe(ONBOARDING_TIMEOUT_MS);
+    expect(call.maxRetries).toBe(1);
+    expect(call.deadlineMs).toBe(ONBOARDING_DEADLINE_MS);
+    expect(call.maxTokens).toBe(ONBOARDING_MAX_TOKENS);
+    expect(call.system).toMatch(/mode "append"/);
     expect(call.system).toMatch(/NUNCA inventes/);
     expect(call.system).toMatch(/statement \(Declaración artística\)/);
     const payload = JSON.parse(call.user as string);
@@ -52,7 +67,7 @@ describe("onboarding real AI path", () => {
 
     expect(r.profilePatch).toEqual({ displayName: "Antía Varela", city: "A Coruña", disciplines: ["ilustración"] });
     expect(r.sectionUpdates).toHaveLength(1);
-    expect(r.sectionUpdates[0]).toMatchObject({ key: "bio", title: "Biografía", status: "draft" });
+    expect(r.sectionUpdates[0]).toMatchObject({ key: "bio", title: "Biografía", status: "draft", body: "Antes.\n\nSoy ilustradora de A Coruña." });
     expect(r.sectionUpdates[0].sourceSegmentIds).toEqual(["seg-1", "seg-new"]); // unknown ids dropped, provenance kept
     expect(r.followUpQuestion).toMatch(/proyecto/);
   });
@@ -105,5 +120,39 @@ describe("onboarding real AI path", () => {
   it("the schema warm-up is a no-op in mock mode", () => {
     warmOnboardingAi("creator");
     expect(mocked).not.toHaveBeenCalled();
+  });
+
+  it("the warm-up uses the turn's model with a long timeout and no retry", async () => {
+    vi.stubEnv("MECENA_AI_MOCK", "0");
+    vi.stubEnv("ANTHROPIC_API_KEY", "test-key-never-sent"); // structured() is mocked: nothing leaves the process
+    mocked.mockResolvedValue({});
+    try {
+      warmOnboardingAi("business");
+      const call = mocked.mock.calls[0][0];
+      expect(call).toMatchObject({ model: "claude-haiku-5-5", thinking: "disabled", timeoutMs: ONBOARDING_WARMUP_TIMEOUT_MS, maxRetries: 0 });
+      expect(ONBOARDING_WARMUP_TIMEOUT_MS).toBeGreaterThan(43_000); // the cold compile measured ~43 s
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("MECENA_MODEL_ONBOARDING switches the model; thinking stays at the model default off Haiku", async () => {
+    vi.stubEnv("MECENA_MODEL_ONBOARDING", "claude-sonnet-5-5");
+    mocked.mockResolvedValue({ profilePatch: {}, sectionUpdates: [], followUpQuestion: "¿Y?" });
+    try {
+      await realOnboardingTurn(input());
+      const call = mocked.mock.calls[0][0];
+      expect(call.model).toBe("claude-sonnet-5-5");
+      expect(call.thinking).toBeUndefined(); // "disabled" is a 400 on Sonnet 5.5
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("a timeout (wrapped as AiError by structured()) still falls back to the mock", async () => {
+    mocked.mockRejectedValue(new AiError("Request timed out.", "api"));
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const r = await realOnboardingTurn(input());
+    expect(r.profilePatch.displayName).toBe("Antía Varela");
   });
 });

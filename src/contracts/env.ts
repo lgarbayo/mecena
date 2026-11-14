@@ -7,6 +7,7 @@ export const ENV = {
   MECENA_AI_MOCK: "MECENA_AI_MOCK",
   MECENA_MODEL_FAST: "MECENA_MODEL_FAST",
   MECENA_MODEL_SMART: "MECENA_MODEL_SMART",
+  MECENA_MODEL_ONBOARDING: "MECENA_MODEL_ONBOARDING",
   NEXT_PUBLIC_REVENUECAT_API_KEY: "NEXT_PUBLIC_REVENUECAT_API_KEY",
   REVENUECAT_SECRET_API_KEY: "REVENUECAT_SECRET_API_KEY",
   NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID: "NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID",
@@ -24,6 +25,8 @@ export const ENV = {
 } as const;
 
 export const DEFAULT_MODELS = { fast: "claude-sonnet-5-5", smart: "claude-opus-5-5" } as const;
+/** The live voice onboarding turn: Haiku measured 1.8 s p50 / 2.9 s p95 vs Sonnet 2.4 / 3.4 (fleet/spikes/voice/FINDINGS.md 8.1). */
+export const DEFAULT_ONBOARDING_MODEL = "claude-haiku-5-5";
 
 export function serverEnv() {
   const e = process.env;
@@ -32,6 +35,7 @@ export function serverEnv() {
     aiMock: e.MECENA_AI_MOCK === "1" || !e.ANTHROPIC_API_KEY,
     modelFast: e.MECENA_MODEL_FAST || DEFAULT_MODELS.fast,
     modelSmart: e.MECENA_MODEL_SMART || DEFAULT_MODELS.smart,
+    modelOnboarding: e.MECENA_MODEL_ONBOARDING || DEFAULT_ONBOARDING_MODEL,
     revenueCatSecretKey: e.REVENUECAT_SECRET_API_KEY || undefined,
     dataDir: e.MECENA_DATA_DIR || "./data/runtime",
     callsDir: e.MECENA_CALLS_DIR || "./data/calls", // calls.json (+ bdns-cache.json, awards.json)

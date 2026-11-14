@@ -1,18 +1,8 @@
 "use client";
 import type { Profile, ProfileKind } from "@/contracts";
-import { LEGAL_FORM_LABELS, ONBOARDING, PROFILE_ROWS, fieldLabel } from "../copy";
+import { ONBOARDING, PROFILE_ROWS, fieldLabel } from "../copy";
+import { profileValues as values } from "./format";
 import s from "./onboarding.module.css";
-
-function values(profile: Profile | null, field: string): string[] {
-  if (!profile) return [];
-  const v = (profile as Record<string, unknown>)[field];
-  if (v === undefined || v === null || v === "") return [];
-  if (Array.isArray(v)) return v.map(String);
-  if (field === "legalForm") return [LEGAL_FORM_LABELS[String(v)] ?? String(v)];
-  if (field === "annualRevenueEur") return [`${Number(v).toLocaleString("es-ES")} €`];
-  if (field === "employees") return [`${v} ${v === 1 ? "persona" : "personas"}`];
-  return [String(v)];
-}
 
 /** Live profile: one row per field; filled values pop in as chips and flash when they change. */
 export function ProfilePanel({ kind, profile, changed, version }: { kind: ProfileKind; profile: Profile | null; changed: Set<string>; version: number }) {

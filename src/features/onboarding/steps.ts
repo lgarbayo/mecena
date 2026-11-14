@@ -19,9 +19,9 @@ const QUESTIONS: Record<ProfileKind, { question: string; example: string }[]> = 
   business: [
     { question: "¿Qué hacéis y desde cuándo?", example: "«Somos un taller de cerámica artesanal desde 2019.»" },
     { question: "¿Dónde estáis y cuántas personas sois?", example: "«Estamos en Lugo y somos una persona.»" },
-    { question: "¿Algún proyecto o cliente del que estés orgulloso/a?", example: "«Hacemos la vajilla de tres restaurantes de Santiago.»" },
-    { question: "¿Facturación aproximada? Solo si quieres.", example: "«Unos 48.000 euros al año.»" },
-    { question: "¿Qué necesitas ahora?", example: "«Una tienda online y contratar a una persona.»" },
+    { question: "¿Algún proyecto o cliente del que estéis orgullosos?", example: "«Hacemos la vajilla de tres restaurantes de Santiago.»" },
+    { question: "¿Facturación aproximada? Solo si queréis.", example: "«Unos 48.000 euros al año.»" },
+    { question: "¿Qué necesitáis ahora?", example: "«Una tienda online y contratar a una persona.»" },
   ],
 };
 
@@ -49,4 +49,27 @@ export const STEPS_COPY = {
   doneLede: "Esto es lo que hemos anotado. Puedes cambiarlo todo cuando quieras.",
   doneEmpty: "Aún no tenemos casi nada. Vuelve atrás y cuéntanos un poco más.",
   toCalls: "Ver convocatorias para mí",
+  /** Voice step: always-visible way out to typing, and back. */
+  preferText: "Prefiero escribir",
+  preferVoice: "Prefiero hablar",
+  /** iOS ends every dictation session: the next one needs a tap. */
+  tapToResume: "Toca para seguir hablando",
+  switching: "Cambiando…",
+  switchFailed: "No hemos podido cambiar de perfil. Inténtalo de nuevo.",
+  photoWork: "Fotografiar una obra",
+  photoTitle: "Fotografía una obra",
+  photoLede: "Haz la foto y di qué es: título, año, técnica y medidas. Aparecerá en tu dossier con su ficha.",
+  close: "Cerrar",
+  transcriptTitle: "Lo que nos has contado",
+  seeAll: (n: number) => `Ver todo (${n})`,
+  seeLess: "Ver menos",
+  turnStatus: { queued: "En cola", sending: "Anotando…", done: "Anotado", failed: "Sin guardar" },
+  liveOpen: "Ver entero",
+  livePending: "Pendiente",
+  liveEmpty: { creator: "Empieza a hablar y verás crecer aquí tu dossier, sección a sección.", business: "Empieza a hablar y verás crecer aquí la memoria de tu empresa." },
+  worksTitle: "Obras fotografiadas",
+  /** Leaving while answers are still being saved. */
+  saving: "Guardando lo último…",
+  leaveFailed: "Lo último que nos contaste no se ha guardado.",
+  leaveAnyway: "Salir sin guardarlo",
 } as const;
