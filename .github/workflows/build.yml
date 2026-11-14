@@ -1,0 +1,30 @@
+# CI: production build of the Next.js app (the same `next build` the Dockerfile runs on Fly).
+# deploy.yml already gates every deploy on `npm run check`; this workflow reports
+# "build" as its own status check so a red PR says exactly what broke.
+name: build
+permissions: read-all
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          # Every AI call runs on deterministic mocks in CI; no API key is ever needed here.
+          MECENA_AI_MOCK: 1
