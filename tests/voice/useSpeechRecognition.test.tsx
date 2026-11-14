@@ -192,11 +192,31 @@ describe("useSpeechRecognition", () => {
     act(() => t.speech.start());
     for (let i = 0; i < 5; i++) {
       act(() => {
-        FakeRecognition.latest.error("no-speech");
+        FakeRecognition.latest.error("no-speech"); // right after opening: a failing mic, not a pause
         FakeRecognition.latest.end();
       });
     }
     expect(t.speech.listening).toBe(false);
     expect(FakeRecognition.running).toHaveLength(0);
+  });
+
+  it("long silences between questions never switch the microphone off", () => {
+    vi.useFakeTimers();
+    try {
+      const t = setup();
+      act(() => t.speech.start());
+      for (let i = 0; i < 12; i++) {
+        vi.advanceTimersByTime(8000); // Chrome's quiet timeout while the person reads the next question
+        act(() => {
+          FakeRecognition.latest.error("no-speech");
+          FakeRecognition.latest.end();
+        });
+      }
+      expect(t.speech.listening).toBe(true);
+      act(() => FakeRecognition.latest.final("pinto marinas"));
+      expect(t.finals).toContain("pinto marinas");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

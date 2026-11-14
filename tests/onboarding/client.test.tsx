@@ -146,7 +146,7 @@ describe("/onboarding (creator)", () => {
     expect(screen.getByRole("textbox", { name: /Qué haces/ })).toBeTruthy();
     expect(screen.getByTestId("transcript").textContent).toContain("Pinto con acuarela y tinta.");
     fireEvent.click(screen.getByTestId("prefer-voice"));
-    expect(speech.start).toHaveBeenCalledTimes(2);
+    expect(speech.start).toHaveBeenCalledTimes(3); // choose-voice, "Siguiente" (the mic was closed), prefer-voice
   });
 
   it("without microphone access it moves to typing by itself, with a kind notice", () => {
