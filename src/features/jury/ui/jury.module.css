@@ -345,3 +345,89 @@
   .fill { transition: none; }
   .active .dot { animation: none; }
 }
+
+/* Phone-only copy of "Ver la solicitud" (see JuryPage); never shown at >=640px. */
+.mobileLinks {
+  display: none;
+}
+
+/* ---- Mobile (<640px) ---- */
+@media (max-width: 639px) {
+  .scoreBox {
+    padding: 24px 16px 22px;
+    margin-bottom: 16px;
+  }
+
+  .summary {
+    font-size: 14px;
+  }
+
+  .critHead {
+    font-size: 14px;
+  }
+
+  .critHead span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .comments,
+  .changed,
+  .removed,
+  .fix span,
+  .note {
+    overflow-wrap: anywhere;
+  }
+
+  .changed,
+  .removed {
+    font-size: 14px;
+  }
+
+  .fix {
+    min-height: 44px;
+  }
+
+  .fix input {
+    width: 22px;
+    height: 22px;
+    margin-top: 0;
+    font-size: 16px;
+  }
+
+  .progress {
+    padding: 16px;
+  }
+
+  /* "Ver la solicitud" lives in the page flow on phones */
+  .mobileLinks {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 12px;
+  }
+
+  .deskOnly {
+    display: none;
+  }
+
+  /* Sticky bar: one compact row (Aplicar / Deshacer), never more than one line */
+  .actions {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .actions > * {
+    min-width: 0;
+    padding: 4px 10px;
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .actions:has(> .deskOnly:only-child) {
+    display: none;
+  }
+}

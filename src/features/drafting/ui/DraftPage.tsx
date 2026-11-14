@@ -462,14 +462,23 @@ export function DraftPage({ callId }: { callId: string }) {
       >
         Descargar la solicitud (.txt)
       </Button>
-      <div className={s.actions}>
-        <Link href={ROUTES.jury(app.id)} className="btn btn-primary">
-          Pasar el tribunal simulado
-        </Link>
+      {/* Phones: the secondary links leave the sticky bar (hidden at >=640px, where they stay in the bar). */}
+      <div className={s.mobileLinks}>
         <Link href={ROUTES.justification(app.id)} className="btn btn-quiet">
           Justificar la subvención
         </Link>
         <Link href={ROUTES.call(call.id)} className="btn btn-quiet">
+          Ver convocatoria
+        </Link>
+      </div>
+      <div className={s.actions}>
+        <Link href={ROUTES.jury(app.id)} className="btn btn-primary">
+          Pasar el tribunal simulado
+        </Link>
+        <Link href={ROUTES.justification(app.id)} className={`btn btn-quiet ${s.deskOnly}`}>
+          Justificar la subvención
+        </Link>
+        <Link href={ROUTES.call(call.id)} className={`btn btn-quiet ${s.deskOnly}`}>
           Ver convocatoria
         </Link>
       </div>

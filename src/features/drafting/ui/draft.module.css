@@ -314,3 +314,155 @@
   display: grid;
   gap: 14px;
 }
+
+/* Phone-only copy of the bar's secondary links (see DraftPage); never shown at >=640px. */
+.mobileLinks {
+  display: none;
+}
+
+/* ---- Mobile (<640px) ---- */
+@media (max-width: 639px) {
+  .lead {
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  /* Section card header: title on its own line, Copiar/Editar as a compact row under it */
+  .sectionHead {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .sectionHead h2 {
+    overflow-wrap: anywhere;
+  }
+
+  .sectionTools {
+    margin-left: -14px;
+  }
+
+  .sectionTools > :global(.btn) {
+    padding: 0 14px;
+  }
+
+  .body,
+  .sources blockquote,
+  .closed,
+  .error {
+    overflow-wrap: anywhere;
+  }
+
+  /* "Escrito con tus palabras": the whole summary row is the tap target (>=44px) */
+  .sources {
+    padding: 0 14px;
+  }
+
+  .sources[open] {
+    padding-bottom: 12px;
+  }
+
+  .sources summary {
+    padding: 12px 0;
+    min-height: 44px;
+  }
+
+  .sources blockquote:first-of-type {
+    margin-top: 0;
+  }
+
+  /* Budget table -> stacked rows: concept (and type) full width, amount below, remove on the right */
+  .budget,
+  .budget tbody {
+    display: block;
+  }
+
+  .budget tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .budget td {
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+
+  .budget td:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .budget td.amount {
+    width: auto;
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .budget td:last-child {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: flex;
+    justify-content: center;
+  }
+
+  .budget td:last-child :global(.btn) {
+    width: 44px;
+    padding: 0;
+  }
+
+  .total {
+    flex-wrap: wrap;
+    gap: 2px 12px;
+  }
+
+  .total > :last-child {
+    margin-left: auto;
+  }
+
+  /* Documents checklist: the label row is the tap target; bigger box, no iOS zoom */
+  .check {
+    min-height: 44px;
+  }
+
+  .check input {
+    width: 22px;
+    height: 22px;
+    margin-top: 0;
+    font-size: 16px;
+  }
+
+  .footer {
+    margin-top: 20px;
+  }
+
+  /* Secondary links live in the page flow on phones */
+  .mobileLinks {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 8px;
+    margin: 4px 0 12px;
+  }
+
+  .mobileLinks > :global(.btn) {
+    padding: 0 14px;
+  }
+
+  .deskOnly {
+    display: none;
+  }
+
+  /* Sticky bar: just the primary action, full width, above the bottom nav */
+  .actions {
+    padding: 6px;
+  }
+
+  .actions > * {
+    flex: 1 1 100%;
+  }
+}

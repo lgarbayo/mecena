@@ -51,3 +51,10 @@
 .confirmActions { display: flex; flex-wrap: wrap; gap: 8px; }
 .destructive { background: var(--err-fg); color: #fff; }
 .destructive:hover:not(:disabled) { background: color-mix(in srgb, var(--err-fg) 85%, black); }
+
+/* ---- Mobile (<640px) ---- */
+@media (max-width: 639px) {
+  .wrap { margin-top: 8px; }
+  .card { padding: 20px 16px; }
+  .tabs button { min-height: 44px; }
+}

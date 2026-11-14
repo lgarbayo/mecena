@@ -36,3 +36,13 @@
 
 .links { display: flex; flex-wrap: wrap; gap: 8px; }
 .skeletonTags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---- Mobile (<640px) ---- */
+/* Phones: the checkbox rows become full 44px tap targets and the boxes carry 16px text (no iOS zoom on focus). */
+@media (max-width: 639px) {
+  .check { min-height: 44px; margin-top: 0; cursor: pointer; }
+  .switch label { min-height: 44px; }
+  .check input, .switch input { width: 22px; height: 22px; font-size: 16px; }
+  .switch p { margin-left: 32px; }
+  .links > * { flex: 1 1 auto; }
+}
