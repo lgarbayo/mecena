@@ -587,3 +587,8 @@ html, body { background: #fff; }
   padding: 0 0.1em;
 }
 .dossier-wall .pending-gap::before { content: "Pendiente · "; color: var(--granite); }
+
+/* Cover with no work yet: a composition of type, never an empty sheet with a name at the bottom. */
+.dossier-wall .cover--text { align-content: center; }
+.dossier-wall .cover--text .cover__name { font-size: clamp(3rem, 11vw, 7.5rem); line-height: 0.98; }
+.dossier-wall .cover--text .cover__line { font-size: clamp(1.1rem, 2.4vw, 1.5rem); }

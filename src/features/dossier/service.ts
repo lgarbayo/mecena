@@ -178,6 +178,10 @@ export const pdfRenderer = {
   },
 };
 
+/** What the last PDF render of a buffer fell back to (Spanish notice), for the route and the MCP note. */
+const LAYOUT_NOTES = new WeakMap<Buffer, string>();
+export const pdfLayoutNotice = (bytes: Buffer): string | undefined => LAYOUT_NOTES.get(bytes);
+
 /** Size facts of a PDF this module rendered (the fallback PDF has none). */
 export function pdfReport(bytes: Buffer): PdfSize {
   return PDF_SIZES.get(bytes) ?? { bytes: bytes.length, reduced: false };
@@ -209,6 +213,36 @@ export function pdfTokens(data: DossierData, look: PdfLook = {}): PdfTokens {
 /** Returns PDF bytes. Never throws for a known profile: renderer errors fall back to a minimal PDF. */
 export async function renderDossierPdf(input: { profileId: string; callId?: string; adapt?: boolean } & PdfLook): Promise<Buffer> {
   const data = await loadDossierData(input);
+  // Free layout (opt-in per artist): painted from the guarded tree; any failure continues with the template below.
+  let notice: string | undefined;
+  if (!isDossierStyle(input.style) && !data.dossier.variant) {
+    const free = await renderFreeLayoutPdf(data);
+    if (free.bytes) return free.bytes;
+    notice = free.notice;
+  }
+  const bytes = await renderTemplatePdf(data, input);
+  if (notice) LAYOUT_NOTES.set(bytes, notice);
+  return bytes;
+}
+
+/** Free layout PDF, or why it did not happen (undefined notice = the artist does not use it). */
+async function renderFreeLayoutPdf(data: DossierData): Promise<{ bytes?: Buffer; notice?: string }> {
+  try {
+    const { hasFreeLayout, layoutState } = await import("./layout/service");
+    if (!hasFreeLayout(data.profile.id)) return {};
+    const state = await layoutState({ profileId: data.profile.id });
+    if (state.mode !== "libre" || !state.prepared) return { notice: state.notice ?? "No he podido pintar tu maquetación libre y el PDF usa el diseño de plantilla." };
+    const { renderPreparedLayoutPdf } = await import("./layout/pdf-render");
+    const bytes = await renderPreparedLayoutPdf(state.prepared, pdfWorks(data.works));
+    PDF_SIZES.set(bytes, { bytes: bytes.length, reduced: false });
+    return { bytes };
+  } catch (e) {
+    console.error("[dossier] free layout PDF failed, using the template", e);
+    return { notice: "No he podido pintar tu maquetación libre y el PDF usa el diseño de plantilla." };
+  }
+}
+
+async function renderTemplatePdf(data: DossierData, input: { profileId: string; callId?: string; adapt?: boolean } & PdfLook): Promise<Buffer> {
   // No design yet (the artist never opened /dossier): design it from the interview, so the PDF honours what they asked for.
   if (!isDossierStyle(input.style)) await ensureDesign({ profileId: data.profile.id, callId: input.callId });
   try {
@@ -228,7 +262,7 @@ export async function exportDossierPdf(input: { profileId: string; callId?: stri
   const filePath = path.join(exportsDir(), `dossier-${profile.id}${input.callId ? `-${input.callId}` : ""}.pdf`);
   fs.writeFileSync(filePath, bytes);
   const size = pdfReport(bytes);
-  return { url: pdfUrl(profile.id, input.callId), filePath, pages: countPages(bytes), sizeMb: Math.round((bytes.length / (1024 * 1024)) * 100) / 100, note: pdfSizeNote(size) };
+  return { url: pdfUrl(profile.id, input.callId), filePath, pages: countPages(bytes), sizeMb: Math.round((bytes.length / (1024 * 1024)) * 100) / 100, note: [pdfSizeNote(size), pdfLayoutNotice(bytes)].filter(Boolean).join(" ") || undefined };
 }
 
 /**

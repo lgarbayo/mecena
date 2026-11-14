@@ -12,6 +12,7 @@ import { dossierLookRequests } from "@/features/onboarding/interview";
 import { designDossier, mockDesign } from "./ai";
 import { DossierDesign, guardDesign, presetDesign } from "./design";
 import { isDossierStyle, suggestStyle, type DossierStyle } from "./style";
+import { forgetLayouts } from "./layout/store";
 
 const Entry = z.object({
   current: DossierDesign,
@@ -212,6 +213,7 @@ export function designHistory(profileId: string): string[] {
 
 /** Drops the saved designs of these profiles (a user's demo reset). */
 export function forgetDesigns(profileIds: string[]): void {
+  forgetLayouts(profileIds); // the free layout came from the same interview
   const store = read();
   let changed = false;
   for (const id of profileIds) if (id in store) (delete store[id], (changed = true));

@@ -76,8 +76,10 @@ export interface StructuredRequest<S extends z.ZodType> {
    * no upper bound, so timeoutMs x (maxRetries + 1) alone does not bound the wait. On expiry the call fails as AiError("api").
    */
   deadlineMs?: number;
-  /** "disabled" turns thinking off. Only for models that accept it (Haiku 5.5 at effort <= high); omitted: model default. */
-  thinking?: "disabled";
+  /** Called with the token usage of the response (cost measurements); never required. */
+  onUsage?: (usage: { inputTokens: number; outputTokens: number }) => void;
+  /** "disabled" turns thinking off (only for models that accept it: Haiku 5.5 at effort <= high); "adaptive" switches reasoning on explicitly; omitted: model default. */
+  thinking?: "disabled" | "adaptive";
 }
 
 /** Haiku models have no server-side refusal fallback: never send `fallbacks` to them. */
@@ -99,7 +101,7 @@ export async function structured<S extends z.ZodType>(req: StructuredRequest<S>)
         model,
         max_tokens: req.maxTokens ?? 16000,
         ...(supportsServerFallback(model) ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
-        ...(req.thinking === "disabled" ? { thinking: { type: "disabled" as const } } : {}),
+        ...(req.thinking ? { thinking: { type: req.thinking } } : {}),
         system: req.system,
         messages: [{ role: "user", content: req.user }],
         output_config: {
@@ -112,6 +114,7 @@ export async function structured<S extends z.ZodType>(req: StructuredRequest<S>)
     .catch((e: unknown) => {
       throw new AiError(e instanceof Error ? e.message : String(e), "api");
     });
+  if (req.onUsage && res.usage) req.onUsage({ inputTokens: res.usage.input_tokens ?? 0, outputTokens: res.usage.output_tokens ?? 0 });
   if (res.stop_reason === "refusal") throw new AiError("Claude declined the request", "refusal");
   if (res.parsed_output == null) throw new AiError(`Unparseable output (stop_reason=${res.stop_reason})`, "parse");
   return res.parsed_output as z.infer<S>;
