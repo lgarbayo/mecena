@@ -12,7 +12,8 @@ export const ROUTES = {
   trust: "/confianza",
   demo: "/demo",
   login: "/entrar", // sign in / create account (?next=<path>)
-  // Not built (IDEA extras #7 justification and #8 B2B panel are pitch-only): no routes here, so nothing links to a 404.
+  panel: "/panel", // B2B panel for schools/associations (IDEA #8): members who accepted, their matched open calls
+  // Not built (IDEA extra #7, justification, is pitch-only): no route here, so nothing links to a 404.
   account: "/cuenta", // account: "Conectar con Claude" (personal MCP tokens)
 } as const;
 
@@ -84,5 +85,8 @@ export const API = {
   mcp: "/api/mcp", // remote MCP server (Streamable HTTP). Auth: Authorization: Bearer <personal token>, no cookie
   mcpTokens: "/api/mcp-tokens", // GET the user's tokens; POST { label? } -> the new token, shown once
   mcpToken: (id: string) => `/api/mcp-tokens/${encodeURIComponent(id)}`, // DELETE: revoke
+  panel: "/api/panel", // GET the signed-in user's panel (own org, or the demo one); POST { name, kind } creates the org
+  panelInvitations: "/api/panel/invitations", // GET invitations addressed to the signed-in user's email; POST { email } invites (org owner)
+  panelMembership: (id: string) => `/api/panel/memberships/${encodeURIComponent(id)}`, // PATCH { profileId? } accept; DELETE decline / leave / remove
   health: "/api/health", // GET -> { ok: true }, public (Fly health check)
 } as const;

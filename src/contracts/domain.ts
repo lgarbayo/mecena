@@ -445,6 +445,33 @@ export const McpToken = z.object({
 });
 export type McpToken = z.infer<typeof McpToken>;
 
+/**
+ * B2B panel (IDEA #8): a school or association that follows several creators. An organisation sees a member only after
+ * that member accepted its invitation (consent), and only what the panel needs: name, discipline, matched open calls
+ * and their deadlines, never the dossier text, works, transcript or application drafts.
+ */
+export const Organization = z.object({
+  id: z.string(),
+  name: z.string(),
+  kind: z.enum(["school", "association"]),
+  ownerId: z.string(), // User.id of the account that runs the panel
+  createdAt: z.string(),
+});
+export type Organization = z.infer<typeof Organization>;
+
+export const OrgMembership = z.object({
+  id: z.string(),
+  orgId: z.string(),
+  email: z.string(), // invitee, normalised; only an account with this email can accept
+  status: z.enum(["invited", "accepted"]), // declining or leaving deletes the record
+  invitedAt: z.string(),
+  // Set when accepted: who consented and which of their profiles is shared with the organisation.
+  userId: z.string().optional(),
+  profileId: z.string().optional(),
+  acceptedAt: z.string().optional(),
+});
+export type OrgMembership = z.infer<typeof OrgMembership>;
+
 /** Whole JSON database. */
 export const Db = z.object({
   meta: AppMeta,
@@ -464,5 +491,8 @@ export const Db = z.object({
   // CCR-7: call-adapted dossier variants, keyed by profile/dossier/works/call version (generation takes ~20 s).
   // profileId: whose variant it is, so a demo reset or an account deletion can drop it (older entries have none).
   variantCache: z.array(DossierVariant.extend({ cacheKey: z.string(), profileId: z.string().optional() })).default([]),
+  // B2B panel: organisations and their member invitations (default [] so an older db.json still parses).
+  organizations: z.array(Organization).default([]),
+  memberships: z.array(OrgMembership).default([]),
 });
 export type Db = Omit<z.infer<typeof Db>, "works"> & { works: Work[] };
