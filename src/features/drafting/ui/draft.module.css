@@ -243,3 +243,17 @@
   color: var(--g-accent-3);
   font-size: 0.8rem;
 }
+
+/* F: copy per section, closed-edition notice */
+.sectionTools {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.closed {
+  background: rgba(255, 179, 138, 0.12);
+  border-left: 3px solid var(--g-accent);
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin: 0 0 12px;
+}

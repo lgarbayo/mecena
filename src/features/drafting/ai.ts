@@ -3,7 +3,7 @@
 import { ApplicationDraftContent, type AiSlice, type ApplicationSection, type BudgetLine, type Call, type DraftApplicationInput, type Profile, type TranscriptSegment } from "@/contracts";
 import { structured } from "@/server/ai/llm";
 import { polishProse, WORDING_RULE } from "@/server/ai/wording";
-import { buildChecklist, enforce } from "./rules";
+import { buildChecklist, enforce, needsBudget } from "./rules";
 
 const pick = (segs: TranscriptSegment[], re: RegExp) => segs.filter((s) => re.test(s.text.toLowerCase()));
 const quote = (segs: TranscriptSegment[]) => segs.map((s) => polishProse(s.text)).join(" ");
@@ -20,8 +20,7 @@ const NEED_TO_EXPENSE: [RegExp, RegExp][] = [
   [/ordenador|equipo|portatil|tablet/, /equipo/],
 ];
 
-/** Prizes, contests and open calls pay a fixed award: they ask for no budget. */
-export const needsBudget = (call: Pick<Call, "type" | "allowedExpenses">) => call.allowedExpenses.length > 0 || !["premio", "certamen", "convocatoria"].includes(call.type);
+export { needsBudget } from "./rules";
 
 function budgetFromNeeds(profile: Profile, call: Call): BudgetLine[] {
   if (!needsBudget(call)) return [];
@@ -81,7 +80,7 @@ function businessSections(p: Profile, _call: Call, t: TranscriptSegment[]): Appl
 
 export function mockDraft({ profile, call, transcript }: DraftApplicationInput) {
   const sections = profile.kind === "creator" ? creatorSections(profile, call, transcript) : businessSections(profile, call, transcript);
-  return enforce({ sections, budget: budgetFromNeeds(profile, call), checklist: buildChecklist(call) }, call, transcript.map((s) => s.id));
+  return enforce({ sections, budget: budgetFromNeeds(profile, call), checklist: buildChecklist(call) }, call, transcript);
 }
 
 const SYSTEM = `Eres Mecena: preparas solicitudes de convocatorias (becas, premios, ayudas) para artistas, pymes y autónomos de España.
@@ -126,7 +125,7 @@ export const draftingAi: AiSlice<"draftApplication"> = {
           1,
         ),
       });
-      return enforce(content, call, transcript.map((s) => s.id));
+      return enforce(content, call, transcript);
     },
   },
 };
