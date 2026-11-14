@@ -8,6 +8,7 @@ import type { Db, User } from "@/contracts";
 import { exportsDir, updateDb, uploadsDir } from "@/server/store";
 import { forgetDesigns } from "@/features/dossier/designs";
 import { forgetProfileSearches } from "@/features/calls-ingest/live";
+import { removePanelData } from "@/features/panel/service";
 import { forgetDeepResearch, forgetDeepResearchUsage } from "@/features/deep-research/service";
 
 export interface RemovedData {
@@ -62,6 +63,7 @@ export async function deleteAccount(user: Pick<User, "id">): Promise<void> {
     const u = db.users.find((x) => x.id === user.id);
     if (!u) return undefined;
     const r = removeOwnedData(db, u);
+    removePanelData(db, u); // organisations they run, and every invitation or membership of theirs
     db.users = db.users.filter((x) => x.id !== u.id);
     db.sessions = db.sessions.filter((s) => s.userId !== u.id);
     return r;

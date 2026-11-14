@@ -42,7 +42,8 @@ const COPY = {
   },
 } satisfies Record<ProfileKind, { question: string; lede: string; reading: string; placeholder: string; textLabel: string; failed: string; done: (r: ImportDossierResponse) => string }>;
 
-export function ImportDossier({ kind, profileId, onImported, defaultOpen }: { kind: ProfileKind; profileId?: string; onImported: (res: ImportDossierResponse) => void; defaultOpen?: boolean }) {
+/** `bare`: no collapsible card of its own, for a sheet that already carries the title (the onboarding on a phone). */
+export function ImportDossier({ kind, profileId, onImported, defaultOpen, bare }: { kind: ProfileKind; profileId?: string; onImported: (res: ImportDossierResponse) => void; defaultOpen?: boolean; bare?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<ImportDossierResponse | null>(null);
@@ -73,61 +74,71 @@ export function ImportDossier({ kind, profileId, onImported, defaultOpen }: { ki
     await send({ fileDataUrl: await fileToDataUrl(file), fileName: file.name });
   }
 
+  const body = (
+    <div className={`${s.importBody} ${bare ? s.importBodyBare : ""}`}>
+      <label className={`btn btn-primary ${busy ? s.importBusy : ""}`} aria-disabled={busy}>
+        {busy ? c.reading : "Subir PDF o foto"}
+        <input
+          ref={fileRef}
+          type="file"
+          accept={ACCEPT}
+          className={s.srOnly}
+          disabled={busy}
+          onChange={(e) => onFile(e.target.files?.[0])}
+          data-testid="import-file"
+        />
+      </label>
+      <form
+        className={s.textForm}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (text.trim()) send({ text });
+        }}
+      >
+        <textarea value={text} rows={3} placeholder={c.placeholder} onChange={(e) => setText(e.target.value)} disabled={busy} aria-label={c.textLabel} />
+        <button type="submit" className="btn btn-ghost" disabled={busy || !text.trim()}>
+          Usar este texto
+        </button>
+      </form>
+      <p className={s.muted}>Copiamos tus textos sin reescribirlos; solo corregimos erratas y tildes. El archivo es tuyo: no entrenamos con él.</p>
+      {busy && (
+        <p className={s.sending} role="status">
+          {c.reading.replace("…", "")}: tarda unos segundos…
+        </p>
+      )}
+      {error && (
+        <p className={s.error} role="alert">
+          {error}
+        </p>
+      )}
+      {done && !busy && (
+        <div className={s.note} role="status" data-testid="import-done">
+          {done.changedSectionKeys.length || done.changedProfileFields.length ? c.done(done) : "No hemos encontrado nada nuevo en este documento."}
+          {done.worksFound.length > 0 && kind === "creator" ? (
+            <>
+              {" "}
+              {done.worksFound.length === 1 ? "Aparece 1 obra" : `Aparecen ${done.worksFound.length} obras`}: <Link href={ROUTES.works}>{done.worksFound.length === 1 ? "añade una imagen" : "añade sus imágenes"}</Link> para que{" "}
+              {done.worksFound.length === 1 ? "salga" : "salgan"} con su ficha.
+            </>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+  if (bare)
+    return (
+      <div data-testid="import-dossier">
+        <p className={s.muted}>{c.lede}</p>
+        {body}
+      </div>
+    );
   return (
     <details className={`${s.panel} ${s.importBox}`} open={defaultOpen || undefined} data-testid="import-dossier">
       <summary className={s.importSummary}>
         <strong>{c.question}</strong>
         <span className={s.muted}>{c.lede}</span>
       </summary>
-      <div className={s.importBody}>
-        <label className={`btn btn-primary ${busy ? s.importBusy : ""}`} aria-disabled={busy}>
-          {busy ? c.reading : "Subir PDF o foto"}
-          <input
-            ref={fileRef}
-            type="file"
-            accept={ACCEPT}
-            className={s.srOnly}
-            disabled={busy}
-            onChange={(e) => onFile(e.target.files?.[0])}
-            data-testid="import-file"
-          />
-        </label>
-        <form
-          className={s.textForm}
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (text.trim()) send({ text });
-          }}
-        >
-          <textarea value={text} rows={3} placeholder={c.placeholder} onChange={(e) => setText(e.target.value)} disabled={busy} aria-label={c.textLabel} />
-          <button type="submit" className="btn btn-ghost" disabled={busy || !text.trim()}>
-            Usar este texto
-          </button>
-        </form>
-        <p className={s.muted}>Copiamos tus textos sin reescribirlos; solo corregimos erratas y tildes. El archivo es tuyo: no entrenamos con él.</p>
-        {busy && (
-          <p className={s.sending} role="status">
-            {c.reading.replace("…", "")}: tarda unos segundos…
-          </p>
-        )}
-        {error && (
-          <p className={s.error} role="alert">
-            {error}
-          </p>
-        )}
-        {done && !busy && (
-          <div className={s.note} role="status" data-testid="import-done">
-            {done.changedSectionKeys.length || done.changedProfileFields.length ? c.done(done) : "No hemos encontrado nada nuevo en este documento."}
-            {done.worksFound.length > 0 && kind === "creator" ? (
-              <>
-                {" "}
-                {done.worksFound.length === 1 ? "Aparece 1 obra" : `Aparecen ${done.worksFound.length} obras`}: <Link href={ROUTES.works}>{done.worksFound.length === 1 ? "añade una imagen" : "añade sus imágenes"}</Link> para que{" "}
-                {done.worksFound.length === 1 ? "salga" : "salgan"} con su ficha.
-              </>
-            ) : null}
-          </div>
-        )}
-      </div>
+      {body}
     </details>
   );
 }

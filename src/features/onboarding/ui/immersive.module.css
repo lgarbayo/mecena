@@ -22,15 +22,17 @@
   background: #0d0b10;
   font-family: var(--sans);
   isolation: isolate;
+  overscroll-behavior: contain; /* the stage scrolls; the page behind it never rubber-bands */
 }
 
 /* drifting colour fields */
-.blobs { position: absolute; inset: -20%; z-index: -1; filter: blur(70px) saturate(130%); opacity: 0.85; pointer-events: none; }
+/* fixed, not absolute: an absolute layer 20% larger than the stage made it scroll ~170px of empty background */
+.blobs { position: fixed; inset: -20%; z-index: -1; filter: blur(70px) saturate(130%); opacity: 0.85; pointer-events: none; }
 .blob { position: absolute; border-radius: 50%; mix-blend-mode: screen; animation: drift 22s ease-in-out infinite alternate; }
 .blob:nth-child(1) { width: 52vmax; height: 52vmax; left: 2%; top: 4%; background: radial-gradient(circle at 30% 30%, #ff7a45, transparent 62%); }
 .blob:nth-child(2) { width: 46vmax; height: 46vmax; right: 0; top: 18%; background: radial-gradient(circle at 60% 40%, #8b5cf6, transparent 62%); animation-duration: 26s; animation-delay: -6s; }
 .blob:nth-child(3) { width: 40vmax; height: 40vmax; left: 26%; bottom: -2%; background: radial-gradient(circle at 50% 50%, #14b8a6, transparent 62%); animation-duration: 30s; animation-delay: -12s; }
-.grain { position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.06; background-image: radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px); background-size: 3px 3px; }
+.grain { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.06; background-image: radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px); background-size: 3px 3px; }
 @keyframes drift {
   0% { transform: translate3d(0, 0, 0) scale(1); }
   50% { transform: translate3d(6vmax, -4vmax, 0) scale(1.08); }
@@ -65,11 +67,14 @@
   border: 1px solid var(--g-line); color: var(--g-ink); background: var(--g-glass-2);
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   transition: transform 140ms ease, background 140ms ease, opacity 140ms ease;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.45; cursor: default; }
 .btnPrimary { background: var(--g-ink); color: #15110d; border-color: transparent; }
-.btnPrimary:hover { background: #fff; }
+@media (hover: hover) and (pointer: fine) { .btnPrimary:hover { background: #fff; } }
 .btnQuiet { background: transparent; border-color: transparent; color: var(--g-ink-2); }
 
 @media (prefers-reduced-motion: reduce) {

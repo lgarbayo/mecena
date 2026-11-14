@@ -17,7 +17,7 @@ Regla de oro: **el presentador nunca toca el móvil y el operador nunca habla**.
 ## Puntos de control del reloj
 - **1:20** — debemos estar en el PDF. Si vamos por encima de **1:35**: saltamos el cambio a pyme (paso 5).
 - **2:30** — debemos tener el tribunal en 84. Si vamos por encima de **2:35**: saltamos el MCP (paso 9).
-- **2:50** — empieza el cierre, pase lo que pase.
+- **2:50** — empieza el cierre (10 s), pase lo que pase.
 
 ---
 
@@ -34,7 +34,7 @@ Regla de oro: **el presentador nunca toca el móvil y el operador nunca habla**.
 | 7 | **1:55–2:15** · Paywall + compra | En la convocatoria: **Prepárame la solicitud** → paywall RevenueCat (Pro mensual, Pro anual, Solicitud premium) → operador elige **Solicitud premium** o **Pro mensual** → checkout sandbox → desbloqueado | «El dossier es gratis. Preparar la solicitud es lo que vale dinero: una consultora se lleva entre un 10 y un 15 % de tu beca. Nosotros, 9 euros al mes, con garantía: si en 90 días no has presentado 3 solicitudes, te lo devolvemos. Esto es RevenueCat en modo sandbox, compra real de pruebas.» | Si el checkout falla o tarda > 10 s: operador cambia al **usuario de demo ya Pro** (compra hecha antes). Presentador: «Esta compra la hicimos hace una hora con el mismo flujo; os la enseño hecha.» |
 | 8 | **2:15–2:35** · Borrador + tribunal | Borrador de la memoria **con frases literales del artista** resaltadas → **Pasar por el tribunal** → **61/100** con comentarios por criterio → **Aplicar mejoras** → **84/100** | «La memoria está escrita con sus palabras; fijaos, esta frase la ha dicho hace un minuto. Ahora la pasamos por un tribunal simulado con los criterios y los pesos oficiales de las bases: 61. Aplicamos lo que pide… 84. Antes de presentarla.» | Si el borrador o el tribunal tardan > 8 s: abrir la solicitud ya puntuada del usuario de demo precargado |
 | 9 | **2:35–2:50** · MCP *(opcional)* | Cambio al portátil: Claude Desktop, prompt «Hazme el dossier para la convocatoria [X]» → llamadas a `get_profile`, `build_dossier`, `export_dossier_pdf` | «Y todo esto también es un servidor MCP: desde Claude, una frase y tienes el dossier adaptado a esa convocatoria.» | **Recortable** si a 2:35 no hemos llegado. Nunca se improvisa sin haberlo ensayado |
-| 10 | **2:50–3:00** · Cierre | Volver a la pantalla A1 o diapositiva de tracción | «Esta noche hemos preguntado a [N] artistas: el [X %] perdió una convocatoria por enterarse tarde y el [X %] pagaría por esto. Tenemos [N LOIs] cartas de interés de escuelas y asociaciones. Mecena: tú creas, nosotros hacemos el papeleo. Gracias.» | Si no hay datos de encuesta: decir solo las LOIs; si tampoco, cerrar con la frase de marca |
+| 10 | **2:50–3:00** · Cierre | Volver a la pantalla A1 o a la diapositiva 8 («Visión y petición») | «Mecena prepara; tú presentas. Lo que habéis visto funciona de principio a fin: 37 convocatorias reales, 213 concesiones pasadas y RevenueCat de verdad. Hoy, artistas; mañana, cualquier pyme. Tú creas; Mecena se encarga del papeleo. Gracias.» | Si hemos saltado el MCP, añadir antes de «Hoy»: «Y Claude puede manejarla por MCP». Solo estas cifras; nada de «millones sin reclamar para artistas» |
 
 ### Guion orientativo del artista (≈ 60 s, que lo diga con sus palabras)
 Pásaselo por la mañana (bloque A11) y ensayadlo una vez. No tiene que leerlo.
@@ -59,7 +59,7 @@ Para cuando el turno sea corto o el directo se tuerza. Usa el **usuario de demo 
 | 0:40–0:50 | Feed | «Ayudas públicas españolas reales: por qué encajas y qué te falta.» (sin cambio a pyme) |
 | 0:50–1:05 | Paywall → compra sandbox (o usuario Pro) | «El dossier es gratis; la solicitud se paga. RevenueCat, compra de pruebas real. Con garantía de 90 días.» |
 | 1:05–1:20 | Tribunal 61 → 84 | «Escrita con sus palabras y puntuada con los criterios oficiales antes de presentarla.» |
-| 1:20–1:30 | Cierre | «[X %] de los artistas encuestados pagaría; [N LOIs] cartas de interés. Tú creas; Mecena hace el papeleo.» |
+| 1:20–1:30 | Cierre | «Mecena prepara; tú presentas. 37 convocatorias reales, RevenueCat de verdad. Tú creas; Mecena hace el papeleo.» |
 
 ---
 
@@ -106,8 +106,8 @@ Según las webs de cada producto (no verificado; decidlo así).
 **Portátil**
 - [ ] Claude Desktop abierto con el servidor MCP de Mecena configurado y el prompt escrito (sin enviar).
 - [ ] **Vídeo de respaldo** del recorrido completo abierto en pausa.
-- [ ] [`PITCH.md`](PITCH.md) en diapositivas, abierto en la diapositiva de tracción para el cierre.
+- [ ] [`PITCH.md`](PITCH.md) en diapositivas, abierto en la diapositiva 8 para el cierre.
 
 **Personas y cifras**
 - [ ] Artista localizado/a 15 min antes, con sus obras (físicas o en otra pantalla) y el guion leído.
-- [ ] Cifras de la encuesta y LOIs (B16) sustituidas en el cierre: [X %], [N], [N LOIs].
+- [ ] El cierre solo usa cifras comprobables: 37 convocatorias y 213 concesiones (contadlas en `data/calls/` antes de subir; si cambian, cambiad el guion) y las de `fleet/IDEA.md`. Sin encuesta propia ni LOIs.

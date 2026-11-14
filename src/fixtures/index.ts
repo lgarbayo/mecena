@@ -254,5 +254,7 @@ export function defaultDb(): Db {
     usage: [],
     matchCache: [],
     variantCache: [],
+    organizations: [],
+    memberships: [],
   };
 }

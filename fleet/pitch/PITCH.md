@@ -23,7 +23,7 @@
 Frase grande: **Las ayudas existen. Enterarse a tiempo y prepararlas es otro trabajo, y nadie lo hace por el artista.**
 
 **Notas del orador**
-Tres ideas: los artistas viven al límite y son autónomos sin estructura; las ayudas se pierden por no enterarse y por el papeleo (el dato de pymes es la mejor medición que existe de eso en España: dilo así, como indicio); y nadie busca y prepara por ellos. Si alguien pregunta por «dinero sin reclamar en arte»: «No lo afirmamos; son ayudas competitivas. Lo que sí sabemos es que se pierden por no enterarse y por el papeleo.» Aquí entran las cifras de nuestra encuesta a artistas: [X %] perdió una convocatoria por enterarse tarde; [N] horas de media por solicitud.
+Tres ideas: los artistas viven al límite y son autónomos sin estructura; las ayudas se pierden por no enterarse y por el papeleo (el dato de pymes es la mejor medición que existe de eso en España: dilo así, como indicio); y nadie busca y prepara por ellos. Si alguien pregunta por «dinero sin reclamar en arte»: «No lo afirmamos; son ayudas competitivas. Lo que sí sabemos es que se pierden por no enterarse y por el papeleo.»
 
 ---
 
@@ -100,24 +100,25 @@ Lógica de oferta: regalamos lo que más cuesta hacer a mano (el dossier) y cobr
 **En pantalla**
 - Maqueta de un panel: lista de alumnos/socios, convocatorias abiertas que encajan con cada uno, estado de cada solicitud (borrador · tribunal · presentada), avisos de plazos.
 - Para: **escuelas de arte y diseño, asociaciones de artistas y academias**; más adelante, gestorías y asociaciones de autónomos.
-- Licencia anual por centro con [N] cuentas Pro incluidas. Precio: [por validar con las LOIs].
+- Licencia anual por centro con [N] cuentas Pro incluidas. Precio: por validar en los pilotos.
 
 **Notas del orador**
-Es el canal de distribución: una escuela o asociación nos trae decenas de artistas y le da a su gente un servicio que hoy no puede ofrecer. No está construido; lo validamos con las cartas de interés de esta noche: [N LOIs] de [nombres si dan permiso].
+Es el canal de distribución: una escuela o asociación nos trae decenas de artistas y le da a su gente un servicio que hoy no puede ofrecer. No está construido y no hay cartas de interés todavía: es la hipótesis de distribución que validaremos con los primeros pilotos (escuelas y asociaciones gallegas).
 
 ---
 
-## 7 · Tracción (esta noche)
+## 7 · Lo que ya funciona (producto, no promesas)
 **En pantalla**
-- **[N]** respuestas de artistas y creadores a la encuesta en < 24 h.
-- **[X %]** perdió alguna convocatoria por enterarse tarde.
-- **[N] h** de media en preparar una solicitud.
-- **[X %]** pagaría por tenerla preparada.
-- **[N LOIs]** cartas de interés de escuelas y asociaciones: [logos/nombres con permiso].
-- Producto funcionando: voz → dossier → convocatorias reales → compra RevenueCat → tribunal.
+- **De principio a fin, en producción** ([mecena.fly.dev](https://mecena.fly.dev)): voz → perfil y dossier → convocatorias reales → compra → solicitud con tus palabras → tribunal simulado.
+- **37 convocatorias reales** estructuradas desde sus bases, con enlace a la fuente.
+- **213 concesiones históricas** como evidencia orientativa de qué gana (nunca una probabilidad inventada).
+- **RevenueCat real, en sandbox**: entitlement `pro`, paywall y compra de pruebas de verdad.
+- **MCP remoto**: Claude (Desktop o Code) maneja tu cuenta de Mecena con 8 herramientas.
+- **Camino a pymes ya construido**: un toque cambia perfil y convocatorias.
+- **Mecena prepara; tú presentas**: nunca enviamos nada en tu nombre.
 
 **Notas del orador**
-Números reales de la encuesta (B16), aunque sean pocos: unas decenas de respuestas reales valen más que cualquier estimación. Si una LOI es un mensaje de «sí, nos interesa», decidlo así.
+No tenemos encuesta propia ni cartas de interés, y no lo disimulamos: lo que enseñamos es producto funcionando. Las cifras de problema son solo las de la diapositiva 1, con fuente. Si preguntan por validación de mercado: «Los datos de precariedad y de ayudas perdidas son de terceros, con fuente; lo nuestro es que el producto ya hace el trabajo, y el siguiente paso es un piloto con artistas reales.» Comprobad antes de subir que 37 y 213 siguen siendo ciertos (`data/calls/`).
 
 ---
 
@@ -130,4 +131,4 @@ Números reales de la encuesta (B16), aunque sean pocos: unas decenas de respues
 - **Os pedimos**: [10] artistas para un piloto este mes · presentaciones a escuelas de arte y asociaciones de artistas gallegas · contacto con quien gestiona las ayudas a la cultura en Galicia.
 
 **Notas del orador**
-Cerrad con la visión en una frase: «Hoy, el artista que vive al límite pierde ayudas por no enterarse y por el papeleo. Mecena convierte "no sabía que existía" en "ya está presentada". Primero los artistas; luego, cualquier autónomo.» Luego la petición concreta y «Gracias». Equipo: [nombres y una línea cada uno].
+Cerrad con la visión en una frase: «Hoy, el artista que vive al límite pierde ayudas por no enterarse y por el papeleo. Mecena convierte "no sabía que existía" en "ya está presentada". Primero los artistas; luego, cualquier autónomo.» Remate (≈ 10 s, es el cierre hablado de la demo): «Mecena prepara; tú presentas. Funciona de principio a fin: 37 convocatorias reales, 213 concesiones pasadas, RevenueCat de verdad. Hoy artistas; mañana, cualquier pyme. Tú creas; Mecena se encarga del papeleo.» Luego la petición concreta y «Gracias». Equipo: [nombres y una línea cada uno].

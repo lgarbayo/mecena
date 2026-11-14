@@ -23,7 +23,7 @@ Every feature below appears here, or it is cut.
 6. **2:15 Paywall (20 s).** "Prepárame la solicitud" → paywall (Pro mensual 9 €, anual 79 €, Solicitud premium 15 €; anchor "una consultora cobra 10-15 % de la ayuda"; guarantee 90 días) → RevenueCat sandbox checkout → unlocked → draft memoria + statement + budget + checklist "escrito con tus palabras".
 7. **2:35 Simulated jury (20 s).** `/tribunal/:id`: 3 judges score with the call's official criteria: **61/100**, per-criterion fixes → "Aplicar mejoras" → **84/100** with animated rise. Disclaimer: orientative.
 8. **(Optional, if time) Claude Desktop** calls Mecena's MCP: "hazme el dossier para la convocatoria X" → `build_dossier` + `export_dossier_pdf` → link opens on the phone.
-9. **2:55 Close.** Survey numbers from tonight + LOIs (slide, not app).
+9. **2:50 Close (10 s).** "Mecena prepara; tú presentas" + 37 real calls, 213 historical awards, RevenueCat sandbox, remote MCP, path to pymes. No own survey or LOIs (future/optional).
 
 Fallbacks: `/demo` panel resets state, rotates the RevenueCat app user id (fresh sandbox customer = paywall shows again) and can load an "onboarded" scenario if the mic fails; text input replaces voice; AI mock mode keeps every beat working offline.
 

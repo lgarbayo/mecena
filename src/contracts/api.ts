@@ -327,3 +327,11 @@ export const SaveMemoriaRequest = z.object({
   applicationId: ID,
   sections: capped(Application.shape.sections, 100_000),
 });
+
+// /api/panel (B2B panel for schools and associations)
+export const OrgCreateRequest = z.object({
+  name: z.string().trim().min(2).max(80),
+  kind: z.enum(["school", "association"]).default("school"),
+});
+export const OrgInviteRequest = z.object({ email: z.string().trim().toLowerCase().email().max(200) });
+export const OrgAcceptRequest = z.object({ profileId: z.string().optional() }); // default: the account's active profile

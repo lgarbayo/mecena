@@ -37,7 +37,7 @@ afterEach(() => {
 describe("/onboarding step by step", () => {
   it("starts with the voice / text choice and no progress bar", () => {
     render(<StepOnboarding />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("¿Cómo prefieres contárnoslo?");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("¿Cómo nos lo cuentas?");
     expect(screen.getByTestId("choose-voice")).toBeTruthy();
     expect(screen.getByTestId("choose-text")).toBeTruthy();
     expect(screen.queryByRole("progressbar")).toBeNull();
