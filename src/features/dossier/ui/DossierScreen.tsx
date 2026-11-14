@@ -114,7 +114,7 @@ export function DossierScreen() {
     };
   }, [imageKey]);
 
-  // Nobody asks the artist how the dossier should look: the first design comes by itself, from the interview
+  // The template design (the fallback under the free layout) also comes by itself, from the interview
   // and the colours of their work, as soon as there is something to design. Asking for changes is optional.
   const hasContent = !!data && (data.works.length > 0 || !!data.profile.statement || data.dossier.sections.length > 0);
   const coloursReady = !imageKey || workColors.length > 0;
@@ -179,6 +179,17 @@ export function DossierScreen() {
       window.removeEventListener("focus", again);
     };
   }, [load]);
+  // The free layout is the first design: with content and nothing chosen yet, the proposals start by themselves
+  // (the server no-ops when it already proposed from this content, a job runs or the day's budget is spent).
+  const autoKey = useRef<string | undefined>(undefined);
+  const wantsAuto = !!data && !data.call && !callId && hasContent && layoutReady && layout?.enabled === true && !layout.busy && layout.mode !== "libre";
+  useEffect(() => {
+    if (!wantsAuto || !profileId || autoKey.current === contentKey) return;
+    autoKey.current = contentKey;
+    apiSend<LayoutClientState>(LAYOUT_API, { auto: "dossier", profileId })
+      .then(setLayout)
+      .catch(() => undefined);
+  }, [wantsAuto, profileId, contentKey]);
   const freeShown = layout?.mode === "libre" && !!layout.prepared;
   // While there are proposals to choose from (or a batch is running) the template panel would only add clutter.
   const freeBusy = layout?.enabled === true && (layout.busy || layout.proposals.length > 0);

@@ -14,6 +14,8 @@ const Entry = z.object({
   history: z.array(z.object({ request: z.string(), layout: FreeLayout, at: z.string() })).default([]),
   proposals: z.array(z.object({ id: z.string(), layout: FreeLayout, direction: z.string(), at: z.string() })).default([]), // the last batch, waiting for the artist to choose
   shown: z.array(z.string()).default([]), // art directions already proposed (not repeated in the next batch)
+  wish: z.string().optional(), // how the artist imagines their dossier (onboarding question), for every batch
+  autoKey: z.string().optional(), // content + wish the last automatic batch was made from (never twice for the same)
   batchDay: z.string().default(""),
   batches: z.number().default(0), // proposal batches today (cost cap per profile)
   day: z.string().default(""), // YYYY-MM-DD of `requests`

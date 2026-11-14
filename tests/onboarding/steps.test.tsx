@@ -7,7 +7,8 @@ vi.mock("@/lib/api-client", async () => {
   const svc = await import("@/features/onboarding/service");
   return {
     apiGet: async (url: string) => svc.getOnboardingState(new URL(url, "http://x").searchParams.get("profileId") ?? "demo-creator"),
-    apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) => svc.processTurn({ ...body, profileId: body.profileId ?? "demo-creator" }),
+    apiSend: async (url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) =>
+      url === "/api/dossier/layout" ? { busy: false, count: 2 } : svc.processTurn({ ...body, profileId: body.profileId ?? "demo-creator" }),
   };
 });
 const speech = { supported: true, listening: false, interim: "", error: null as string | null, start: vi.fn(), stop: vi.fn() };
@@ -46,15 +47,15 @@ describe("/onboarding step by step", () => {
   it("text mode: one question per screen, answers fill the profile, ends in the summary", async () => {
     render(<StepOnboarding />);
     fireEvent.click(screen.getByTestId("choose-text"));
-    expect(screen.getByText("Paso 1 de 5")).toBeTruthy();
+    expect(screen.getByText("Paso 1 de 6")).toBeTruthy();
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("¿Cómo te llamas y desde dónde creas?");
 
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "Me llamo Antía Varela y vivo en A Coruña." } });
     fireEvent.click(screen.getByTestId("next"));
-    expect(screen.getByText("Paso 2 de 5")).toBeTruthy();
+    expect(screen.getByText("Paso 2 de 6")).toBeTruthy();
     expect(screen.getByTestId("next").textContent).toBe("Saltar"); // nothing typed yet
 
-    for (let i = 2; i <= 5; i++) fireEvent.click(screen.getByTestId("next"));
+    for (let i = 2; i <= 6; i++) fireEvent.click(screen.getByTestId("next"));
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Tu perfil está listo.");
     await waitFor(() => expect(document.body.textContent).toContain("Antía Varela"), { timeout: 5000 });
     expect(screen.getByTestId("finish-cta").getAttribute("href")).toBe("/obras");
@@ -68,8 +69,8 @@ describe("/onboarding step by step", () => {
     act(() => onFinal!("Soy ilustradora y pintora de A Coruña."));
     expect(document.body.textContent).toContain("Soy ilustradora y pintora de A Coruña.");
     fireEvent.click(screen.getByTestId("next"));
-    expect(screen.getByText("Paso 2 de 5")).toBeTruthy();
-    for (let i = 2; i <= 5; i++) fireEvent.click(screen.getByTestId("next"));
+    expect(screen.getByText("Paso 2 de 6")).toBeTruthy();
+    for (let i = 2; i <= 6; i++) fireEvent.click(screen.getByTestId("next"));
     expect(speech.stop).toHaveBeenCalled();
     await waitFor(() => expect(document.body.textContent).toContain("A Coruña"), { timeout: 5000 });
   });
@@ -85,7 +86,7 @@ describe("/onboarding step by step", () => {
     speech.interim = "Quiero hacer una serie de doce acuarelas sobre las rederas.";
     fireEvent.click(screen.getByTestId("next"));
     speech.interim = "";
-    for (let i = 4; i <= 5; i++) fireEvent.click(screen.getByTestId("next"));
+    for (let i = 4; i <= 6; i++) fireEvent.click(screen.getByTestId("next"));
     await waitFor(() => expect(document.body.textContent).toContain("doce acuarelas"), { timeout: 5000 });
   });
 

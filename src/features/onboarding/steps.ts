@@ -6,15 +6,21 @@ export interface Step {
   question: string;
   example: string;
   fields: string[];
+  /** Sent as the turn's stepKey (defaults to the first field). */
+  key?: string;
 }
 
-const QUESTIONS: Record<ProfileKind, { question: string; example: string }[]> = {
+/** stepKey of the creator's last question: how they imagine their dossier (the free layout starts from it). */
+export const DOSSIER_LOOK_STEP = "dossierLook";
+
+const QUESTIONS: Record<ProfileKind, { question: string; example: string; key?: string }[]> = {
   creator: [
     { question: "¿Cómo te llamas y desde dónde creas?", example: "«Soy Antía, ilustradora, y trabajo en A Coruña.»" },
     { question: "¿Qué haces? Tu disciplina y tu técnica.", example: "«Pinto con acuarela y tinta, sobre todo retratos.»" },
     { question: "Háblanos de una serie o un proyecto reciente.", example: "«Estoy con una serie sobre las rederas de Malpica.»" },
     { question: "¿Exposiciones, premios o formación que quieras contar?", example: "«Expuse en el Kiosko Alfonso y estudié Bellas Artes en Vigo.»" },
     { question: "¿Qué buscas ahora?", example: "«Una beca para producir la serie y editar un fanzine.»" },
+    { question: "¿Cómo te imaginas tu dossier?", example: "«Sobrio, en blanco y negro, con mucha imagen» o «colorido, como un fanzine».", key: DOSSIER_LOOK_STEP },
   ],
   business: [
     { question: "¿Qué hacéis y desde cuándo?", example: "«Somos un taller de cerámica artesanal desde 2019.»" },
@@ -54,6 +60,9 @@ export const STEPS_COPY = {
   doneLede: "Esto es lo que hemos anotado. Puedes cambiarlo todo cuando quieras.",
   doneEmpty: "Aún no tenemos casi nada. Vuelve atrás y cuéntanos un poco más.",
   toCalls: "Ver convocatorias para mí",
+  /** The first dossier proposals start composing by themselves at the end of the interview. */
+  composing: (n: number) => `Con lo que me has contado estoy componiendo ${n} propuestas de dossier, cada una con su dirección de arte. Tardan un par de minutos.`,
+  seeDossier: "Ver mi dossier",
   /** Voice step: always-visible way out to typing, and back. */
   preferText: "Escribir",
   preferVoice: "Hablar",

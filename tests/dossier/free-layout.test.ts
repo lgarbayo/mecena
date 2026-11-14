@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEMO_CREATOR_ID, fixtureWorks } from "@/fixtures";
 import { contrast } from "@/features/dossier/design";
 import * as agent from "@/features/dossier/layout/agent";
@@ -7,7 +7,7 @@ import { FONT_FAMILIES, FONT_TABLE, snapFace } from "@/features/dossier/layout/f
 import { LayoutError, prepareLayout, SAFE_X, SAFE_Y } from "@/features/dossier/layout/prepare";
 import { textsOutgrewLayout } from "@/features/dossier/layout/notes";
 import { FreeLayout, MAX_PAGES, type FreeLayout as Layout, type PreparedText } from "@/features/dossier/layout/schema";
-import { DAILY_LAYOUT_BATCHES, catalogFor, chooseProposal, layoutIdle, layoutState, requestChange, requestProposals, setFreeLayout, undoLayout } from "@/features/dossier/layout/service";
+import { DAILY_LAYOUT_BATCHES, autoProposals, catalogFor, saveLayoutWish, chooseProposal, layoutIdle, layoutState, requestChange, requestProposals, setFreeLayout, undoLayout } from "@/features/dossier/layout/service";
 import { MIN_WORKS_SHOWN, missingContent } from "@/features/dossier/layout/completeness";
 import { renderDossierPdf, countPages } from "@/features/dossier/service";
 import { GET as layoutGet, POST as layoutPost } from "@/app/api/dossier/layout/route";
@@ -25,6 +25,10 @@ async function seed(works = 2) {
 beforeEach(async () => {
   await loginDemo();
   vi.restoreAllMocks();
+  process.env.MECENA_LAYOUT_COUNT = "3"; // these tests were written for batches of three; the default is two (see below)
+});
+afterEach(() => {
+  delete process.env.MECENA_LAYOUT_COUNT;
 });
 
 /** Plays the model: N distinct directions, one composition per direction, changes read from the request. */
@@ -604,5 +608,74 @@ describe("catalog: untitled works", () => {
     const c = buildCatalog(view);
     expect(c.texts["obra.1.titulo"]).toBeUndefined();
     expect(c.texts["obra.1.ficha"].paragraphs[0]).toBe("Sin título · Óleo");
+  });
+});
+
+describe("the free layout is the first design", () => {
+  it("proposes two layouts per batch by default", () => {
+    delete process.env.MECENA_LAYOUT_COUNT;
+    expect(agent.layoutCount()).toBe(2);
+  });
+
+  it("starts the first batch by itself, from how the artist imagines their dossier, and never twice for the same content", async () => {
+    await seed(3);
+    const spy = fakeModel({ count: 3 });
+    const plan = vi.mocked(agent.planDirections);
+    saveLayoutWish({ profileId: DEMO_CREATOR_ID, text: "Sobrio, en blanco y negro, con mucha imagen." });
+    const s = await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" });
+    expect(s.started).toBe(true);
+    expect(s.wish).toMatch(/blanco y negro/);
+    await layoutIdle(DEMO_CREATOR_ID);
+    expect(plan.mock.calls[0][0].wish).toMatch(/blanco y negro/);
+    expect(spy.mock.calls.every((c) => /blanco y negro/.test(c[0].wish ?? ""))).toBe(true);
+    expect((await layoutState({ profileId: DEMO_CREATOR_ID })).proposals.length).toBeGreaterThan(0);
+    // same content: nothing new
+    expect((await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" })).started).toBe(false);
+    // a new wish (or new works) before choosing: a new batch
+    saveLayoutWish({ profileId: DEMO_CREATOR_ID, text: "Mejor con fondo negro." });
+    expect((await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" })).started).toBe(true);
+    await layoutIdle(DEMO_CREATOR_ID);
+    // once a proposal is chosen it never replaces it
+    const st = await layoutState({ profileId: DEMO_CREATOR_ID });
+    await chooseProposal({ profileId: DEMO_CREATOR_ID, proposalId: st.proposals[0].id });
+    saveLayoutWish({ profileId: DEMO_CREATOR_ID, text: "Y algo de color." });
+    expect((await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" })).started).toBe(false);
+  });
+
+  it("waits for the photos of a visual artist who just finished the interview; the dossier screen does not", async () => {
+    await seed(0);
+    const { updateDb } = await import("@/server/store");
+    await updateDb((db) => {
+      db.works = db.works.filter((w) => w.profileId !== DEMO_CREATOR_ID);
+    });
+    fakeModel();
+    expect((await autoProposals({ profileId: DEMO_CREATOR_ID, from: "onboarding" })).started).toBe(false);
+    expect((await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" })).started).toBe(true);
+    await layoutIdle(DEMO_CREATOR_ID);
+  });
+
+  it("starts nothing when the per-user AI limit says no", async () => {
+    await seed(2);
+    const plan = vi.spyOn(agent, "planDirections");
+    const s = await autoProposals({
+      profileId: DEMO_CREATOR_ID,
+      from: "dossier",
+      charge: () => {
+        throw new (class extends Error {})("limit");
+      },
+    });
+    expect(s.started).toBe(false);
+    expect(s.busy).toBe(false);
+    expect(plan).not.toHaveBeenCalled();
+  });
+
+  it("the route only starts it for the session's own profile", async () => {
+    await seed(2);
+    fakeModel();
+    const res = await layoutPost(req("/api/dossier/layout", { method: "POST", body: { auto: "dossier", profileId: DEMO_CREATOR_ID } }));
+    expect((await res.json()).busy).toBe(true);
+    await layoutIdle(DEMO_CREATOR_ID);
+    const other = await layoutPost(req("/api/dossier/layout", { method: "POST", body: { auto: "dossier", profileId: "someone-elses" } }));
+    expect(other.status).toBeGreaterThanOrEqual(400);
   });
 });
