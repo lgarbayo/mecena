@@ -2,7 +2,7 @@
 // AI or changing anything: switches, modes, entitlement, open calls and whether every scenario can load.
 import { publicEnv, serverEnv, type User } from "@/contracts";
 import { getEntitlement, listCalls, readDb } from "@/server/store";
-import { checkScenarios, type ScenarioCheck } from "./scenarios";
+import { checkExtras, checkScenarios, type ExtraCheck, type ScenarioCheck } from "./scenarios";
 import { canGrantDemoPro, DEMO_PRODUCT_ID } from "./service";
 import { getDemoSettings, isDemoEmail, type DemoSettings } from "./settings";
 
@@ -24,6 +24,8 @@ export interface DemoStatus {
   proIsDemoGrant: boolean;
   openCalls: { creator: number; business: number };
   scenarios: ScenarioCheck[];
+  /** Justification invoices and the demo organisation, loaded by the scenarios. */
+  extras: ExtraCheck[];
 }
 
 export async function demoStatus(user: User): Promise<DemoStatus> {
@@ -51,5 +53,6 @@ export async function demoStatus(user: User): Promise<DemoStatus> {
       business: open.filter((c) => c.beneficiaryKinds.includes("business")).length,
     },
     scenarios: checkScenarios(calls),
+    extras: checkExtras(),
   };
 }

@@ -186,6 +186,7 @@ export interface ExtractInvoiceInput {
   budget: BudgetLine[]; // the application's lines: the invoice is assigned to one of them
   allowedExpenses: string[]; // Call.allowedExpenses
   hint?: string; // what the user said about it ("papel de acuarela, Papelería Sol")
+  invoiceNumbers?: string[]; // numbers of the invoices already added to this application (the demo mock reads each example once)
 }
 /** What was read off the photo. Every field may be absent: the user completes it. */
 export const InvoiceExtraction = z.object({

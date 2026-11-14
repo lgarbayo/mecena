@@ -25,6 +25,7 @@ const status = (over: Record<string, unknown> = {}) => ({
   proIsDemoGrant: false,
   openCalls: { creator: 12, business: 2 },
   scenarios: ["blank", "onboarded", "pro", "business"].map((scenario) => ({ scenario, ok: true, problems: [] })),
+  extras: [{ id: "justification", ok: true, problems: [] }, { id: "panel", ok: true, problems: [] }],
   ...over,
 });
 

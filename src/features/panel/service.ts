@@ -14,6 +14,7 @@ import {
   ConflictError,
   NotFoundError,
   type Call,
+  type Db,
   type Organization,
   type OrgMembership,
   type Profile,
@@ -266,10 +267,27 @@ export function panelOrDemo(user: User, opts: { demo?: boolean; now?: Date } = {
   return own ? { ...own, hasOrg: true } : { ...demoPanel(opts.now), hasOrg: Boolean(orgOwnedBy(user.id)) };
 }
 
-/** Membership records that touch this account, for account deletion (see features/account). */
-export function removePanelData(db: { organizations: Organization[]; memberships: OrgMembership[] }, user: { id: string; email?: string }) {
+/** Owner id of the fictional members the demo scenarios seed into an organisation (no such user exists). */
+export const demoMemberOwner = (userId: string, n: number) => `demo-member:${userId}:${n}`;
+
+/**
+ * Membership records that touch this account, for account deletion and demo resets (see features/account, features/demo):
+ * the organisations they run, every invitation or membership of theirs, and the fictional members a demo seeded.
+ */
+export function removePanelData(
+  db: Pick<Db, "organizations" | "memberships" | "profiles" | "dossiers" | "matchCache" | "variantCache">,
+  user: { id: string; email?: string },
+) {
   const owned = new Set(db.organizations.filter((o) => o.ownerId === user.id).map((o) => o.id));
   const email = user.email ? normalizeEmail(user.email) : undefined;
   db.organizations = db.organizations.filter((o) => !owned.has(o.id));
   db.memberships = db.memberships.filter((m) => !owned.has(m.orgId) && m.userId !== user.id && !(email && m.email === email));
+  const prefix = `demo-member:${user.id}:`;
+  const fake = new Set(db.profiles.filter((p) => p.ownerId?.startsWith(prefix)).map((p) => p.id));
+  if (fake.size) {
+    db.profiles = db.profiles.filter((p) => !fake.has(p.id));
+    db.dossiers = db.dossiers.filter((d) => !fake.has(d.profileId));
+    db.matchCache = db.matchCache.filter((m) => !fake.has(m.profileId) && ![...fake].some((id) => m.cacheKey.startsWith(`${id}|`)));
+    db.variantCache = db.variantCache.filter((v) => !v.profileId || !fake.has(v.profileId));
+  }
 }

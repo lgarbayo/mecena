@@ -78,6 +78,7 @@ export async function addInvoice(input: { applicationId: string; imageDataUrl: s
   if (bytes.length > MAX_IMAGE_BYTES) throw new BadRequestError("La foto pesa demasiado (máx. 6 MB). Prueba otra vez desde la cámara.");
 
   const read = await getAi().extractInvoice({
+    invoiceNumbers: listInvoices(application.id).flatMap((i) => (i.number ? [i.number] : [])),
     imageBase64: parsed.base64,
     mediaType: parsed.mediaType,
     budget: application.budget,
