@@ -56,6 +56,7 @@ export function DossierScreen() {
   const [error, setError] = useState<string | null>(null);
   const [paywall, setPaywall] = useState(false);
   const [layout, setLayout] = useState<LayoutClientState | undefined>();
+  const [layoutReady, setLayoutReady] = useState(false); // the free layout state was read (or failed): no flash of the template panel before
 
   const load = useCallback(async () => {
     try {
@@ -141,9 +142,14 @@ export function DossierScreen() {
   useEffect(() => {
     if (!profileId) return;
     const q = new URLSearchParams({ profileId, ...(callId ? { callId } : {}) });
-    apiGet<LayoutClientState>(`${LAYOUT_API}?${q}`).then(setLayout).catch(() => undefined);
+    apiGet<LayoutClientState>(`${LAYOUT_API}?${q}`)
+      .then(setLayout)
+      .catch(() => undefined)
+      .finally(() => setLayoutReady(true));
   }, [profileId, callId]);
   const freeShown = layout?.mode === "libre" && !!layout.prepared;
+  // While there are proposals to choose from (or a batch is running) the template panel would only add clutter.
+  const freeBusy = layout?.enabled === true && (layout.busy || layout.proposals.length > 0);
 
   const fontUrls = design ? googleFontUrls(design) : [];
 
@@ -245,7 +251,7 @@ export function DossierScreen() {
 
       {data.profile.id && !data.call ? <LayoutPanel profileId={data.profile.id} callId={callId} state={layout} onState={setLayout} /> : null}
 
-      {suggestion && !freeShown ? (
+      {suggestion && layoutReady && !freeShown && !freeBusy ? (
         <DesignPanel
           kind={view.kind}
           autoDesigning={autoDesigning}
