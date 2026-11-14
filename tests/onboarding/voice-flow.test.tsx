@@ -98,4 +98,26 @@ describe("spoken onboarding", () => {
     render(<VoiceOrb active />);
     expect(getUserMedia).toHaveBeenCalledTimes(1);
   });
+
+  it("on iPhone each answer ends the session; 'Siguiente' reopens the microphone for the next question", async () => {
+    vi.spyOn(navigator, "userAgent", "get").mockReturnValue(
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+    );
+    render(<StepOnboarding />);
+    fireEvent.click(screen.getByTestId("choose-voice"));
+    act(() => {
+      FakeRecognition.latest.final("Me llamo Antía Varela y soy ilustradora de A Coruña.");
+      FakeRecognition.latest.end(); // iOS: single-shot session
+    });
+    expect(FakeRecognition.running).toHaveLength(0);
+    for (let q = 2; q <= 3; q++) {
+      fireEvent.click(screen.getByTestId("next"));
+      expect(FakeRecognition.running).toHaveLength(1);
+      act(() => {
+        FakeRecognition.latest.final(`Respuesta ${q}: pinto marinas.`);
+        FakeRecognition.latest.end();
+      });
+    }
+    await waitFor(() => expect(sent).toEqual(["Me llamo Antía Varela y soy ilustradora de A Coruña.", "Respuesta 2: pinto marinas.", "Respuesta 3: pinto marinas."]), { timeout: 5000 });
+  });
 });

@@ -35,6 +35,8 @@ type Rec = {
 const FATAL = new Set(["not-allowed", "service-not-allowed", "audio-capture", "network", "language-not-supported"]);
 /** Error codes after which voice cannot work at all on this device/page: the UI should switch to typing. */
 export const MIC_BLOCKED: ReadonlySet<string> = new Set(["not-allowed", "service-not-allowed", "audio-capture"]);
+/** A "no-speech" sooner than this after the session opened is a failure, not a pause. */
+const SILENCE_MIN_MS = 1500;
 const CUT = "El dictado se ha cortado. Pulsa de nuevo para seguir hablando.";
 const UNSUPPORTED = "Tu navegador no permite dictado. Escribe tu respuesta.";
 
@@ -142,6 +144,7 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
       // Track emitted finals per result index (Android re-sends earlier finals with resultIndex 0,
       // while WebKit/desktop may reuse index 0 after internal compaction or emit empty final tokens).
       const emittedAt = new Map<number, string>();
+      const openedAt = Date.now();
       r.onresult = (e) => {
         errorStreak.current = 0;
         for (const k of [...emittedAt.keys()]) {
@@ -176,7 +179,10 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
         if (rec.current !== r) return; // a replaced session's late error is not the live one's
         if (e.error === "aborted" && resumeOnEnd.current) return; // old session aborted while a new tap is already queued
         if (FATAL.has(e.error)) wanted.current = false;
-        else errorStreak.current += 1;
+        // Silence is not a failure: the person is reading the next question or waiting for the answer. Chrome ends
+        // the session with "no-speech" after a few quiet seconds and a fresh one takes over; only a no-speech that
+        // comes right away (a broken mic loop) counts towards the cap.
+        else if (e.error !== "no-speech" || Date.now() - openedAt < SILENCE_MIN_MS) errorStreak.current += 1;
         setFailure(e.error, speechErrorText(e.error));
       };
       r.onend = () => {

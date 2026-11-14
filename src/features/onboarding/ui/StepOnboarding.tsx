@@ -307,7 +307,12 @@ export function StepOnboarding() {
     } else if (i < 0) {
       speech.stop();
       setPhase({ at: "choose" });
-    } else setPhase({ at: "step", i });
+    } else {
+      setPhase({ at: "step", i });
+      // The tap on "Siguiente" is a user gesture: reopen the microphone if the browser closed it (iPhone ends each
+      // session after a pause; Chrome gives up after repeated errors), so the next answer is heard without another tap.
+      if (mode === "voice" && !speech.listening) speech.start();
+    }
   };
 
   const switchKind = async (k: ProfileKind) => {
