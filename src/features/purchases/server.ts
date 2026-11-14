@@ -1,6 +1,6 @@
 // Owned by WP-07. Entitlements on the server: the draft gate trusts only what is stored here.
 // With REVENUECAT_SECRET_API_KEY the sync ignores client claims and reads the customer from RevenueCat REST.
-import { canDraft, ENTITLEMENT_PRO, PaymentRequiredError, PRODUCTS, serverEnv, type EntitlementState } from "@/contracts";
+import { canDraft, PaymentRequiredError, PRODUCTS, publicEnv, serverEnv, type EntitlementState } from "@/contracts";
 import { getEntitlement, getMeta, nowIso, readDb, saveEntitlement } from "@/server/store";
 
 export const REVENUECAT_API = "https://api.revenuecat.com/v1";
@@ -41,8 +41,9 @@ export async function fetchSubscriber(appUserId: string, secretKey: string, fetc
  * Derive the entitlement from the RevenueCat customer. Premium credits: one per `mecena_solicitud_premium`
  * transaction bought after the last RevenueCat sync (first sync: all of them), added to the unused credits.
  */
-export function entitlementFromSubscriber(appUserId: string, sub: Subscriber, previous: EntitlementState | undefined, now = new Date()): EntitlementState {
-  const pro = sub.entitlements?.[ENTITLEMENT_PRO];
+export function entitlementFromSubscriber(appUserId: string, sub: Subscriber, previous: EntitlementState | undefined, now = new Date(), entitlementId = publicEnv().entitlementId): EntitlementState {
+  // the dashboard identifier (NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID, default "pro"; ours is "mecena_pro")
+  const pro = sub.entitlements?.[entitlementId];
   const active = !!pro && (pro.expires_date === null || Date.parse(pro.expires_date) > now.getTime());
   const txs = sub.non_subscriptions?.[PRODUCTS.solicitudPremium] ?? [];
   const since = previous?.source === "revenuecat" ? Date.parse(previous.updatedAt) : -Infinity;

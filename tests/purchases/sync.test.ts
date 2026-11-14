@@ -66,6 +66,17 @@ describe("syncEntitlement without a secret key (sandbox demo: trusts the client 
 });
 
 describe("entitlementFromSubscriber", () => {
+  it("uses the dashboard entitlement identifier from NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID", () => {
+    const sub = { entitlements: { mecena_pro: { expires_date: future, product_identifier: "MecenaTest", purchase_date: past } } };
+    expect(entitlementFromSubscriber(USER, sub, undefined).pro).toBe(false); // default id "pro"
+    process.env.NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID = "mecena_pro";
+    try {
+      expect(entitlementFromSubscriber(USER, sub, undefined)).toMatchObject({ pro: true, activeProductId: "MecenaTest" });
+    } finally {
+      delete process.env.NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID;
+    }
+  });
+
   it("lifetime entitlement (no expiry) is Pro", () => {
     const e = entitlementFromSubscriber(USER, { entitlements: { pro: { expires_date: null, product_identifier: "x", purchase_date: past } } }, undefined);
     expect(e.pro).toBe(true);
