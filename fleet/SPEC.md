@@ -86,7 +86,7 @@ flowchart LR
   Ingest --> Calls
 ```
 - **Stack:** TypeScript, Node ≥ 22.12, Next.js 16 App Router (Turbopack), React 19, zod 4, Vitest 5, npm. Persistence: one JSON file, read-through on every call (so the MCP process and the web app see each other's writes), serialised atomic writes.
-- **Deploy:** Fly.io at https://mecena.fly.dev (one machine + persistent volume at `/data`, Basic auth via `src/proxy.ts`; see README). HTTPS gives the phone the mic (Web Speech needs it) and RevenueCat checkout. Local alternative: `npm run dev:phone` + an HTTPS tunnel.
+- **Deploy:** Fly.io at https://mecena.fly.dev (one machine + persistent volume at `/data`, open; optional Basic auth via `src/proxy.ts`; see README). HTTPS gives the phone the mic (Web Speech needs it) and RevenueCat checkout. Local alternative: `npm run dev:phone` + an HTTPS tunnel.
 - **Platform APIs used:** Web Speech API (`webkitSpeechRecognition`, es-ES) for dictation; `<input type="file" accept="image/*" capture="environment">` for photos; RevenueCat Web SDK for checkout; BDNS public API for live calls (spike).
 - **Data pipeline:** see `fleet/DATA-PIPELINE.md` (team design doc, binding for WP-05/WP-06): hybrid, code decides eligibility and fit score, Claude structures the bases and explains. Its `Call`/`Profile` sketches are mapped onto the contracts in `src/contracts/domain.ts` (the contract wins; mapping in WP-05).
 - **AI components (real work each does):**
