@@ -14,7 +14,7 @@ Built for 1hack-2026.
   `npm run invite -- create 1HACK --label 1hack-2026 --uses 50 --credits 1 --expires 2026-12-31` · `npm run invite -- list` · `npm run invite -- delete 1HACK`.
   Codes are case-insensitive. The gift is kept apart from purchases (`grantedCredits`), so a RevenueCat sync never wipes it; a wrong, expired or used-up code gets its own message at sign-up.
 
-Neither set = open sign-up. Invite codes survive `npm run demo:reset`.
+Neither set = open sign-up. `MECENA_SIGNUP_OPEN=1` (`fly secrets set MECENA_SIGNUP_OPEN=1 -a mecena`) opens sign-up while keeping the codes: the field shows as optional, an empty code creates a plain account, and a typed code is still checked and still tags the cohort and gifts its credits. Invite codes survive `npm run demo:reset`.
 
 **AI spending limits.** Every route that calls Claude has a per-user rate limit (`src/server/ai-limits.ts`: e.g. 90 onboarding turns per 15 min, 20 jury runs per hour, 600 AI requests per user per day) and answers 429 with a Spanish message past it. A real session or a rehearsal never gets near them. On top, a global ceiling of Claude requests per day for everyone together (`MECENA_AI_DAILY_CAP`, default 1500; `src/server/ai/budget.ts`, persisted in `/data/ai-usage.json`). Request bodies are capped too (1 MB by default; texts at 4,000 characters, agent history at 20 turns).
 
@@ -42,6 +42,7 @@ The token expires in a year (Nov 2027). To renew it: `fly tokens create deploy -
   - `ANTHROPIC_API_KEY`: without it the app silently falls back to AI mocks.
   - `REVENUECAT_SECRET_API_KEY`: the RevenueCat **secret** key (`sk_…`) of the same sandbox project as the public `rcb_sb_…` key. With it, the server re-reads the customer from RevenueCat REST and ignores what the client claims; without it, production refuses every purchase (see `docs/revenuecat.md`). Set it with `fly secrets set REVENUECAT_SECRET_API_KEY=sk_... -a mecena --stage`.
   - `MECENA_SIGNUP_CODE`: default invite code for sign-up (more codes, with caps and gifts: `npm run invite`, see above).
+  - `MECENA_SIGNUP_OPEN`: `1` = open sign-up; invite codes become optional and still gift.
   - Optional: `BASIC_AUTH_USER` / `BASIC_AUTH_PASSWORD` (password gate), `MECENA_AI_DAILY_CAP` (global AI requests per day).
   - `fly secrets set ... --stage` stores a secret without restarting the machine; it takes effect on the next deploy.
 - Health check: `fly.toml` checks `GET /api/health` (public, no data) every 15 s. `fly checks list -a mecena` shows its state.

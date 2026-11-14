@@ -58,7 +58,7 @@ export const API = {
   authLogin: "/api/auth/login", // POST { email, password } -> MeResponse + session cookie
   authLogout: "/api/auth/logout", // POST -> clears the session
   authMe: "/api/auth/me", // GET -> MeResponse or 401; DELETE { confirm: true } -> deletes the account and all its data
-  authConfig: "/api/auth/config", // GET -> { signupCodeRequired }
+  authConfig: "/api/auth/config", // GET -> { signupCodeRequired, signupCodeAccepted }
   // Everything below needs a session and only ever sees the signed-in user's data.
   profile: "/api/profile", // GET active profile; PATCH patch
   profileMode: "/api/profile/mode", // POST { kind } switch to (or create) the user's creator/business profile

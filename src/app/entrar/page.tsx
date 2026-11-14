@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { safeNext } from "@/contracts";
 import { LoginScreen } from "@/features/auth/LoginScreen";
-import { signupCodeRequired } from "@/server/auth";
+import { signupCodeAccepted, signupCodeRequired } from "@/server/auth";
 import { currentUser } from "@/server/auth/page";
 
 export const metadata = { title: "Entrar · Mecena" };
@@ -12,5 +12,5 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
   const sp = await searchParams;
   const next = safeNext(Array.isArray(sp.next) ? sp.next[0] : sp.next);
   if (await currentUser()) redirect(next);
-  return <LoginScreen next={next} signupCodeRequired={signupCodeRequired()} initialMode={sp.cuenta === "nueva" ? "signup" : "login"} />;
+  return <LoginScreen next={next} signupCodeRequired={signupCodeRequired()} signupCodeAccepted={signupCodeAccepted()} initialMode={sp.cuenta === "nueva" ? "signup" : "login"} />;
 }

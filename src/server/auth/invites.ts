@@ -26,20 +26,35 @@ export function inviteStatus(inv: InviteCode, now = Date.now()): InviteStatus {
 
 const refusal = (status: Exclude<InviteStatus, "ok"> | "unknown") =>
   new ForbiddenError(
-    status === "expired" ? "Este código de invitación ha caducado." : status === "exhausted" ? "Este código de invitación ya no tiene plazas." : "El código de invitación no es correcto.",
+    (status === "expired" ? "Este código de invitación ha caducado." : status === "exhausted" ? "Este código de invitación ya no tiene plazas." : "El código de invitación no es correcto.") +
+      (serverEnv().signupOpen ? " Puedes dejarlo vacío y crear la cuenta igualmente." : ""),
   );
 
-/** Whether sign-up needs a code at all: the env code is set, or any code exists in the db (an expired one still closes it). */
-export function signupCodeRequired(db: Db = readDb()): boolean {
+/** Whether any code exists: the env code is set, or any code is in the db (an expired one counts too). */
+function anyCode(db: Db): boolean {
   return Boolean(serverEnv().signupCode) || db.inviteCodes.length > 0;
+}
+
+/** Whether sign-up needs a code: some code exists and sign-up is not open (MECENA_SIGNUP_OPEN=1). */
+export function signupCodeRequired(db: Db = readDb()): boolean {
+  return !serverEnv().signupOpen && anyCode(db);
+}
+
+/** Whether /entrar shows the code field: required, or optional when sign-up is open but a code can still gift something. */
+export function signupCodeAccepted(db: Db = readDb()): boolean {
+  return anyCode(db);
 }
 
 /** What a sign-up presented: a db invite (to be consumed inside createUser), the env code, or nothing (open sign-up). */
 export type Redemption = { kind: "invite"; code: string } | { kind: "env" };
 
-/** Checks the code a visitor typed. Throws 403 (wrong, expired, no places left); undefined = sign-up is open. */
+/**
+ * Checks the code a visitor typed. Throws 403 (wrong, expired, no places left); undefined = no code needed.
+ * With open sign-up an empty code is fine, but a typed one is still checked (a typo should not silently lose the gift).
+ */
 export function checkSignupCode(given: string | undefined, db: Db = readDb()): Redemption | undefined {
   const typed = normalizeInviteCode(given ?? "");
+  if (!typed && serverEnv().signupOpen) return undefined;
   let match: InviteCode | undefined;
   for (const inv of db.inviteCodes) if (same(typed, inv.code) && typed) match ||= inv; // no early exit: same work for every code
   if (match) {

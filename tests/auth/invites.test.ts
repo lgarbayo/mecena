@@ -21,9 +21,9 @@ afterEach(() => {
 
 describe("redeeming a code", () => {
   it("is required as soon as a code exists; typed case-insensitively; tags the cohort and counts the use", async () => {
-    expect(await (await config()).json()).toEqual({ signupCodeRequired: false });
+    expect(await (await config()).json()).toEqual({ signupCodeRequired: false, signupCodeAccepted: false });
     await createInvite({ code: "1hack", label: "1hack-2026", maxUses: 3 });
-    expect(await (await config()).json()).toEqual({ signupCodeRequired: true });
+    expect(await (await config()).json()).toEqual({ signupCodeRequired: true, signupCodeAccepted: true });
 
     expect((await signupWith("a@mecena.test")).status).toBe(403);
     expect((await signupWith("a@mecena.test", "otro")).status).toBe(403);
@@ -80,7 +80,28 @@ describe("redeeming a code", () => {
     expect(await deleteInvite("temp")).toBe(true);
     expect(await deleteInvite("temp")).toBe(false);
     expect(readDb().users).toHaveLength(1);
-    expect(await (await config()).json()).toEqual({ signupCodeRequired: false }); // no codes left: open again
+    expect(await (await config()).json()).toEqual({ signupCodeRequired: false, signupCodeAccepted: false }); // no codes left: open again
+  });
+
+  it("MECENA_SIGNUP_OPEN=1: no code needed, but a typed code is still checked and still gifts", async () => {
+    vi.stubEnv("MECENA_SIGNUP_OPEN", "1");
+    await createInvite({ code: "1HACK", label: "1hack-2026", maxUses: 1, grantCredits: 1 });
+    expect(await (await config()).json()).toEqual({ signupCodeRequired: false, signupCodeAccepted: true });
+
+    expect((await signupWith("a@mecena.test")).status).toBe(201);
+    expect((await signupWith("b@mecena.test", "  ")).status).toBe(201);
+    expect(readDb().users.map((u) => u.signupCohort)).toEqual([undefined, undefined]);
+
+    const typo = await signupWith("c@mecena.test", "1HAK");
+    expect(typo.status).toBe(403);
+    expect((await typo.json()).message).toMatch(/dejarlo vacío/);
+
+    expect((await signupWith("c@mecena.test", "1hack")).status).toBe(201);
+    const c = readDb().users.find((u) => u.email === "c@mecena.test")!;
+    expect(c.signupCohort).toBe("1hack-2026");
+    expect(getEntitlement(c.appUserId)).toMatchObject({ premiumCredits: 1, grantedCredits: 1 });
+    expect(readDb().inviteCodes[0].uses).toBe(1);
+    expect((await signupWith("d@mecena.test", "1hack")).status).toBe(403); // no places left: say so, do not drop the gift silently
   });
 
   it("codes survive a whole-database demo reset", async () => {
