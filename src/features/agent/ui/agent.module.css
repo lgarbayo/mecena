@@ -1,0 +1,119 @@
+/* WP-04 "Pregúntale a Mecena" — Dark Immersive Glassmorphism, mobile-first, zero italics */
+
+/* Floating launcher: right edge, above the bottom navigation (~62px + safe area), below sticky action bars (z 15). */
+.fab {
+  position: fixed;
+  right: max(var(--gutter), env(safe-area-inset-right));
+  bottom: calc(78px + env(safe-area-inset-bottom));
+  z-index: 14;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 138, 92, 0.45);
+  background: linear-gradient(135deg, rgba(255, 138, 92, 0.24), rgba(179, 140, 255, 0.2)), rgba(13, 11, 16, 0.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  color: var(--g-ink);
+  font: 600 0.85rem var(--sans);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 140ms var(--ease-out), box-shadow 160ms var(--ease-out);
+}
+.fab:hover { box-shadow: 0 12px 32px rgba(255, 138, 92, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+.fab:active { transform: scale(0.96); }
+.fab span { color: var(--g-accent); }
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  background: rgba(8, 6, 12, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fade 180ms ease both;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 45;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  height: min(78dvh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(18, 15, 23, 0.9);
+  backdrop-filter: blur(28px) saturate(165%);
+  -webkit-backdrop-filter: blur(28px) saturate(165%);
+  border: 1px solid var(--g-line-strong);
+  border-bottom: 0;
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  padding: 18px var(--gutter) calc(14px + env(safe-area-inset-bottom));
+  animation: rise 240ms var(--ease-out) both;
+}
+
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.kicker { margin: 0 0 2px; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.68rem; font-weight: 700; color: var(--g-accent); }
+.title { margin: 0; font: 600 1.35rem/1.15 var(--serif); }
+.close {
+  width: 40px; height: 40px; flex: none; border-radius: 999px;
+  border: 1px solid var(--g-line); background: var(--g-glass);
+  color: var(--g-ink); font: 400 1.4rem/1 var(--sans); cursor: pointer;
+}
+
+.log { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 12px -4px 10px; padding: 0 4px; display: flex; flex-direction: column; gap: 10px; }
+.empty p { margin: 4px 0 12px; color: var(--g-ink-2); font-size: 0.95rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  min-height: 40px; padding: 8px 14px; border-radius: 999px;
+  border: 1px solid var(--g-line); background: var(--g-glass);
+  color: var(--g-ink); font: 500 0.88rem var(--sans); text-align: left; cursor: pointer;
+}
+.chip:hover { border-color: rgba(255, 138, 92, 0.5); }
+
+.turn { max-width: 92%; padding: 10px 14px; border-radius: 18px; margin: 0; }
+.user { align-self: flex-end; background: linear-gradient(135deg, rgba(255, 138, 92, 0.26), rgba(179, 140, 255, 0.2)); border: 1px solid rgba(255, 138, 92, 0.35); }
+.bot { align-self: flex-start; background: var(--g-glass); border: 1px solid var(--g-line); }
+.error { border-color: rgba(255, 179, 138, 0.55); }
+.thinking { color: var(--g-ink-2); animation: pulse 1.4s ease-in-out infinite; }
+.text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.95rem; }
+.text a { color: var(--g-accent); text-decoration: underline; text-underline-offset: 3px; }
+.tools { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; padding: 0; }
+.tools li { font-size: 0.75rem; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--g-line); color: var(--g-ink-2); }
+.toolOk { border-color: rgba(79, 209, 197, 0.45) !important; }
+.toolKo { border-color: rgba(255, 179, 138, 0.55) !important; }
+
+.form { display: flex; align-items: flex-end; gap: 8px; }
+.input {
+  flex: 1; min-width: 0; min-height: 44px; max-height: 120px; resize: none;
+  padding: 11px 14px; border-radius: 22px;
+  border: 1px solid var(--g-line); background: rgba(255, 255, 255, 0.06);
+  color: var(--g-ink); font: 16px/1.35 var(--sans); /* 16px: no zoom on iOS */
+}
+.input:focus { outline: none; border-color: rgba(255, 138, 92, 0.6); }
+.iconBtn {
+  width: 44px; height: 44px; flex: none; border-radius: 999px;
+  border: 1px solid var(--g-line); background: var(--g-glass); cursor: pointer; font-size: 1.1rem;
+}
+.listening { border-color: var(--g-accent); box-shadow: 0 0 0 3px rgba(255, 138, 92, 0.25); animation: pulse 1.2s ease-in-out infinite; }
+.send {
+  min-height: 44px; padding: 0 16px; flex: none; border-radius: 999px; border: 0;
+  background: linear-gradient(135deg, #ff8a5c, #ff6f61); color: #1a0d06; font: 700 0.9rem var(--sans); cursor: pointer;
+}
+.send:disabled { opacity: 0.45; cursor: default; }
+.voiceError { margin: 6px 0 0; font-size: 0.8rem; color: var(--warn); }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulse { 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .backdrop, .thinking, .listening { animation: none; }
+}

@@ -1,0 +1,41 @@
+/* WP-04 /cuenta "Conectar con Claude" — glass cards, mobile-first (390px), zero italics */
+.lead { margin: 0 0 12px; color: var(--g-ink-2); }
+.lead strong { color: var(--g-ink); font-weight: 600; }
+.endpoint { margin: 0 0 16px; font-size: 0.9rem; color: var(--g-ink-2); overflow-wrap: anywhere; }
+.endpoint code, .list code { font-size: 0.85rem; color: var(--g-ink); }
+
+.create label { display: block; font-size: 0.85rem; color: var(--g-ink-2); margin-bottom: 6px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.row input {
+  flex: 1 1 180px; min-width: 0; min-height: 44px; padding: 10px 14px; border-radius: 14px;
+  border: 1px solid var(--g-line); background: rgba(255, 255, 255, 0.06); color: var(--g-ink); font: 16px var(--sans);
+}
+.row input:focus { outline: none; border-color: rgba(255, 138, 92, 0.6); }
+.error { color: var(--warn); margin: 10px 0 0; }
+
+.fresh { border-color: rgba(255, 138, 92, 0.5); }
+.hint { margin: 0 0 10px; font-size: 0.88rem; color: var(--g-ink-2); }
+.tokenRow { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; }
+.token {
+  flex: 1; min-width: 0; overflow-wrap: anywhere; padding: 10px 12px; border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35); border: 1px solid var(--g-line); font-size: 0.85rem;
+}
+
+.snippet { margin-top: 14px; }
+.snippetHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.snippetHead h3 { margin: 0; font: 600 1rem var(--sans); }
+.code {
+  margin: 6px 0 0; padding: 12px; border-radius: 12px; overflow-x: auto; max-width: 100%;
+  background: rgba(0, 0, 0, 0.35); border: 1px solid var(--g-line); font-size: 0.78rem; line-height: 1.45;
+}
+.copy {
+  flex: none; min-height: 36px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--g-line); background: var(--g-glass); color: var(--g-ink); font: 600 0.8rem var(--sans);
+}
+.copy:hover { border-color: rgba(255, 138, 92, 0.5); }
+
+.h2 { margin: 0 0 10px; font: 600 1.15rem var(--serif); }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--g-line); }
+.list li:first-child { border-top: 0; }
+.meta { margin: 2px 0 0; font-size: 0.8rem; color: var(--g-ink-3); }
