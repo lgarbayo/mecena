@@ -91,7 +91,7 @@ export async function adaptVariant(input: { profile: Profile; call: Call; sectio
       if (!out.sections?.length) throw new Error("empty adaptation");
       await updateDb((db) => {
         // Notes and limits live in the rules plan (recomputed on every request); the cache keeps only the content.
-        db.variantCache = [...db.variantCache.filter((v) => v.cacheKey !== key), { callId: input.call.id, notes: [], cacheKey: key, ...out }].slice(-50);
+        db.variantCache = [...db.variantCache.filter((v) => v.cacheKey !== key), { callId: input.call.id, notes: [], cacheKey: key, profileId: input.profile.id, ...out }].slice(-50);
       });
       return out;
     } catch (e) {

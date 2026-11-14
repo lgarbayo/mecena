@@ -32,6 +32,27 @@ export function TrustIcon({ name }: { name: TrustPoint["icon"] }) {
           <path d="M5 15h14v3H5zM7 21h10" />
         </svg>
       );
+    case "spark":
+      return (
+        <svg {...base}>
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+          <path d="m8 8 1.5 1.5M14.5 14.5 16 16M16 8l-1.5 1.5M9.5 14.5 8 16" />
+        </svg>
+      );
+    case "mic":
+      return (
+        <svg {...base}>
+          <rect x="9" y="3" width="6" height="11" rx="3" />
+          <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+        </svg>
+      );
+    case "trash":
+      return (
+        <svg {...base}>
+          <path d="M4 7h16M10 11v6M14 11v6" />
+          <path d="M6 7l1 13h10l1-13M9 7V4h6v3" />
+        </svg>
+      );
   }
 }
 

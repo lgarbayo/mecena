@@ -17,7 +17,7 @@ export interface DemoResetResult {
 
 /**
  * Deletes everything the user owns (profiles, transcripts, works and their photos, dossiers, designs, PDF exports,
- * applications, jury scores, usage, match caches), gives them one blank creator profile and a fresh RevenueCat app
+ * applications, jury scores, usage, match and dossier-variant caches), gives them one blank creator profile and a fresh RevenueCat app
  * user id (so the paywall shows again). Other users are never touched.
  */
 export async function resetUserDemo(user: User, input: { scenario: "blank" | "onboarded" }): Promise<DemoResetResult> {
@@ -39,6 +39,7 @@ export async function resetUserDemo(user: User, input: { scenario: "blank" | "on
     db.usage = db.usage.filter((x) => x.appUserId !== oldAppUserId);
     db.entitlements = db.entitlements.filter((e) => e.appUserId !== oldAppUserId);
     db.matchCache = db.matchCache.filter((m) => !profileIds.has(m.profileId) && ![...profileIds].some((id) => m.cacheKey.startsWith(`${id}|`)));
+    db.variantCache = db.variantCache.filter((v) => !v.profileId || !profileIds.has(v.profileId));
 
     const fresh = blankProfileFor(user.id, "creator");
     db.profiles.push(fresh);

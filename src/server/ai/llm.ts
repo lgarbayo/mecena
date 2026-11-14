@@ -10,6 +10,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { z } from "zod";
 import { serverEnv, type ModelTier } from "@/contracts";
+import { tryChargeAiCall } from "./budget";
 
 let client: Anthropic | undefined;
 export function anthropic(): Anthropic {
@@ -29,10 +30,26 @@ export function modelFor(tier: ModelTier): string {
 }
 
 export class AiError extends Error {
-  constructor(message: string, readonly reason: "refusal" | "parse" | "api") {
+  constructor(message: string, readonly reason: "refusal" | "parse" | "api" | "budget") {
     super(message);
     this.name = "AiError";
   }
+}
+
+/**
+ * Today's global ceiling of Claude requests is used up (src/server/ai/budget.ts). An AiError, so features that fall
+ * back to their deterministic version on AI failure (onboarding, works) keep working; routes answer 429.
+ */
+export class AiBudgetError extends AiError {
+  constructor() {
+    super("Mecena ha llegado hoy a su límite de uso de la IA. Vuelve a probar mañana.", "budget");
+    this.name = "AiBudgetError";
+  }
+}
+
+/** Call right before every request to the Anthropic API: counts it against the global daily ceiling. */
+export function chargeAiCall(): void {
+  if (!tryChargeAiCall()) throw new AiBudgetError();
 }
 
 export type UserContent = Anthropic.Beta.Messages.BetaContentBlockParam[] | string;
@@ -48,6 +65,7 @@ export interface StructuredRequest<S extends z.ZodType> {
 
 /** One Claude call that returns a schema-validated object. Throws AiError on refusal / unparseable output. */
 export async function structured<S extends z.ZodType>(req: StructuredRequest<S>): Promise<z.infer<S>> {
+  chargeAiCall();
   const res = await anthropic()
     .beta.messages.parse({
       model: modelFor(req.tier),

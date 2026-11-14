@@ -4,11 +4,13 @@ import { improveApplication } from "@/features/jury/service";
 import { withJuryRun } from "@/features/purchases/server";
 import { ownedApplication, requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 
 export const POST = route(async (req: Request) => {
   const user = requireUser(req);
+  limitAi(user, "jury-improve");
   const input = await body(req, JuryImproveRequest);
   ownedApplication(user.id, input.applicationId);
   // Pro, or the runs included with the application (402 when they are used up)

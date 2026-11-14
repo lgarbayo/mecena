@@ -27,3 +27,11 @@
 }
 .submit { width: 100%; }
 .foot { font-size: 0.85rem; color: var(--g-ink-2); margin: 16px 0 0; text-align: center; }
+.foot a { color: var(--g-ink); text-decoration: underline; text-underline-offset: 3px; }
+/* "Borrar mi cuenta" on /confianza */
+.danger { border-top: 1px solid var(--g-line); padding-top: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.danger h2 { margin: 0; font-size: 1.05rem; }
+.danger p { margin: 0; color: var(--g-ink-2); overflow-wrap: anywhere; }
+.confirm { display: flex; flex-direction: column; gap: 0.75rem; }
+.confirmActions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.destructive { background: #e5484d; color: #fff; }

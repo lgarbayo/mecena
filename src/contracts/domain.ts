@@ -399,6 +399,7 @@ export const Db = z.object({
   usage: z.array(Usage),
   matchCache: z.array(MatchResult.extend({ cacheKey: z.string() })),
   // CCR-7: call-adapted dossier variants, keyed by profile/dossier/works/call version (generation takes ~20 s).
-  variantCache: z.array(DossierVariant.extend({ cacheKey: z.string() })).default([]),
+  // profileId: whose variant it is, so a demo reset or an account deletion can drop it (older entries have none).
+  variantCache: z.array(DossierVariant.extend({ cacheKey: z.string(), profileId: z.string().optional() })).default([]),
 });
 export type Db = Omit<z.infer<typeof Db>, "works"> & { works: Work[] };

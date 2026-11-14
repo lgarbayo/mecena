@@ -142,7 +142,7 @@ describe("MCP server tools", () => {
     const c = await connect();
     const r = await call(c, "explain_call", { callId: "no-existe" });
     expect(r.isError).toBe(true);
-    expect(r.blocks[0].text).toMatch(/no encontrad/i);
+    expect(r.blocks[0].text).toMatch(/no encontr/i);
   });
 
   it("uses the injected runner (handlers implemented in parallel WPs can be faked)", async () => {
@@ -163,7 +163,7 @@ describe("MCP server tools", () => {
     const c = await connect();
     const r = await call(c, "get_profile", { profileId: other.user.activeProfileId });
     expect(r.isError).toBe(true);
-    expect(r.blocks[0].text).toMatch(/no encontrad/i);
+    expect(r.blocks[0].text).toMatch(/no encontr/i);
     const mine = await call(c, "get_profile");
     expect(json(mine.blocks).profile.id).toBe("demo-creator");
   });

@@ -9,6 +9,6 @@ export const dynamic = "force-dynamic";
 export const GET = route(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   const { id } = ownedWork(requireUser(req).id, (await params).id);
   const img = readWorkImage(id);
-  if (!img) throw new NotFoundError(`Imagen ${id}`);
+  if (!img) throw new NotFoundError("image");
   return new Response(new Uint8Array(img.bytes), { headers: { "content-type": img.mediaType, "cache-control": "private, no-store" } });
 });

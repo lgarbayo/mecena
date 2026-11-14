@@ -8,18 +8,19 @@ import { currentDesign, designHistory, requestDesign, undoDesign } from "@/featu
 import { body, json, route } from "@/server/http";
 import { requireProfile, requireUser, resolveProfile } from "@/server/auth";
 import { getCall } from "@/server/store";
+import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const Post = z.object({
   request: z.string().trim().max(600).default(""),
-  workColors: z.array(z.string()).max(8).optional(),
-  preset: z.string().optional(),
+  workColors: z.array(z.string().max(32)).max(8).optional(),
+  preset: z.string().max(64).optional(),
   undo: z.boolean().optional(),
   auto: z.boolean().optional(),
-  profileId: z.string().optional(),
-  callId: z.string().optional(),
+  profileId: z.string().max(200).optional(),
+  callId: z.string().max(200).optional(),
 });
 
 export const GET = route(async (req: Request) => {
@@ -36,6 +37,7 @@ export const POST = route(async (req: Request) => {
   const profile = await resolveProfile(user, input.profileId);
   if (input.undo) return json(undoDesign({ profileId: profile.id, callId: input.callId }));
   if (!input.preset && !input.request && !input.auto) return json({ error: "bad_request", message: "Cuéntame cómo quieres tu dossier." }, { status: 400 });
+  limitAi(user, "dossier-design");
   return json(await requestDesign({ ...input, profileId: profile.id }));
 });
 

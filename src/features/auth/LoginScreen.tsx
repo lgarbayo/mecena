@@ -1,7 +1,8 @@
 "use client";
 /** /entrar: email + password, "Entrar" or "Crear cuenta". After success, back to ?next (or home) with a full reload. */
 import { useState, type FormEvent } from "react";
-import { API, safeNext } from "@/contracts";
+import Link from "next/link";
+import { API, ROUTES, safeNext } from "@/contracts";
 import type { MeResponse } from "@/contracts/api";
 import { Button, Card, PageTitle } from "@/components/ui";
 import { ApiClientError, apiSend } from "@/lib/api-client";
@@ -85,7 +86,9 @@ export function LoginScreen({ next, signupCodeRequired, initialMode = "login" }:
           </Button>
         </form>
       </Card>
-      <p className={styles.foot}>Mecena prepara; tú presentas.</p>
+      <p className={styles.foot}>
+        Mecena prepara; tú presentas. <Link href={ROUTES.trust}>Cómo cuidamos tu obra y tus datos</Link>
+      </p>
     </div>
   );
 }

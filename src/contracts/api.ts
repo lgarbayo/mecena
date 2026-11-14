@@ -25,6 +25,19 @@ export const ApiError = z.object({
 });
 export type ApiError = z.infer<typeof ApiError>;
 
+// Input ceilings (the AI runs on the owner's key, so nothing a client sends may grow a prompt without bound).
+export const MAX_TEXT = 4000; // one spoken/typed chunk, an agent message, a voice note
+export const MAX_HISTORY = 20; // agent conversation turns sent back each time
+const ID = z.string().max(200);
+const tooLong = (n: number) => `Este texto es demasiado largo (máximo ${n.toLocaleString("es-ES")} caracteres).`;
+const userText = (n = MAX_TEXT) => z.string().max(n, tooLong(n));
+/**
+ * Ceiling on a whole object the user edits by hand (profile, technical sheet, draft): its fields feed later prompts, and
+ * the domain schemas stay unbounded so AI-written data already stored keeps parsing.
+ */
+const capped = <S extends z.ZodType>(schema: S, maxChars: number) =>
+  schema.refine((v) => JSON.stringify(v ?? null).length <= maxChars, "Hay demasiado texto. Acórtalo un poco y vuelve a probar.");
+
 // /api/auth (the only API paths that work without a session)
 export const AuthEmail = z
   .string()
@@ -51,13 +64,13 @@ export type AuthConfigResponse = z.infer<typeof AuthConfigResponse>;
 
 // /api/profile (profileId, when given, must be one of the signed-in user's profiles)
 export const ProfileResponse = z.object({ profile: Profile, appUserId: z.string() });
-export const ProfilePatchRequest = z.object({ profileId: z.string().optional(), patch: ProfilePatch });
+export const ProfilePatchRequest = z.object({ profileId: ID.optional(), patch: capped(ProfilePatch, 30_000) });
 export const ProfileModeRequest = z.object({ kind: ProfileKind });
 
 // /api/onboarding/turn
 export const OnboardingTurnRequest = z.object({
-  profileId: z.string().optional(),
-  text: z.string().min(1),
+  profileId: ID.optional(),
+  text: userText().min(1),
   source: z.enum(["voice", "text"]),
   stepKey: z.string().optional(),
   reset: z.boolean().optional(),
@@ -75,10 +88,10 @@ export type OnboardingTurnResponse = z.infer<typeof OnboardingTurnResponse>;
 // /api/onboarding/import (CCR-8): the user's existing dossier (PDF, photo of it, or pasted text) as the starting point.
 export const ImportDossierRequest = z
   .object({
-    profileId: z.string().optional(),
+    profileId: ID.optional(),
     fileDataUrl: z.string().regex(/^data:(application\/pdf|image\/(jpeg|png|webp));base64,/).optional(),
     fileName: z.string().max(200).optional(),
-    text: z.string().max(60_000).optional(),
+    text: userText(60_000).optional(),
   })
   .refine((r) => !!r.fileDataUrl || !!r.text?.trim(), { message: "Sube un archivo o pega el texto de tu dossier" });
 export type ImportDossierRequest = z.infer<typeof ImportDossierRequest>;
@@ -91,21 +104,21 @@ export type ImportDossierResponse = z.infer<typeof ImportDossierResponse>;
 
 // /api/works
 export const CreateWorkRequest = z.object({
-  profileId: z.string().optional(),
-  imageDataUrl: z.string().startsWith("data:image/"),
-  voiceDescription: z.string().optional(),
+  profileId: ID.optional(),
+  imageDataUrl: z.string().startsWith("data:image/"), // size: the route's body limit and MAX_IMAGE_BYTES
+  voiceDescription: userText().optional(),
   // CCR-arts
   mediaKind: MediaKind.optional(),
-  links: z.array(z.string().url()).optional(),
+  links: z.array(z.string().url().max(2000)).max(20).optional(),
 });
 export const UpdateWorkRequest = z.object({
-  sheet: TechnicalSheet.partial().optional(),
+  sheet: capped(TechnicalSheet.partial(), 10_000).optional(),
   crop: CropSuggestion.optional(),
   confirmed: z.boolean().optional(),
   order: z.number().int().optional(),
   // CCR-arts: links replaces the whole list; mediaKind set explicitly by the artist.
   mediaKind: MediaKind.optional(),
-  links: z.array(z.string().url()).optional(),
+  links: z.array(z.string().url().max(2000)).max(20).optional(),
 });
 export const WorkResponse = z.object({ work: Work });
 export const WorksResponse = z.object({ works: z.array(Work) });
@@ -151,7 +164,7 @@ export const CallsResponse = z.object({
 });
 export type CallsResponse = z.infer<typeof CallsResponse>;
 // /api/calls/research (Pro deep research: unverified private calls found on the web)
-export const DeepResearchRequest = z.object({ profileId: z.string().optional() }); // default: the user's active profile
+export const DeepResearchRequest = z.object({ profileId: ID.optional() }); // default: the user's active profile
 export const DeepResearchResponse = z.object({
   status: z.enum(["idle", "running", "done", "failed", "limited"]),
   startedAt: z.string().optional(),
@@ -167,13 +180,16 @@ export const CallResponse = z.object({ call: Call, match: MatchResult, checklist
 
 // /api/applications
 // appUserId is accepted for older clients but ignored: the server always uses the signed-in user's.
-export const CreateApplicationRequest = z.object({ callId: z.string(), profileId: z.string().optional(), appUserId: z.string().optional() });
+export const CreateApplicationRequest = z.object({ callId: ID, profileId: ID.optional(), appUserId: ID.optional() });
 export const ApplicationResponse = z.object({ application: Application });
-export const UpdateApplicationRequest = z.object({ sections: Application.shape.sections.optional(), budget: Application.shape.budget.optional(), checklist: Application.shape.checklist.optional() });
+export const UpdateApplicationRequest = capped(
+  z.object({ sections: Application.shape.sections.optional(), budget: Application.shape.budget.optional(), checklist: Application.shape.checklist.optional() }),
+  200_000,
+);
 
 // /api/jury
-export const JuryRequest = z.object({ applicationId: z.string() });
-export const JuryImproveRequest = z.object({ applicationId: z.string(), scoreId: z.string(), fixes: z.array(z.string()).optional() });
+export const JuryRequest = z.object({ applicationId: ID });
+export const JuryImproveRequest = z.object({ applicationId: ID, scoreId: ID, fixes: z.array(userText(1000)).max(30).optional() });
 // GET /api/jury?applicationId -> latest score (or null)
 export const JuryLatestResponse = z.object({ score: JuryScore.nullable(), application: Application });
 export const JuryResponse = z.object({ score: JuryScore, previous: JuryScore.optional(), application: Application });
@@ -194,8 +210,11 @@ export const DemoResetResponse = z.object({ ok: z.literal(true), appUserId: z.st
 
 // /api/agent
 export const AgentRequest = z.object({
-  message: z.string().min(1),
-  history: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() })).default([]),
+  message: userText().min(1),
+  history: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: userText() }))
+    .max(MAX_HISTORY, "La conversación es demasiado larga. Empieza una nueva.")
+    .default([]),
 });
 export const AgentResponse = z.object({
   reply: z.string(),

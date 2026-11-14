@@ -60,21 +60,77 @@ export function initialDb(): Db {
   return defaultDb();
 }
 
+/**
+ * Read cache: the parsed, validated db.json, keyed by the file's inode, size and mtime (ns). A write from this process
+ * or from another one (the MCP server) renames a new file in, so the key changes and the next read parses it again.
+ * Callers always get their own deep copy (they may mutate it), never the cached object.
+ */
+const cache = ((globalThis as unknown as Record<symbol, unknown>)[Symbol.for("mecena.db-cache")] ??= { file: "", key: "", db: undefined, good: false }) as {
+  file: string;
+  key: string;
+  db: Db | undefined;
+  /** db.json itself parsed (false: it was damaged and `db` came from the backup). */
+  good: boolean;
+};
+
+function fileKey(f: string): string | undefined {
+  try {
+    const st = fs.statSync(f, { bigint: true });
+    return `${st.ino}:${st.size}:${st.mtimeNs}`;
+  } catch {
+    return undefined;
+  }
+}
+
+function parseDbFile(f: string): Db {
+  return Db.parse(JSON.parse(fs.readFileSync(f, "utf8")));
+}
+
+/** The previous db.json, kept by every write (see writeDbSync). */
+export const backupFile = () => `${dbFile()}.bak`;
+
 export function readDb(): Db {
   const f = dbFile();
-  if (!fs.existsSync(f)) {
+  const key = fileKey(f); // stat before reading: a write landing in between only costs one more parse later
+  if (!key) {
     const db = initialDb();
     writeDbSync(db);
-    return db;
+    return structuredClone(db);
   }
-  return Db.parse(JSON.parse(fs.readFileSync(f, "utf8")));
+  if (cache.file === f && cache.key === key && cache.db) return structuredClone(cache.db);
+  let db: Db;
+  let good = true;
+  try {
+    db = parseDbFile(f);
+  } catch (e) {
+    // A damaged db.json (disk full, a hand edit) would take the whole app down: serve the last good copy instead. The
+    // next write replaces db.json with valid data again.
+    if (!fs.existsSync(backupFile())) throw e;
+    console.error("[store] db.json is unreadable, serving db.json.bak:", e instanceof Error ? e.message : e);
+    db = parseDbFile(backupFile());
+    good = false;
+  }
+  Object.assign(cache, { file: f, key, db, good });
+  return structuredClone(db);
 }
 
 function writeDbSync(db: Db) {
   fs.mkdirSync(dataDir(), { recursive: true });
-  const tmp = `${dbFile()}.${process.pid}.tmp`;
+  const file = dbFile();
+  const tmp = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
-  fs.renameSync(tmp, dbFile());
+  // Keep the previous version: if db.json is ever damaged, readDb falls back to it. Only a db.json known to parse is
+  // copied (updateDb has just read it), so a damaged file never overwrites the good backup.
+  if (cache.file === file && cache.good && cache.key === fileKey(file)) {
+    try {
+      fs.copyFileSync(file, backupFile());
+    } catch (e) {
+      console.warn("[store] could not back up db.json:", e instanceof Error ? e.message : e);
+    }
+  }
+  fs.renameSync(tmp, file);
+  const key = fileKey(file);
+  Object.assign(cache, key ? { file, key, db: structuredClone(db), good: true } : { file: "", key: "", db: undefined, good: false });
 }
 
 let queue: Promise<unknown> = Promise.resolve();
@@ -102,7 +158,7 @@ export async function resetDb(db: Db = initialDb()): Promise<Db> {
 /** A profile by id. The id is required: there is no global "active profile" any more (it lives on each User). */
 export function getProfile(id: string): Profile {
   const p = readDb().profiles.find((x) => x.id === id);
-  if (!p) throw new NotFoundError(`Perfil ${id}`);
+  if (!p) throw new NotFoundError("profile");
   return p;
 }
 /** Every profile an account owns. */
@@ -154,7 +210,7 @@ export function withCanonicalFields(p: Profile): Profile {
 export function patchProfile(id: string, patch: ProfilePatch): Promise<Profile> {
   return updateDb((db) => {
     const i = db.profiles.findIndex((x) => x.id === id);
-    if (i < 0) throw new NotFoundError(`Perfil ${id}`);
+    if (i < 0) throw new NotFoundError("profile");
     db.profiles[i] = mergeProfile(db.profiles[i], patch);
     return db.profiles[i];
   });
@@ -197,7 +253,7 @@ export function listWorks(profileId: string): Work[] {
 }
 export function getWork(id: string): Work {
   const w = readDb().works.find((x) => x.id === id);
-  if (!w) throw new NotFoundError(`Obra ${id}`);
+  if (!w) throw new NotFoundError("work");
   return w;
 }
 export function saveWork(w: Work): Promise<Work> {
@@ -291,14 +347,14 @@ export function getCallHistory(callId: string): CallHistory | undefined {
 
 export function getCall(id: string): Call {
   const c = listCalls().find((x) => x.id === id);
-  if (!c) throw new NotFoundError(`Convocatoria ${id}`);
+  if (!c) throw new NotFoundError("call");
   return c;
 }
 
 // ---------- applications & jury ----------
 export function getApplication(id: string): Application {
   const a = readDb().applications.find((x) => x.id === id);
-  if (!a) throw new NotFoundError(`Solicitud ${id}`);
+  if (!a) throw new NotFoundError("application");
   return a;
 }
 export function findApplication(profileId: string, callId: string): Application | undefined {

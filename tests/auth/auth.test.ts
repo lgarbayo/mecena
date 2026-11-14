@@ -7,7 +7,7 @@ import { GET as me } from "@/app/api/auth/me/route";
 import { GET as config } from "@/app/api/auth/config/route";
 import { DEMO_BUSINESS_ID, DEMO_CREATOR_ID } from "@/fixtures";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
-import { RATE_LIMIT } from "@/server/auth/rate-limit";
+import { IP_RATE_LIMIT, RATE_LIMIT } from "@/server/auth/rate-limit";
 import { readDb, updateDb } from "@/server/store";
 import { req, TEST_PASSWORD } from "../helpers";
 
@@ -134,15 +134,17 @@ describe("POST /api/auth/login", () => {
     expect(wrong.headers.get("set-cookie")).toBeNull();
   });
 
-  it(`rate limit: after ${RATE_LIMIT.attempts} failed attempts per email (or per IP) -> 429`, async () => {
+  it(`rate limit: after ${RATE_LIMIT.attempts} failed attempts per email from one IP -> 429; per IP the limit is ${IP_RATE_LIMIT.attempts}`, async () => {
     await signup(signupReq({ email: "rl@example.com", password: TEST_PASSWORD }));
     for (let i = 0; i < RATE_LIMIT.attempts; i++) expect((await login(loginReq({ email: "rl@example.com", password: `mal-${i}-xxxx` }))).status).toBe(401);
     const blocked = await login(loginReq({ email: "rl@example.com", password: TEST_PASSWORD }));
     expect(blocked.status).toBe(429);
     expect((await blocked.json()).error).toBe("too_many_requests");
-    // per IP: another email from the same client is blocked too; another client is not
+    // the same account from another client (the demo phone) is not locked by someone else's wrong guesses
+    expect((await login(loginReq({ email: "rl@example.com", password: TEST_PASSWORD }, { "x-forwarded-for": "198.51.100.9" }))).status).toBe(200);
+    // per IP: a whole venue behind one NAT address shares a much higher limit
     const ip = { "x-forwarded-for": "203.0.113.7" };
-    for (let i = 0; i < RATE_LIMIT.attempts; i++) await login(loginReq({ email: `otro${i}@example.com`, password: "mal-xxxxxx" }, ip));
+    for (let i = 0; i < IP_RATE_LIMIT.attempts; i++) await login(loginReq({ email: `otro${i}@example.com`, password: "mal-xxxxxx" }, ip));
     expect((await login(loginReq({ email: "nuevo@example.com", password: "mal-xxxxxx" }, ip))).status).toBe(429);
     expect((await login(loginReq({ email: "nuevo@example.com", password: "mal-xxxxxx" }, { "x-forwarded-for": "198.51.100.1" }))).status).toBe(401);
   });

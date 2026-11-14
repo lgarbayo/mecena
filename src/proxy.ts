@@ -1,11 +1,14 @@
 /**
  * Two gates, in order:
  * 1. Optional HTTP Basic auth for the whole site (BASIC_AUTH_PASSWORD; unset = off, local dev and tests run without it).
+ *    Only Fly's health check (/api/health) skips it.
  * 2. Accounts: without the session cookie, pages redirect to /entrar?next=<path> and /api/* answers 401 JSON.
- *    Public: /entrar, /api/auth/*, Next build assets and static files. This is only an optimistic check of the cookie's
- *    presence; every route handler and page validates the session itself (src/server/auth) before touching data.
+ *    Public: /entrar, the opening screen (/) and /confianza (PUBLIC_PAGES), /api/auth/*, /api/health, Next build
+ *    assets and static files. This is only an optimistic check of the cookie's presence; every route handler and page
+ *    validates the session itself (src/server/auth) before touching data.
  */
 import { NextResponse, type NextRequest } from "next/server";
+import { API, PUBLIC_PAGES } from "@/contracts/routes";
 
 /** Same name as src/server/auth/cookie.ts (not imported: that module pulls node:crypto, the proxy stays light). */
 const SESSION_COOKIE = "mecena_session";
@@ -45,6 +48,7 @@ function basicAuth(request: NextRequest): NextResponse | undefined {
 /** Paths that work without an account. */
 function isPublicPath(pathname: string): boolean {
   if (pathname === LOGIN || pathname.startsWith(`${LOGIN}/`)) return true;
+  if (PUBLIC_PAGES.includes(pathname) || pathname === API.health) return true;
   if (pathname === "/api/auth" || pathname.startsWith("/api/auth/")) return true;
   if (pathname.startsWith("/_next/") || pathname === "/favicon.ico") return true;
   // Static files from public/ (robots.txt, icons, demo images…): a dot in the last segment, outside the API.
@@ -53,6 +57,7 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname === API.health) return NextResponse.next(); // Fly's health check: no credentials
   const denied = basicAuth(request);
   if (denied) return denied;
 

@@ -4,7 +4,7 @@
  */
 import type Anthropic from "@anthropic-ai/sdk";
 import { TOOL_NAMES, toolSchemas, type ToolContext } from "@/contracts";
-import { AiError, anthropic, modelFor } from "@/server/ai/llm";
+import { AiError, anthropic, chargeAiCall, modelFor } from "@/server/ai/llm";
 import { isToolName } from "@/tools/registry";
 import { summarizeToolResult, toolErrorMessage, toolInputJsonSchema } from "@/tools/present";
 import type { AgentHistory, AgentToolCall, AgentTurn, RunToolFn } from "./types";
@@ -74,6 +74,7 @@ export async function runRealAgent(message: string, history: AgentHistory, deps:
   const summaries: string[] = [];
 
   for (let i = 0; i < MAX_AGENT_ITERATIONS; i++) {
+    chargeAiCall(); // global daily ceiling of Claude requests (src/server/ai/budget.ts)
     const res = await client.messages
       .create({
         model: modelFor("smart"),

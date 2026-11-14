@@ -51,7 +51,7 @@ export const HOME = {
 export interface TrustPoint {
   title: string;
   body: string;
-  icon: "hand" | "lock" | "pen" | "stamp";
+  icon: "hand" | "lock" | "pen" | "stamp" | "spark" | "mic" | "trash";
 }
 
 export const TRUST = {
@@ -62,6 +62,21 @@ export const TRUST = {
     { icon: "lock", title: "No entrenamos con tu obra.", body: "Tus imágenes y tus textos son tuyos y solo se usan para preparar tus solicitudes." },
     { icon: "pen", title: "Tú tienes la última palabra.", body: "Cada texto sale de lo que tú cuentas, y puedes cambiarlo todo antes de usarlo." },
     { icon: "stamp", title: "Nosotros preparamos; tú presentas.", body: "La solicitud la envías tú, con tu certificado digital o Cl@ve. Nunca presentamos nada en tu nombre." },
+    {
+      icon: "spark",
+      title: "La IA es de Anthropic, y no aprende de ti.",
+      body: "Para preparar tus textos usamos Claude, la IA de Anthropic, a través de su API. Anthropic no entrena sus modelos con lo que le enviamos.",
+    },
+    {
+      icon: "mic",
+      title: "El dictado lo hace tu navegador.",
+      body: "Cuando hablas, la voz la pasa a texto tu navegador: en Chrome, el audio lo procesan los servicios de Google. A Mecena solo llega el texto. Si lo prefieres, escribe.",
+    },
+    {
+      icon: "trash",
+      title: "Puedes borrar tu cuenta cuando quieras.",
+      body: "Con un botón borramos tu cuenta y todo lo tuyo: perfil, textos, dossier, solicitudes y las fotos de tus obras.",
+    },
   ] satisfies TrustPoint[],
   /** Compact strip shown on /onboarding before the mic button. */
   strip: ["No generamos ni modificamos obra: solo recortamos, enderezamos y corregimos el color.", "No entrenamos con tu obra.", "Tú tienes la última palabra."],
