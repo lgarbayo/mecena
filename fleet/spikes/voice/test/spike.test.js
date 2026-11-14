@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { patchSchema, dossierSchema, SHEET_SCHEMA, IMAGE_NOTES_SCHEMA } from "../src/schemas.js";
-import { emptyProfile, validateOp, applyOps, normalize } from "../src/profile.js";
+import { emptyProfile, validateOp, applyOps, normalize, closestKey } from "../src/profile.js";
 import { ORACLE, MOCK_SHEET, createMockLLM } from "../src/mock.js";
 import { SCENARIOS, WORK_DESCRIPTION } from "../src/transcripts.js";
 import { Session } from "../src/session.js";
@@ -45,6 +45,72 @@ test("validateOp rejects quotes that were not said and years that were not heard
   assert.ok(v.ok);
   assert.equal(v.op.year, "", "year not present in the quote is dropped");
   assert.equal(validateOp(op({ op: "update", field: "exhibitions", key: "nope", value: "X", source: "museo provincial de lugo" }), s, t).ok, false);
+});
+
+// The real case from the Sonnet run of 13/11 (FINDINGS 8.1): the series item had been added as novela-grafica-padre.
+const NOVELA = "mi proyecto personal es una novela gráfica sobre el viaje de mi padre desde lagos hasta vigo en los años 80 se llama la otra orilla y llevo unas 40 páginas abocetadas";
+const OTRA_ORILLA = "se llama la otra orilla y llevo unas 40 páginas abocetadas";
+function illustratorState() {
+  const s = emptyProfile("creator");
+  return applyOps(s, [op({ op: "add", field: "series", key: "novela-grafica-padre", value: "Novela gráfica sobre el viaje de su padre", source: "una novela gráfica sobre el viaje de mi padre" })]).state;
+}
+
+test("update with a misspelled list key is rewritten to the existing key (real Sonnet case)", () => {
+  const s = illustratorState();
+  const v = validateOp(op({ op: "update", field: "series", key: "novela-graphica-padre", value: "La otra orilla", source: OTRA_ORILLA }), s, normalize(NOVELA));
+  assert.ok(v.ok, v.reason);
+  assert.equal(v.op.key, "novela-grafica-padre");
+  assert.deepEqual(v.keyFix, { from: "novela-graphica-padre", to: "novela-grafica-padre" });
+  const item = applyOps(s, [v.op]).state.lists.series["novela-grafica-padre"];
+  assert.equal(item.title, "La otra orilla");
+  assert.equal(item.history.length, 1);
+  assert.equal(Object.keys(applyOps(s, [v.op]).state.lists.series).length, 1, "no duplicate item");
+});
+
+test("fuzzy key match: exact key untouched, other field, ties, similar items and far keys are not guessed", () => {
+  const t = normalize(NOVELA);
+  const s = illustratorState();
+  // Exact key: unchanged, no keyFix.
+  const exact = validateOp(op({ op: "update", field: "series", key: "novela-grafica-padre", value: "La otra orilla", source: OTRA_ORILLA }), s, t);
+  assert.ok(exact.ok);
+  assert.equal(exact.op.key, "novela-grafica-padre");
+  assert.equal(exact.keyFix, undefined);
+  // Near match in another field does not count.
+  const other = validateOp(op({ op: "update", field: "themes", key: "novela-graphica-padre", value: "Migración", source: OTRA_ORILLA }), s, t);
+  assert.deepEqual(other, { ok: false, reason: "update of unknown key novela-graphica-padre" });
+  // Two keys equally close: rejected, not guessed; a unique best match wins.
+  const two = { "serie-marina": {}, "serie-marino": {} };
+  assert.equal(closestKey("serie-marine", two), null);
+  assert.equal(closestKey("serie-marinas", two), "serie-marina");
+  // Different items with similar names are not typos (all of these used to match on whole-slug distance).
+  for (const [k, existing] of [["colectiva-vigo", "colectiva-lugo"], ["mercado-chile", "mercado-china"], ["maria", "mario"], ["expo-valencia", "expo-palencia"], ["album-3", "album-1"], ["novela-grafica", "novela-grafica-padre"]]) {
+    assert.equal(closestKey(k, { [existing]: {} }), null, `${k} must not match ${existing}`);
+  }
+  // Accents and case are not edits.
+  assert.equal(closestKey("Novela-Gráfica-Padre", { "novela-grafica-padre": {} }), "novela-grafica-padre");
+  // Remove is never redirected: it deletes the item with its history.
+  const rm = validateOp(op({ op: "remove", field: "series", key: "novela-graphica-padre", source: OTRA_ORILLA }), s, t);
+  assert.deepEqual(rm, { ok: false, reason: "remove of unknown key novela-graphica-padre" });
+  // No close key: still rejected even with a value and a verbatim quote (not turned into an add).
+  const far = validateOp(op({ op: "update", field: "series", key: "la-otra-orilla", value: "La otra orilla", source: OTRA_ORILLA }), s, t);
+  assert.deepEqual(far, { ok: false, reason: "update of unknown key la-otra-orilla" });
+});
+
+test("session reports key fixes and applies the op", async () => {
+  const llm = {
+    extract: async () => ({ ops: [op({ op: "update", field: "series", key: "novela-graphica-padre", value: "La otra orilla", source: OTRA_ORILLA })], latencyMs: 0, usage: {} }),
+    dossier: async ({ sections }) => ({ sections: sections.map((id) => ({ id, title: id, body: "", quotes_used: [], missing: [] })), latencyMs: 0, usage: {} }),
+  };
+  const s = new Session({ mode: "creator", llm, idleMs: 10, dossierGapMs: 0 });
+  s.state = illustratorState();
+  const seen = [];
+  s.on("keyfix", (f) => seen.push(f));
+  s.final(NOVELA);
+  const { state, rejected, keyFixes } = await s.stop();
+  assert.equal(rejected.length, 0);
+  assert.deepEqual(keyFixes, [{ field: "series", from: "novela-graphica-padre", to: "novela-grafica-padre" }]);
+  assert.deepEqual(seen, keyFixes);
+  assert.equal(state.lists.series["novela-grafica-padre"].title, "La otra orilla");
 });
 
 test("corrections replace the value and keep history; repeats are no-ops", () => {

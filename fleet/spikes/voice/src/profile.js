@@ -25,12 +25,56 @@ export function normalize(s) {
     .trim();
 }
 
+/** Slug form of a list key: the same shape validateOp gives the keys it generates. */
+const slug = (s) => normalize(s).replace(/ /g, "-");
+
+function levenshtein(a, b) {
+  let row = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const next = [i];
+    for (let j = 1; j <= b.length; j++) next[j] = Math.min(row[j] + 1, next[j - 1] + 1, row[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    row = next;
+  }
+  return row[b.length];
+}
+
+/**
+ * The existing key in `items` that a misspelled `key` most likely meant, or null.
+ * Only typos qualify, not a different item with a similar name (colectiva-vigo is not colectiva-lugo, maria is not
+ * mario, valencia is not palencia): the slugs differ in at most one hyphen-separated token, that token keeps its
+ * first letter, is ≥ 6 letters and is ≤ 1 edit away (≤ 2 from 8 letters: graphica → grafica); the digits are the
+ * same (album-1 is not album-2); and there is a single best candidate (a tie is not guessed).
+ */
+export function closestKey(key, items) {
+  const k = slug(key).split("-");
+  let best = null;
+  let bestD = Infinity;
+  let tie = false;
+  for (const cand of Object.keys(items)) {
+    const c = slug(cand).split("-");
+    if (c.length !== k.length || c.join("").replace(/\D/g, "") !== k.join("").replace(/\D/g, "")) continue;
+    const diff = k.map((t, i) => [t, c[i]]).filter(([a, b]) => a !== b);
+    if (diff.length > 1) continue;
+    let d = 0;
+    if (diff.length) {
+      const [a, b] = diff[0];
+      const len = Math.max(a.length, b.length);
+      d = levenshtein(a, b);
+      if (a[0] !== b[0] || len < 6 || d > Math.min(2, Math.floor(len / 4))) continue;
+    }
+    if (d < bestD) [best, bestD, tie] = [cand, d, false];
+    else if (d === bestD) tie = true;
+  }
+  return tie ? null : best;
+}
+
 const YEAR_RE = /\b(19\d\d|20\d\d)\b/;
 const SPOKEN_YEAR_RE = /\b(dos mil|mil novecientos)\b/;
 
 /**
  * Validate one op against the transcript and the current state.
- * Returns { ok: true, op } (possibly cleaned) or { ok: false, reason }.
+ * Returns { ok: true, op, keyFix? } (possibly cleaned) or { ok: false, reason }.
+ * keyFix = { from, to } when an update named a misspelled list key and was rewritten to the existing one.
  */
 export function validateOp(op, state, transcriptNorm) {
   const spec = FIELDS[state.kind][op.field];
@@ -52,12 +96,21 @@ export function validateOp(op, state, transcriptNorm) {
   if (clean.op === "set") clean.op = "add";
   if (!clean.key) clean.key = normalize(clean.value).replace(/ /g, "-").slice(0, 40) || `item-${Date.now()}`;
   const items = state.lists[op.field];
+  let keyFix;
   if ((clean.op === "update" || clean.op === "remove") && !items[clean.key]) {
-    return { ok: false, reason: `${clean.op} of unknown key ${clean.key}` };
+    // A misspelled update key (Sonnet wrote novela-graphica-padre for novela-grafica-padre) is fixed, not rejected;
+    // a wrong guess is recoverable because the old value stays in history. Not for remove: it deletes the item with
+    // its history, and a stale item is a smaller harm than a deleted one. With no close key an update stays rejected,
+    // even with a value and a verbatim quote: turning it into an add would duplicate an item the model believes
+    // exists (a correction would leave the CV with both the old and the new year).
+    const near = clean.op === "update" ? closestKey(clean.key, items) : null;
+    if (!near) return { ok: false, reason: `${clean.op} of unknown key ${clean.key}` };
+    keyFix = { from: clean.key, to: near };
+    clean.key = near;
   }
   if (clean.op === "add" && items[clean.key]) clean.op = "update"; // model re-added an existing key
   if (clean.op !== "remove" && !clean.value.trim()) return { ok: false, reason: "empty value" };
-  return { ok: true, op: clean };
+  return keyFix ? { ok: true, op: clean, keyFix } : { ok: true, op: clean };
 }
 
 /**

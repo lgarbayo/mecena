@@ -33,6 +33,7 @@ export class Session extends EventEmitter {
     this.timers = {};
     this.calls = [];
     this.rejected = [];
+    this.keyFixes = []; // update ops whose misspelled list key was matched to an existing one
     this.stopped = false;
   }
 
@@ -83,6 +84,11 @@ export class Session extends EventEmitter {
             this.rejected.push({ op, reason: v.reason });
             this.emit("rejected", { op, reason: v.reason });
             continue;
+          }
+          if (v.keyFix) {
+            const fix = { field: op.field, ...v.keyFix };
+            this.keyFixes.push(fix);
+            this.emit("keyfix", fix);
           }
           const r = applyOps(state, [v.op]);
           state = r.state;
@@ -170,6 +176,6 @@ export class Session extends EventEmitter {
     const all = Object.keys(DOSSIER_SECTIONS[this.mode]).filter((s) => this.#factsIn(s) > 0);
     if (all.length) await this.#dossier(all, { final: true });
     this.emit("stopped", { state: this.state, dossier: this.dossier });
-    return { state: this.state, dossier: this.dossier, calls: this.calls, rejected: this.rejected };
+    return { state: this.state, dossier: this.dossier, calls: this.calls, rejected: this.rejected, keyFixes: this.keyFixes };
   }
 }
