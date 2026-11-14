@@ -10,8 +10,8 @@ export const ENTITLEMENT_PRO = "mecena_pro";
 
 /** Product identifiers to create in RevenueCat (Web Billing products) and attach to the default offering. */
 export const PRODUCTS = {
-  proMonthly: "mecena_pro_monthly", // 9 EUR / month, grants the Pro entitlement
-  proAnnual: "mecena_pro_annual", // 79 EUR / year, grants the Pro entitlement
+  proMonthly: "mecena_pro_monthly", // 3.99 EUR / month, grants the Pro entitlement
+  proAnnual: "mecena_pro_annual", // 35.88 EUR / year (2.99 EUR / month), grants the Pro entitlement
   solicitudPremium: "mecena_solicitud_premium", // 15 EUR one-off (consumable): +1 premium credit
 } as const;
 
@@ -27,7 +27,7 @@ export type PlanId = keyof typeof PRODUCTS;
 export interface Plan {
   id: PlanId;
   title: string; // "Pro mensual"
-  priceText: string; // "9,00 €/mes" (from RevenueCat formattedPrice when live)
+  priceText: string; // "3,99 €/mes" (from RevenueCat formattedPrice when live)
   kind: "subscription" | "one_off";
   period?: "P1M" | "P1Y";
   highlight?: boolean; // annual = best value

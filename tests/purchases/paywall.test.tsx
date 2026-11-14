@@ -33,7 +33,7 @@ describe("Paywall (mock purchases)", () => {
     expect(text).toContain("Tu solicitud está a un paso");
     expect(text).toContain("Una consultora se lleva un 10-15 % de tu beca");
     expect(text).toContain("Garantía: si en 90 días no has presentado 3 solicitudes, te devolvemos el dinero.");
-    for (const p of ["9,00 €/mes", "79,00 €/año", "15,00 €"]) expect(text).toContain(p);
+    for (const p of ["3,99 €/mes", "35,88 €/año", "15,00 €"]) expect(text).toContain(p);
     expect(text).toContain("Mejor precio");
   });
 

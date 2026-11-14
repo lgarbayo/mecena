@@ -13,11 +13,11 @@ import { loginDemo, req, seedOnboardedCreator } from "../helpers";
 describe("the Hormozi offer (Spanish from Spain)", () => {
   it("keeps prices, anchor, guarantee and the free plan", () => {
     expect(PLANS.map((p) => [p.id, p.priceText])).toEqual([
-      ["proAnnual", "79,00 €/año"],
-      ["proMonthly", "9,00 €/mes"],
+      ["proAnnual", "35,88 €/año"],
+      ["proMonthly", "3,99 €/mes"],
       ["solicitudPremium", "15,00 €"],
     ]);
-    expect(OFFER.anchor()).toBe("Una consultora se lleva un 10-15 % de tu beca. Con Mecena, 9 € al mes.");
+    expect(OFFER.anchor()).toBe("Una consultora se lleva un 10-15 % de tu beca. Con Mecena, 3,99 € al mes.");
     expect(OFFER.guarantee).toBe("Garantía: si en 90 días no has presentado 3 solicitudes, te devolvemos el dinero.");
     expect(OFFER.free).toBe("Gratis siempre: tu perfil, tu dossier y 3 convocatorias al mes.");
     expect(TRIGGER_SUBTITLE.draft_application).toContain("Tu solicitud está a un paso");
