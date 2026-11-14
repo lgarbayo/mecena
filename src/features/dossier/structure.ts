@@ -17,7 +17,12 @@ function titleOf(key: "statement" | "bio" | "works" | "cv", view: CreatorView, d
   if (override?.trim()) return override.trim();
   const own = design?.titles?.[key];
   if (own) return own;
-  return key === "works" ? vocabFor(view.family).works : DEFAULT_TITLES[key];
+  if (key !== "works") return DEFAULT_TITLES[key];
+  const vocab = vocabFor(view.family);
+  // With no works yet the block only carries the series/project text: name it for that, not "Repertorio"/"Obra".
+  const noWorks = view.series.length > 0 && view.series.every((s) => !s.works.length);
+  if (noWorks) return vocab.series === "Serie" ? "Series" : vocab.series;
+  return vocab.works;
 }
 
 /** Applies the short version: one statement paragraph, no bio, four works, three lines per CV group. */

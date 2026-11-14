@@ -42,7 +42,8 @@ export const toolSchemas = {
   export_dossier_pdf: {
     description: "Export the dossier as a PDF and return its download URL and local file path.",
     input: z.object({ profileId: profileIdIn, callId: z.string().optional() }),
-    output: z.object({ url: z.string(), filePath: z.string(), pages: z.number().int().optional() }),
+    // sizeMb/note: the real file size and, for a call with a size limit, whether it fits (and if photos were reduced).
+    output: z.object({ url: z.string(), filePath: z.string(), pages: z.number().int().optional(), sizeMb: z.number().optional(), note: z.string().optional() }),
   },
   search_calls: {
     description:

@@ -148,10 +148,6 @@ function makeStyles(fonts: boolean, C: PdfTokens = SOBRIO, faces: PdfFaces = {})
       contactName: { ...displayFace(32, 500, -1.1), fontSize: 32, lineHeight: 1, marginBottom: 20 },
       colophon: { fontFamily: sans, fontSize: 7, color: C.onInk, maxWidth: 330 },
       block: { marginTop: mm(12) },
-      // call-adapted sections (CCR-7)
-      chips: { flexDirection: "row", flexWrap: "wrap", marginBottom: 8 },
-      chip: { fontFamily: sans, fontSize: 7, paddingVertical: 1.5, paddingHorizontal: 4, marginRight: 4, marginBottom: 3 },
-      gap: { fontFamily: sans, fontSize: 8.5, textDecoration: "underline", textDecorationStyle: "dashed" },
     }),
   };
 }
@@ -195,8 +191,11 @@ function Prose({ st, paras, leadFirst = true }: { st: S; paras: string[]; leadFi
   );
 }
 
+/** Images are keyed by work id (each already framed with its own crop); a map keyed by image URL still works. */
+const imageOf = (images: ImageMap, work?: WorkView) => (work ? (images[work.id] ?? images[work.imageUrl]) : undefined);
+
 function Frame({ st, work, images, style }: { st: S; work?: WorkView; images: ImageMap; style: ComponentProps<typeof View>["style"] }) {
-  const img = work ? images[work.imageUrl] : undefined;
+  const img = imageOf(images, work);
   return (
     <View style={[st.s.frame, style]}>
       {img ? <Image src={img} style={st.s.frameImg} /> : <Text style={st.s.frameEmpty}>{work ? work.title : ""}</Text>}
@@ -283,7 +282,7 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
       </View>
       {st.nameFirst ? <CoverText st={st} view={view} meta={meta} first /> : null}
       <View style={st.s.coverFigure}>
-        {w && images[w.imageUrl] ? (
+        {w && imageOf(images, w) ? (
           <>
             <Frame st={st} work={w} images={images} style={{ height: frameH, padding: 24 }} />
             <Text style={st.s.caption}>
@@ -362,40 +361,38 @@ function CvColumn({ st, groups }: { st: S; groups: CvGroup[] }) {
   );
 }
 
-/** Call-adapted narrative: flows across pages, one ruled block per section, gaps marked "Pendiente". */
-function VariantPages({ st, variant, kind }: { st: S; variant: VariantView; kind: "creator" | "business" }) {
-  if (!variant.sections.length) return null;
-  // Colours come from the dossier's design tokens (feat/dossier-styles), like the rest of the PDF.
-  const a = { accent: st.t.accent, soft: st.t.accentSoft };
-  const n = variant.sections.length;
+/** Text of a variant paragraph for the jury: the "[PENDIENTE: …]" gaps are notes for the artist, not for the PDF. */
+export function juryText(parts: VariantView["sections"][number]["paras"][number]): string {
+  return parts
+    .filter((p) => !p.pending)
+    .map((p) => p.text)
+    .join("")
+    .replace(/\s+([.,;:])/g, "$1")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+/**
+ * Call-adapted narrative: flows across pages, one ruled block per section. This is what the jury reads, so
+ * it carries no working notes: no "Para la convocatoria i de n", no criteria chips, no "Pendiente" gaps
+ * (those stay on screen, in the variant panel and the page, for the artist to complete).
+ */
+function VariantPages({ st, variant }: { st: S; variant: VariantView; kind: "creator" | "business" }) {
+  const sections = variant.sections
+    .map((sec) => ({ ...sec, text: sec.paras.map(juryText).filter((t) => /[\p{L}\p{N}]/u.test(t)) }))
+    .filter((sec) => sec.text.length);
+  if (!sections.length) return null;
   return (
     <Page size="A4" style={st.s.page}>
-      {variant.sections.map((sec, i) => (
+      {sections.map((sec, i) => (
         <View key={sec.id} style={i ? st.s.block : undefined}>
-          <Ruled st={st} name="Para la convocatoria" sub={n > 1 ? `${i + 1} de ${n}` : undefined}>
-            <View wrap={false}>
-              <Text style={[st.s.sectionTitle, { fontSize: 17, letterSpacing: -0.3 }]}>{sec.heading}</Text>
-              {sec.criteria.length ? (
-                <View style={st.s.chips}>
-                  {sec.criteria.map((c) => (
-                    <Text key={c} style={[st.s.chip, { backgroundColor: a.soft }]}>
-                      {c}
-                    </Text>
-                  ))}
-                </View>
-              ) : null}
-            </View>
-            {sec.paras.map((parts, j) => (
+          <Ruled st={st} name={sections.length > 1 ? String(i + 1).padStart(2, "0") : "Memoria"}>
+            <Text style={[st.s.sectionTitle, { fontSize: 17, letterSpacing: -0.3 }]} minPresenceAhead={60}>
+              {sec.heading}
+            </Text>
+            {sec.text.map((t, j) => (
               <Text key={j} style={j === 0 ? st.s.lead : st.s.p} orphans={3} widows={3}>
-                {parts.map((part, k) =>
-                  part.pending ? (
-                    <Text key={k} style={[st.s.gap, { color: st.t.ink }]}>
-                      {`Pendiente: ${part.text}`}
-                    </Text>
-                  ) : (
-                    part.text
-                  ),
-                )}
+                {t}
               </Text>
             ))}
           </Ruled>
@@ -461,7 +458,7 @@ export function CreatorPdf({ view: full, images, st }: { view: CreatorView; imag
           <Page key={`series-${s.id}`} size="A4" style={st.s.page}>
             <Ruled st={st} name={b.title} sub={view.series.length > 1 ? `${vocab.series} ${i + 1} de ${view.series.length}` : undefined}>
               <View wrap={false}>
-                <Text style={st.s.sectionTitle}>{s.title}</Text>
+                {s.title ? <Text style={st.s.sectionTitle}>{s.title}</Text> : null}
                 {s.years ? <Text style={st.s.years}>{s.years}</Text> : null}
                 {s.description.length ? (
                   <View style={st.s.seriesText}>
@@ -517,7 +514,7 @@ export function BusinessPdf({ view, images, st }: { view: BusinessView; images: 
   const p = view.projects;
   return (
     <>
-      <Cover st={st} view={view} images={images} kicker="Dossier de empresa" meta={[view.activityShort, view.city]} />
+      <Cover st={st} view={view} images={images} kicker="Memoria de empresa" meta={[view.activityShort, view.city]} />
       {adapted && view.variant ? <VariantPages st={st} variant={view.variant} kind="business" /> : null}
       {hasActivity || hasTeam ? (
         <Page size="A4" style={st.s.page}>

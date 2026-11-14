@@ -83,40 +83,42 @@ export function planVariant(input: { works: Work[]; call: Call; profile?: Profil
   const max = req?.maxImages;
   const kept = max !== undefined ? ordered.slice(0, Math.max(0, max)) : ordered;
 
+  const business = profile?.kind === "business";
+  const noun = (n: number) => (business ? (n === 1 ? "foto" : "fotos") : n === 1 ? "obra" : "obras");
   const notes: string[] = [];
   const limits: string[] = [];
   if (max !== undefined) limits.push(`máx. ${plural(max, "imagen", "imágenes")}`);
-  if (req?.maxFileMb !== undefined) limits.push(`${String(req.maxFileMb).replace(".", ",")} MB`);
+  if (req?.maxFileMb !== undefined) limits.push(`un archivo de ${String(req.maxFileMb).replace(".", ",")} MB como máximo`);
   if (limits.length) {
-    const mb = req?.maxFileMb !== undefined;
-    let sentence: string;
-    if (max !== undefined && works.length > max) sentence = `hemos dejado ${kept.length} de tus ${works.length} obras${mb ? " y comprimido el PDF" : ""}`;
-    else if (max !== undefined && works.length) sentence = `${works.length === 1 ? "tu obra entra" : `tus ${works.length} obras entran todas`}${mb ? " y el PDF va comprimido" : ""}`;
-    else if (max !== undefined) sentence = `aún no has subido obras${mb ? "; el PDF irá comprimido" : ""}`;
-    else sentence = "el PDF va comprimido";
-    notes.push(`La convocatoria pide ${limits.join(" y ")}: ${sentence}.`);
+    // Never claim a compression here: the real size is measured when the PDF is made (pdfSizeNote).
+    let sentence = "";
+    if (max !== undefined && works.length > max) sentence = `: hemos dejado ${kept.length} de tus ${works.length} ${noun(works.length)}`;
+    else if (max !== undefined && works.length) sentence = works.length === 1 ? `: tu ${noun(1)} entra` : `: tus ${works.length} ${noun(works.length)} entran todas`;
+    else if (max !== undefined) sentence = `: aún no has subido ${noun(2)}`;
+    notes.push(`La convocatoria pide ${limits.join(" y ")}${sentence}.`);
+    if (req?.maxFileMb !== undefined) notes.push("Al preparar el PDF te decimos cuánto pesa de verdad; si se pasa del límite, reducimos las fotos de esta versión.");
   }
   const top = ranked[0];
   const named = ranked.filter((r) => r.series);
-  if (top && top.series && top.score > 0) {
+  if (!business && top && top.series && top.score > 0) {
     const why = top.matched.slice(0, 3).join(", ");
     notes.push(
       named.length > 1
         ? `Abrimos con la serie «${top.series}», la más cercana a lo que pide la convocatoria (${why}).`
         : `Tu serie «${top.series}» conecta con lo que pide la convocatoria (${why}): va en primer lugar.`,
     );
-  } else if (works.length > 1) {
+  } else if (!business && works.length > 1) {
     notes.push("Ninguna serie coincide claramente con el tema de la convocatoria: mantenemos tu orden.");
   }
   if (input.imageBytes && req?.maxFileMb !== undefined) {
     const total = kept.reduce((n, w) => n + (input.imageBytes!(w) ?? 0), 0) / (1024 * 1024);
-    if (total > req.maxFileMb) notes.push(`Ojo: tus fotos suman ${total.toFixed(1).replace(".", ",")} MB. Si el PDF supera el límite, quita alguna obra o súbelas con menos resolución.`);
+    if (total > req.maxFileMb) notes.push(`Ojo: tus fotos suman ${total.toFixed(1).replace(".", ",")} MB, más que el límite.`);
   }
   if (req?.format) notes.push(`Formato pedido: ${req.format}.`);
   if (req?.notes) notes.push(`Las bases añaden: ${req.notes}`);
   const docName = call.requiredDocuments.find((d) => /dossier/i.test(d));
   if (docName) notes.push(`En la solicitud se presenta como «${docName}».`);
-  if (!req) notes.push("Las bases no fijan límites para el dossier: va completo, con lo más afín primero.");
+  if (!req) notes.push(business ? "Las bases no fijan límites para la memoria: va completa." : "Las bases no fijan límites para el dossier: va completo, con lo más afín primero.");
   const fit = suggestStyle({ call, profile });
   notes.push(`Estilo sugerido: «${STYLE_LABELS[fit.style]}», porque ${fit.reason}. Puedes cambiarlo arriba.`);
 

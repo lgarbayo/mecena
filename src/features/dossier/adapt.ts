@@ -56,7 +56,7 @@ function clean(raw: AdaptDossierResult, input: { profile: Profile; call: Call; s
     }));
   // The model's checks first; then any call rule it skipped (deterministic list).
   const checks = [...raw.formatChecks];
-  for (const c of formatChecks(input.call, input.works.length)) if (!checks.some((x) => x.rule.toLowerCase() === c.rule.toLowerCase())) checks.push(c);
+  for (const c of formatChecks(input.call, input.works.length, input.profile.kind)) if (!checks.some((x) => x.rule.toLowerCase() === c.rule.toLowerCase())) checks.push(c);
   const facts = JSON.stringify([input.profile, input.sections.map((s) => s.body), input.works.map((w) => w.sheet), input.call, input.transcript.map((t) => t.text)]);
   return {
     strategy: raw.strategy.trim(),

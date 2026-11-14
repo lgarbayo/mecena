@@ -107,6 +107,9 @@ export const CreateWorkRequest = z.object({
   profileId: ID.optional(),
   imageDataUrl: z.string().startsWith("data:image/"), // size: the route's body limit and MAX_IMAGE_BYTES
   voiceDescription: userText().optional(),
+  // false = store the photo only; the sheet and crop come later from POST /api/works/<id>/describe
+  // (one vision call per work). Default true for MCP/agent callers.
+  describe: z.boolean().optional(),
   // CCR-arts
   mediaKind: MediaKind.optional(),
   links: z.array(z.string().url().max(2000)).max(20).optional(),

@@ -14,7 +14,9 @@ describe("worksAi.mock (voice -> technical sheet)", () => {
     expect(r.sheet.technique).toBe("acuarela sobre papel");
     expect(r.sheet.dimensions).toBe("50 x 70 cm");
     expect(r.sheet.series).toBe("Redeiras");
-    expect(r.crop).toEqual({ x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 });
+    // Offline mock: a light example crop (~4 % margin) so the crop tools can be shown, never a change to the work.
+    expect(r.crop).toEqual({ x: 0.04, y: 0.04, width: 0.92, height: 0.92, rotationDeg: 0 });
+    expect(r.fallback).toBeUndefined();
   });
 
   it("never invents fields the artist did not say", async () => {

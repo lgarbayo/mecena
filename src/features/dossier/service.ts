@@ -52,7 +52,8 @@ export async function buildDossier(input: { profileId: string; callId?: string; 
   };
   if (!input.callId) return base;
   const call = getCall(input.callId);
-  const plan = planVariant({ works, call, profile, imageBytes: await imageSizer() });
+  // What goes to a call is only what the artist confirmed: unreviewed sheets never count or appear.
+  const plan = planVariant({ works: pdfWorks(works), call, profile, imageBytes: await imageSizer() });
   if (input.ai === false) return { ...base, workIds: plan.workIds, variant: plan.variant };
   const kept = orderWorks(works, plan.workIds);
   const adaptation = await adaptVariant({ profile, call, sections: base.sections, works: kept });
@@ -116,22 +117,84 @@ export function renderFallbackPdf(name: string): Buffer {
   return Buffer.from(out, "latin1");
 }
 
+/** What a render did to fit the call's file-size limit (read with `pdfReport`). */
+export interface PdfSize {
+  bytes: number;
+  maxFileMb?: number;
+  /** Photos were downscaled to REDUCED_EDGE px for this call version (only when the full one was over). */
+  reduced: boolean;
+  /** Bytes of the first render, when it had to be reduced. */
+  fullBytes?: number;
+}
+const PDF_SIZES = new WeakMap<Buffer, PdfSize>();
+
+/** Only confirmed works go into the PDF: a sheet the artist has not reviewed is not theirs yet. */
+export function pdfWorks(works: Work[]): Work[] {
+  return works.filter((w) => w.confirmed !== false);
+}
+
+/** The file-size limit of the call this dossier is adapted to, in MB (none for the plain dossier). */
+export function pdfLimitMb(data: DossierData): number | undefined {
+  return data.dossier.variant ? (data.dossier.variant.maxFileMb ?? data.call?.dossierRequirements?.maxFileMb) : undefined;
+}
+
 /** Test seam: lets tests force the renderer to throw. */
 export const pdfRenderer = {
   async render(data: DossierData, tokens?: PdfTokens, faces?: PdfFaces): Promise<Buffer> {
-    const [{ renderToBuffer }, { DossierPdf }, { loadPdfImage }, { createElement }] = await Promise.all([
+    const [{ renderToBuffer }, { DossierPdf }, { loadPdfImage }, { framePdfImage, REDUCED_EDGE }, { createElement }] = await Promise.all([
       import("@react-pdf/renderer"),
       import("./pdf/DossierPdf"),
       import("./pdf/images"),
+      import("./pdf/crop"),
       import("react"),
     ]);
-    const view = dossierView(data);
-    const images = Object.fromEntries(data.works.map((w) => [w.imageUrl, loadPdfImage(w.imageUrl)]));
-    // DossierPdf returns a <Document>; renderToBuffer's type wants the Document element itself.
-    const el = createElement(DossierPdf, { view, images, tokens, faces }) as unknown as Parameters<typeof renderToBuffer>[0];
-    return renderToBuffer(el);
+    const works = pdfWorks(data.works);
+    const view = dossierView({ ...data, works });
+    const once = async (maxEdge?: number) => {
+      // Keyed by work: the same photo may carry a different crop in two works. The crop is applied to an
+      // in-memory copy; the upload on disk stays the untouched original.
+      const images = Object.fromEntries(
+        await Promise.all(
+          works.map(async (w) => {
+            const img = loadPdfImage(w.imageUrl);
+            return [w.id, img ? await framePdfImage(img, w.crop, { maxEdge }) : undefined] as const;
+          }),
+        ),
+      );
+      // DossierPdf returns a <Document>; renderToBuffer's type wants the Document element itself.
+      const el = createElement(DossierPdf, { view, images, tokens, faces }) as unknown as Parameters<typeof renderToBuffer>[0];
+      return renderToBuffer(el);
+    };
+    const maxFileMb = pdfLimitMb(data);
+    const full = await once();
+    if (maxFileMb === undefined || full.length <= maxFileMb * 1024 * 1024) {
+      PDF_SIZES.set(full, { bytes: full.length, maxFileMb, reduced: false });
+      return full;
+    }
+    // Over the call's limit: the call version gets lighter photos (the plain dossier never changes).
+    const small = await once(REDUCED_EDGE);
+    PDF_SIZES.set(small, { bytes: small.length, maxFileMb, reduced: true, fullBytes: full.length });
+    return small;
   },
 };
+
+/** Size facts of a PDF this module rendered (the fallback PDF has none). */
+export function pdfReport(bytes: Buffer): PdfSize {
+  return PDF_SIZES.get(bytes) ?? { bytes: bytes.length, reduced: false };
+}
+
+const mb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1).replace(".", ",");
+
+/** Plain Spanish note on the real PDF size against the call's limit, or undefined when there is no limit. */
+export function pdfSizeNote(size: PdfSize): string | undefined {
+  if (size.maxFileMb === undefined) return undefined;
+  const limit = String(size.maxFileMb).replace(".", ",");
+  if (size.bytes > size.maxFileMb * 1024 * 1024)
+    return `El PDF pesa ${mb(size.bytes)} MB y la convocatoria admite ${limit} MB, incluso con las fotos reducidas: quita alguna obra antes de presentarlo.`;
+  if (size.reduced && size.fullBytes)
+    return `El PDF completo pesaba ${mb(size.fullBytes)} MB y la convocatoria admite ${limit} MB: para esta versión hemos reducido las fotos a ${1200} px. Ahora pesa ${mb(size.bytes)} MB.`;
+  return `El PDF pesa ${mb(size.bytes)} MB: dentro del límite de ${limit} MB de la convocatoria.`;
+}
 
 export interface PdfLook {
   /** A starting point ("sobrio" | "editorial" | "galeria") to use instead of the saved design. */
@@ -159,10 +222,34 @@ export async function renderDossierPdf(input: { profileId: string; callId?: stri
   }
 }
 
-export async function exportDossierPdf(input: { profileId: string; callId?: string }): Promise<{ url: string; filePath: string; pages?: number }> {
+export async function exportDossierPdf(input: { profileId: string; callId?: string }): Promise<{ url: string; filePath: string; pages?: number; sizeMb?: number; note?: string }> {
   const profile = getProfile(input.profileId);
   const bytes = await renderDossierPdf({ ...input, profileId: profile.id });
   const filePath = path.join(exportsDir(), `dossier-${profile.id}${input.callId ? `-${input.callId}` : ""}.pdf`);
   fs.writeFileSync(filePath, bytes);
-  return { url: pdfUrl(profile.id, input.callId), filePath, pages: countPages(bytes) };
+  const size = pdfReport(bytes);
+  return { url: pdfUrl(profile.id, input.callId), filePath, pages: countPages(bytes), sizeMb: Math.round((bytes.length / (1024 * 1024)) * 100) / 100, note: pdfSizeNote(size) };
+}
+
+/**
+ * The artist's own photos as files, for calls that want loose images instead of a PDF: the untouched originals
+ * (no crop, no re-encoding), confirmed works only, in the call's order and limit when there is a call.
+ */
+export async function dossierImages(input: { profileId: string; callId?: string }): Promise<{ name: string; data: Buffer; mediaType: string }[]> {
+  const profile = getProfile(input.profileId);
+  const all = pdfWorks(sortWorks(listWorks(profile.id)));
+  const ids = input.callId ? (await buildDossier({ profileId: profile.id, callId: input.callId, ai: false })).workIds : all.map((w) => w.id);
+  const { readImageBytes, sniff } = await import("./pdf/images");
+  const { imageFileName } = await import("./images");
+  const out: { name: string; data: Buffer; mediaType: string }[] = [];
+  for (const w of orderWorks(all, ids)) {
+    const data = readImageBytes(w.imageUrl);
+    if (!data) continue;
+    const format = sniff(data);
+    const webp = data.subarray(8, 12).toString("latin1") === "WEBP";
+    const ext = format === "png" ? "png" : format === "jpg" ? "jpg" : webp ? "webp" : undefined;
+    if (!ext) continue;
+    out.push({ name: imageFileName(profile.displayName, w, ext, out.length + 1), data, mediaType: ext === "jpg" ? "image/jpeg" : `image/${ext}` });
+  }
+  return out;
 }

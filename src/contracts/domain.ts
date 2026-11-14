@@ -114,6 +114,11 @@ export const Work = z.object({
   imageUrl: z.string(),
   originalImageUrl: z.string().optional(),
   crop: CropSuggestion.optional(),
+  // The crop vision suggested, kept apart so "Quitar recorte" can be undone ("Restaurar recorte").
+  suggestedCrop: CropSuggestion.optional(),
+  // How the photo was read: "ok" (vision ran), "failed" (vision unavailable: sheet from the voice only),
+  // "pending" (stored, not described yet). Absent on older works.
+  analysis: z.enum(["ok", "failed", "pending"]).optional(),
   sheet: TechnicalSheet,
   sheetSource: z.enum(["voice", "vision", "manual", "seed"]),
   confirmed: z.boolean().default(false), // user validated the sheet

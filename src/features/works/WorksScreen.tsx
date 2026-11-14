@@ -124,7 +124,7 @@ export function WorksScreen() {
 
       <div className={s.footerCta}>
         <Link href={ROUTES.dossier} className="btn btn-primary">
-          Ver mi dossier →
+          {business ? "Ver mi memoria →" : "Ver mi dossier →"}
         </Link>
       </div>
     </>

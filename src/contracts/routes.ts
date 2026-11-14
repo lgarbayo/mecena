@@ -66,7 +66,8 @@ export const API = {
   work: (id: string) => `/api/works/${encodeURIComponent(id)}`,
   workImage: (id: string) => `/api/works/${encodeURIComponent(id)}/image`,
   dossier: "/api/dossier", // GET ?profileId&callId
-  dossierPdf: "/api/dossier/pdf", // GET ?profileId&callId -> application/pdf
+  dossierPdf: "/api/dossier/pdf", // GET ?profileId&callId -> application/pdf (&info=1 -> JSON size report)
+  dossierImages: "/api/dossier/images", // GET ?profileId&callId -> ZIP of the original photos
   calls: "/api/calls", // GET ?profileId&q
   call: (id: string) => `/api/calls/${encodeURIComponent(id)}`,
   callsResearch: "/api/calls/research", // Pro deep research: GET ?profileId state + results, POST { profileId? } start

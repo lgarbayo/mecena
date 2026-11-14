@@ -1,7 +1,9 @@
 "use client";
 /**
  * Photo + one sentence -> technical sheet. The photo is downscaled in the browser and starts
- * uploading at once; meanwhile the artist dictates (or types) a line about the piece.
+ * uploading at once (stored as is, no AI yet); meanwhile the artist dictates (or types) a line about the
+ * piece. "Crear ficha" then makes the one vision call for the work: sheet + crop from photo and note.
+ * Public API (used by the voice onboarding too): <CaptureWork copy profileId? onCreated />.
  */
 import { useRef, useState } from "react";
 import type { Work } from "@/contracts";
@@ -19,7 +21,8 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
   const [preparing, setPreparing] = useState(false);
   const [upload, setUpload] = useState<Upload | null>(null);
   const [note, setNote] = useState("");
-  const [busy, setBusy] = useState(false);
+  // "upload": waiting for the photo to finish uploading; "read": the vision call (sheet + crop).
+  const [busy, setBusy] = useState<false | "upload" | "read">(false);
   const [error, setError] = useState<string | null>(null);
   const pending = useRef<Promise<Work> | null>(null);
   const dataUrl = useRef<string | null>(null);
@@ -28,7 +31,7 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
 
   function startUpload(url: string) {
     setUpload({ state: "uploading" });
-    const p = worksClient.create(url, undefined, profileId);
+    const p = worksClient.create(url, undefined, profileId, { describe: false });
     pending.current = p;
     p.then(
       (work) => pending.current === p && setUpload({ state: "done", work }),
@@ -73,12 +76,14 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
   async function finish() {
     if (!pending.current) return;
     speech.stop();
-    setBusy(true);
     setError(null);
     try {
+      setBusy(upload?.state === "done" ? "read" : "upload");
       let work = await pending.current;
+      setBusy("read");
       const text = `${note} ${speech.interim}`.trim();
-      if (text) work = await worksClient.describe(work.id, text);
+      // The only vision call for this work: photo + note -> sheet + crop.
+      work = await worksClient.describe(work.id, text || undefined);
       reset();
       onCreated(work);
     } catch (e) {
@@ -116,7 +121,7 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
           {/* eslint-disable-next-line @next/next/no-img-element -- local preview */}
           <img src={preview} alt="Foto que acabas de hacer" />
           <span className={`${s.uploadChip} ${upload?.state === "error" ? s.chipError : upload?.state === "done" ? s.chipOk : ""}`} role="status">
-            {uploading ? "Subiendo…" : upload?.state === "done" ? "Foto guardada" : "Error al subir"}
+            {uploading ? "Subiendo foto…" : upload?.state === "done" ? "Foto guardada" : "Error al subir"}
           </span>
         </div>
         <div className={s.voice}>
@@ -129,6 +134,7 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
             value={speech.listening && speech.interim ? `${note} ${speech.interim}`.trim() : note}
             onChange={(e) => setNote(e.target.value)}
             readOnly={speech.listening}
+            maxLength={4000}
             placeholder={copy.notePlaceholder}
           />
           <div className={s.voiceActions}>
@@ -152,10 +158,10 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
       )}
       {error && <p className={s.error} role="alert">{error}</p>}
       <div className={s.cardActions}>
-        <Button type="button" onClick={finish} disabled={busy || upload?.state === "error"}>
-          {busy ? (uploading ? "Terminando de subir…" : "Escribiendo la ficha…") : "Crear ficha"}
+        <Button type="button" onClick={finish} disabled={!!busy || upload?.state === "error"}>
+          {busy === "upload" ? "Subiendo foto…" : busy === "read" ? (copy.noun === "foto" ? "Leyendo tu foto…" : "Leyendo tu obra…") : "Crear ficha"}
         </Button>
-        <Button type="button" variant="quiet" onClick={cancel} disabled={busy}>
+        <Button type="button" variant="quiet" onClick={cancel} disabled={!!busy}>
           Descartar foto
         </Button>
       </div>

@@ -4,11 +4,11 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { mediaKindFromLink, type MediaKind, type Work } from "@/contracts";
+import { mediaKindFromLink, type CropSuggestion, type DescribeWorkResult, type MediaKind, type Work } from "@/contracts";
 import { getAi } from "@/server/ai";
 import { getProfile, getWork, listWorks, newId, nowIso, saveWork, updateDb, uploadsDir } from "@/server/store";
 import { inferMediaKind, normalizeLinks } from "./links";
-import { extractLinks } from "./parse";
+import { extractLinks, sheetFromVoice, UNTITLED } from "./parse";
 
 const MEDIA = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" } as const;
 type Media = keyof typeof MEDIA;
@@ -37,7 +37,15 @@ function imagePath(id: string): { file: string; mediaType: Media } | undefined {
   return undefined;
 }
 
-export async function createWork(input: { profileId: string; imageDataUrl: string; voiceDescription?: string; mediaKind?: MediaKind; links?: string[] }): Promise<Work> {
+export async function createWork(input: {
+  profileId: string;
+  imageDataUrl: string;
+  voiceDescription?: string;
+  /** false: store the photo only (no AI); the sheet and crop come from describeWork. Default true. */
+  describe?: boolean;
+  mediaKind?: MediaKind;
+  links?: string[];
+}): Promise<Work> {
   const profile = getProfile(input.profileId);
   const { mediaType, base64 } = parseDataUrl(input.imageDataUrl);
   const bytes = Buffer.from(base64, "base64");
@@ -46,42 +54,72 @@ export async function createWork(input: { profileId: string; imageDataUrl: strin
   const id = newId("work");
   fs.writeFileSync(path.join(uploadsDir(), `${id}.${MEDIA[mediaType]}`), bytes);
   const voice = input.voiceDescription?.trim() || undefined;
-  const described = await getAi().describeWork({ kind: profile.kind, imageBase64: base64, mediaType, voiceDescription: voice, profile });
   const existing = listWorks(profile.id);
   const links = normalizeLinks([...(input.links ?? []), ...extractLinks(voice)]);
-  return saveWork({
+  const base: Work = {
     id,
     profileId: profile.id,
     imageUrl: `/api/works/${id}/image`,
     originalImageUrl: `/api/works/${id}/image`,
-    crop: described.crop,
-    sheet: described.sheet,
+    sheet: { title: UNTITLED },
     sheetSource: voice ? "voice" : "vision",
     confirmed: false,
     order: existing.length ? Math.max(...existing.map((w) => w.order)) + 1 : 0,
     createdAt: nowIso(),
     mediaKind: inferMediaKind({ explicit: input.mediaKind, links, profile }),
     links,
-  });
+  };
+  if (input.describe === false) return saveWork({ ...base, analysis: "pending" });
+  // One vision call per work: photo + note -> sheet + crop.
+  const described = await getAi().describeWork({ kind: profile.kind, imageBase64: base64, mediaType, voiceDescription: voice, profile });
+  return saveWork({ ...base, ...visionFields(described), sheet: described.sheet });
 }
 
+/** Crop + analysis status from a vision result. The suggestion is kept apart so the artist can restore it. */
+function visionFields(r: DescribeWorkResult): Pick<Work, "crop" | "suggestedCrop" | "analysis"> {
+  return { crop: r.crop, suggestedCrop: r.crop, analysis: r.fallback ? "failed" : "ok" };
+}
+
+const sameCrop = (a?: CropSuggestion, b?: CropSuggestion) =>
+  !!a && !!b && a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height && (a.rotationDeg ?? 0) === (b.rotationDeg ?? 0);
+
 /**
- * Re-run the sheet with the voice note the artist dictated while the photo was uploading.
- * Fields the artist already edited by hand are kept unless the new note says something about them.
+ * The one vision call for a photo stored with `describe: false` (or a re-read with a new note): technical
+ * sheet + crop. Fields the artist already edited by hand are kept unless the new note says something
+ * about them; a crop the artist changed or removed is kept too.
  */
-export async function describeWork(id: string, voiceDescription: string): Promise<Work> {
-  const w = withLinksFromVoice(getWork(id), voiceDescription);
+export async function describeWork(id: string, voiceDescription?: string): Promise<Work> {
+  const voice = voiceDescription?.trim() || undefined;
+  const w = voice ? withLinksFromVoice(getWork(id), voice) : getWork(id);
   const img = imagePath(id);
   const profile = getProfile(w.profileId);
   if (!img) {
-    // Seeded/demo works have no upload: fall back to a voice-only sheet.
-    const r = await getAi().describeWork({ kind: profile.kind, imageBase64: "", mediaType: "image/jpeg", voiceDescription, profile });
-    return saveWork({ ...w, sheet: { ...w.sheet, ...stripEmpty(r.sheet) }, sheetSource: "voice", confirmed: false });
+    // Seeded/demo works have no upload: a voice-only sheet, no vision call.
+    if (!voice) return w;
+    return saveWork({ ...w, sheet: { ...w.sheet, ...stripEmpty(sheetFromVoice(voice)) }, sheetSource: "voice", confirmed: false });
   }
   const base64 = fs.readFileSync(img.file).toString("base64");
-  const r = await getAi().describeWork({ kind: profile.kind, imageBase64: base64, mediaType: img.mediaType, voiceDescription, profile });
-  const sheet = w.sheetSource === "manual" ? { ...w.sheet, ...stripEmpty(r.sheet, true) } : { ...stripEmpty(w.sheet), ...stripEmpty(r.sheet) };
-  return saveWork({ ...w, sheet: { ...sheet, title: sheet.title || r.sheet.title }, crop: w.crop ?? r.crop, sheetSource: "voice", confirmed: false });
+  const r = await getAi().describeWork({ kind: profile.kind, imageBase64: base64, mediaType: img.mediaType, voiceDescription: voice, profile });
+  let sheet: Work["sheet"];
+  if (w.sheetSource === "manual") {
+    sheet = { ...w.sheet, ...stripEmpty(r.sheet, true) };
+  } else {
+    // Not touched by hand: the new reading replaces the old one. The concept in particular is replaced,
+    // never merged, so a sentence the artist no longer says does not linger.
+    sheet = { title: r.sheet.title, ...stripEmpty(w.sheet), ...stripEmpty(r.sheet) };
+    if (!stripEmpty(r.sheet).concept) delete sheet.concept;
+  }
+  // The artist's own crop (changed or removed by hand) wins; otherwise take the new suggestion.
+  const ownCrop = w.crop !== undefined && !sameCrop(w.crop, w.suggestedCrop);
+  const vision = visionFields(r);
+  return saveWork({
+    ...w,
+    sheet: { ...sheet, title: sheet.title || r.sheet.title },
+    ...vision,
+    crop: ownCrop ? w.crop : vision.crop,
+    sheetSource: voice ? "voice" : w.sheetSource === "manual" ? "manual" : "vision",
+    confirmed: false,
+  });
 }
 
 /** Links typed into the note join the work's links; a first media link can tell what the work is. */

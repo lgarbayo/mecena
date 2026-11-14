@@ -1,11 +1,11 @@
 "use client";
-// One-tap Creador/a <-> Pyme switch in the header. A pyme has no works or dossier to build, so switching to it
-// from those screens lands on the aid it fits instead.
+// One-tap Creador/a <-> Pyme switch in the header. A pyme has no works screen, so switching to it from /obras
+// lands on the aid it fits instead. /dossier stays: it shows the pyme's company memoria.
 import { usePathname, useRouter } from "next/navigation";
 import { ROUTES, type ProfileKind } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
 
-const CREATOR_ONLY = [ROUTES.works, ROUTES.dossier];
+const CREATOR_ONLY = [ROUTES.works];
 
 export function ModeSwitch() {
   const { profile, setMode } = useApp();

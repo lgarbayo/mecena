@@ -6,6 +6,7 @@ import { API, ROUTES, type Call, type MatchResult, type PastAward } from "@/cont
 import { useApp } from "@/components/shell/AppProvider";
 import { Card, PageTitle, Spinner, Tag } from "@/components/ui";
 import { apiGet } from "@/lib/api-client";
+import { wantsLooseImages } from "@/features/dossier/images";
 import { daysLeft, fitLabel, SCORE_MAX } from "../labels";
 import type { CallHistory } from "@/features/history/history";
 import type { ScoreBreakdown } from "../rules";
@@ -241,11 +242,9 @@ export function CallDetail({ id }: { id: string }) {
         <Link href={ROUTES.application(call.id)} className="btn btn-primary">
           Prepárame la solicitud
         </Link>
-        {!business && (
-          <Link href={`${ROUTES.dossier}?callId=${encodeURIComponent(call.id)}`} className="btn btn-ghost">
-            Dossier para esta convocatoria
-          </Link>
-        )}
+        <Link href={`${ROUTES.dossier}?callId=${encodeURIComponent(call.id)}`} className="btn btn-ghost">
+          {business ? "Memoria para esta ayuda" : wantsLooseImages(call) ? "Imágenes para esta convocatoria" : "Dossier para esta convocatoria"}
+        </Link>
       </div>
     </>
   );

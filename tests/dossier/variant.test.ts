@@ -57,7 +57,9 @@ describe("dossier variant planning", () => {
     const plan = planVariant({ works, call: seaCall });
     expect(plan.workIds).toEqual(["m1", "m2", "c1"]);
     expect(plan.variant.maxImages).toBe(3);
-    expect(plan.variant.notes[0]).toBe("La convocatoria pide máx. 3 imágenes y 5 MB: hemos dejado 3 de tus 5 obras y comprimido el PDF.");
+    expect(plan.variant.notes[0]).toBe("La convocatoria pide máx. 3 imágenes y un archivo de 5 MB como máximo: hemos dejado 3 de tus 5 obras.");
+    // No claim of a compression that has not happened: the real size is measured on export.
+    expect(plan.variant.notes.join(" ")).not.toMatch(/comprimid/);
     expect(plan.variant.notes).toContain("Formato pedido: PDF.");
   });
 
@@ -76,7 +78,7 @@ describe("dossier variant planning", () => {
   it("uses the fixture call limits (10 images, 5 MB) with the fixture works", () => {
     const plan = planVariant({ works: works.slice(0, 2), call: fixtureCalls[0] });
     expect(plan.workIds).toHaveLength(2);
-    expect(plan.variant.notes[0]).toMatch(/^La convocatoria pide máx\. 10 imágenes y 5 MB: tus 2 obras entran todas/);
+    expect(plan.variant.notes[0]).toMatch(/^La convocatoria pide máx\. 10 imágenes y un archivo de 5 MB como máximo: tus 2 obras entran todas/);
   });
 });
 

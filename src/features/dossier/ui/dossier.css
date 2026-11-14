@@ -208,6 +208,23 @@
   padding: clamp(14px, 5%, 40px);
   overflow: hidden;
 }
+/* Cropped photo (crop from /obras): the box keeps the crop's proportion and fits the frame (cq units). */
+.dossier-wall .frame { container-type: size; }
+.dossier-wall .frame > .frame__crop {
+  position: relative;
+  overflow: hidden;
+  filter: drop-shadow(0 6px 10px rgba(38, 43, 48, 0.22));
+}
+.dossier-wall .frame > .frame__crop > img { display: block; user-select: none; }
+.dossier-wall .label__review {
+  margin: 0.5rem 0 0;
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  color: #8a5a00;
+  background: #fff3d6;
+  border-left: 3px solid #d99a1e;
+  padding: 0.35rem 0.6rem;
+}
 .dossier-wall .frame > svg,
 .dossier-wall .frame > img {
   display: block;

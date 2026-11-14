@@ -37,6 +37,34 @@
 .dossier-variant__list li[data-status="riesgo"] strong { color: var(--g-accent); }
 .dossier-variant__crit { font-size: 0.85rem; opacity: 0.75; }
 .dossier-empty { margin: 0; }
+.dossier-variant__size { margin: 0 0 10px; font-size: 0.93rem; }
+/* Calls that want loose image files: said loud, with the photos one tap away. */
+.dossier-loose {
+  border: 1px solid rgba(255, 138, 92, 0.5);
+  border-left: 4px solid var(--g-accent);
+  border-radius: 18px;
+  padding: 16px 18px;
+  background: rgba(255, 138, 92, 0.12);
+  color: var(--g-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dossier-loose p { margin: 0; }
+.dossier-loose__title { font-weight: 700; font-size: 1.05rem; }
+.dossier-loose__list { margin: 0; padding-left: 1.2em; font-size: 0.93rem; }
+.dossier-loose__list a { color: var(--g-ink); }
+.dossier-loose__warn { font-size: 0.9rem; color: #ffd4bd; }
+.dossier-unreviewed {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border-left: 3px solid #e0a33a;
+  background: rgba(224, 163, 58, 0.14);
+  color: var(--g-ink);
+  font-size: 0.93rem;
+}
+.dossier-unreviewed a { color: var(--g-ink); font-weight: 600; }
 /* Full-bleed gallery wall: break out of the 720px app column so sheets can reach 940px. */
 .dossier-bleed { width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); }
 @media print {

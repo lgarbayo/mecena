@@ -87,13 +87,16 @@ function saidIt(value: string | undefined, voice: string | undefined): string | 
 export function guardSheet(model: Partial<TechnicalSheet>, voice: string | undefined, now = new Date()): TechnicalSheet {
   const said = parseVoiceSheet(voice);
   const year = said.year ?? model.year;
+  const spoke = !!voice?.trim();
   const sheet: TechnicalSheet = {
-    title: said.title ?? blank(model.title) ?? UNTITLED,
+    // Title and concept are the artist's: with no note there is nothing to take them from, and with one
+    // the model may only keep a title the artist actually said.
+    title: said.title ?? (spoke ? saidIt(model.title === UNTITLED ? undefined : model.title, voice) : undefined) ?? UNTITLED,
     year: year && year >= 1900 && year <= now.getFullYear() + 1 && (said.year || voice?.includes(String(year))) ? year : undefined,
     technique: mergeTechnique(said.technique, blank(model.technique)),
     dimensions: said.dimensions ?? (mentionsDimensions(voice) ? blank(model.dimensions) : undefined),
     series: said.series ?? (voice && model.series && voice.toLowerCase().includes(model.series.toLowerCase()) ? blank(model.series) : undefined),
-    concept: blank(model.concept) ?? said.concept,
+    concept: spoke ? (blank(model.concept) ?? said.concept) : undefined,
     duration: said.duration ?? (mentionsDuration(voice) ? blank(model.duration) : undefined),
     credits: said.credits ?? saidIt(model.credits, voice),
     venue: said.venue ?? saidIt(model.venue, voice),
@@ -116,10 +119,26 @@ function userPrompt(input: DescribeWorkInput): string {
     .join("\n");
 }
 
-async function mockDescribe({ voiceDescription }: DescribeWorkInput): Promise<DescribeWorkResult> {
+/**
+ * Offline stand-in for vision (no API key): a light example crop (~4 % margin) so the crop tools can be
+ * shown and tried, never a change to the artwork. It is only used without a key, never as a failure fallback.
+ */
+export const MOCK_CROP: CropSuggestion = { x: 0.04, y: 0.04, width: 0.92, height: 0.92, rotationDeg: 0 };
+
+function voiceOnly(voiceDescription: string | undefined) {
   const sheet = sheetFromVoice(voiceDescription);
   const filled = Object.keys(parseVoiceSheet(voiceDescription)).length;
-  return DescribeWorkResult.parse({ sheet, crop: { ...IDENTITY_CROP }, confidence: Math.min(0.9, 0.3 + filled * 0.1) });
+  return { sheet, confidence: Math.min(0.9, 0.3 + filled * 0.1) };
+}
+
+async function mockDescribe({ voiceDescription, imageBase64 }: DescribeWorkInput): Promise<DescribeWorkResult> {
+  // No photo (seeded works): nothing to frame.
+  return DescribeWorkResult.parse({ ...voiceOnly(voiceDescription), crop: imageBase64 ? { ...MOCK_CROP } : { ...IDENTITY_CROP } });
+}
+
+/** Vision failed: the sheet comes from the artist's words only, the photo stays whole and the UI says so. */
+function failedDescribe({ voiceDescription }: DescribeWorkInput): DescribeWorkResult {
+  return DescribeWorkResult.parse({ ...voiceOnly(voiceDescription), crop: { ...IDENTITY_CROP }, fallback: true });
 }
 
 export const worksAi: AiSlice<"describeWork"> = {
@@ -141,8 +160,8 @@ export const worksAi: AiSlice<"describeWork"> = {
         });
       } catch (e) {
         // AiError (refusal / parse / API) or anything unexpected: the demo must keep going on the mock.
-        console.warn("[works] describeWork fell back to the mock:", e instanceof Error ? e.message : e);
-        return mockDescribe(input);
+        console.warn("[works] describeWork fell back to the voice-only sheet:", e instanceof Error ? e.message : e);
+        return failedDescribe(input);
       }
     },
   },

@@ -15,7 +15,7 @@ describe("photo helpers", () => {
 
   it("identity crop shows the whole photo", () => {
     expect(isIdentityCrop({ x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 })).toBe(true);
-    expect(cropStyles({ x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 }, { width: 400, height: 300 }).frame.aspectRatio).toBe("400 / 300");
+    expect(cropStyles({ x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 }, { width: 400, height: 300 }).frame.aspectRatio).toBe("400.0 / 300.0");
   });
 
   it("crop is CSS over the original: frame ratio = crop ratio, image scaled and offset", () => {

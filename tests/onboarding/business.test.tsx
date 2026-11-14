@@ -115,11 +115,12 @@ describe("/onboarding in pyme mode", () => {
 });
 
 describe("pyme navigation", () => {
-  it("the bottom nav drops works and dossier for a pyme", () => {
+  it("the bottom nav drops works for a pyme and reaches its company memoria (the business dossier)", () => {
     app.profile = { ...fixtureBusiness };
     render(<BottomNav />);
     const labels = screen.getAllByRole("link").map((a) => a.textContent);
-    expect(labels).toEqual(["Tu empresa", "Ayudas", "Pro"]);
+    expect(labels).toEqual(["Tu empresa", "Memoria", "Ayudas", "Pro"]);
+    expect(screen.getByRole("link", { name: "Memoria" }).getAttribute("href")).toBe("/dossier");
   });
 
   it("the creator nav is unchanged", () => {

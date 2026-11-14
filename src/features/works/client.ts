@@ -6,9 +6,11 @@ export type WorkPatch = { sheet?: Partial<TechnicalSheet>; crop?: CropSuggestion
 
 export const worksClient = {
   list: (profileId?: string) => apiGet<{ works: Work[] }>(profileId ? `${API.works}?profileId=${encodeURIComponent(profileId)}` : API.works).then((r) => r.works),
-  create: (imageDataUrl: string, voiceDescription?: string, profileId?: string) =>
-    apiSend<{ work: Work }>(API.works, { imageDataUrl, voiceDescription: voiceDescription || undefined, profileId }).then((r) => r.work),
-  describe: (id: string, voiceDescription: string) => apiSend<{ work: Work }>(`${API.work(id)}/describe`, { voiceDescription }).then((r) => r.work),
+  /** `describe: false` stores the photo only; the sheet then comes from `describe` (one vision call per work). */
+  create: (imageDataUrl: string, voiceDescription?: string, profileId?: string, opts: { describe?: boolean } = {}) =>
+    apiSend<{ work: Work }>(API.works, { imageDataUrl, voiceDescription: voiceDescription || undefined, profileId, describe: opts.describe }).then((r) => r.work),
+  describe: (id: string, voiceDescription?: string) =>
+    apiSend<{ work: Work }>(`${API.work(id)}/describe`, { voiceDescription: voiceDescription?.trim() || undefined }).then((r) => r.work),
   update: (id: string, patch: WorkPatch) =>
     apiSend<{ work: Work }>(API.work(id), patch, "PATCH").then((r) => r.work),
   move: (id: string, direction: -1 | 1) => apiSend<{ works: Work[] }>(`${API.work(id)}/move`, { direction }).then((r) => r.works),
