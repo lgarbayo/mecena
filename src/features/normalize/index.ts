@@ -59,7 +59,7 @@ export {
   type DeadlineRule,
   type ResolveDeadlineOptions,
 } from "./dates";
-export { parseAgeRange, ageRangeAt, ageCheck, parseYearsActive, yearsActiveCheck, type CheckResult } from "./ranges";
+export { parseAgeRange, parseMinEmployees, ageRangeAt, ageCheck, parseYearsActive, yearsActiveCheck, type CheckResult } from "./ranges";
 export { normalizeDocuments, documentLabel, missingDocuments, type DocumentsResult } from "./documents";
 export { normalizeCriteria, largestRemainder, type CriteriaResult } from "./criteria";
 export { normalizeProfile, profileTerritory } from "./profile";

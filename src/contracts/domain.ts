@@ -222,6 +222,7 @@ export const Call = z.object({
     residence: z.array(z.string()).default([]), // regions/provinces required; empty = Spain-wide
     legalForms: z.array(z.string()).default([]),
     maxEmployees: z.number().int().optional(),
+    minEmployees: z.number().int().optional(), // "mínimo 3 personas trabajadoras": checked against profile.employees
     other: z.array(z.string()).default([]),
   }),
   amountEur: z.object({ min: z.number().optional(), max: z.number().optional(), total: z.number().optional() }).default({}),
@@ -354,8 +355,17 @@ export const EntitlementState = z.object({
 });
 export type EntitlementState = z.infer<typeof EntitlementState>;
 
-/** Simple usage counters for the free plan (3 matched calls / month). */
-export const Usage = z.object({ appUserId: z.string(), month: z.string(), matchesViewed: z.number().int() });
+/**
+ * Free-plan usage (3 matched calls / month): the calls a user unlocked this month, per profile (each mode has its own 3,
+ * so the demo's creator → pyme switch still shows matches). matchesViewed mirrors callIds.length for older rows.
+ */
+export const Usage = z.object({
+  appUserId: z.string(),
+  month: z.string(), // YYYY-MM, Europe/Madrid
+  matchesViewed: z.number().int(),
+  profileId: z.string().optional(),
+  callIds: z.array(z.string()).default([]),
+});
 export type Usage = z.infer<typeof Usage>;
 
 /**

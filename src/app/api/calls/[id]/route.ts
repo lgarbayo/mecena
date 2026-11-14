@@ -10,5 +10,5 @@ export const dynamic = "force-dynamic";
 export const GET = route(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   const { user, profile } = await requireProfile(req, new URL(req.url).searchParams.get("profileId"));
   limitAi(user, "call-detail"); // the "why you fit" wording comes from Claude when it is not cached
-  return json(await callDetail({ callId: (await params).id, profileId: profile.id }));
+  return json(await callDetail({ callId: (await params).id, profileId: profile.id, appUserId: user.appUserId }));
 });

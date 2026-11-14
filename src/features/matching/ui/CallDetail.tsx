@@ -22,6 +22,7 @@ interface Detail {
   similarAwards: PastAward[];
   history: CallHistory | null;
   winnerShare: { compatible: number; total: number; share: number } | null;
+  anonymousWinners?: { text: string } | null;
 }
 
 const pct = (x: number) => `${Math.round(x * 100)} %`;
@@ -76,9 +77,17 @@ export function CallDetail({ id }: { id: string }) {
         </dd>
         <dt>Bases</dt>
         <dd>
-          <a href={call.basesUrl ?? call.sourceUrl} target="_blank" rel="noreferrer">
+          <a href={call.bdnsId ? `https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/${call.bdnsId}` : call.sourceUrl} target="_blank" rel="noreferrer">
             Ver las bases oficiales
           </a>
+          {call.basesUrl && call.basesUrl !== call.sourceUrl && (
+            <>
+              {" · "}
+              <a href={call.basesUrl} target="_blank" rel="noreferrer" download>
+                Descargar PDF de las bases
+              </a>
+            </>
+          )}
         </dd>
       </dl>
 
@@ -229,6 +238,13 @@ export function CallDetail({ id }: { id: string }) {
             ))}
           </ul>
           <p className={s.note}>Orientativo, no es una probabilidad.</p>
+        </Card>
+      )}
+
+      {d.anonymousWinners && d.similarAwards.length === 0 && (
+        <Card>
+          <h2 className={s.title}>Ganadores de ediciones anteriores</h2>
+          <p className={s.note}>{d.anonymousWinners.text}</p>
         </Card>
       )}
 

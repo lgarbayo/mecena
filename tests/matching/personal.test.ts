@@ -93,8 +93,9 @@ describe("personal ranking on the real dataset", () => {
     for (const id of shared(antia.ids, laia.ids)) expect([fitLabel(antia.scoreOf(id)), fitLabel(laia.scoreOf(id))], id).toContain("bajo");
     expect(laia.ids[0]).toBe("sant-joan-festival-cine-cortometrajes-2027"); // the only short-film contest a creator can enter
     expect(antia.ids).not.toContain("sant-joan-festival-cine-cortometrajes-2027");
-    // the Galician artist gets the A Coruña arts grants near the top; the Valencian never sees them (residence)
-    expect(antia.ids).toContain("deputacion-coruna-bolsas-perfeccionamento-artistico-2026");
+    // a closed edition (A Coruña arts grants) never takes a place in the free top: open and upcoming calls go first
+    expect(antia.statuses).not.toContain("recurring");
+    expect(laia.ids).not.toContain("deputacion-coruna-bolsas-perfeccionamento-artistico-2026"); // residence
   });
 
   it("two Galician creators with different disciplines and words get different tops (same kind, same region)", async () => {
@@ -115,27 +116,26 @@ describe("personal ranking on the real dataset", () => {
 
   it("an audiovisual production company leads with film aid, ahead of open calls with a lower fit", async () => {
     const llum = await top(productora, 3);
-    // ICAA opens later (upcoming) but fits better than the open festival: the old status-first sort put it second.
-    expect(llum.ids.slice(0, 2)).toEqual(["icaa-cortometrajes-realizados-2027", "sant-joan-festival-cine-cortometrajes-2027"]);
-    expect(llum.statuses.slice(0, 2)).toEqual(["upcoming", "open"]);
+    // The two film calls lead; the festival is from the company's own comunidad and open now, the ICAA aid opens later.
+    expect(new Set(llum.ids.slice(0, 2))).toEqual(new Set(["icaa-cortometrajes-realizados-2027", "sant-joan-festival-cine-cortometrajes-2027"]));
+    expect(llum.statuses.slice(0, 2).sort()).toEqual(["open", "upcoming"]);
   });
 
-  it("the score decides the order; status only breaks ties (a recurring call with a much better fit goes first)", async () => {
+  it("open and upcoming calls come first, ordered by score; closed editions (recurring) go behind all of them", async () => {
     for (const p of [fixtureCreator, realizadora, productora, fixtureBusiness]) {
-      const { scores } = await top(p, 25);
-      expect([...scores].sort((x, y) => y - x), p.id).toEqual(scores);
+      const { scores, statuses } = await top(p, 25);
+      const firstRecurring = statuses.indexOf("recurring");
+      if (firstRecurring >= 0) expect(statuses.slice(firstRecurring).every((x) => x === "recurring"), p.id).toBe(true);
+      const live = scores.slice(0, firstRecurring < 0 ? scores.length : firstRecurring);
+      expect([...live].sort((x, y) => y - x), p.id).toEqual(live);
     }
-    const pyme = await top(fixtureBusiness, 5);
-    expect(pyme.statuses[0]).toBe("recurring"); // the crafts awards: the pyme's own sector
-    expect(pyme.statuses).toContain("open");
   });
 
-  it("with the same fit, what you can apply for now ranks first: the pyme's open aid closing in 3 days is in its free top 3", async () => {
-    const pyme = await top(fixtureBusiness, 3);
-    expect(pyme.ids).toContain("igape-re-acciona-2026"); // open, closes 2026-11-16
-    expect(pyme.scoreOf("igape-re-acciona-2026")).toBeGreaterThan(pyme.scoreOf("xunta-bono-autonomo-tr341q-2026")); // same fit, recurring
-    // general aid for autónomos/pymes it is eligible for is a real fit, not "bajo"
-    expect(fitLabel(pyme.scoreOf("igape-re-acciona-2026"))).not.toBe("bajo");
-    expect(fitLabel(pyme.scoreOf("xunta-bono-autonomo-tr341q-2026"))).not.toBe("bajo");
+  it("Re-acciona asks for at least 3 workers: a one-employee autónomo is not matched with it", async () => {
+    const pyme = await top(fixtureBusiness, 25);
+    expect(fixtureBusiness.employees).toBe(1);
+    expect(pyme.ids).not.toContain("igape-re-acciona-2026");
+    const grown = await top({ ...fixtureBusiness, id: "test-pyme-5", employees: 5 }, 25);
+    expect(grown.ids).toContain("igape-re-acciona-2026");
   });
 });

@@ -1,5 +1,5 @@
 // Owned by WP-06. Eligibility and score are deterministic (./rules); Claude only explains (./ai), cached in matchCache.
-import { FREE_MATCHES_PER_MONTH, type Call, type MatchResult, type PastAward, type Profile, type ProfileKind } from "@/contracts";
+import { type Call, type MatchResult, type PastAward, type Profile, type ProfileKind } from "@/contracts";
 import type { CallsDiagnostics } from "@/contracts/api";
 import { resolveEntitlement } from "@/features/purchases/server";
 import { winnerShareFor } from "@/features/history/history";
@@ -8,6 +8,8 @@ import { getAi } from "@/server/ai";
 import { getCall, getCallHistory, getDossier, getProfile, listAwards, listCalls, listWorks, readDb, updateDb } from "@/server/store";
 import { getProfileSearch, scheduleProfileSearch } from "@/features/calls-ingest/live";
 import { checklistFor, evaluate, type MatchContext, type ScoreBreakdown } from "./rules";
+import { matchesQuery } from "./search";
+import { applyFreeMatchLimit, canSeeCall, lockedMatch, unlockCalls } from "./usage";
 
 export { fitLabel, evaluate, daysLeft, type ScoreBreakdown, type FitLabel } from "./rules";
 
@@ -32,26 +34,32 @@ type Ranked = { call: Call; match: MatchResult; breakdown: ScoreBreakdown };
 export function rankCalls(input: { profileId: string; query?: string; kind?: ProfileKind; limit?: number; now?: Date }): { results: Ranked[]; stats: FeedStats } {
   const profile = getProfile(input.profileId);
   const ctx: MatchContext = { ...contextFor(profile), ...(input.now ? { now: input.now } : {}) };
-  const q = input.query?.trim().toLowerCase();
+  const q = input.query?.trim();
   // A pyme only sees aid open to businesses: artist becas/premios are for someone else. Creators keep business-tagged
   // calls (an autónomo artist can apply for autónomo aid). An explicit `kind` (agent/MCP) still wins.
   const forBusinessOnly = !input.kind && profile.kind === "business";
   const pool = listCalls()
     .filter((c) => !input.kind || c.beneficiaryKinds.includes(input.kind))
     .filter((c) => !forBusinessOnly || openToCompanies(c))
-    .filter((c) => !q || `${c.title} ${c.summary} ${c.disciplines.join(" ")} ${c.sectors.join(" ")} ${c.organizer}`.toLowerCase().includes(q))
+    .filter((c) => matchesQuery(c, q))
     .map((call) => ({ call, r: evaluate(profile, call, ctx) }))
     .filter(({ r }) => !r.excluded);
   const eligible = pool.filter(({ r }) => r.match.eligible);
-  // Once a creator has known disciplines, calls explicitly restricted to other disciplines are noise.
-  // For business or calls open to companies, keep eligible calls so general business aid and open calls stay accessible.
-  const dropNoise = profile.kind === "creator" && profile.disciplines.length > 0;
-  const onTopic = dropNoise ? eligible.filter(({ r }) => r.fit !== "none") : eligible;
-  const kept = onTopic.length ? onTopic : eligible;
+  // Calls made for other disciplines/sectors (fit "none") are noise once the profile says what it does: out of the feed,
+  // the counter and the locked cards. Only an explicit search (?q= / search_calls query) can find them.
+  const declares = profile.kind === "creator" ? profile.disciplines.length > 0 : Boolean(profile.sector || profile.cnae);
+  const onTopic = declares && !q ? eligible.filter(({ r }) => r.fit !== "none") : eligible;
+  const kept = onTopic;
   const results = kept
-    // The personal score decides the order; status (open → upcoming → recurring) and the soonest deadline only break
-    // ties. Whether you can apply now is part of the score (timing), so with the same fit an open call ranks first.
-    .sort((a, b) => b.r.match.score - a.r.match.score || STATUS_RANK[a.call.status] - STATUS_RANK[b.call.status] || (a.call.deadline ?? "9999").localeCompare(b.call.deadline ?? "9999"))
+    // Open and upcoming calls come first, and a closed edition ("recurring") always goes behind all of them. Inside
+    // each group the personal score decides; the soonest deadline only breaks ties.
+    .sort(
+      (a, b) =>
+        Number(a.call.status === "recurring") - Number(b.call.status === "recurring") ||
+        b.r.match.score - a.r.match.score ||
+        STATUS_RANK[a.call.status] - STATUS_RANK[b.call.status] ||
+        (a.call.deadline ?? "9999").localeCompare(b.call.deadline ?? "9999"),
+    )
     .slice(0, input.limit ?? 25)
     .map(({ call, r }) => ({ call, match: r.match, breakdown: r.breakdown }));
   return {
@@ -62,6 +70,15 @@ export function rankCalls(input: { profileId: string; query?: string; kind?: Pro
 
 export async function searchCalls(input: { profileId: string; query?: string; kind?: ProfileKind; limit?: number; now?: Date }): Promise<Ranked[]> {
   return rankCalls(input).results;
+}
+
+/**
+ * searchCalls with the free plan applied (what src/tools must use): beyond the month's 3 matches a free user gets a
+ * limited preview (`locked: true`, `paywall: "match_limit"`). `appUserId` comes from the ToolContext, never the model.
+ */
+export async function searchCallsForUser(input: Parameters<typeof searchCalls>[0] & { appUserId: string }) {
+  const { appUserId, ...rest } = input;
+  return applyFreeMatchLimit(await searchCalls(rest), { appUserId, profileId: input.profileId, ...(input.now ? { now: input.now } : {}) });
 }
 
 function profileSummary(profile: Profile): CallsDiagnostics["profileSummary"] {
@@ -129,23 +146,35 @@ export async function explainCall(input: { callId: string; profileId: string }):
   return { call, match, checklist: call.requiredDocuments };
 }
 
-/** Feed for GET /api/calls: Pro sees every match; the free plan sees the top FREE_MATCHES_PER_MONTH, the rest only as a count. */
-export async function callsFeed(input: { profileId: string; appUserId: string; query?: string }) {
+/**
+ * Feed for GET /api/calls. Pro sees every match. The free plan gets FREE_MATCHES_PER_MONTH real matches a month (counted
+ * in db.usage, in rank order, never a closed edition); the rest are only a count. Closed editions ("recurring") go in
+ * their own list, `editions` ("Próximas ediciones"), as a limited preview.
+ */
+export async function callsFeed(input: { profileId: string; appUserId: string; query?: string; now?: Date }) {
   const profile = getProfile(input.profileId);
   const appUserId = input.appUserId; // resolved from the session by the route
   // Search BDNS for this profile in the background when its searches are new or a day old (never blocks the feed).
   const scheduled = scheduleProfileSearch({ profileId: profile.id, appUserId });
   const search = getProfileSearch(profile.id, appUserId);
-  const { results: all, stats } = rankCalls({ profileId: profile.id, query: input.query });
+  const { results: ranked, stats } = rankCalls({ profileId: profile.id, query: input.query, ...(input.now ? { now: input.now } : {}) });
   const { pro } = await resolveEntitlement(appUserId);
-  const results = pro ? all : all.slice(0, FREE_MATCHES_PER_MONTH);
+  const now = input.now ? { now: input.now } : {};
+  const who = { appUserId, profileId: profile.id, ...now };
+  const current = ranked.filter((r) => r.call.status !== "recurring");
+  const editions = ranked.filter((r) => r.call.status === "recurring").map((r) => (pro ? r : { ...r, match: lockedMatch(r.match) }));
+  let results = current;
+  if (!pro) {
+    const unlocked = await unlockCalls(who, current.map((r) => r.call.id));
+    results = current.filter((r) => unlocked.has(r.call.id));
+  }
   const liveSearch = {
     searching: scheduled === "scheduled" || scheduled === "running" || search?.status === "running",
     found: search?.callIds.length ?? 0,
     ...(search?.lastRunAt ? { lastRunAt: search.lastRunAt } : {}),
   };
-  const diagnostics: CallsDiagnostics = { ...stats, matchedCount: all.length, profileSummary: profileSummary(profile) };
-  return { results, lockedCount: all.length - results.length, mode: profile.kind, pro, liveSearch, diagnostics };
+  const diagnostics: CallsDiagnostics = { ...stats, matchedCount: current.length, profileSummary: profileSummary(profile) };
+  return { results, editions, lockedCount: current.length - results.length, mode: profile.kind, pro, liveSearch, diagnostics };
 }
 
 /**
@@ -160,9 +189,62 @@ export function similarAwards(call: Call, max = 3, kind?: ProfileKind): PastAwar
   return [...same, ...related].slice(0, max);
 }
 
+/**
+ * Winners shown to a business: one row per beneficiary and year (BDNS repeats a beneficiary per instalment/top-up),
+ * amounts summed, so a company is never listed twice for the same edition.
+ */
+export function aggregateAwards(awards: PastAward[]): PastAward[] {
+  const by = new Map<string, PastAward>();
+  for (const a of awards) {
+    const key = `${a.beneficiary.trim().toLowerCase()}|${a.year}`;
+    const prev = by.get(key);
+    if (!prev) by.set(key, { ...a });
+    else if (a.amountEur !== undefined) prev.amountEur = (prev.amountEur ?? 0) + a.amountEur;
+  }
+  return [...by.values()];
+}
+
+/**
+ * "Ganadores parecidos a ti" for a creator: BDNS lists winners as people, so instead of naming anyone we show an
+ * anonymous aggregate from the call's history (how many were awarded in the latest edition and the amounts).
+ */
+export function anonymousWinners(history: ReturnType<typeof getCallHistory> | undefined | null): { text: string } | null {
+  const ed = history?.editions.filter((e) => e.awards > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (!ed) return null;
+  const year = ed.date.slice(0, 4);
+  const people = ed.awards === 1 ? "1 persona premiada" : `${ed.awards} personas premiadas`;
+  const lo = ed.amountMinEur;
+  const hi = ed.amountMaxEur;
+  const money = lo !== undefined && hi !== undefined ? (lo === hi ? `, importe ${formatEur(lo)}` : `, importes de ${formatEur(lo)} a ${formatEur(hi)}`) : "";
+  return { text: `${people} en ${year}${money}. Orientativo, no es una probabilidad.` };
+}
+const formatEur = (n: number) => `${Math.round(n).toLocaleString("es-ES")} €`;
+
 /** Detail for GET /api/calls/[id]: explanation + visible score breakdown + checklist with what the user already has. */
-export async function callDetail(input: { callId: string; profileId: string }) {
+export async function callDetail(input: { callId: string; profileId: string; appUserId: string; now?: Date }) {
   const profile = getProfile(input.profileId);
+  const call = getCall(input.callId);
+  // Free plan: a call beyond the month's 3 matches shows only the public call data and the score (no AI, no reasons).
+  // A closed edition never uses one of the 3.
+  const pro = (await resolveEntitlement(input.appUserId)).pro;
+  const open = pro || call.status === "recurring" || (await canSeeCall({ appUserId: input.appUserId, profileId: profile.id, callId: call.id, pro, ...(input.now ? { now: input.now } : {}) }));
+  if (!open) {
+    const ctx = contextFor(profile);
+    const { match, breakdown } = evaluate(profile, call, ctx);
+    return {
+      call,
+      match: lockedMatch(match),
+      checklist: [] as string[],
+      breakdown,
+      checklistItems: [] as ReturnType<typeof checklistFor>,
+      similarAwards: [] as PastAward[],
+      history: null as ReturnType<typeof getCallHistory> | null,
+      winnerShare: null as ReturnType<typeof winnerShareFor> | null,
+      anonymousWinners: null as { text: string } | null,
+      locked: true as const,
+      paywall: "match_limit" as const,
+    };
+  }
   const base = await explainCall({ callId: input.callId, profileId: profile.id });
   const ctx = contextFor(profile);
   const breakdown: ScoreBreakdown = evaluate(profile, base.call, ctx).breakdown;
@@ -172,8 +254,12 @@ export async function callDetail(input: { callId: string; profileId: string }) {
     ...base,
     breakdown,
     checklistItems: checklistFor(profile, base.call, ctx),
-    similarAwards: similarAwards(base.call, 3, profile.kind),
+    similarAwards: profile.kind === "business" ? aggregateAwards(similarAwards(base.call, 12, profile.kind)).slice(0, 3) : similarAwards(base.call, 3, profile.kind),
+    // A creator never sees named winners (BDNS awards are companies): an anonymous aggregate instead.
+    anonymousWinners: profile.kind === "creator" && history ? anonymousWinners(history) : null,
     history, // B3: past editions, success rate and cutoff when published
     winnerShare: history ? (winnerShareFor(history, types) ?? null) : null, // share of past winners of the profile's type
+    locked: false as const,
+    paywall: undefined,
   };
 }

@@ -196,13 +196,23 @@ export async function detailToCall(d: BdnsDetail, ai: Pick<AiService, "structure
     disciplines: [...new Set([...patch.disciplines, ...structured.disciplines])],
     eligibility: { ...structured.eligibility, legalForms: patch.eligibility.legalForms.length ? patch.eligibility.legalForms : structured.eligibility.legalForms },
     amountText: structured.amountText && structured.amountText !== "Consultar bases" ? structured.amountText : patch.amountText,
-    status: "open",
+    // Not yet accepting applications (opensAt after today) is "upcoming", never "open".
+    status: patch.opensAt && patch.opensAt.slice(0, 10) > ctx.today ? "upcoming" : "open",
     sourceUrl,
     ...(d.documentos?.[0] ? { basesUrl: `${ctx.apiBase}/convocatorias/documentos?idDocumento=${d.documentos[0].id}` } : {}),
     source: "bdns",
     verifiedAt: ctx.today,
   });
   return withCanonicalCallFields(call);
+}
+
+function curatedBdnsIds(dir: string): Set<string> {
+  try {
+    const rows = JSON.parse(fs.readFileSync(path.join(dir, "calls.json"), "utf8")) as { bdnsId?: string }[];
+    return new Set(rows.map((r) => r.bdnsId).filter((x): x is string => Boolean(x)));
+  } catch {
+    return new Set();
+  }
 }
 
 export async function runIngest(opts: IngestOptions): Promise<IngestResult> {
@@ -223,10 +233,13 @@ export async function runIngest(opts: IngestOptions): Promise<IngestResult> {
       log(`search ${JSON.stringify(q)}: ${found.length}`);
     }
 
+    // Curated calls (calls.json) win over the ingest: their BDNS ids are skipped here.
+    const curated = curatedBdnsIds(dir);
     const out: Call[] = [];
     const skipped: IngestResult["skipped"] = [];
     for (const code of codes) {
       if (out.length >= (opts.maxCalls ?? 30)) break;
+      if (curated.has(code)) { skipped.push({ bdnsId: code, reason: "ya curada en calls.json" }); continue; }
       const d = await client.detail(code);
       if (!isApplicable(d)) { skipped.push({ bdnsId: code, reason: "no aplicable (concesión directa / convenio)" }); continue; }
       if (!isRelevantRegion(d)) { skipped.push({ bdnsId: code, reason: "fuera de Galicia / España" }); continue; }
@@ -239,6 +252,11 @@ export async function runIngest(opts: IngestOptions): Promise<IngestResult> {
       }
     }
 
+    // Never replace a good cache with an empty result (a flaky search must not wipe what the app already has).
+    if (out.length === 0) {
+      log(`nothing new found; keeping the previous cache (${previous} calls)`);
+      return { ok: true, written: 0, kept: previous, skipped };
+    }
     fs.writeFileSync(cacheFile, JSON.stringify(out, null, 2) + "\n");
     log(`wrote ${out.length} calls to ${cacheFile} (${skipped.length} skipped)`);
     return { ok: true, written: out.length, kept: 0, skipped };

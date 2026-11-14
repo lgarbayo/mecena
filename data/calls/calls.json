@@ -28,7 +28,8 @@
       ],
       "other": [
         "Mínimo 3 personas trabajadoras en 2025"
-      ]
+      ],
+      "minEmployees": 3
     },
     "amountEur": {
       "min": 3024,
@@ -52,11 +53,11 @@
       "Servicios de profesionalización y desarrollo estratégico",
       "Servicios de innovación (diseño de productos, protección de la innovación, financiación de la innovación)"
     ],
-    "sourceUrl": "https://reacciona.igape.es",
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/880749",
     "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1517961",
     "bdnsId": "880749",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-14"
   },
   {
     "id": "a-laracha-concurso-fotografia-2026",
@@ -94,8 +95,8 @@
       "total": 1500
     },
     "amountText": "1.º 600 €, 2.º 400 €, 3.º 250 €",
-    "deadline": "2026-12-01",
-    "deadlineText": "Estimado: 25 días naturales desde la publicación del extracto en el BOP de A Coruña (fecha estimada)",
+    "deadline": "2026-12-05",
+    "deadlineText": "Hasta el 5/12/2026 (estimado): 25 días naturales desde la publicación del extracto en el BOP de A Coruña (10/11/2026). Las bases hablan también de contar desde su publicación en la web municipal y de 25 días hábiles en un apartado de trámite: confírmalo en sede.alaracha.gal",
     "status": "open",
     "summary": "Concurso de fotografía del Concello de A Laracha sobre su patrimonio natural y cultural. Puedes presentar hasta 3 fotos inéditas en digital; solo se admiten ajustes básicos y no se aceptan imágenes generadas o alteradas con IA.",
     "requiredDocuments": [
@@ -135,7 +136,7 @@
     "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1549881",
     "bdnsId": "939879",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-14"
   },
   {
     "id": "calahorra-cartel-jornadas-verdura-2027",
@@ -152,7 +153,7 @@
     "territories": [],
     "disciplines": [
       "ilustracion",
-      "diseno-grafico"
+      "diseno"
     ],
     "sectors": [],
     "eligibility": {
@@ -224,7 +225,8 @@
     "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1548232",
     "bdnsId": "939239",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-13",
+    "region": "La Rioja"
   },
   {
     "id": "lasalita-gijon-el-paisaje-2026",
@@ -529,7 +531,8 @@
     "sourceUrl": "https://www.comunidad.madrid/centros/centro-comarcal-humanidades-sierra-norte",
     "basesUrl": "https://www.arteinformado.com/fichas/publicacion/bases-252298",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-13",
+    "region": "Comunidad de Madrid"
   },
   {
     "id": "cabra-cartel-carnaval-2027",
@@ -546,7 +549,7 @@
     "territories": [],
     "disciplines": [
       "ilustracion",
-      "diseno-grafico"
+      "diseno"
     ],
     "sectors": [],
     "eligibility": {
@@ -634,7 +637,8 @@
     "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1549414",
     "bdnsId": "939684",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-13",
+    "region": "Andalucía"
   },
   {
     "id": "cromawards-2026",
@@ -652,7 +656,7 @@
     "territories": [],
     "disciplines": [
       "ilustracion",
-      "diseno-grafico",
+      "diseno",
       "pintura",
       "fotografia",
       "grabado"
@@ -808,7 +812,8 @@
     "sourceUrl": "https://benidorm.org/es/ayuntamiento/concejalias/juventud/actividades-juveniles/concurso-de-nuevos-creadores/xxxviii-concurso-nuevos-creadores-2026",
     "basesUrl": "https://www.coruna.gal/descarga/1453928132968/bases_1.pdf",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-13",
+    "region": "Comunitat Valenciana"
   },
   {
     "id": "ua-bienal-pluri-identitats-2027",
@@ -875,7 +880,8 @@
     "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1535737",
     "bdnsId": "934864",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-13",
+    "region": "Comunitat Valenciana"
   },
   {
     "id": "cabra-premio-novela-juan-valera-2027",
@@ -955,7 +961,8 @@
     "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1544862",
     "bdnsId": "938125",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-13",
+    "region": "Andalucía"
   },
   {
     "id": "carballino-premio-anton-losada-dieguez-2026",
@@ -1080,7 +1087,8 @@
     "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1548497",
     "bdnsId": "939355",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-13",
+    "region": "Comunitat Valenciana"
   },
   {
     "id": "getxo-novela-corta-ramiro-pinilla-2027",
@@ -1159,7 +1167,8 @@
     "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1539088",
     "bdnsId": "936011",
     "source": "seed",
-    "verifiedAt": "2026-11-13"
+    "verifiedAt": "2026-11-13",
+    "region": "País Vasco"
   },
   {
     "id": "icaa-cortometrajes-realizados-2027",
@@ -1715,5 +1724,788 @@
     "sourceUrl": "https://www.xunta.gal/dog/Publicados/2026/20260204/AnuncioG0767-130126-0004_es.html",
     "source": "seed",
     "verifiedAt": "2026-11-13"
+  },
+  {
+    "id": "onil-bienal-pintura-eusebio-sempere-2026",
+    "title": "XXX Bienal de Pintura «Eusebio Sempere» 2026 (Onil)",
+    "organizer": "Ayuntamiento de Onil (Alicante)",
+    "type": "certamen",
+    "scope": "local",
+    "region": "Comunitat Valenciana",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "pintura"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "minAge": 18,
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Mayores de edad, de cualquier nacionalidad",
+        "Una sola obra por artista, de entre 100 × 100 y 200 × 200 cm, sin firmar",
+        "Inscripción de 1,5 € (coste de la plataforma mundoarti.com)"
+      ]
+    },
+    "amountEur": {
+      "min": 4000,
+      "max": 4000
+    },
+    "amountText": "Premio único de 4.000 € (adquisición de la obra); exposición y catálogo de las obras seleccionadas",
+    "deadline": "2026-12-01",
+    "deadlineText": "Hasta el 1/12/2026 a las 23:59 (hora peninsular española)",
+    "status": "open",
+    "summary": "Certamen internacional de pintura del Ayuntamiento de Onil: tema y técnica libres, una obra por artista, selección en dos fases. El premio de 4.000 € es la adquisición de la obra ganadora para la colección permanente de la Bienal. Las obras seleccionadas se exponen y se publican en catálogo; el envío y la devolución corren a cargo del artista.",
+    "requiredDocuments": [
+      "Imagen de la obra en JPG (hasta 5 MB), recortada, sin marco ni fondo",
+      "Ficha técnica de la obra (título, año, técnica, medidas)",
+      "Inscripción telemática en mundoarti.com (1,5 €)"
+    ],
+    "criteria": [
+      {
+        "id": "valoracion-del-jurado",
+        "name": "Valoración del jurado",
+        "description": "Las bases no publican criterios puntuados: jurado de personas expertas en artes plásticas y cultura.",
+        "maxPoints": 100
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.mundoarti.com/concursos/CAQ0228/xxx-bienal-de-pintura-eusebio-sempere-2026/",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "sac-fic-residencias-barcelona-2027",
+    "title": "SAC-FiC Programa de Residencias 2027 (Sant Andreu Contemporani, Barcelona)",
+    "organizer": "Sant Andreu Contemporani · Fabra i Coats Fàbrica de Creació (Barcelona)",
+    "type": "residencia",
+    "scope": "local",
+    "region": "Cataluña",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "artes-visuales"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [],
+      "other": [
+        "Dirigida a artistas visuales que necesiten un espacio de trabajo para un proyecto",
+        "Hay que presentar el proyecto en la programación de Sant Andreu Contemporani 2027-2028"
+      ]
+    },
+    "amountEur": {},
+    "amountText": "Sin dotación económica: taller propio de enero a diciembre de 2027 y seguimiento del equipo de SAC",
+    "deadline": "2026-12-06",
+    "deadlineText": "Hasta el 6/12/2026 a las 24:00",
+    "status": "open",
+    "summary": "Residencia anual en Fabra i Coats (Barcelona) para tres artistas visuales: un taller propio de enero a diciembre de 2027, visitas de comisarios y críticos y la presentación del proyecto en la programación de Sant Andreu Contemporani. No incluye dinero ni alojamiento. El jurado anuncia la selección el 18/12/2026.",
+    "requiredDocuments": [
+      "Datos de contacto",
+      "Currículum o dossier artístico",
+      "Carta de motivación",
+      "Statement (marco conceptual e intereses)",
+      "Descripción del proyecto en PDF, con las necesidades de uso del taller y el horario semanal previsto"
+    ],
+    "criteria": [
+      {
+        "id": "innovacion",
+        "name": "Innovación y originalidad en el planteamiento conceptual y en la formalización",
+        "description": "Primer criterio de las bases (sin pesos publicados)",
+        "maxPoints": 25
+      },
+      {
+        "id": "calidad",
+        "name": "Calidad y creatividad del proyecto",
+        "description": "Segundo criterio de las bases",
+        "maxPoints": 25
+      },
+      {
+        "id": "trayectoria",
+        "name": "Trayectoria profesional",
+        "description": "Tercer criterio de las bases",
+        "maxPoints": 25
+      },
+      {
+        "id": "viabilidad",
+        "name": "Viabilidad del proyecto",
+        "description": "Cuarto criterio de las bases",
+        "maxPoints": 25
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://santandreucontemporani.org/convocatories/convocatoria-sac-fic-programa-de-residencies-2027/",
+    "basesUrl": "https://santandreucontemporani.org/wp-content/uploads/2026/10/SAC-FiC_ProgramaResidencia_Artistique_ES.pdf",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "depo-residencias-novos-valores-museo-pontevedra-2027",
+    "title": "3.ª convocatoria de Residencias Artísticas Novos Valores (Museo de Pontevedra)",
+    "organizer": "Deputación de Pontevedra · Museo de Pontevedra",
+    "type": "residencia",
+    "scope": "provincial",
+    "region": "Pontevedra",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [
+      "ES114"
+    ],
+    "disciplines": [
+      "artes-visuales"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "minAge": 18,
+      "residence": [
+        "Pontevedra"
+      ],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Haber nacido en la provincia de Pontevedra o residir en ella",
+        "Ser artista, comisario/a o investigador/a de proyectos artísticos",
+        "No haber sido beneficiario/a en las dos ediciones anteriores (2025 y 2026)"
+      ]
+    },
+    "amountEur": {
+      "min": 9500,
+      "max": 9500,
+      "total": 19000
+    },
+    "amountText": "Bolsa de 9.500 € por persona (2 residencias, 19.000 € en total) para gastos de alojamiento, transporte y manutención",
+    "opensAt": "2026-10-30",
+    "deadline": "2026-11-26",
+    "deadlineText": "Hasta el 26/11/2026 (20 días hábiles desde la publicación en la BDNS y el BOPPO)",
+    "status": "open",
+    "summary": "Dos residencias de creación contemporánea durante 2027: cuatro semanas en la Fundación Walter & Nicole Leblanc (Bruselas) y tres meses en Matadero Madrid (13/04–09/07/2027). Cada persona seleccionada recibe 9.500 €. Solo para artistas nacidos o residentes en la provincia de Pontevedra.",
+    "requiredDocuments": [
+      "Memoria del proyecto (máx. 10 páginas DIN A4, PDF)",
+      "Currículo artístico (máx. 2 páginas) con certificados de premios y becas",
+      "Dossier artístico (máx. 10 páginas, con imágenes)",
+      "Certificados de formación relacionada (cursos de 5 horas o más)",
+      "Cronograma de trabajo aproximado"
+    ],
+    "criteria": [
+      {
+        "id": "calidad-proyecto",
+        "name": "Calidad artística, coherencia, innovación y viabilidad del proyecto",
+        "description": "Hasta 25 puntos",
+        "maxPoints": 25
+      },
+      {
+        "id": "originalidad",
+        "name": "Originalidad y dimensión experimental",
+        "description": "Hasta 25 puntos",
+        "maxPoints": 25
+      },
+      {
+        "id": "contexto",
+        "name": "Prácticas sensibles al género, la naturaleza y las culturas vernáculas",
+        "description": "Uso de materiales y técnicas autóctonas; hasta 20 puntos",
+        "maxPoints": 20
+      },
+      {
+        "id": "trayectoria",
+        "name": "Trayectoria artística profesional",
+        "description": "Exposiciones, obra en colecciones, premios y becas; hasta 20 puntos",
+        "maxPoints": 20
+      },
+      {
+        "id": "formacion",
+        "name": "Formación académica específica",
+        "description": "Criterio automático; hasta 10 puntos",
+        "maxPoints": 10
+      }
+    ],
+    "criteriaSource": "bases",
+    "allowedExpenses": [
+      "Alojamiento",
+      "Transporte",
+      "Manutención"
+    ],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/938209",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1545126",
+    "bdnsId": "938209",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "cdti-innterconecta-step-2026",
+    "title": "CDTI · Consorcios Regionales INNTERCONECTA-STEP 2026",
+    "organizer": "CDTI E.P.E. · Ministerio de Ciencia, Innovación y Universidades",
+    "type": "ayuda",
+    "scope": "estatal",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme"
+    ],
+    "territories": [
+      "ES"
+    ],
+    "disciplines": [],
+    "sectors": [
+      "I+D+i"
+    ],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "pyme"
+      ],
+      "other": [
+        "Agrupación de 2 a 6 empresas, con al menos una pyme",
+        "Proyecto de I+D en cooperación con presupuesto elegible de entre 1.000.000 y 4.000.000 €",
+        "Hace falta una nota mínima de 50 puntos en la evaluación"
+      ]
+    },
+    "amountEur": {
+      "total": 150000000
+    },
+    "amountText": "Subvención de hasta el 80 % (investigación industrial en colaboración, pequeña empresa) o el 45 % (desarrollo experimental); 150 M € para toda la convocatoria",
+    "opensAt": "2026-11-17",
+    "deadline": "2026-12-23",
+    "deadlineText": "Del 17/11/2026 al 23/12/2026 a las 12:00 (BOE-B-2026-37016)",
+    "status": "upcoming",
+    "summary": "Ayudas del CDTI cofinanciadas con FEDER para proyectos de I+D en cooperación entre varias empresas (consorcios regionales). Cada agrupación necesita entre 2 y 6 empresas, al menos una pyme, y un proyecto de 1 a 4 M €. La solicitud la presenta el representante de la agrupación con certificado electrónico. No es para una pyme que va sola.",
+    "requiredDocuments": [
+      "Solicitud electrónica del representante de la agrupación (certificado electrónico)",
+      "Memoria técnica y económica del proyecto",
+      "Acuerdo interno de la agrupación",
+      "Declaración de ayudas de minimis y otras ayudas recibidas"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Personal",
+      "Colaboraciones externas y subcontratación (hasta el 50 %)",
+      "Material y amortización de equipos",
+      "Costes de coordinación de la agrupación"
+    ],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/941239",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1553183",
+    "bdnsId": "941239",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "camara-tui-pyme-digital-2026",
+    "title": "Programa Pyme Digital 2026 (Cámara de Tui): ayuda para digitalizar tu pyme",
+    "organizer": "Cámara de Comercio de Tui (FEDER · Cámara de España)",
+    "type": "ayuda",
+    "scope": "provincial",
+    "region": "Pontevedra",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme",
+      "autonomo"
+    ],
+    "territories": [
+      "ES114"
+    ],
+    "disciplines": [],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Pontevedra"
+      ],
+      "legalForms": [
+        "pyme",
+        "autonomo"
+      ],
+      "other": [
+        "Pyme con domicilio social o centro productivo en un municipio de la demarcación de la Cámara de Tui",
+        "Facturación mínima de 100.000 € en la última anualidad",
+        "Alta continuada en el IAE antes del 1 de enero de 2024",
+        "No valen autónomos societarios ni colaboradores, comunidades de bienes ni sociedades civiles"
+      ]
+    },
+    "amountEur": {
+      "min": 4494,
+      "max": 4494
+    },
+    "amountText": "Diagnóstico gratuito + ayuda del 60 % sobre hasta 7.490 € (máximo 4.494 € por empresa)",
+    "opensAt": "2026-03-04",
+    "deadline": "2026-11-30",
+    "deadlineText": "Hasta el 30/11/2026 a las 14:00, o antes si se agota el presupuesto (por orden de registro de entrada)",
+    "status": "open",
+    "summary": "Diagnóstico TIC gratuito y ayuda para implantar las soluciones detectadas: la Cámara de Tui paga el 60 % de un plan de hasta 7.490 € (ayuda máxima de 4.494 € por empresa), con fondos FEDER. Se concede por orden de registro hasta agotar el presupuesto.",
+    "requiredDocuments": [
+      "Declaración responsable (Anexo III)",
+      "Declaración anual de IVA del último año (o documento oficial que acredite la facturación)",
+      "Certificado de la AEAT y de la Seguridad Social de estar al corriente",
+      "Poder de representación (personas jurídicas)",
+      "Certificado de situación censal de la AEAT"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Soluciones TIC de digitalización (tienda online, procesos, software)",
+      "Costes indirectos a tipo fijo del 7 %"
+    ],
+    "sourceUrl": "https://sede.camara.es/sede/tuy/tramites/TR0000006403",
+    "basesUrl": "https://sede.camara.es/sede/tuy/tramites/TR0000006403/documento/002900067673",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "camara-tui-pyme-innova-2026",
+    "title": "Programa Pyme Innova 2026 (Cámara de Tui): innovación para tu pyme",
+    "organizer": "Cámara de Comercio de Tui (FEDER · Cámara de España)",
+    "type": "ayuda",
+    "scope": "provincial",
+    "region": "Pontevedra",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme",
+      "autonomo"
+    ],
+    "territories": [
+      "ES114"
+    ],
+    "disciplines": [],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Pontevedra"
+      ],
+      "legalForms": [
+        "pyme",
+        "autonomo"
+      ],
+      "other": [
+        "Pyme con domicilio social o centro productivo en un municipio de la demarcación de la Cámara de Tui",
+        "Facturación mínima de 100.000 € en la última anualidad",
+        "Alta continuada en el IAE antes del 1 de enero de 2024",
+        "No valen autónomos societarios ni colaboradores, comunidades de bienes ni sociedades civiles"
+      ]
+    },
+    "amountEur": {
+      "min": 4494,
+      "max": 4494
+    },
+    "amountText": "Diagnóstico gratuito + ayuda del 60 % sobre hasta 7.490 € (máximo 4.494 € por empresa)",
+    "opensAt": "2026-03-04",
+    "deadline": "2026-11-30",
+    "deadlineText": "Hasta el 30/11/2026 a las 14:00, o antes si se agota el presupuesto (por orden de registro de entrada)",
+    "status": "open",
+    "summary": "Diagnóstico de innovación gratuito y ayuda del 60 % para implantar las mejoras que proponga (hasta 7.490 € de coste elegible, máximo 4.494 € de ayuda por empresa), cofinanciado por FEDER. Orden de registro de entrada.",
+    "requiredDocuments": [
+      "Declaración responsable (Anexo III)",
+      "Declaración anual de IVA del último año (o documento oficial que acredite la facturación)",
+      "Certificado de la AEAT y de la Seguridad Social de estar al corriente",
+      "Poder de representación (personas jurídicas)",
+      "Certificado de situación censal de la AEAT"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Planes de implantación de soluciones innovadoras",
+      "Costes indirectos a tipo fijo del 7 %"
+    ],
+    "sourceUrl": "https://sede.camara.es/sede/tuy/tramites/TR0000006400",
+    "basesUrl": "https://sede.camara.es/sede/tuy/tramites/TR0000006400/documento/002900067365",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "camara-tui-pyme-sostenible-2026",
+    "title": "Programa Pyme Sostenible 2026 (Cámara de Tui): sostenibilidad para tu pyme",
+    "organizer": "Cámara de Comercio de Tui (FEDER · Cámara de España)",
+    "type": "ayuda",
+    "scope": "provincial",
+    "region": "Pontevedra",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme",
+      "autonomo"
+    ],
+    "territories": [
+      "ES114"
+    ],
+    "disciplines": [],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Pontevedra"
+      ],
+      "legalForms": [
+        "pyme",
+        "autonomo"
+      ],
+      "other": [
+        "Pyme con domicilio social o centro productivo en un municipio de la demarcación de la Cámara de Tui",
+        "Facturación mínima de 100.000 € en la última anualidad",
+        "Alta continuada en el IAE antes del 1 de enero de 2024",
+        "No valen autónomos societarios ni colaboradores, comunidades de bienes ni sociedades civiles"
+      ]
+    },
+    "amountEur": {
+      "min": 4494,
+      "max": 4494
+    },
+    "amountText": "Diagnóstico gratuito + ayuda del 60 % sobre hasta 7.490 € (máximo 4.494 € por empresa)",
+    "opensAt": "2026-03-04",
+    "deadline": "2026-11-30",
+    "deadlineText": "Hasta el 30/11/2026 a las 14:00, o antes si se agota el presupuesto (por orden de registro de entrada)",
+    "status": "open",
+    "summary": "Diagnóstico de sostenibilidad (huella de carbono, energía, economía circular, ODS) y ayuda del 60 % para implantar las mejoras: hasta 7.490 € de coste elegible, máximo 4.494 € por empresa. FEDER, por orden de registro.",
+    "requiredDocuments": [
+      "Declaración responsable (Anexo III)",
+      "Declaración anual de IVA del último año (o documento oficial que acredite la facturación)",
+      "Certificado de la AEAT y de la Seguridad Social de estar al corriente",
+      "Poder de representación (personas jurídicas)",
+      "Certificado de situación censal de la AEAT"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Medidas de sostenibilidad detectadas en el diagnóstico",
+      "Costes indirectos a tipo fijo del 7 %"
+    ],
+    "sourceUrl": "https://sede.camara.es/sede/tuy/tramites/TR0000006377",
+    "basesUrl": "https://sede.camara.es/sede/tuy/tramites/TR0000006377/documento/002900067373",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "camara-tui-pyme-cibersegura-2026",
+    "title": "Programa Pyme Cibersegura 2026 (Cámara de Tui): ciberseguridad para tu pyme",
+    "organizer": "Cámara de Comercio de Tui (FEDER · Cámara de España)",
+    "type": "ayuda",
+    "scope": "provincial",
+    "region": "Pontevedra",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme",
+      "autonomo"
+    ],
+    "territories": [
+      "ES114"
+    ],
+    "disciplines": [],
+    "sectors": [],
+    "eligibility": {
+      "residence": [
+        "Pontevedra"
+      ],
+      "legalForms": [
+        "pyme",
+        "autonomo"
+      ],
+      "other": [
+        "Pyme con domicilio social o centro productivo en un municipio de la demarcación de la Cámara de Tui",
+        "Facturación mínima de 100.000 € en la última anualidad",
+        "Alta continuada en el IAE antes del 1 de enero de 2024",
+        "No valen autónomos societarios ni colaboradores, comunidades de bienes ni sociedades civiles"
+      ]
+    },
+    "amountEur": {
+      "min": 2568,
+      "max": 2568
+    },
+    "amountText": "Diagnóstico gratuito + ayuda del 60 % sobre hasta 4.280 € (2.568 € por empresa; presupuesto para unas 2 empresas)",
+    "opensAt": "2026-03-04",
+    "deadline": "2026-11-30",
+    "deadlineText": "Hasta el 30/11/2026 a las 14:00, o antes si se agota el presupuesto (por orden de registro de entrada)",
+    "status": "open",
+    "summary": "Diagnóstico de ciberseguridad gratuito y ayuda del 60 % para implantar las medidas: hasta 4.280 € de coste elegible (4.000 € + 7 % indirectos), 2.568 € de ayuda máxima según la tabla de la convocatoria. Presupuesto para unas 2 empresas.",
+    "requiredDocuments": [
+      "Declaración responsable (Anexo III)",
+      "Declaración anual de IVA del último año (o documento oficial que acredite la facturación)",
+      "Certificado de la AEAT y de la Seguridad Social de estar al corriente",
+      "Poder de representación (personas jurídicas)",
+      "Certificado de situación censal de la AEAT"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [
+      "Medidas de ciberseguridad del plan de implantación",
+      "Costes indirectos a tipo fijo del 7 %"
+    ],
+    "sourceUrl": "https://sede.camara.es/sede/tuy/tramites/TR0000006378",
+    "basesUrl": "https://sede.camara.es/sede/tuy/tramites/TR0000006378/documento/002900067687",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "camara-coruna-diagnostico-comercio-minorista-2026",
+    "title": "Diagnósticos de Innovación Comercial 2026 (Cámara de A Coruña) para comercio minorista",
+    "organizer": "Cámara de Comercio de A Coruña (FEDER · Secretaría de Estado de Comercio)",
+    "type": "ayuda",
+    "scope": "provincial",
+    "region": "A Coruña",
+    "beneficiaryKinds": [
+      "business"
+    ],
+    "beneficiaryTypes": [
+      "pyme",
+      "autonomo"
+    ],
+    "territories": [
+      "ES111"
+    ],
+    "disciplines": [],
+    "sectors": [
+      "comercio minorista"
+    ],
+    "eligibility": {
+      "residence": [
+        "A Coruña"
+      ],
+      "legalForms": [
+        "pyme",
+        "autonomo"
+      ],
+      "other": [
+        "Alta en el CNAE-2025 grupo 47 (o IAE 64, 65 o 66): comercio minorista",
+        "Establecimiento comercial en un municipio de la demarcación de la Cámara de A Coruña",
+        "No ser empresa en crisis"
+      ]
+    },
+    "amountEur": {
+      "total": 32073
+    },
+    "amountText": "Servicio gratuito (valorado dentro de un presupuesto de 32.073 € financiado por FEDER); sin dinero para el comercio",
+    "opensAt": "2026-06-23",
+    "deadline": "2026-11-20",
+    "deadlineText": "Hasta el 20/11/2026 a las 14:00",
+    "status": "open",
+    "summary": "Diagnóstico individual y gratuito de tu comercio minorista (estrategia, innovación y digitalización) con recomendaciones para renovar y optimizar la gestión. Es un servicio de asesoramiento de la Cámara de A Coruña, no una subvención en dinero. Plazas por orden de solicitud, una vez comprobados los requisitos.",
+    "requiredDocuments": [
+      "Anexo I: solicitud de participación",
+      "Anexo II: declaración responsable",
+      "Alta en el CNAE grupo 47 o en el IAE (epígrafes 64, 65 o 66)",
+      "DNI del solicitante o del firmante con poderes",
+      "Poder de representación y tarjeta de identificación fiscal (personas jurídicas)"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://sede.camara.es/sede/coruna/tramites/TR0000006664",
+    "basesUrl": "https://sede.camara.es/sede/coruna/tramites/TR0000006664/documento/003000059028",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "ponteareas-cartel-corpus-christi-2027",
+    "title": "Concurso del cartel del Corpus Christi 2027 (Ponteareas)",
+    "organizer": "Concello de Ponteareas · Concejalía de Turismo",
+    "type": "certamen",
+    "scope": "local",
+    "region": "Pontevedra",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "ilustracion",
+      "diseno"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "minAge": 18,
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Hasta 2 obras originales e inéditas, sin inteligencia artificial",
+        "Deja libre una franja inferior para los logos de la organización"
+      ]
+    },
+    "amountEur": {
+      "min": 1000,
+      "max": 1000
+    },
+    "amountText": "Premio único de 1.000 € (el Concello se queda con el cartel y los derechos de uso)",
+    "deadline": "2026-11-22",
+    "deadlineText": "Hasta el 22/11/2026 a las 23:59",
+    "status": "open",
+    "summary": "Concurso abierto de cartel para la fiesta del Corpus Christi de Ponteareas (alfombras de flores), de interés turístico internacional. Se presenta por correo electrónico, de forma anónima, y el cartel premiado se usa en la difusión de 2027. Puede participar cualquier persona mayor de edad, resida donde resida.",
+    "requiredDocuments": [
+      "Cartel con el lema elegido (archivo con el lema como nombre)",
+      "Copia del DNI",
+      "Anexo I: declaración de autoría"
+    ],
+    "criteria": [
+      {
+        "id": "c1",
+        "name": "Temática y relación con Ponteareas y el Corpus",
+        "description": "Criterio citado en las bases (sin puntos publicados)",
+        "maxPoints": 20
+      },
+      {
+        "id": "c2",
+        "name": "Diseño gráfico",
+        "description": "Criterio citado en las bases (sin puntos publicados)",
+        "maxPoints": 20
+      },
+      {
+        "id": "c3",
+        "name": "Calidad técnica y artística",
+        "description": "Criterio citado en las bases (sin puntos publicados)",
+        "maxPoints": 20
+      },
+      {
+        "id": "c4",
+        "name": "Impacto visual",
+        "description": "Criterio citado en las bases (sin puntos publicados)",
+        "maxPoints": 20
+      },
+      {
+        "id": "c5",
+        "name": "Creatividad y originalidad",
+        "description": "Criterio citado en las bases (sin puntos publicados)",
+        "maxPoints": 20
+      }
+    ],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/936545",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1540474",
+    "bdnsId": "936545",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "albacete-cartel-feria-2027",
+    "title": "Concurso del cartel de la Feria de Albacete 2027",
+    "organizer": "Ayuntamiento de Albacete · Servicio de Cultura y Fiestas",
+    "type": "certamen",
+    "scope": "local",
+    "region": "Castilla-La Mancha",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "ilustracion",
+      "diseno"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Una sola obra por autor/a, vertical de 70 × 100 cm más adaptación horizontal de 200 × 80 cm",
+        "Cuatricromía: sin tintas especiales (oro, plata, fluorescentes, Pantone)",
+        "Si se usa IA generativa u otros recursos externos, hay que indicarlo"
+      ]
+    },
+    "amountEur": {
+      "min": 250,
+      "max": 4000,
+      "total": 5500
+    },
+    "amountText": "1.er premio 4.000 €; 2.º 600 €; 3.º 400 € (hasta cinco premios, 5.500 € en total)",
+    "deadline": "2026-12-04",
+    "deadlineText": "Hasta el 4/12/2026",
+    "status": "open",
+    "summary": "Concurso del Ayuntamiento de Albacete para elegir el cartel oficial de la Feria 2027, abierto a autores nacionales y extranjeros y a empresas del sector. Técnica libre, con PDF explicando el proceso. Hasta cinco premios, el primero de 4.000 €.",
+    "requiredDocuments": [
+      "Cartel montado sobre cartón pluma de 5 mm, sin marco",
+      "Adaptación horizontal impresa en A4 pegada en la parte trasera",
+      "PDF con la guía del proceso, en sobre cerrado sin datos personales",
+      "Pendrive con los archivos finales (300 ppp) si se hace por ordenador"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/935657",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1538152",
+    "bdnsId": "935657",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
+  },
+  {
+    "id": "montellano-certamen-pintura-villa-2026",
+    "title": "XXXV Certamen de Pintura «Villa de Montellano»",
+    "organizer": "Ayuntamiento de Montellano (Sevilla)",
+    "type": "certamen",
+    "scope": "local",
+    "region": "Andalucía",
+    "beneficiaryKinds": [
+      "creator"
+    ],
+    "beneficiaryTypes": [
+      "persona-fisica"
+    ],
+    "territories": [],
+    "disciplines": [
+      "pintura"
+    ],
+    "sectors": [],
+    "eligibility": {
+      "minAge": 18,
+      "residence": [],
+      "legalForms": [
+        "persona-fisica"
+      ],
+      "other": [
+        "Una obra original y firmada, de entre 73 y 130 cm por cada lado, ejecutada entre 2022 y 2026",
+        "Envío y retirada de la obra a cargo del artista"
+      ]
+    },
+    "amountEur": {
+      "min": 4000,
+      "max": 4000
+    },
+    "amountText": "Premio único de 4.000 € (la obra premiada pasa al patrimonio del Ayuntamiento); exposición del 2 al 19 de febrero de 2027",
+    "deadline": "2026-11-30",
+    "deadlineText": "Documentación (inscripción en mundoarti.com) antes del 30/11/2026; obras seleccionadas del 9 al 28/12/2026",
+    "status": "open",
+    "summary": "Certamen de pintura de técnica libre abierto a artistas nacionales y extranjeros mayores de 18 años. Primera fase por fotografía de la obra en mundoarti.com; el jurado selecciona las que se exponen y avisa antes del 7/12/2026.",
+    "requiredDocuments": [
+      "Imagen de la obra en JPG (hasta 5 MB)",
+      "Ficha técnica con el año de realización",
+      "Declaración jurada de la fecha de ejecución"
+    ],
+    "criteria": [],
+    "criteriaSource": "estimated",
+    "allowedExpenses": [],
+    "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/936233",
+    "basesUrl": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1539619",
+    "bdnsId": "936233",
+    "source": "seed",
+    "verifiedAt": "2026-11-14"
   }
 ]

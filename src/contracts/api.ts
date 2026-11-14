@@ -159,6 +159,8 @@ export const CallsResponse = z.object({
     }),
   ),
   lockedCount: z.number().int(), // matches hidden behind the free limit
+  // Closed editions of recurring calls ("Próximas ediciones"): never in the top, free plan sees them as a preview.
+  editions: z.array(z.object({ call: Call, match: MatchResult })).default([]),
   mode: ProfileKind,
   pro: z.boolean().optional(),
   // Background BDNS search for this profile (step 2): the feed reloads when it finishes.
@@ -179,7 +181,7 @@ export const DeepResearchResponse = z.object({
   message: z.string().optional(),
 });
 export type DeepResearchResponse = z.infer<typeof DeepResearchResponse>;
-export const CallResponse = z.object({ call: Call, match: MatchResult, checklist: z.array(z.string()), similarAwards: z.array(PastAward).default([]) });
+export const CallResponse = z.object({ locked: z.boolean().optional(), paywall: z.literal("match_limit").optional(), call: Call, match: MatchResult, checklist: z.array(z.string()), similarAwards: z.array(PastAward).default([]) });
 
 // /api/applications
 // appUserId is accepted for older clients but ignored: the server always uses the signed-in user's.

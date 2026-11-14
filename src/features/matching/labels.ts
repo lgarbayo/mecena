@@ -2,7 +2,7 @@
 import type { Call } from "@/contracts";
 
 /** Maximum of each score part (rules.ts adds them up; the call detail draws its bars from them). Sums to 100. */
-export const SCORE_MAX = { base: 25, affinity: 45, documents: 12, amount: 8, timing: 10 } as const;
+export const SCORE_MAX = { base: 25, affinity: 43, documents: 10, amount: 10, timing: 12 } as const;
 
 export type FitLabel = "alto" | "medio" | "bajo";
 /**

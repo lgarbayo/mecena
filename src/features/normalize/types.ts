@@ -106,6 +106,10 @@ export const CanonicalCall = z.object({
   beneficiaryTypes: z.array(BeneficiaryType), // empty = unknown (do not discard)
   beneficiarySource: z.enum(["explicit", "kinds", "unknown"]),
   territories: z.array(z.string()).min(1), // applicant must be within ANY of these; ["ES"] = state-wide
+  // true when territories fell back to ["ES"] because the call stores no residence: state-wide only if scope says so
+  territoryImplicit: z.boolean().optional(),
+  scope: z.string().optional(), // Call.scope, for wording ("ámbito estatal" only when it is)
+  region: z.string().optional(), // where the organiser is (Call.region): proximity, not a residence rule
   disciplines: z.array(z.string()), // empty = any discipline
   sectors: z.array(CnaeRef), // empty = any sector
   amount: AmountCents,
@@ -113,6 +117,7 @@ export const CanonicalCall = z.object({
   deadline: Deadline,
   age: AgeRule,
   maxEmployees: z.number().int().optional(),
+  minEmployees: z.number().int().optional(),
   requiredDocuments: z.array(z.string()), // document taxonomy ids
   criteria: z.array(NormalizedCriterion),
 });

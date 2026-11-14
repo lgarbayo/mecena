@@ -523,7 +523,7 @@
         "winners": {}
       }
     ],
-    "evidence": "3 ediciones anteriores en la BDNS; 2 con premiados publicados. Unos 66,5 premiados por edición. 93 % de los premiados son personas físicas. Importes entre 75 € y 2000 €. 7 % de los premiados repite. 95 de 600 solicitudes concedidas en la última edición con datos.",
+    "evidence": "3 ediciones anteriores en la BDNS; 2 con premiados publicados. Unos 66,5 premiados por edición. 93 % de los premiados son personas físicas. Importes entre 75 € y 2000 €. 7 % de los premiados repite. Solicitudes ≈ 600 (aprox., cifra de una nota de prensa, no de una resolución): no calculamos una tasa de éxito.",
     "builtAt": "2026-11-13",
     "awardsPerEdition": 66.5,
     "amountRangeEur": {
@@ -535,12 +535,6 @@
       "entidad-sin-animo-lucro": 7,
       "pyme": 2
     },
-    "repeatWinnerShare": 0.0673076923076923,
-    "successRate": {
-      "awarded": 95,
-      "applicants": 600,
-      "rate": 0.15833333333333333,
-      "bdnsId": "853424"
-    }
+    "repeatWinnerShare": 0.0673076923076923
   }
 }
