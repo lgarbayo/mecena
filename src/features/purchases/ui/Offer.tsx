@@ -1,9 +1,10 @@
 "use client";
 // WP-07: the offer + purchase flow, shared by the Paywall sheet and /pro.
-// RevenueCat: the Web Billing checkout renders inside `checkoutRef`. Mock: a "Modo prueba" confirm step.
+// RevenueCat: the Web Billing checkout opens as the SDK's own full-screen sheet above ours (embedded in our scrolling
+// sheet it was squeezed to a sliver on phones). Mock: a "Modo prueba" confirm step.
 // `onPurchased` fires only after the server returned an entitlement that unlocks what the paywall was opened for
 // (after a purchase or after "Restaurar compras").
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { EntitlementState, PaywallTrigger, Plan, PlanId } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
 import { Button } from "@/components/ui";
@@ -23,7 +24,6 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
   const [info, setInfo] = useState<string | null>(null);
   const [initFailed, setInitFailed] = useState(false);
   const [attempt, setAttempt] = useState(0); // bump to retry a failed init
-  const checkoutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!appUserId) return;
@@ -52,8 +52,7 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
     setError(null);
     setInfo(null);
     setBusy(id);
-    if (mode === "revenuecat") setTimeout(() => checkoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 600);
-    const out = await getPurchases().purchase(id, { htmlTarget: checkoutRef.current ?? undefined });
+    const out = await getPurchases().purchase(id);
     setBusy(null);
     setPendingMock(null);
     // the server decides: only an entitlement that unlocks this screen counts as done
@@ -124,8 +123,6 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
       )}
       {!ready && !error && <p className={s.note}>{OFFER.loading}</p>}
 
-      {/* RevenueCat Web Billing renders its checkout here (sandbox: card 4242 4242 4242 4242) */}
-      <div ref={checkoutRef} className={mode === "revenuecat" && busy && busy !== "restore" ? s.checkout : undefined} />
       {mode === "revenuecat" && busy && busy !== "restore" && <p className={s.note}>{OFFER.sandboxNote}</p>}
       {error && (
         <p className={s.error} role="alert">

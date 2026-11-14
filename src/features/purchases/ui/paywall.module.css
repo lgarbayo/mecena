@@ -266,10 +266,6 @@
   font-weight: 600;
 }
 
-.checkout {
-  min-height: 120px;
-}
-
 .confirm {
   display: grid;
   gap: 10px;
