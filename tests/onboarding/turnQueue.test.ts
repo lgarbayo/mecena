@@ -56,4 +56,38 @@ describe("TurnQueue", () => {
     expect(sent).toEqual(["uno", "dos"]);
     expect(results.map((t) => t.segmentId)).toEqual(["seg-uno", "seg-dos"]);
   });
+
+  it("a turn that never answers is flagged slow, then aborted and failed, and the queue resumes on retry", async () => {
+    let hang = true;
+    const signals: AbortSignal[] = [];
+    const sent: string[] = [];
+    const q = new TurnQueue(
+      (t, signal) => {
+        signals.push(signal);
+        if (hang) return new Promise(() => undefined); // the request never comes back
+        sent.push(t.text);
+        return Promise.resolve(res(`seg-${t.text}`));
+      },
+      { change() {}, result() {} },
+      { timeoutMs: 60, slowMs: 20 },
+    );
+    const first = q.enqueue("uno", "voice")!;
+    q.enqueue("dos", "voice");
+    await new Promise((r) => setTimeout(r, 35));
+    expect(q.snapshot[0]).toMatchObject({ status: "sending", slow: true });
+    await q.drain();
+    expect(q.snapshot.map((t) => [t.text, t.status])).toEqual([
+      ["uno", "failed"],
+      ["dos", "queued"],
+    ]);
+    expect(signals[0].aborted).toBe(true);
+    hang = false;
+    q.retry(first.id);
+    await q.drain();
+    expect(sent).toEqual(["uno", "dos"]);
+    expect(q.snapshot.map((t) => [t.status, t.slow])).toEqual([
+      ["done", false],
+      ["done", false],
+    ]);
+  });
 });

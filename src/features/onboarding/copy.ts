@@ -150,6 +150,7 @@ export const ONBOARDING = {
   finishBusinessCount: (n: number) => (n === 1 ? "Ver la ayuda que encaja" : `Ver las ${n} ayudas que encajan`),
   followUpKicker: "Para seguir",
   sending: "Anotando…",
+  slow: "Va más lento de lo normal. Puedes seguir hablando: no se pierde nada.",
   failed: "Algo ha fallado por nuestra parte. Vuelve a intentarlo; no has perdido nada.",
   retry: "Reintentar",
   fromYourWords: "Con tus palabras",

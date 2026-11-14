@@ -1,0 +1,98 @@
+// @vitest-environment jsdom
+/**
+ * Spoken onboarding end to end with the REAL dictation hook and a scripted SpeechRecognition: the first answer, its
+ * follow-up question, and a second answer that must still reach the queue and be sent ("worked for the first
+ * question, then stopped").
+ */
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { FakeRecognition, installFakeSpeech } from "../voice/fakeSpeech";
+
+const sent: string[] = [];
+let hangNext = false;
+vi.mock("@/lib/api-client", async () => {
+  const svc = await import("@/features/onboarding/service");
+  return {
+    apiGet: async (url: string) => svc.getOnboardingState(new URL(url, "http://x").searchParams.get("profileId") ?? undefined),
+    apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }, _m?: string, signal?: AbortSignal) => {
+      if (hangNext) {
+        hangNext = false;
+        // A turn that never answers (cold schema compile, a cut proxy): only the client's timeout can end it.
+        return new Promise((_, reject) => signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError"))));
+      }
+      sent.push(body.text);
+      return svc.processTurn(body);
+    },
+  };
+});
+vi.mock("@/components/shell/AppProvider", () => ({
+  useApp: () => ({ profile: null, appUserId: "u", refresh: async () => undefined, setMode: async () => undefined }),
+}));
+// Same queue, test-sized clock (production: slow after 12 s, abort after 150 s).
+vi.mock("@/features/onboarding/turnQueue", async (orig) => {
+  const m = await orig<typeof import("@/features/onboarding/turnQueue")>();
+  class TurnQueue extends m.TurnQueue {
+    constructor(send: ConstructorParameters<typeof m.TurnQueue>[0], events: ConstructorParameters<typeof m.TurnQueue>[1]) {
+      super(send, events, { timeoutMs: 1500, slowMs: 50 });
+    }
+  }
+  return { ...m, TurnQueue };
+});
+
+const { StepOnboarding } = await import("@/features/onboarding/ui/StepOnboarding");
+const { ONBOARDING } = await import("@/features/onboarding/copy");
+const { VoiceOrb } = await import("@/features/onboarding/ui/VoiceOrb");
+
+beforeEach(() => {
+  installFakeSpeech();
+  sent.length = 0;
+  hangNext = false;
+});
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+describe("spoken onboarding", () => {
+  it("first answer -> follow-up question -> the person talks again: the second answer is sent too", async () => {
+    render(<StepOnboarding />);
+    fireEvent.click(screen.getByTestId("choose-voice"));
+    expect(FakeRecognition.running).toHaveLength(1);
+
+    // First answer; its request hangs: the screen says it is slow, then offers a retry instead of waiting forever.
+    hangNext = true;
+    act(() => FakeRecognition.latest.final("Me llamo Antía Varela y soy ilustradora de A Coruña."));
+    await screen.findByText(ONBOARDING.slow);
+    fireEvent.click(await screen.findByRole("button", { name: ONBOARDING.retry }, { timeout: 5000 }));
+    await waitFor(() => expect(document.body.textContent).toContain("Mecena pregunta"), { timeout: 5000 });
+    expect(sent).toEqual(["Me llamo Antía Varela y soy ilustradora de A Coruña."]);
+
+    // While the follow-up is read, Chrome ends the silent session; the person pauses and talks again at once.
+    act(() => FakeRecognition.latest.end());
+    const old = FakeRecognition.latest;
+    fireEvent.click(screen.getByTestId("orb")); // pause
+    fireEvent.click(screen.getByTestId("orb")); // talk again before the old session has ended
+    act(() => old.end());
+    expect(FakeRecognition.running).toHaveLength(1);
+    expect(screen.getByTestId("orb").getAttribute("aria-pressed")).toBe("true");
+
+    act(() => FakeRecognition.latest.final("Busco una beca para producir una serie de grabados."));
+    await waitFor(() => expect(sent).toEqual(["Me llamo Antía Varela y soy ilustradora de A Coruña.", "Busco una beca para producir una serie de grabados."]));
+    await waitFor(() => expect(screen.queryByText(ONBOARDING.sending)).toBeNull());
+  });
+
+  it("the orb does not open a second microphone on phones (it would starve the dictation)", async () => {
+    const getUserMedia = vi.fn(() => new Promise<MediaStream>(() => undefined));
+    Object.defineProperty(navigator, "mediaDevices", { value: { getUserMedia }, configurable: true });
+    const ua = vi.spyOn(navigator, "userAgent", "get");
+
+    ua.mockReturnValue("Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36");
+    const phone = render(<VoiceOrb active />);
+    expect(getUserMedia).not.toHaveBeenCalled();
+    phone.unmount();
+
+    ua.mockReturnValue("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36");
+    render(<VoiceOrb active />);
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+  });
+});

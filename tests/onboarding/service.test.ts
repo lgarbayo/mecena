@@ -26,6 +26,32 @@ describe("processTurn", () => {
     expect(getTranscript(r3.profile.id)).toHaveLength(3);
   });
 
+  it("a slow turn the client gave up on cannot overwrite what later turns saved meanwhile", async () => {
+    const mock = aiIndex.mockAi();
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    let calls = 0;
+    const slow = aiIndex.mockAi();
+    slow.onboardingTurn = vi.fn(async (input) => {
+      if (calls++ === 0) await gate; // the first run of turn A hangs on the AI
+      return mock.onboardingTurn(input);
+    });
+    vi.spyOn(aiIndex, "getAi").mockReturnValue(slow);
+    const a = "Me llamo Antía Varela, soy ilustradora de A Coruña.";
+    const b = "Tengo una serie de grabados sobre el mar y busco una residencia artística.";
+    const orphan = processTurn({ text: a, source: "voice" }); // A1: the client times out on it...
+    await new Promise((r) => setTimeout(r, 0));
+    await processTurn({ text: a, source: "voice" }); // ...and retries (A2, same segment)
+    const rb = await processTurn({ text: b, source: "voice" }); // then B
+    release();
+    await orphan; // A1 finally returns
+    const id = rb.profile.id;
+    expect(getProfile(id).fundingNeeds).toEqual(rb.profile.fundingNeeds);
+    expect(getProfile(id).fundingNeeds.length).toBeGreaterThan(0);
+    expect(getDossier(id)?.sections.map((s) => [s.key, s.body])).toEqual(rb.sections.map((s) => [s.key, s.body]));
+    expect(getTranscript(id).map((s) => s.text)).toEqual([a, b]);
+  });
+
   it("keeps the transcript and falls back to the mock when the AI call fails", async () => {
     const failing = aiIndex.mockAi();
     failing.onboardingTurn = vi.fn().mockRejectedValue(new Error("boom"));
