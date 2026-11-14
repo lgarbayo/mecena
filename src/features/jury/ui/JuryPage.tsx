@@ -78,19 +78,37 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
 
   // Every mutation carries an Idempotency-Key: a retry after a failure reuses it (same body), so the server never
   // scores, revises or undoes twice for one tap.
-  const scorer = useAction((idempotencyKey: string, id: string) =>
+  // useAction.run resolves to undefined both when it ignores a duplicate tap and when the call failed; `failure`
+  // keeps the failed call's error so the handlers below can show its Spanish text instead of swallowing it.
+  const failure = useRef<unknown>(null);
+  const settled = useCallback(async <R,>(call: () => Promise<R | undefined>): Promise<R | undefined> => {
+    failure.current = null;
+    const r = await call();
+    if (r === undefined && failure.current) throw failure.current;
+    return r;
+  }, []);
+  const remember = <A extends unknown[], R>(fn: (key: string, ...a: A) => Promise<R>) =>
+    async (key: string, ...a: A): Promise<R> => {
+      try {
+        return await fn(key, ...a);
+      } catch (e) {
+        failure.current = e;
+        throw e;
+      }
+    };
+  const scorer = useAction(remember((idempotencyKey: string, id: string) =>
     scoreWithProgress(
       { applicationId: id },
       (e) => setJudges((js) => (js.some((j) => j.judgeId === e.judgeId) ? js.map((j) => (j.judgeId === e.judgeId ? { ...j, total: e.total } : j)) : [...js, e])),
       idempotencyKey,
     ),
-  );
-  const reviser = useAction((idempotencyKey: string, b: ImproveBody) =>
+  ));
+  const reviser = useAction(remember((idempotencyKey: string, b: ImproveBody) =>
     apiSend<{ application: Application }>(API.juryImprove, b, "POST", undefined, { idempotencyKey }),
-  );
-  const undoer = useAction((idempotencyKey: string, id: string) =>
+  ));
+  const undoer = useAction(remember((idempotencyKey: string, id: string) =>
     apiSend<{ application: Application; score: JuryScore | null }>(API.juryUndo, { applicationId: id }, "POST", undefined, { idempotencyKey }),
-  );
+  ));
   const runScore = scorer.run;
 
   /** Score the current version with per-judge progress (reuses a score in flight or already saved). */
@@ -98,11 +116,11 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
     async (next: Phase, judgesOf: JuryScore["judges"] = []) => {
       setPhase(next);
       setJudges(judgesOf.map((j) => ({ judgeId: j.id, name: j.name })));
-      const r = await runScore(applicationId);
+      const r = await settled(() => runScore(applicationId));
       if (!r) throw new ApiClientError(409, "conflict", "El tribunal ya está puntuando esta solicitud.");
       return r;
     },
-    [applicationId, runScore],
+    [applicationId, runScore, settled],
   );
 
   const run = useCallback(async () => {
@@ -138,7 +156,7 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
     try {
       const fixes = [...accepted];
       const typed = fixes.filter((f) => facts[f]?.trim()).map((f) => ({ fix: f, text: facts[f].trim().slice(0, 300) }));
-      const r = await reviser.run({ applicationId, scoreId: score.id, fixes, facts: typed, stage: "revise" });
+      const r = await settled(() => reviser.run({ applicationId, scoreId: score.id, fixes, facts: typed, stage: "revise" }));
       if (!r) {
         setPhase(null);
         return;
@@ -174,7 +192,7 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
     setError(null);
     setPhase("undoing");
     try {
-      const r = await undoer.run(applicationId);
+      const r = await settled(() => undoer.run(applicationId));
       if (!r) return;
       setPrevious(null);
       if (r.score) show(r.score, r.application);

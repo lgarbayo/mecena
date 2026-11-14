@@ -38,11 +38,11 @@ export function useAction<A extends unknown[], R>(fn: (idempotencyKey: string, .
     if (busy.current) return undefined;
     busy.current = true;
     setPending(true);
-    setError(null);
     const key = failed.current && sameArgs(failed.current.args, args) ? failed.current.key : newIdempotencyKey();
     try {
       const result = await fnRef.current(key, ...args);
       failed.current = null;
+      setError(null);
       return result;
     } catch (e) {
       failed.current = { key, args };

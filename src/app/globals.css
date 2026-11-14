@@ -598,10 +598,16 @@ textarea.input {
 }
 
 /* ---- Gradient orb (voice/agent moments only) ---- */
-.orb {
+/* Background-only: size and position come from the caller (a module class, or --orb-size). :where() keeps these
+   defaults at zero specificity so a module's position:absolute + inset always wins. */
+:where(.orb) {
   position: relative;
-  width: var(--orb-size, 96px);
-  aspect-ratio: 1;
+  display: inline-block;
+  width: var(--orb-size);
+  height: var(--orb-size);
+}
+
+.orb {
   border-radius: 50%;
   isolation: isolate;
 }

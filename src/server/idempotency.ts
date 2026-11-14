@@ -180,7 +180,8 @@ export function idempotent<A extends unknown[]>(
       return onStreamEnd(res, forget);
     }
 
-    const storable = res.status < 500 && res.status !== 429 && !res.headers.has("set-cookie");
+    // Only successes are kept: a 402/409/4xx/5xx retried with the same key runs again (e.g. after a paywall purchase).
+    const storable = res.ok && !res.headers.has("set-cookie");
     const declared = Number(res.headers.get("content-length"));
     if (!storable || (Number.isFinite(declared) && declared > MAX_STORED_BYTES)) {
       forget();
