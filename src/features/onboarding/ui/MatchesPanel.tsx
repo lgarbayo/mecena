@@ -12,6 +12,7 @@ import { apiGet } from "@/lib/api-client";
 import { daysLeft, fitLabel } from "@/features/matching/labels";
 import { FIT_COPY, deadlineLabel, isUrgent } from "@/features/matching/ui/format";
 import { MATCHES_PANEL } from "../copy";
+import { LoadingRegion, SkeletonCard, SkeletonList } from "@/components/ui";
 import s from "./onboarding.module.css";
 
 const SHOWN = 3;
@@ -59,7 +60,13 @@ export function MatchesPanel({ profileId, appUserId, refreshKey, onCount, knowsE
           </span>
         )}
       </header>
-      {!data && !failed && <p className={s.muted}>{MATCHES_PANEL.loading}</p>}
+      {!data && !failed && (
+        <LoadingRegion label={MATCHES_PANEL.loading} className={s.matchSkeleton}>
+          <SkeletonList count={SHOWN}>
+            <SkeletonCard lines={2} />
+          </SkeletonList>
+        </LoadingRegion>
+      )}
       {failed && !data && <p className={s.muted}>{MATCHES_PANEL.failed}</p>}
       {data && total === 0 && <p className={s.muted}>{knowsEnough ? MATCHES_PANEL.none : MATCHES_PANEL.empty}</p>}
       {data && total > 0 && (
