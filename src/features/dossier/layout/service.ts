@@ -14,6 +14,7 @@ import { AiError } from "@/server/ai/llm";
 import { buildCatalog, type Catalog } from "./catalog";
 import { designLayout, layoutCount, layoutModel, planDirections, type Direction } from "./agent";
 import { ensureLayoutFonts } from "./fonts-server";
+import { missingContent } from "./completeness";
 import { LayoutError, prepareLayout, type PrepareResult } from "./prepare";
 import { renderPreparedLayoutPdf } from "./pdf-render";
 import { emptyEntry, readAll, saveEntry, type LayoutEntry } from "./store";
@@ -300,6 +301,12 @@ async function composeOne(input: { catalog: Catalog; thumbs: NonNullable<WorkLoo
         problem,
         onUsage: input.usage.onUsage,
       });
+      const missing = missingContent(layout, input.catalog, { request: input.request });
+      if (missing) {
+        console.error("[dossier] free layout rejected as incomplete:", missing);
+        problem = missing;
+        continue;
+      }
       const r = await safePrepare(layout, input.catalog);
       if ("error" in r) {
         problem = r.error;

@@ -9,6 +9,7 @@ import { z } from "zod";
 import { AiError, imageBlock, isMockAi, structured, type UserContent } from "@/server/ai/llm";
 import { catalogForAgent, type Catalog } from "./catalog";
 import type { FreeLayout } from "./schema";
+import { MIN_WORKS_SHOWN } from "./completeness";
 import { MAX_ELEMENTS_PER_PAGE, MAX_PAGES } from "./schema";
 import { fromWire, WireLayout } from "./wire";
 
@@ -56,7 +57,7 @@ const RULES = `Cómo funciona:
 - Márgenes: los textos quedan dentro del 6% lateral y 5% arriba/abajo (se corrige solo); fotos, rectángulos y líneas pueden llegar al borde.
 - Textos largos (declaracion, biografia, trayectoria): cajas amplias. Si no caben se reducen o continúan en otra página; no cuentes con ello para recortar.
 - Evita solapar textos entre sí y textos sobre fotos (un título corto sobre una foto es posible; lleva banda automática salvo que pongas un velo).
-- Incluye todo el contenido del catálogo que importa (portada con el nombre, declaración, biografía, las obras, trayectoria y contacto) salvo que la petición pida otra cosa. Máximo ${MAX_PAGES} páginas, ${MAX_ELEMENTS_PER_PAGE} elementos por página.
+- Incluye todo el contenido del catálogo que importa (portada con el nombre, declaración, biografía, las obras, trayectoria y contacto) salvo que la petición pida otra cosa. Una propuesta nueva lleva siempre el nombre en la página 1, la declaración y al menos ${MIN_WORKS_SHOWN} obras distintas (todas si hay menos); un cambio nunca quita el nombre. Máximo ${MAX_PAGES} páginas, ${MAX_ELEMENTS_PER_PAGE} elementos por página.
 - Si la petición es absurda, imposible o pide algo que no está en el catálogo (otras fotos, datos inventados), haz lo más razonable con lo que hay y explícalo en "rationale".
 - name: 2-4 palabras. rationale: 1-3 frases en español de España, tuteando: qué dirección has tomado y por qué encaja con su obra.`;
 
