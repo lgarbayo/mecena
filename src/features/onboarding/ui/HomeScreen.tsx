@@ -1,4 +1,5 @@
 /** Opening screen (/): one non-scrolling screen with the three sourced data points, the slogan and the mode-aware CTAs. */
+import { HeaderEnd } from "@/components/shell/HeaderEnd";
 import { HOME, SLOGAN } from "../copy";
 import { HomeActions } from "./HomeActions";
 import { Stage, glass as g } from "./Stage";
@@ -10,6 +11,8 @@ export function HomeScreen() {
       <div className={s.home}>
         <div className={s.top}>
           <span className={g.brand}>Mecena</span>
+          {/* the app header is hidden on this full-screen page: keep the mode switch and "Salir" reachable */}
+          <HeaderEnd />
         </div>
 
         <header className={s.head}>
