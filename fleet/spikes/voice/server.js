@@ -49,6 +49,8 @@ function createSession(mode) {
   const session = new Session({ mode, llm });
   const entry = { session, clients: new Set(), backlog: [] };
   for (const ev of ["extracted", "dossier", "rejected", "stopped"]) session.on(ev, (d) => broadcast(entry, ev, d));
+  // Only the reason goes to the browser: the corrupt question itself is never sent.
+  session.on("ask_rejected", ({ n, reason }) => broadcast(entry, "ask_rejected", { n, reason }));
   session.on("error", (e) => broadcast(entry, "error", { message: e.message }));
   sessions.set(id, entry);
   return { id, mock: !keyInfo, script: keyInfo ? null : SCENARIOS[scenario].finals };

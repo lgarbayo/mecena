@@ -113,6 +113,27 @@ export function validateOp(op, state, transcriptNorm) {
   return keyFix ? { ok: true, op: clean, keyFix } : { ok: true, op: clean };
 }
 
+// UTF-8 decoded as a single-byte code page: the lead byte shows up as cp1250 Â Ă Ĺ, cp1252 Ã Â,
+// cp1251 В Г (Cyrillic), cp1253 Greek, cp1255 Hebrew, cp1256 Arabic; "â€"/"â‚" is a 3-byte char
+// (— … “ ” €) under cp1250/1252/1256; plus C1 controls and the replacement char. Spanish and
+// Galician never use these (Portuguese Â/Ã names are dropped too: losing a question is the safe side).
+// Sonnet emits them in ask_next.
+const MOJIBAKE_RE = /[ÃÂĂĹ]|â[€‚]|[\u0080-\u009F\u0370-\u03FF\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF]|\uFFFD/;
+
+export function isMojibake(s) {
+  return MOJIBAKE_RE.test(String(s ?? ""));
+}
+
+/**
+ * Validate the model's follow-up question. A question that cannot be read is worse than none.
+ * Returns { ok: true, question } or { ok: false, question: "", reason }.
+ */
+export function validateAskNext(q) {
+  const question = String(q ?? "").trim();
+  if (isMojibake(question)) return { ok: false, question: "", reason: "mojibake" };
+  return { ok: true, question };
+}
+
 /**
  * Apply validated ops immutably. Returns { state, changed: [{field, key?, kind}], dirtySections: Set }.
  * Unchanged values (same normalized value) are not re-applied, which avoids UI flicker.

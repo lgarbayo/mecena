@@ -73,7 +73,7 @@ export const DOSSIER_SECTIONS = {
 };
 
 // ---------------------------------------------------------------------------
-// 1. Incremental profile patch (output of the fast extractor, claude-sonnet-5-5)
+// 1. Incremental profile patch (output of the fast extractor, claude-haiku-5-5 by default)
 // ---------------------------------------------------------------------------
 
 /** @param {"creator"|"business"} mode */
