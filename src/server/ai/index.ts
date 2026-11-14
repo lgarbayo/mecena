@@ -11,6 +11,7 @@ import { draftingAi } from "@/features/drafting/ai";
 import { juryAi } from "@/features/jury/ai";
 import { dossierAi } from "@/features/dossier/adapt-ai";
 import { deepResearchAi } from "@/features/deep-research/ai";
+import { currentAiSwitches } from "@/features/demo/ai-mode";
 import { isMockAi } from "./llm";
 
 const slices = [onboardingAi, worksAi, matchingAi, callsIngestAi, draftingAi, juryAi, dossierAi, deepResearchAi];
@@ -18,6 +19,8 @@ const slices = [onboardingAi, worksAi, matchingAi, callsIngestAi, draftingAi, ju
 export function getAi(forceMock = false): AiService {
   const mock = forceMock || isMockAi();
   const methods = Object.assign({}, ...slices.map((s) => (mock ? s.mock : s.real)));
+  // Plan B from /demo ("Tribunal determinista"): only the jury runs on the deterministic mock (61 → 84) for this account.
+  if (!mock && currentAiSwitches().deterministicJury) Object.assign(methods, juryAi.mock);
   return { mode: mock ? "mock" : "anthropic", ...methods } as AiService;
 }
 

@@ -13,6 +13,7 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { z } from "zod";
 import { serverEnv, type ModelTier } from "@/contracts";
 import { tryChargeAiCall } from "./budget";
+import { currentAiSwitches } from "@/features/demo/ai-mode";
 
 let client: Anthropic | undefined;
 export function anthropic(): Anthropic {
@@ -22,8 +23,9 @@ export function anthropic(): Anthropic {
   return client;
 }
 
+/** Mocks when the server has no key (or MECENA_AI_MOCK=1), or when this request's account switched "IA simulada" on in /demo. */
 export function isMockAi(): boolean {
-  return serverEnv().aiMock;
+  return serverEnv().aiMock || currentAiSwitches().aiMock;
 }
 
 export function modelFor(tier: ModelTier): string {
