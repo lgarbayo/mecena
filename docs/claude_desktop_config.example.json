@@ -2,6 +2,13 @@
   "mcpServers": {
     "mecena": {
       "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mecena.fly.dev/api/mcp", "--header", "Authorization:${MECENA_AUTH}"],
+      "env": {
+        "MECENA_AUTH": "Bearer mcn_PEGA_AQUI_TU_TOKEN"
+      }
+    },
+    "mecena-local": {
+      "command": "npx",
       "args": [
         "--prefix",
         "/ABSOLUTE/PATH/TO/mecena",

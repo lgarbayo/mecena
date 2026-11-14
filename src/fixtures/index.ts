@@ -241,6 +241,7 @@ export function defaultDb(): Db {
     meta: { activeProfileId: DEMO_CREATOR_ID, appUserId: DEMO_APP_USER_ID },
     users: [],
     sessions: [],
+    mcpTokens: [],
     profiles: [structuredClone(blankCreator), structuredClone(fixtureBusiness)],
     transcripts: [],
     works: [],

@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import type Anthropic from "@anthropic-ai/sdk";
 import { TOOL_NAMES } from "@/contracts";
-import { AGENT_SYSTEM_PROMPT, MAX_AGENT_ITERATIONS, agentTools, historyToMessages, type AgentLlmClient } from "@/features/agent/real";
+import { AGENT_MAX_HISTORY, AGENT_MAX_MESSAGE_CHARS, AGENT_MAX_OUTPUT_TOKENS, AGENT_SYSTEM_PROMPT, AGENT_TOKEN_BUDGET, MAX_AGENT_ITERATIONS, agentTools, historyToMessages, type AgentLlmClient } from "@/features/agent/real";
 import { runAgent } from "@/features/agent/service";
 import { AiError } from "@/server/ai/llm";
 import { grantPro, seedOnboardedCreator, demoToolCtx } from "../helpers";
@@ -68,8 +68,9 @@ describe("agent tool definitions", () => {
 });
 
 describe("runAgent (real mode, fake client)", () => {
-  it("runs the tool loop: smart model, auto tool_choice, Spanish system prompt, tool results fed back", async () => {
+  it("runs the tool loop: fast model, capped tokens, auto tool_choice, Spanish system prompt, tool results fed back", async () => {
     await seedOnboardedCreator();
+    await grantPro(); // the call variant is Pro
     const { client, calls } = fakeClient([
       msg([text("Voy a preparar tu dossier."), toolUse("t1", "build_dossier", { callId: CALL_ID })], "tool_use"),
       msg([toolUse("t2", "export_dossier_pdf", { callId: CALL_ID })], "tool_use"),
@@ -84,7 +85,8 @@ describe("runAgent (real mode, fake client)", () => {
     ]);
     expect(calls).toHaveLength(3);
     for (const p of calls) {
-      expect(p.model).toBe("claude-opus-5-5");
+      expect(p.model).toBe("claude-sonnet-5-5");
+      expect(p.max_tokens).toBe(AGENT_MAX_OUTPUT_TOKENS);
       expect(p.tool_choice).toEqual({ type: "auto" });
       expect(p.system).toBe(AGENT_SYSTEM_PROMPT);
       expect(p.tools).toHaveLength(8);
@@ -159,5 +161,30 @@ describe("runAgent (real mode, fake client)", () => {
 
     const broken: AgentLlmClient = { messages: { create: async () => Promise.reject(new Error("overloaded")) } };
     await expect(runAgent("x", [], await demoToolCtx(), { client: broken })).rejects.toBeInstanceOf(AiError);
+  });
+
+  it("stops when the turn has spent its token budget, and reports what was done", async () => {
+    await seedOnboardedCreator();
+    const heavy = (id: string) => ({ ...msg([toolUse(id, "get_profile", {})], "tool_use"), usage: { input_tokens: AGENT_TOKEN_BUDGET, output_tokens: 10 } }) as unknown as Anthropic.Messages.Message;
+    const { client, calls } = fakeClient([heavy("t1"), heavy("t2")]);
+    const turn = await runAgent("Bucle caro", [], await demoToolCtx(), { client });
+    expect(calls).toHaveLength(1);
+    expect(turn.toolCalls).toHaveLength(1);
+    expect(turn.reply).toMatch(/límite de pasos/);
+  });
+
+  it("sends only the recent history, each message trimmed", () => {
+    const long = "a".repeat(AGENT_MAX_MESSAGE_CHARS * 3);
+    const history = Array.from({ length: 40 }, (_, i) => ({ role: (i % 2 ? "assistant" : "user") as "user" | "assistant", content: `${i} ${long}` }));
+    const out = historyToMessages(history, long);
+    expect(out.length).toBeLessThanOrEqual(AGENT_MAX_HISTORY + 1);
+    for (const m of out) expect(String(m.content).length).toBeLessThan(AGENT_MAX_MESSAGE_CHARS + 20);
+    expect(String(out[out.length - 1].content).startsWith("aaa")).toBe(true);
+  });
+
+  it("the system prompt speaks Spanish from Spain with tú", () => {
+    expect(AGENT_SYSTEM_PROMPT).toMatch(/español de España/);
+    expect(AGENT_SYSTEM_PROMPT).toMatch(/tutea/);
+    expect(AGENT_SYSTEM_PROMPT).not.toMatch(/\b(vos|tenés|podés|querés|decime)\b/);
   });
 });

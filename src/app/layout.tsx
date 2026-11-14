@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { AppProvider } from "@/components/shell/AppProvider";
 import { Header } from "@/components/shell/Header";
 import { BottomNav } from "@/components/shell/BottomNav";
+import { AgentLauncher } from "@/features/agent/ui/AgentSheet";
 import { dossierFontClass } from "@/features/dossier/ui/fonts";
 import "./globals.css";
 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Header />
           <main className="app-main">{children}</main>
           <BottomNav />
+          <AgentLauncher />
         </AppProvider>
       </body>
     </html>

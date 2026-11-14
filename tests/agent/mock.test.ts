@@ -5,6 +5,7 @@ import { POST } from "@/app/api/agent/route";
 import { planMockTurn, resolveCallId, MOCK_HELP } from "@/features/agent/mock";
 import { runAgent } from "@/features/agent/service";
 import { grantPro, req, seedOnboardedCreator, loginDemo, demoToolCtx } from "../helpers";
+import { testCall, writeCalls } from "../mcp/calls";
 
 const CALL_ID = "fixture-beca-artes-plasticas";
 
@@ -101,5 +102,40 @@ describe("POST /api/agent", () => {
   it("rejects an empty message with 400", async () => {
     const res = await POST(req("/api/agent", { body: { message: "" } }));
     expect(res.status).toBe(400);
+  });
+});
+
+describe("mock router: resolving the call by name (real-world titles)", () => {
+  beforeEach(() => {
+    writeCalls([
+      testCall("ua-bienal-pluri-identitats-2027", { title: "Premios V Bienal de Artes Visuales Pluri-identitats 2027", organizer: "Universidad de Alicante", deadline: "2027-01-08" }),
+      testCall("lasalita-gijon-el-paisaje-2026", { title: "Convocatoria de arte plástica «El Paisaje»", organizer: "La Salita (Gijón)", deadline: "2026-12-06" }),
+      testCall("premios-que-arte-2026", { title: "Premios Qué! Arte 2026", organizer: "Qué! Arte", deadline: "2026-12-10" }),
+      testCall("cromawards-2026", { title: "cromAwards 2026 · Concurso internacional de arte y diseño", organizer: "cromAwards", deadline: "2026-12-21" }),
+      testCall("pintura-rapida-2025", { title: "Certamen de pintura rápida", organizer: "Concello", status: "recurring", deadline: null }),
+      testCall("pintura-rapida-2026", { title: "Certamen de pintura rápida", organizer: "Concello", deadline: "2026-12-20" }),
+    ]);
+  });
+
+  it("plural and accents are the same words: «artes plásticas» is the «arte plástica» call", () => {
+    expect(resolveCallId("hazme el dossier para la convocatoria de artes plásticas")).toBe("lasalita-gijon-el-paisaje-2026");
+    expect(resolveCallId("la de ARTE PLASTICA")).toBe("lasalita-gijon-el-paisaje-2026");
+  });
+
+  it("the whole phrase wins over a single shared word", () => {
+    expect(resolveCallId("explícame las bases de premios qué arte")).toBe("premios-que-arte-2026");
+    expect(resolveCallId("…convocatoria premios qué arte")).toBe("premios-que-arte-2026");
+    expect(resolveCallId("la bienal de artes visuales")).toBe("ua-bienal-pluri-identitats-2027");
+  });
+
+  it("on a tie, the call you can still apply to", () => {
+    expect(resolveCallId("el certamen de pintura rápida")).toBe("pintura-rapida-2026");
+  });
+
+  it("the example in MOCK_HELP resolves to an open call", () => {
+    const example = /«(hazme el dossier[^»]*)»/.exec(MOCK_HELP)?.[1];
+    expect(example).toBeTruthy();
+    const plan = planMockTurn(example!);
+    expect(plan).toEqual({ tool: "build_dossier", input: { callId: "premios-que-arte-2026" } });
   });
 });

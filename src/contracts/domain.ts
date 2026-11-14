@@ -398,12 +398,29 @@ export const Session = z.object({
 });
 export type Session = z.infer<typeof Session>;
 
+/**
+ * A personal access token for the remote MCP endpoint (/api/mcp), created and revoked from /cuenta.
+ * Like sessions, only sha256(token) is stored; the token itself is shown once to its owner.
+ */
+export const McpToken = z.object({
+  id: z.string(),
+  userId: z.string(),
+  tokenHash: z.string(),
+  /** First characters of the token ("mcn_ab12…"), so the owner can tell their tokens apart. */
+  prefix: z.string(),
+  label: z.string(),
+  createdAt: z.string(),
+  lastUsedAt: z.string().optional(),
+});
+export type McpToken = z.infer<typeof McpToken>;
+
 /** Whole JSON database. */
 export const Db = z.object({
   meta: AppMeta,
   // Accounts and sessions; default [] so a db.json written before accounts existed still parses.
   users: z.array(User).default([]),
   sessions: z.array(Session).default([]),
+  mcpTokens: z.array(McpToken).default([]),
   profiles: z.array(Profile),
   transcripts: z.array(Transcript),
   works: z.array(Work),
