@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API, ROUTES } from "@/contracts";
 import type { CallsDiagnostics, CallsResponse } from "@/contracts/api";
 import { useApp } from "@/components/shell/AppProvider";
-import { Button, Spinner } from "@/components/ui";
+import { Button, LoadingRegion } from "@/components/ui";
 import { Icon } from "@/components/ui/icons";
 import { Paywall } from "@/features/purchases/ui/Paywall";
 import { DeadlineAlert } from "@/features/purchases/ui/DeadlineAlert";
@@ -13,6 +13,7 @@ import { DeepResearchPanel } from "@/features/deep-research/ui/DeepResearchPanel
 import { apiGet } from "@/lib/api-client";
 import { SCORE_MAX, daysLeft, fitLabel } from "../labels";
 import s from "./calls.module.css";
+import { CallCardSkeleton, CallsFeedSkeleton } from "./skeletons";
 import { FIT_COPY, deadlineLabel, isUrgent } from "./format";
 
 type Result = CallsResponse["results"][number];
@@ -199,7 +200,7 @@ export function CallsFeed() {
       </p>
     );
   const business = (data?.mode ?? profile?.kind) === "business";
-  if (!data || !diagnostics) return <Spinner label={business ? "Buscando ayudas para tu empresa…" : "Buscando convocatorias para ti…"} />;
+  if (!data || !diagnostics) return <CallsFeedSkeleton label={business ? "Buscando ayudas para tu empresa…" : "Buscando convocatorias para ti…"} />;
 
   const total = data.results.length + data.lockedCount;
   const { profileSummary } = diagnostics;
@@ -342,6 +343,11 @@ export function CallsFeed() {
       {filteredResults.map((r) => (
         <CallCard key={r.call.id} {...r} />
       ))}
+      {searching && (
+        <LoadingRegion label="Buscando más convocatorias en la BDNS…">
+          <CallCardSkeleton />
+        </LoadingRegion>
+      )}
       {Array.from({ length: data.lockedCount }, (_, i) => (
         <LockedCard key={i} business={business} onOpen={() => setPaywall(true)} />
       ))}
