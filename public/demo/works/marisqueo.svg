@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" role="img" aria-label="Abstracción: franjas de marea, arena y agua (imagen de ejemplo de Mecena, CC0)">
+  <!-- Mecena demo placeholder, made by the team. CC0 1.0. Not a real artist's work. -->
+  <rect width="400" height="300" fill="#e6d7b8"/>
+  <path d="M0 80 C80 50 160 110 240 80 S360 60 400 90 V160 C320 140 240 190 160 160 S40 140 0 170 Z" fill="#7f97a0" opacity="0.85"/>
+  <path d="M0 150 C90 130 170 180 260 150 S360 140 400 165 V210 C300 200 220 230 130 205 S30 200 0 215 Z" fill="#3f6178" opacity="0.8"/>
+  <path d="M0 230 C100 215 200 250 300 230 S380 220 400 235 V300 H0 Z" fill="#c69a5c" opacity="0.7"/>
+</svg>

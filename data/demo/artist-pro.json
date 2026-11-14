@@ -1,0 +1,27 @@
+{
+  "$comment": "Demo scenario «Artista Pro con solicitud»: data/demo/artist.json + a demo Pro grant (DEMO_EMAILS only in production) + this application, already drafted and scored 61 by the deterministic jury («Aplicar mejoras» → 84). callIds: the first one that exists in data/calls and is open wins; keep them in sync with data/calls/calls.json.",
+  "callIds": ["ua-bienal-pluri-identitats-2027", "calahorra-cartel-jornadas-verdura-2027", "cabra-cartel-carnaval-2027"],
+  "application": {
+    "sections": [
+      {
+        "key": "memoria",
+        "title": "Memoria del proyecto",
+        "body": "Redeiras es una serie de acuarelas grandes sobre las rederas y mariscadoras de Malpica. «Mi serie más reciente se llama Redeiras: son retratos de manos cosiendo redes en el puerto de Malpica, donde trabajaba mi abuela.»\n\nPresento As que agardan (2025, acuarela y gouache, 70 x 100 cm): las mujeres que esperan los barcos en el muelle. Es una identidad que casi nunca se nombra: no son pescadoras ni turistas, sostienen la costa desde tierra.\n\nCon el premio quiero producir doce acuarelas grandes y editar un fanzine con sus voces.\n\nCalendario: [Completa: fechas de producción y de entrega de la obra]",
+        "sourceSegmentIds": ["seg-demo-4", "seg-demo-9", "seg-demo-10"]
+      },
+      {
+        "key": "statement",
+        "title": "Declaración artística",
+        "body": "«Pinto a las rederas y mariscadoras de mi familia, porque su trabajo sostiene la costa y casi nunca sale en los libros.»\n\nTrabajo con acuarela y tinta en papel grande y me interesa la memoria de las mujeres del mar.",
+        "sourceSegmentIds": ["seg-demo-2", "seg-demo-3"]
+      },
+      {
+        "key": "cv",
+        "title": "Trayectoria",
+        "body": "- Exposición colectiva en el Kiosko Alfonso, A Coruña (2024)\n- Finalista del Certamen de Ilustración de Ourense (2023)\n- Grado en Bellas Artes, Universidade de Vigo (2016)",
+        "sourceSegmentIds": ["seg-demo-5", "seg-demo-6"]
+      }
+    ],
+    "budget": []
+  }
+}

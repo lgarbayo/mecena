@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 760" width="560" height="760" role="img" aria-label="Abstracción: red de pesca sobre aguada azul (imagen de ejemplo de Mecena, CC0)">
+  <!-- Mecena demo placeholder, made by the team. CC0 1.0. Not a real artist's work. -->
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb0b5"/><stop offset="1" stop-color="#2c4f6a"/></linearGradient>
+    <pattern id="net" width="56" height="56" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+      <path d="M0 0 Q28 10 56 0 M0 0 Q10 28 0 56" fill="none" stroke="#efe6d2" stroke-width="2"/>
+    </pattern>
+  </defs>
+  <rect width="560" height="760" fill="url(#sea)"/>
+  <rect y="120" width="560" height="640" fill="url(#net)" opacity="0.8"/>
+</svg>
