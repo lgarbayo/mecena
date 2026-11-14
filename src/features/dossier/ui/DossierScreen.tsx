@@ -16,6 +16,8 @@ import { isBlank, toDossierView, type VariantView } from "../model";
 import { googleFontUrls, type DossierDesign } from "../design";
 import { paletteFromPixels, suggestStyle } from "../style";
 import { DESIGN_API, DesignPanel } from "./DesignPanel";
+import { LAYOUT_API, LayoutPanel, type LayoutClientState } from "./LayoutPanel";
+import { FreeLayoutDocument, layoutFontUrls } from "./FreeLayoutDocument";
 import { DossierDocument } from "./DossierDocument";
 import { wantsHighResolution, wantsLooseImages } from "../images";
 import "./screen.css";
@@ -53,6 +55,7 @@ export function DossierScreen() {
   const [data, setData] = useState<DossierPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paywall, setPaywall] = useState(false);
+  const [layout, setLayout] = useState<LayoutClientState | undefined>();
 
   const load = useCallback(async () => {
     try {
@@ -134,6 +137,14 @@ export function DossierScreen() {
   }, [data, designSaved, hasContent, coloursReady, workColors, callId]);
 
   const suggestion = data ? suggestStyle({ call: data.call, profile: data.profile }) : undefined;
+  // Free layout state (opt-in). A failure to read it simply leaves the template, as before.
+  useEffect(() => {
+    if (!profileId) return;
+    const q = new URLSearchParams({ profileId, ...(callId ? { callId } : {}) });
+    apiGet<LayoutClientState>(`${LAYOUT_API}?${q}`).then(setLayout).catch(() => undefined);
+  }, [profileId, callId]);
+  const freeShown = layout?.mode === "libre" && !!layout.prepared;
+
   const fontUrls = design ? googleFontUrls(design) : [];
 
   // Progressive build: while sections are still pending (the user is talking), refresh quietly.
@@ -232,7 +243,9 @@ export function DossierScreen() {
         </p>
       ) : null}
 
-      {suggestion ? (
+      {data.profile.id && !data.call ? <LayoutPanel profileId={data.profile.id} callId={callId} state={layout} onState={setLayout} /> : null}
+
+      {suggestion && !freeShown ? (
         <DesignPanel
           kind={view.kind}
           autoDesigning={autoDesigning}
@@ -294,7 +307,13 @@ export function DossierScreen() {
         // eslint-disable-next-line @next/next/no-page-custom-font -- fonts chosen at runtime by the design agent
         <link key={href} rel="stylesheet" href={href} />
       ))}
-      <DossierDocument view={view} progressive={blank} className="dossier-bleed" design={design} />
+      {freeShown && layout?.prepared
+        ? layoutFontUrls([layout.prepared]).map((href) => (
+            // eslint-disable-next-line @next/next/no-page-custom-font -- faces chosen at runtime by the layout model
+            <link key={href} rel="stylesheet" href={href} />
+          ))
+        : null}
+      {freeShown && layout?.prepared ? <FreeLayoutDocument layout={layout.prepared} /> : <DossierDocument view={view} progressive={blank} className="dossier-bleed" design={design} />}
 
       <Paywall
         open={paywall}
