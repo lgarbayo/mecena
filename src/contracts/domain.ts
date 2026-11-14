@@ -415,6 +415,9 @@ export const EntitlementState = z.object({
   premiumCredits: z.number().int().min(0), // one-off "Solicitud premium" purchases not yet used
   // Credits spent on drafts. With RevenueCat: premiumCredits = unique one-off transactions - premiumUsed.
   premiumUsed: z.number().int().min(0).optional(),
+  // Credits gifted by the server (invite codes) in total. Never from a client; kept apart from purchases so a RevenueCat
+  // re-sync does not wipe them: premiumCredits = unique one-off transactions + grantedCredits - premiumUsed.
+  grantedCredits: z.number().int().min(0).optional(),
   activeProductId: z.string().optional(), // "demo" = granted by the server-side demo scenario (never re-verified)
   expiresAt: z.string().optional(), // Pro ends here (re-synced lazily with RevenueCat when it passes)
   // Simulated-jury runs per application without Pro (each application includes JURY_RUNS_PER_APPLICATION).
@@ -456,8 +459,24 @@ export const User = z.object({
   createdAt: z.string(),
   activeProfileId: z.string(), // one of the user's own profiles (creator or business)
   appUserId: z.string(), // RevenueCat app user id, unique per user; demo reset rotates it so the paywall shows again
+  signupCohort: z.string().optional(), // label of the invite code the account was created with ("default" = MECENA_SIGNUP_CODE)
 });
 export type User = z.infer<typeof User>;
+
+/**
+ * An invite code for sign-up (created with `npm run invite`). It caps how many accounts can be created with it, can
+ * expire, tags every account with its cohort `label` and can gift Solicitud premium credits.
+ */
+export const InviteCode = z.object({
+  code: z.string(), // normalised: trimmed, uppercase; what people type (case-insensitive)
+  label: z.string(), // cohort: stored on each account created with it (signupCohort)
+  maxUses: z.number().int().min(1).optional(), // absent = unlimited
+  uses: z.number().int().min(0),
+  expiresAt: z.string().optional(), // ISO; absent = never
+  grantCredits: z.number().int().min(0).max(20), // premium credits gifted to each new account
+  createdAt: z.string(),
+});
+export type InviteCode = z.infer<typeof InviteCode>;
 
 /** A login session. Only sha256(token) is stored; the token itself lives in the httpOnly cookie. */
 export const Session = z.object({
@@ -517,6 +536,7 @@ export const Db = z.object({
   // Accounts and sessions; default [] so a db.json written before accounts existed still parses.
   users: z.array(User).default([]),
   sessions: z.array(Session).default([]),
+  inviteCodes: z.array(InviteCode).default([]), // sign-up invite codes (default [] so an older db.json still parses)
   mcpTokens: z.array(McpToken).default([]),
   profiles: z.array(Profile),
   transcripts: z.array(Transcript),

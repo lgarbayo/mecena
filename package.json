@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm test",
     "mcp": "tsx src/mcp/server.ts",
+    "invite": "tsx scripts/invite.ts",
     "demo:reset": "tsx scripts/demo-reset.ts",
     "demo:preflight": "tsx scripts/demo-preflight.ts",
     "demo:images": "tsx scripts/demo-images.ts",
