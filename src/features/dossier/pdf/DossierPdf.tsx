@@ -105,13 +105,13 @@ function makeStyles(fonts: boolean, C: PdfTokens = SOBRIO, faces: PdfFaces = {})
       coverFigure: { marginTop: mm(8), marginBottom: mm(7) },
       frame: { backgroundColor: C.flatFrames ? undefined : C.ground, alignItems: "center", justifyContent: "center", padding: C.flatFrames ? 0 : 14 },
       frameImg: { objectFit: "contain", width: "100%", height: "100%" },
-      frameEmpty: { fontFamily: serif, fontStyle: "italic", fontSize: 10, color: C.granite, textAlign: "center", paddingHorizontal: 20 },
+      frameEmpty: { fontFamily: serif, fontStyle: "normal", fontSize: 10, color: C.granite, textAlign: "center", paddingHorizontal: 20 },
       caption: { fontSize: 7.5, color: C.granite, textAlign: "right", marginTop: 5 },
       coverText: { borderTopWidth: 2, borderTopColor: C.ink, paddingTop: 10 },
       coverName: { ...displayFace(50 * (C.design?.cover.nameScale ?? 1), 500, -2), fontSize: 50 * Math.min(1.15, C.design?.cover.nameScale ?? 1), lineHeight: 0.95, marginBottom: 14 },
       coverRow: { flexDirection: "row" },
       coverMeta: { flex: 1, marginRight: mm(7), fontFamily: sans, fontSize: 10, lineHeight: 1.35 },
-      coverLine: { flex: 1, fontStyle: "italic", fontSize: 12.5, lineHeight: 1.3 },
+      coverLine: { flex: 1, fontStyle: "normal", fontSize: 12.5, lineHeight: 1.3 },
       // prose
       lead: { fontSize: 12.5, lineHeight: 1.4, marginBottom: 8 },
       p: { marginBottom: 7 },
@@ -124,7 +124,7 @@ function makeStyles(fonts: boolean, C: PdfTokens = SOBRIO, faces: PdfFaces = {})
       label: { flex: 1, fontSize: 8.5, lineHeight: 1.45, paddingBottom: 2 },
       labelCat: { fontFamily: sans, fontSize: 7.5, color: C.granite, marginTop: 3 },
       labelTitle: { fontSize: 10.5, lineHeight: 1.25, marginBottom: 2 },
-      cite: { fontStyle: "italic", fontWeight: 500 },
+      cite: { fontStyle: "normal", fontWeight: 500 },
       muted: { color: C.granite },
       concept: { marginTop: 7, paddingTop: 5, borderTopWidth: 0.6, borderTopColor: C.hair },
       // cv
@@ -287,7 +287,7 @@ function Cover({ st, view, images, kicker, meta }: { st: S; view: DossierView; i
           <>
             <Frame st={st} work={w} images={images} style={{ height: frameH, padding: 24 }} />
             <Text style={st.s.caption}>
-              <Text style={{ fontStyle: "italic" }}>{caption[0]}</Text>
+              <Text style={{ fontStyle: "normal" }}>{caption[0]}</Text>
               {caption[1] ? `. ${caption[1]}` : ""}
             </Text>
           </>

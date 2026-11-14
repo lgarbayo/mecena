@@ -1,10 +1,18 @@
 import Link from "next/link";
+import { Card, PageTitle } from "@/components/ui";
 
 export default function NotFound() {
   return (
     <section>
-      <h1>Esta página no existe</h1>
-      <Link href="/">Volver al inicio</Link>
+      <PageTitle kicker="404">Esta página no existe</PageTitle>
+      <Card>
+        <p style={{ marginTop: 0, color: "var(--g-ink-2)" }}>
+          No hemos encontrado la ruta que buscas. Vuelve al inicio para continuar con tu obra o tus convocatorias.
+        </p>
+        <Link href="/" className="btn btn-primary">
+          Volver al inicio
+        </Link>
+      </Card>
     </section>
   );
 }
