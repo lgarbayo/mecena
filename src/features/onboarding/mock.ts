@@ -179,11 +179,14 @@ const LOCATION_HINT = /\b(vivo en|estamos en|esta en|tenemos (el|un) (taller|loc
 
 // ---------- profile extraction ----------
 function findPlace(n: string): { place: Place; index: number } | undefined {
+  // The first place named wins ("vivo en Vigo, Pontevedra" is Vigo); at the same spot the longest name does
+  // ("Santiago de Compostela" over "Santiago"). ALIASES is sorted longest first, so a later alias only wins by being earlier.
+  let best: { place: Place; index: number } | undefined;
   for (const { a, p } of ALIASES) {
     const m = new RegExp(`(^|[^a-z])${a.replace(/ /g, "\\s+")}($|[^a-z])`).exec(n);
-    if (m) return { place: p, index: m.index };
+    if (m && (!best || m.index < best.index)) best = { place: p, index: m.index };
   }
-  return undefined;
+  return best;
 }
 
 /**

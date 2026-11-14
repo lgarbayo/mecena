@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BusinessSectionKey, CreatorSectionKey, type DossierSection, type Profile, type TranscriptSegment } from "@/contracts";
-import { blankCreator, fixtureBusiness, fixtureTranscript, FIXTURE_NOW } from "@/fixtures";
+import { blankCreator, fixtureBusiness, fixtureCreator, fixtureTranscript, FIXTURE_NOW } from "@/fixtures";
 import { mockOnboardingTurn, classifySentence, extractProfilePatch } from "@/features/onboarding/mock";
 import { mergeProfile } from "@/server/store";
 
@@ -127,5 +127,17 @@ describe("pyme fallback extraction of short answers", () => {
   it("does not mistake what they want to finance for a headcount", () => {
     expect(extractProfilePatch("Una tienda online", "business", p).employees).toBeUndefined();
     expect(extractProfilePatch("Dos hornos nuevos", "business", p).employees).toBeUndefined();
+  });
+});
+
+describe("city from a sentence that names two places", () => {
+  it("'vivo en Vigo, Pontevedra' is Vigo (the first place named), not the province", () => {
+    const patch = extractProfilePatch("Vivo en Vigo, Pontevedra.", "creator", { ...structuredClone(fixtureCreator), city: undefined, province: undefined, region: undefined });
+    expect(patch.city).toBe("Vigo");
+    expect(patch.province).toBe("Pontevedra");
+  });
+  it("a longer name at the same spot still wins ('Santiago de Compostela' over 'Santiago')", () => {
+    const patch = extractProfilePatch("Vivo en Santiago de Compostela.", "creator", { ...structuredClone(fixtureCreator), city: undefined, province: undefined, region: undefined });
+    expect(patch.city).toBe("Santiago de Compostela");
   });
 });
