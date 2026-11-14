@@ -10,6 +10,7 @@ import { API, ROUTES } from "@/contracts";
 import type { AgentTurn as AgentResponse } from "@/features/agent/types";
 import { useOptionalApp } from "@/components/shell/AppProvider";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
+import { Icon } from "@/components/ui/icons";
 import { ApiClientError, apiSend } from "@/lib/api-client";
 import styles from "./agent.module.css";
 
@@ -129,7 +130,7 @@ export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }
             </h2>
           </div>
           <button type="button" className={styles.close} onClick={onClose} aria-label="Cerrar">
-            ×
+            <Icon name="close" size={18} />
           </button>
         </header>
 
@@ -153,7 +154,9 @@ export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }
                 <ul className={styles.tools} aria-label="Herramientas usadas">
                   {t.tools.map((c, j) => (
                     <li key={j} className={c.ok ? styles.toolOk : styles.toolKo}>
-                      {c.ok ? "✓" : "!"} {TOOL_LABELS[c.name] ?? c.name}
+                      <Icon name={c.ok ? "check" : "alert"} size={13} />
+                      <span className={styles.srOnly}>{c.ok ? "Hecho: " : "Falló: "}</span>
+                      {TOOL_LABELS[c.name] ?? c.name}
                     </li>
                   ))}
                 </ul>
@@ -196,7 +199,7 @@ export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }
               aria-pressed={voice.listening}
               aria-label={voice.listening ? "Parar el dictado" : "Dictar"}
             >
-              🎙
+              <Icon name={voice.listening ? "stop" : "mic"} />
             </button>
           )}
           <button type="submit" className={styles.send} disabled={busy || !input.trim()}>
@@ -219,8 +222,8 @@ export function AgentLauncher() {
   return (
     <>
       {!open && (
-        <button type="button" className={styles.fab} onClick={() => setOpen(true)} aria-haspopup="dialog">
-          <span aria-hidden="true">✦</span> Pregúntale
+        <button type="button" className={styles.fab} onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label="Pregúntale a Mecena" title="Pregúntale a Mecena">
+          <Icon name="sparkle" size={24} />
         </button>
       )}
       <AgentSheet open={open} onClose={close} />

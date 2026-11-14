@@ -9,6 +9,8 @@ import { CaptureWork } from "./CaptureWork";
 import { artCopy } from "./arts";
 import { errorText, worksClient, type WorkPatch } from "./client";
 import { WorkCard } from "./WorkCard";
+import { Icon } from "@/components/ui/icons";
+import { TRUST } from "@/features/onboarding/copy";
 import s from "./works.module.css";
 
 export function WorksScreen() {
@@ -79,10 +81,12 @@ export function WorksScreen() {
 
       <p className={s.intro}>{copy.intro}</p>
 
-      <div className={s.trust} role="note">
-        <strong>Solo recortamos y enderezamos la foto. Tu obra no se toca.</strong>
-        <span>No entrenamos con tu obra. Tú tienes la última palabra en cada ficha.</span>
-      </div>
+      <Link href={ROUTES.trust} className={s.trust}>
+        <Icon name="shield" size={18} />
+        <span>
+          {TRUST.points[0].title} {TRUST.points[1].title}
+        </span>
+      </Link>
 
       <CaptureWork
         copy={copy}
@@ -124,7 +128,7 @@ export function WorksScreen() {
 
       <div className={s.footerCta}>
         <Link href={ROUTES.dossier} className="btn btn-primary">
-          {business ? "Ver mi memoria →" : "Ver mi dossier →"}
+          {business ? "Ver mi memoria" : "Ver mi dossier"} <Icon name="arrow-right" size={18} />
         </Link>
       </div>
     </>

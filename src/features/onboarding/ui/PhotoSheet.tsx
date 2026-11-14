@@ -9,6 +9,7 @@ import { CaptureWork } from "@/features/works/CaptureWork";
 import { artCopy } from "@/features/works/arts";
 import { STEPS_COPY as C } from "../steps";
 import s from "./live.module.css";
+import { Icon } from "@/components/ui/icons";
 
 export function PhotoSheet({ profile, profileId, onCreated, onClose }: { profile: Profile | null; profileId?: string; onCreated(work: Work): void; onClose(): void }) {
   const copy = artCopy(artFamily(profile?.disciplines), false);
@@ -23,7 +24,7 @@ export function PhotoSheet({ profile, profileId, onCreated, onClose }: { profile
         <header className={s.sheetHead}>
           <h2 id="photo-sheet-title">{C.photoTitle}</h2>
           <button type="button" className={s.sheetClose} onClick={onClose} aria-label={C.close}>
-            ×
+            <Icon name="close" size={18} />
           </button>
         </header>
         <p className={s.sheetLede}>{C.photoLede}</p>

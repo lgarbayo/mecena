@@ -4,6 +4,7 @@ import { ROUTES, type ProfileKind } from "@/contracts";
 import { TRUST, TRUST_BUSINESS } from "../copy";
 import { TrustIcon } from "./icons";
 import s from "./onboarding.module.css";
+import { Icon } from "@/components/ui/icons";
 
 /** Compact trust promise shown on /onboarding before the mic button. */
 export function TrustStrip({ kind = "creator", onNavigate }: { kind?: ProfileKind; onNavigate?: (e: MouseEvent) => void }) {
@@ -13,13 +14,8 @@ export function TrustStrip({ kind = "creator", onNavigate }: { kind?: ProfileKin
       <p className={s.trustTitle}>
         <TrustIcon name={kind === "business" ? "lock" : "hand"} /> {t.title}
       </p>
-      <ul className={s.trustList}>
-        {t.strip.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
-      </ul>
       <Link href={ROUTES.trust} className={s.trustMore} onClick={onNavigate}>
-        {t.stripMore} →
+        {t.stripMore} <Icon name="arrow-right" size={16} />
       </Link>
     </aside>
   );

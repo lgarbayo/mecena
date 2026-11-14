@@ -4,7 +4,9 @@
 .dossier-bar h1 { margin: 0; font-size: clamp(1.5rem, 4.5vw, 2rem); line-height: 1.08; letter-spacing: -0.03em; color: var(--g-ink); }
 .dossier-bar__kicker { margin: 4px 0 0; font-size: 0.9rem; color: var(--g-ink-2); }
 .dossier-variant__kicker { margin: 0 0 4px; font-size: 0.9rem; color: var(--g-ink-2); }
-.dossier-bar__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.dossier-bar__actions { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+.dossier-bar__actions > * { flex: 1 1 140px; }
+@media (min-width: 640px) { .dossier-bar__actions { width: auto; } .dossier-bar__actions > * { flex: none; } }
 .dossier-bar__actions a[aria-disabled="true"] { opacity: 0.55; pointer-events: none; }
 .dossier-variant {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.06));
@@ -87,13 +89,13 @@
   -webkit-backdrop-filter: blur(22px) saturate(150%);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
-.design-panel__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.design-panel__head { display: flex; flex-direction: column; gap: 2px; }
 .design-panel__head h2 { margin: 0; font-size: 1.15rem; }
-.design-panel__current { margin: 0; font-size: 0.95rem; }
+.design-panel__current { margin: 0; font-size: 0.88rem; color: var(--g-ink-2); }
 .design-panel__why { margin: 0; max-width: 62ch; line-height: 1.5; color: var(--g-ink-2); }
 .design-panel__adjust { margin: 0; padding-left: 1.1em; font-size: 0.9rem; opacity: 0.85; }
 .design-panel__ask { display: flex; flex-direction: column; gap: 8px; }
-.design-panel__label { font-weight: 600; font-size: 0.95rem; }
+.design-panel__label { font-weight: 700; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--g-ink-3); }
 .design-panel__ask textarea {
   width: 100%; min-height: 4.2em; resize: vertical;
   background: rgba(13, 11, 16, 0.58);
@@ -112,10 +114,14 @@
   box-shadow: 0 0 0 3px rgba(255, 138, 92, 0.22);
 }
 .design-panel__ask textarea::placeholder { color: inherit; opacity: 0.55; }
-.design-panel__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.design-panel__actions { display: flex; gap: 8px; }
+.design-panel__actions .btn:first-child { flex: 1; }
+.design-panel__icon { width: 48px; padding: 0; flex: none; }
 .design-panel__error { margin: 0; font-size: 0.9rem; color: #ffb38a; }
-.design-panel__ideas { display: flex; flex-wrap: wrap; gap: 8px; }
+.design-panel__ideas { display: flex; gap: 8px; margin: 0 -20px; padding: 0 20px 2px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+.design-panel__ideas::-webkit-scrollbar { display: none; }
 .design-chip {
+  flex: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
   font: inherit; font-size: 0.875rem; color: var(--g-ink); cursor: pointer;
   min-height: 40px; padding: 8px 14px; border-radius: 999px;
   background: rgba(255, 255, 255, 0.07);
@@ -127,11 +133,8 @@
   background: rgba(255, 138, 92, 0.14);
 }
 .design-chip:active:not(:disabled) { transform: scale(0.97); }
-.design-chip:focus-visible, .design-link:focus-visible { outline: 2px solid var(--g-accent); outline-offset: 2px; }
-.design-chip:disabled, .design-link:disabled { opacity: 0.5; cursor: progress; }
-.design-panel__start { margin: 0; font-size: 0.9rem; line-height: 1.5; }
-.design-link {
-  font: inherit; color: var(--g-accent); background: none; border: 0; padding: 0; cursor: pointer;
-  text-decoration: underline; text-underline-offset: 0.18em; text-decoration-thickness: 1px; font-weight: 600;
-}
-.design-panel__tag { opacity: 0.75; }
+.design-chip:focus-visible { outline: 2px solid var(--g-accent); outline-offset: 2px; }
+.design-chip:disabled { opacity: 0.5; cursor: progress; }
+.design-panel__start { display: flex; flex-direction: column; gap: 8px; }
+.design-chip--suggested { border-color: rgba(79, 209, 197, 0.5); }
+.design-panel__tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #7ee7dc; }

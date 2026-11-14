@@ -224,15 +224,28 @@
   position: sticky;
   bottom: calc(68px + env(safe-area-inset-bottom));
   z-index: 15;
-  display: grid;
-  gap: 10px;
-  padding: 14px;
-  border-radius: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 30px;
   background: rgba(13, 11, 16, 0.82);
   backdrop-filter: blur(22px) saturate(160%);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   border: 1px solid var(--g-line);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+.actions > * {
+  flex: 1 1 auto;
+  min-height: 46px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.actions > :first-child {
+  flex-grow: 2;
 }
 
 .error {

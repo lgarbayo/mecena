@@ -19,6 +19,7 @@ import { DESIGN_API, DesignPanel } from "./DesignPanel";
 import { DossierDocument } from "./DossierDocument";
 import { wantsHighResolution, wantsLooseImages } from "../images";
 import "./screen.css";
+import { Icon } from "@/components/ui/icons";
 
 interface DossierPayload {
   dossier: Dossier;
@@ -179,7 +180,7 @@ export function DossierScreen() {
             Descargar PDF
           </a>
           <Link className="btn btn-ghost" href={ROUTES.calls}>
-            Buscar convocatorias
+            <Icon name="search" size={18} /> {business ? "Ayudas" : "Convocatorias"}
           </Link>
         </div>
       </header>

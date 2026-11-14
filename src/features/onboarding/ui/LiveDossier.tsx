@@ -14,6 +14,7 @@ import { DossierPanel } from "./DossierPanel";
 import { filledRows } from "./format";
 import { ProfilePanel } from "./ProfilePanel";
 import s from "./live.module.css";
+import { Icon } from "@/components/ui/icons";
 
 const MAX_CHIPS = 8;
 
@@ -90,7 +91,7 @@ export function LiveDossier({ kind, profile, sections, changedSections, changedF
                 data-filled={filled || undefined}
                 data-changed={isNew || undefined}
               >
-                {filled ? "✓ " : ""}
+                {filled ? <Icon name="check" size={14} /> : null}
                 {title}
               </li>
             );
@@ -139,7 +140,7 @@ export function LiveDossier({ kind, profile, sections, changedSections, changedF
             <header className={s.sheetHead}>
               <h2 id="live-sheet-title">{ONBOARDING.dossierPanel[kind]}</h2>
               <button type="button" className={s.sheetClose} onClick={() => setOpen(false)} aria-label={C.close}>
-                ×
+                <Icon name="close" size={18} />
               </button>
             </header>
             <div className={s.sheetBody}>

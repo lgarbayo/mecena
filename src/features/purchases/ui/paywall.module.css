@@ -117,20 +117,15 @@
 }
 
 .stack li::before {
-  content: "✓";
+  content: "";
   position: absolute;
   left: 0;
-  top: 1px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(79, 209, 197, 0.22);
-  border: 1px solid rgba(79, 209, 197, 0.5);
-  color: #7ee7dc;
-  font-size: 0.72rem;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  background: #7ee7dc;
+  -webkit-mask: var(--icon-check) center / contain no-repeat;
+  mask: var(--icon-check) center / contain no-repeat;
 }
 
 .anchor {
@@ -234,7 +229,14 @@
 }
 
 .guarantee::before {
-  content: "🛡";
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  background: var(--g-accent-3);
+  -webkit-mask: var(--icon-shield) center / contain no-repeat;
+  mask: var(--icon-shield) center / contain no-repeat;
 }
 
 .free {

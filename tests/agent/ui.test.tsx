@@ -44,8 +44,8 @@ describe("AgentSheet", () => {
     expect(local.getAttribute("href")).toBe("/dossier?profileId=p1"); // same site: stays in the tab, with the session
     expect(local.getAttribute("target")).toBeNull();
     expect((screen.getByText("pay.example.com/x") as HTMLAnchorElement).getAttribute("target")).toBe("_blank");
-    expect(screen.getByText(/✓ Preparar el dossier/)).toBeTruthy();
-    expect(screen.getByText(/! Redactar la solicitud/)).toBeTruthy();
+    expect(screen.getByText(/Preparar el dossier/).closest("li")?.textContent).toBe("Hecho: Preparar el dossier");
+    expect(screen.getByText(/Redactar la solicitud/).closest("li")?.textContent).toBe("Falló: Redactar la solicitud");
   });
 
   it("sends the conversation as history on the next message and shows a Spanish error on failure", async () => {

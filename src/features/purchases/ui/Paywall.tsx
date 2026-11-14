@@ -6,6 +6,7 @@ import type { EntitlementState, PaywallTrigger } from "@/contracts";
 import { OFFER } from "../offer";
 import { Offer } from "./Offer";
 import s from "./paywall.module.css";
+import { Icon } from "@/components/ui/icons";
 
 export interface PaywallProps {
   open: boolean;
@@ -34,7 +35,7 @@ export function Paywall({ open, trigger, onClose, onPurchased }: PaywallProps) {
       <div className={s.sheet} role="dialog" aria-modal="true" aria-labelledby={headingId} data-testid="paywall">
         <div className={s.grab} aria-hidden />
         <button type="button" className={s.close} onClick={onClose} aria-label={OFFER.later}>
-          ×
+          <Icon name="close" size={18} />
         </button>
         <Offer trigger={trigger} onPurchased={onPurchased} headingId={headingId} />
       </div>
