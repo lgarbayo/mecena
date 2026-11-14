@@ -17,7 +17,7 @@ export const OFFER = {
     "Tu dossier adaptado a cada convocatoria",
   ],
   /** Anchor against a consultancy; uses the live monthly price when RevenueCat returns one. */
-  anchor: (monthly = "9 €") => `Una consultora se lleva un 10-15 % de tu beca. Con Mecena, ${monthly} al mes.`,
+  anchor: (monthly = "3,99 €") => `Una consultora se lleva un 10-15 % de tu beca. Con Mecena, ${monthly} al mes.`,
   guarantee: "Garantía: si en 90 días no has presentado 3 solicitudes, te devolvemos el dinero.",
   free: `Gratis siempre: tu perfil, tu dossier y ${FREE_MATCHES_TEXT}.`,
   later: "Ahora no",
@@ -54,8 +54,8 @@ export const TRIGGER_SUBTITLE: Record<PaywallTrigger, string> = {
 
 /** Plans in display order; prices are replaced by RevenueCat's formatted prices when live. */
 export const PLANS: Plan[] = [
-  { id: "proAnnual", title: "Pro anual", priceText: "79,00 €/año", kind: "subscription", period: "P1Y", highlight: true, bullets: ["6,58 € al mes", "ahorras un 27 % frente al mensual"] },
-  { id: "proMonthly", title: "Pro mensual", priceText: "9,00 €/mes", kind: "subscription", period: "P1M", bullets: ["Todo Mecena Pro", "Cancela cuando quieras"] },
+  { id: "proAnnual", title: "Pro anual", priceText: "35,88 €/año", kind: "subscription", period: "P1Y", highlight: true, bullets: ["2,99 € al mes", "ahorras un 25 % frente al mensual"] },
+  { id: "proMonthly", title: "Pro mensual", priceText: "3,99 €/mes", kind: "subscription", period: "P1M", bullets: ["Todo Mecena Pro", "Cancela cuando quieras"] },
   {
     id: "solicitudPremium",
     title: "Solicitud premium",
