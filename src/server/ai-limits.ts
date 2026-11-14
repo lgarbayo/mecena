@@ -22,6 +22,8 @@ export const AI_ROUTE_LIMITS = {
   draft: { attempts: 15, windowMs: HOUR },
   jury: { attempts: 20, windowMs: HOUR },
   "jury-improve": { attempts: 20, windowMs: HOUR },
+  "justification-invoice": { attempts: 60, windowMs: HOUR }, // photo of an invoice + vision
+  "justification-memoria": { attempts: 10, windowMs: HOUR },
   agent: { attempts: 40, windowMs: HOUR },
   "deep-research": { attempts: 10, windowMs: HOUR }, // it also has its own monthly caps
 } as const satisfies Record<string, Limit>;

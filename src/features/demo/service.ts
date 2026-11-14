@@ -105,6 +105,7 @@ export async function resetUserDemo(user: User, input: { scenario?: DemoScenario
     const profileIds = new Set(db.profiles.filter((p) => p.ownerId === user.id).map((p) => p.id));
     const workIds = db.works.filter((w) => profileIds.has(w.profileId)).map((w) => w.id);
     const appIds = new Set(db.applications.filter((a) => profileIds.has(a.profileId)).map((a) => a.id));
+    const invoiceIds = db.invoices.filter((i) => appIds.has(i.applicationId)).map((i) => i.id);
     const oldAppUserId = u.appUserId;
 
     db.profiles = db.profiles.filter((p) => !profileIds.has(p.id));
@@ -113,6 +114,8 @@ export async function resetUserDemo(user: User, input: { scenario?: DemoScenario
     db.dossiers = db.dossiers.filter((d) => !profileIds.has(d.profileId));
     db.applications = db.applications.filter((a) => !appIds.has(a.id));
     db.juryScores = db.juryScores.filter((s) => !appIds.has(s.applicationId));
+    db.invoices = db.invoices.filter((i) => !appIds.has(i.applicationId));
+    db.justifications = db.justifications.filter((j) => !appIds.has(j.applicationId));
     db.usage = db.usage.filter((x) => x.appUserId !== oldAppUserId);
     db.entitlements = db.entitlements.filter((e) => e.appUserId !== oldAppUserId);
     db.matchCache = db.matchCache.filter((m) => !profileIds.has(m.profileId) && ![...profileIds].some((id) => m.cacheKey.startsWith(`${id}|`)));
@@ -157,12 +160,12 @@ export async function resetUserDemo(user: User, input: { scenario?: DemoScenario
 
     const creatorId = db.profiles.find((p) => p.ownerId === user.id && p.kind === "creator")!.id;
     u.activeProfileId = scenario === "business" && biz ? biz.profile.id : creatorId;
-    return { profileIds: [...profileIds], workIds, appUserId: u.appUserId, activeProfileId: u.activeProfileId, applicationId, copies };
+    return { profileIds: [...profileIds], workIds, invoiceIds, appUserId: u.appUserId, activeProfileId: u.activeProfileId, applicationId, copies };
   });
 
   forgetDesigns(done.profileIds);
   await Promise.all([forgetProfileSearches(done.profileIds), forgetDeepResearch(done.profileIds)]);
-  removeFiles(uploadsDir(), (f) => done.workIds.some((id) => f.startsWith(`${id}.`)) || done.profileIds.some((id) => f.startsWith(`dossier-import-${id}.`)));
+  removeFiles(uploadsDir(), (f) => done.workIds.some((id) => f.startsWith(`${id}.`)) || done.invoiceIds.some((id) => f.startsWith(`${id}.`)) || done.profileIds.some((id) => f.startsWith(`dossier-import-${id}.`)));
   removeFiles(exportsDir(), (f) => done.profileIds.some((id) => f === `dossier-${id}.pdf` || f.startsWith(`dossier-${id}-`)));
   for (const c of done.copies) fs.copyFileSync(c.from, c.to);
 

@@ -7,7 +7,9 @@ import {
   Dossier,
   DossierSection,
   EntitlementState,
+  Invoice,
   JuryScore,
+  JustificationMemoria,
   MediaKind,
   MatchResult,
   PastAward,
@@ -259,6 +261,71 @@ export const AgentRequest = z.object({
 export const AgentResponse = z.object({
   reply: z.string(),
   toolCalls: z.array(z.object({ name: z.string(), input: z.unknown(), ok: z.boolean() })),
+});
+
+// /api/justification (IDEA #7): invoices -> budget lines -> deviation alerts -> final memoria. Every call returns the whole state.
+export const JustificationAlert = z.object({
+  id: z.string(), // stable: kind + target
+  kind: z.enum(["line_over", "total_over", "unjustified", "unassigned", "expense_not_allowed", "duplicate", "missing_data", "amount_mismatch", "low_confidence"]),
+  severity: z.enum(["danger", "warn", "info"]),
+  message: z.string(),
+  invoiceId: z.string().optional(),
+  lineConcept: z.string().optional(),
+});
+export type JustificationAlert = z.infer<typeof JustificationAlert>;
+export const JustificationLine = z.object({
+  concept: z.string(),
+  expenseType: z.string(),
+  budgetEur: z.number(),
+  spentEur: z.number(),
+  remainingEur: z.number(), // negative when over
+  pct: z.number(), // spent / budget, 0..n (1 = 100 %)
+  invoiceCount: z.number().int(),
+});
+export type JustificationLine = z.infer<typeof JustificationLine>;
+export const JustificationSummary = z.object({
+  lines: z.array(JustificationLine),
+  budgetEur: z.number(),
+  spentEur: z.number(), // assigned invoices only
+  unassignedEur: z.number(),
+  pct: z.number(),
+  alerts: z.array(JustificationAlert),
+  signature: z.string(),
+});
+export type JustificationSummary = z.infer<typeof JustificationSummary>;
+export const JustificationResponse = z.object({
+  application: Application,
+  call: Call,
+  invoices: z.array(Invoice),
+  summary: JustificationSummary,
+  memoria: JustificationMemoria.nullable(),
+  memoriaStale: z.boolean(), // the invoices or the budget changed after it was drafted
+  mode: z.enum(["ai", "mock"]),
+});
+export type JustificationResponse = z.infer<typeof JustificationResponse>;
+
+export const MAX_INVOICES_PER_APPLICATION = 80;
+export const CreateInvoiceRequest = z.object({
+  applicationId: ID,
+  imageDataUrl: z.string().regex(/^data:image\/(jpeg|png|webp);base64,/, "Sube una foto de la factura (JPEG, PNG o WebP)"),
+  hint: userText(300).optional(), // what the user says about it; the mock reads it, the real model gets it as context
+});
+export const UpdateInvoiceRequest = z.object({
+  supplier: userText(200).optional(),
+  taxId: userText(40).nullable().optional(),
+  number: userText(60).nullable().optional(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha debe tener formato AAAA-MM-DD").nullable().optional(),
+  concept: userText(300).optional(),
+  baseEur: z.number().min(0).max(10_000_000).nullable().optional(),
+  vatEur: z.number().min(0).max(10_000_000).nullable().optional(),
+  totalEur: z.number().min(0).max(10_000_000).optional(),
+  expenseType: userText(120).nullable().optional(),
+  lineConcept: userText(300).nullable().optional(), // null = leave it unassigned
+});
+export const GenerateMemoriaRequest = z.object({ applicationId: ID, notes: userText(2000).optional() });
+export const SaveMemoriaRequest = z.object({
+  applicationId: ID,
+  sections: capped(Application.shape.sections, 100_000),
 });
 
 // /api/panel (B2B panel for schools and associations)

@@ -10,11 +10,12 @@ import { callsIngestAi } from "@/features/calls-ingest/ai";
 import { draftingAi } from "@/features/drafting/ai";
 import { juryAi } from "@/features/jury/ai";
 import { dossierAi } from "@/features/dossier/adapt-ai";
+import { justificationAi } from "@/features/justification/ai";
 import { deepResearchAi } from "@/features/deep-research/ai";
 import { currentAiSwitches } from "@/features/demo/ai-mode";
 import { isMockAi } from "./llm";
 
-const slices = [onboardingAi, worksAi, matchingAi, callsIngestAi, draftingAi, juryAi, dossierAi, deepResearchAi];
+const slices = [onboardingAi, worksAi, matchingAi, callsIngestAi, draftingAi, juryAi, dossierAi, deepResearchAi, justificationAi];
 
 export function getAi(forceMock = false): AiService {
   const mock = forceMock || isMockAi();

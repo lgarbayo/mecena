@@ -31,7 +31,7 @@ export const TOOL_LABELS: Record<string, string> = {
 export const SUGGESTIONS = ["¿Qué convocatorias encajan conmigo?", "Hazme el dossier en PDF", "Explícame las bases de la que mejor encaja"];
 
 /** Pages where the launcher would cover the page's own controls (sticky action bars, full-screen stages, paywall). */
-const HIDDEN_ON = [ROUTES.login, ROUTES.onboarding, ROUTES.pricing, "/solicitud", "/tribunal"];
+const HIDDEN_ON = [ROUTES.login, ROUTES.onboarding, ROUTES.pricing, "/solicitud", "/tribunal", "/justificacion"];
 export function launcherVisible(path: string | null | undefined): boolean {
   if (!path || path === ROUTES.home) return false;
   if (HIDDEN_ON.some((p) => path === p || path.startsWith(`${p}/`))) return false;

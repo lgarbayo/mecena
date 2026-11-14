@@ -455,6 +455,9 @@ export function DraftPage({ callId }: { callId: string }) {
         <Link href={ROUTES.jury(app.id)} className="btn btn-primary">
           Pasar el tribunal simulado
         </Link>
+        <Link href={ROUTES.justification(app.id)} className="btn btn-quiet">
+          Justificar la subvención
+        </Link>
         <Link href={ROUTES.call(call.id)} className="btn btn-quiet">
           Ver convocatoria
         </Link>

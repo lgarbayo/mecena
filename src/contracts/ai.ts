@@ -16,6 +16,7 @@ import {
   CropSuggestion,
   Dossier,
   DossierSection,
+  Invoice,
   JudgePersona,
   MatchResult,
   Profile,
@@ -178,6 +179,50 @@ export const JudgeVerdict = z.object({
 export type JudgeVerdict = z.infer<typeof JudgeVerdict>;
 export type { CriterionScore };
 
+// ---- Justification (IDEA #7) ----
+export interface ExtractInvoiceInput {
+  imageBase64: string; // no data: prefix
+  mediaType: "image/jpeg" | "image/png" | "image/webp";
+  budget: BudgetLine[]; // the application's lines: the invoice is assigned to one of them
+  allowedExpenses: string[]; // Call.allowedExpenses
+  hint?: string; // what the user said about it ("papel de acuarela, Papelería Sol")
+}
+/** What was read off the photo. Every field may be absent: the user completes it. */
+export const InvoiceExtraction = z.object({
+  supplier: z.string(),
+  taxId: z.string().optional(),
+  number: z.string().optional(),
+  date: z.string().optional(), // YYYY-MM-DD
+  concept: z.string(),
+  baseEur: z.number().optional(),
+  vatEur: z.number().optional(),
+  totalEur: z.number(),
+  expenseType: z.string().optional(),
+  lineConcept: z.string().optional(), // suggested BudgetLine.concept
+  confidence: z.number().min(0).max(1),
+  // true when vision could not run or the photo is not an invoice: nothing was read
+  fallback: z.boolean().optional(),
+});
+export type InvoiceExtraction = z.infer<typeof InvoiceExtraction>;
+
+export interface JustificationLineFigure {
+  concept: string;
+  budgetEur: number;
+  spentEur: number;
+}
+export interface WriteJustificationInput {
+  profile: Profile;
+  call: Call;
+  application: Application;
+  transcript: TranscriptSegment[];
+  invoices: Invoice[];
+  lines: JustificationLineFigure[];
+  notes?: string; // what the user says they did, in their words
+}
+/** Only the narrative sections: the economic account is built from the numbers in code, never by the model. */
+export const JustificationNarrative = z.object({ sections: z.array(z.object({ key: z.string(), title: z.string(), body: z.string() })) });
+export type JustificationNarrative = z.infer<typeof JustificationNarrative>;
+
 export interface AiService {
   readonly mode: "anthropic" | "mock";
   onboardingTurn(input: OnboardingTurnInput): Promise<OnboardingTurnResult>;
@@ -189,6 +234,8 @@ export interface AiService {
   draftApplication(input: DraftApplicationInput): Promise<ApplicationDraftContent>;
   reviseApplication(input: ReviseApplicationInput): Promise<ApplicationDraftContent>;
   judgeApplication(input: JudgeApplicationInput): Promise<JudgeVerdict>;
+  extractInvoice(input: ExtractInvoiceInput): Promise<InvoiceExtraction>;
+  writeJustification(input: WriteJustificationInput): Promise<JustificationNarrative>;
 }
 
 /** Per-feature slice: each feature's ai.ts exports an object implementing its methods. */

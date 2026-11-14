@@ -12,8 +12,8 @@ export const ROUTES = {
   trust: "/confianza",
   demo: "/demo",
   login: "/entrar", // sign in / create account (?next=<path>)
+  justification: (applicationId: string) => `/justificacion/${encodeURIComponent(applicationId)}`, // IDEA #7: invoices, deviations, final memoria
   panel: "/panel", // B2B panel for schools/associations (IDEA #8): members who accepted, their matched open calls
-  // Not built (IDEA extra #7, justification, is pitch-only): no route here, so nothing links to a 404.
   account: "/cuenta", // account: "Conectar con Claude" (personal MCP tokens)
 } as const;
 
@@ -78,6 +78,11 @@ export const API = {
   jury: "/api/jury", // POST { applicationId, force? } (Accept: application/x-ndjson streams one event per judge)
   juryImprove: "/api/jury/improve", // POST { applicationId, scoreId, fixes?, facts?, stage? }
   juryUndo: "/api/jury/undo", // POST { applicationId } -> restores the draft from before "Aplicar mejoras"
+  justification: "/api/justification", // GET ?applicationId -> JustificationResponse
+  justificationInvoices: "/api/justification/invoices", // POST { applicationId, imageDataUrl, hint? } photo of an invoice -> JustificationResponse
+  justificationInvoice: (id: string) => `/api/justification/invoices/${encodeURIComponent(id)}`, // PATCH fields / line, DELETE
+  justificationInvoiceImage: (id: string) => `/api/justification/invoices/${encodeURIComponent(id)}/image`,
+  justificationMemoria: "/api/justification/memoria", // POST { applicationId, notes? } draft it; PATCH { applicationId, sections } save the user's edits
   entitlements: "/api/entitlements", // GET the user's entitlement, POST sync after a purchase
   agent: "/api/agent", // POST { message, history }
   demoReset: "/api/demo/reset", // POST { scenario }: resets the signed-in user's own data only (and loads a scenario)

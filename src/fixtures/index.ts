@@ -248,6 +248,8 @@ export function defaultDb(): Db {
     dossiers: [],
     applications: [],
     juryScores: [],
+    invoices: [],
+    justifications: [],
     entitlements: [],
     usage: [],
     matchCache: [],
