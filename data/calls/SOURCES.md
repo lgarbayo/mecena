@@ -51,6 +51,12 @@ Not added (checked and rejected on 2026-11-14): **Kit Digital** (acelerapyme.gob
 ## URL re-check (curl, 2026-11-14)
 All `sourceUrl` and `basesUrl` of the 25 curated calls answer 200 (HTML or PDF) except: `reacciona.igape.es` (403 to bots; replaced by the BDNS sheet `…/convocatorias/880749`), `benidorm.org` (405 to HEAD, 200 to GET), `cromawards.com` (404 to HEAD, 200 to GET). BDNS `documentos?idDocumento=…` links download as `application/octet-stream`, so the detail page now links the **BDNS sheet** (`/convocatorias/<bdnsId>`) as «Ver las bases oficiales» and offers the PDF as a secondary «Descargar PDF de las bases». No curated call has a deadline before 2026-11-14; statuses checked for today (open/upcoming/recurring).
 
+## Territory of calls with no residence rule (2026-11-14)
+`territories` was empty for 14 local/private calls, so the matcher could only say "Confírmalo: ámbito…". Set from what the bases (summary) already say, not guessed:
+- `["WORLD"]` (anyone, any residence): `cabra-cartel-carnaval-2027` ("abierto a cualquier persona"), `albacete-cartel-feria-2027` and `montellano-certamen-pintura-villa-2026` ("nacionales y extranjeros"), `onil-bienal-pintura-eusebio-sempere-2026`, `sant-joan-festival-cine-cortometrajes-2027`, `premios-que-arte-2026` and `ua-bienal-pluri-identitats-2027` ("cualquier nacionalidad"), `cromawards-2026` (online, international).
+- `["ES11"]`: `xunta-xuventude-crea-2026` (activity mainly in Galicia).
+- Still unset (bases do not say who may apply): A Laracha, Calahorra, LaSalita, PHotoEspaña, Arte Intruso, Fornelos, Benidorm, Cabra novela, Carballino, SAC-FiC, Ponteareas.
+
 ## Calls
 | id | title | status | deadline | source | verified | how |
 |---|---|---|---|---|---|---|

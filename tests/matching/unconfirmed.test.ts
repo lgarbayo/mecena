@@ -12,8 +12,10 @@ import { listCalls, saveProfile } from "@/server/store";
 // cannot check against the profile ("Confírmalo") never reads as a sure thing, and none of those requirements is hidden.
 const now = new Date(FIXTURE_NOW);
 
-const creator = (p: Partial<Profile>): Profile => ({ ...structuredClone(fixtureCreator), achievements: [], fundingNeeds: [], projectIdea: undefined, bio: "", statement: "", ...p });
-const business = (p: Partial<Profile>): Profile => ({ ...structuredClone(fixtureBusiness), ...p });
+// territory and beneficiary types are derived from the place and legal form, never inherited from the fixture
+const derived = { territory: undefined, beneficiaryTypes: [] };
+const creator = (p: Partial<Profile>): Profile => ({ ...structuredClone(fixtureCreator), ...derived, achievements: [], fundingNeeds: [], projectIdea: undefined, bio: "", statement: "", ...p });
+const business = (p: Partial<Profile>): Profile => ({ ...structuredClone(fixtureBusiness), ...derived, ...p });
 
 const personas: Profile[] = [
   creator({ id: "t-pintora", city: "Vigo", province: "Pontevedra", region: "Galicia", birthYear: 1981, disciplines: ["pintura"], statement: "pintura al óleo, paisaje", projectIdea: "exponer mi obra" }),
@@ -34,14 +36,14 @@ describe("score vs unconfirmed requirements (real dataset)", () => {
     for (const p of personas) await saveProfile(structuredClone(p));
   });
 
-  it("3 or more open requirements cap the call at 'medio', 5 or more at 'bajo'; the parts still add up to the score", () => {
+  it("2 or more open requirements cap the call at 'medio', 5 or more at 'bajo'; the parts still add up to the score", () => {
     let checked = 0;
     for (const p of personas)
       for (const call of listCalls()) {
         const r = evaluate(p, call, { now });
         if (!r.match.eligible) continue;
         const n = unconfirmed(r.match.whatYouMiss);
-        if (n >= 3) expect(r.match.score, `${p.id} × ${call.id} (${n})`).toBeLessThanOrEqual(69);
+        if (n >= 2) expect(r.match.score, `${p.id} × ${call.id} (${n})`).toBeLessThanOrEqual(69);
         if (n >= 5) expect(r.match.score, `${p.id} × ${call.id} (${n})`).toBeLessThanOrEqual(54);
         expect(Object.values(r.breakdown).reduce((s, x) => s + x, 0), `${p.id} × ${call.id}`).toBe(r.match.score);
         checked++;
@@ -73,5 +75,42 @@ describe("score vs unconfirmed requirements (real dataset)", () => {
   it("a profile with no on-topic call gets an empty feed, not filler (a ceramist: the dataset has no ceramics call)", async () => {
     const feed = await searchCalls({ profileId: "t-ceramista", now });
     expect(feed.filter((r) => r.call.status !== "recurring")).toEqual([]);
+  });
+});
+
+describe("territory and turnover rules (real dataset)", () => {
+  beforeEach(() => {
+    fs.copyFileSync(path.resolve("data/calls/calls.json"), path.join(process.env.MECENA_CALLS_DIR!, "calls.json"));
+  });
+  const call = (id: string) => listCalls().find((c) => c.id === id)!;
+  const pyme = (annualRevenueEur?: number) => personas[4] && { ...personas[4], annualRevenueEur };
+
+  it("a call whose bases say 'cualquier nacionalidad' no longer asks about residence", () => {
+    const r = evaluate(personas[1], call("premios-que-arte-2026"), { now });
+    expect(r.match.whyYouFit).toContain("Abierta a cualquier persona, vivas donde vivas");
+    expect(r.match.whatYouMiss.join(" ")).not.toMatch(/ámbito/);
+  });
+
+  it("Xuventude Crea is for Galicia: a Madrid photographer is out, a Galician one is not", () => {
+    expect(evaluate(personas[1], call("xunta-xuventude-crea-2026"), { now }).match.eligible).toBe(false);
+    expect(evaluate({ ...personas[0], birthYear: 2000 }, call("xunta-xuventude-crea-2026"), { now }).match.eligible).toBe(true);
+  });
+
+  it("Cámara de Tui: living in the province is not the demarcation, so no 'es de tu zona' and the rule stays to confirm", () => {
+    const r = evaluate(pyme()!, call("camara-tui-pyme-digital-2026"), { now });
+    expect(r.match.whyYouFit.join(" ")).not.toMatch(/Es de tu zona|Vives en Pontevedra/);
+    expect(r.match.whatYouMiss.join(" ")).toMatch(/demarcación de la Cámara de Tui/);
+  });
+
+  it("minimum turnover: unknown stays to confirm, too low rules the call out, enough is ticked", () => {
+    const id = "camara-tui-pyme-digital-2026";
+    expect(evaluate(pyme()!, call(id), { now }).match.whatYouMiss.join(" ")).toMatch(/Facturación mínima de 100\.000 €/);
+    const low = evaluate(pyme(40_000)!, call(id), { now });
+    expect(low.match.eligible).toBe(false);
+    expect(low.match.whatYouMiss.join(" ")).toMatch(/Facturación mínima de 100\.000 €: la tuya es 40\.000 €/);
+    const ok = evaluate(pyme(250_000)!, call(id), { now });
+    expect(ok.match.eligible).toBe(true);
+    expect(ok.match.whyYouFit.join(" ")).toMatch(/Cumples la facturación mínima/);
+    expect(ok.match.whatYouMiss.join(" ")).not.toMatch(/Facturación mínima/);
   });
 });

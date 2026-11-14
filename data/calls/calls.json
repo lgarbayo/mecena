@@ -367,7 +367,9 @@
       "persona-fisica",
       "autonomo"
     ],
-    "territories": [],
+    "territories": [
+      "WORLD"
+    ],
     "disciplines": [
       "arte-urbano",
       "pintura"
@@ -546,7 +548,9 @@
     "beneficiaryTypes": [
       "persona-fisica"
     ],
-    "territories": [],
+    "territories": [
+      "WORLD"
+    ],
     "disciplines": [
       "ilustracion",
       "diseno"
@@ -653,7 +657,9 @@
       "persona-fisica",
       "autonomo"
     ],
-    "territories": [],
+    "territories": [
+      "WORLD"
+    ],
     "disciplines": [
       "ilustracion",
       "diseno",
@@ -828,7 +834,9 @@
       "persona-fisica",
       "colectivo"
     ],
-    "territories": [],
+    "territories": [
+      "WORLD"
+    ],
     "disciplines": [
       "artes-visuales"
     ],
@@ -1039,7 +1047,9 @@
       "autonomo",
       "pyme"
     ],
-    "territories": [],
+    "territories": [
+      "WORLD"
+    ],
     "disciplines": [
       "cine",
       "animacion",
@@ -1288,7 +1298,9 @@
       "persona-fisica",
       "colectivo"
     ],
-    "territories": [],
+    "territories": [
+      "ES11"
+    ],
     "disciplines": [
       "artes-visuales",
       "arte-urbano",
@@ -1738,7 +1750,9 @@
     "beneficiaryTypes": [
       "persona-fisica"
     ],
-    "territories": [],
+    "territories": [
+      "WORLD"
+    ],
     "disciplines": [
       "pintura"
     ],
@@ -2414,7 +2428,9 @@
     "beneficiaryTypes": [
       "persona-fisica"
     ],
-    "territories": [],
+    "territories": [
+      "WORLD"
+    ],
     "disciplines": [
       "ilustracion",
       "diseno"
@@ -2469,7 +2485,9 @@
     "beneficiaryTypes": [
       "persona-fisica"
     ],
-    "territories": [],
+    "territories": [
+      "WORLD"
+    ],
     "disciplines": [
       "pintura"
     ],
