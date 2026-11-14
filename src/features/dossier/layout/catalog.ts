@@ -8,6 +8,7 @@ import type { CropSuggestion } from "@/contracts";
 import { DEFAULT_TITLES } from "../design";
 import { vocabFor } from "../arts";
 import type { DossierView, WorkView } from "../model";
+import { UNTITLED } from "@/features/works/parse";
 import { FONT_TABLE } from "./fonts";
 
 export interface CatalogText {
@@ -73,7 +74,11 @@ export function buildCatalog(view: DossierView, opts: { said?: string[]; ratios?
         const lines = g.items
           .map((i) => ({ year: i.year, text: i.text.replace(/^[\s·•\-–—]+/, ""), place: i.place }))
           .map((i) => `${i.year ? `${i.year} · ` : ""}${i.text}${i.place ? `, ${i.place}` : ""}`)
-          .filter((l) => !seen.has(l.toLowerCase()) && !!seen.add(l.toLowerCase()));
+          .filter((l) => {
+            // "Formación: Bellas Artes" under FORMACIÓN repeats "Bellas Artes": one line per fact
+            const key = l.toLowerCase().replace(/^([^:·]{2,30}):\s*/, "").replace(/^(\d{4} · )([^:·]{2,30}):\s*/, "$1");
+            return !seen.has(key) && !!seen.add(key);
+          });
         return [g.title.toUpperCase(), ...lines];
       }),
     );
@@ -114,7 +119,8 @@ export function buildCatalog(view: DossierView, opts: { said?: string[]; ratios?
   const confirmed = works.filter((w) => w.confirmed && w.imageUrl);
   const catalogWorks: CatalogWork[] = confirmed.map((w, i) => {
     const n = i + 1;
-    put(`obra.${n}.titulo`, `título de la obra ${n}`, [w.title]);
+    // an untitled work has no title to set as a heading ("Sin título" stays in its caption, once)
+    if (w.title.trim().toLowerCase() !== UNTITLED.toLowerCase()) put(`obra.${n}.titulo`, `título de la obra ${n}`, [w.title]);
     put(`obra.${n}.ficha`, `ficha de la obra ${n}`, [[w.title, w.year, w.technique, w.size].filter(Boolean).join(" · ")]);
     put(`obra.${n}.concepto`, `texto sobre la obra ${n}`, [w.concept]);
     return { n, id: w.id, title: w.title, imageUrl: w.imageUrl, crop: w.crop, ratio: opts.ratios?.[w.id], colors: opts.colors?.[w.id] };

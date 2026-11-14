@@ -6,8 +6,9 @@ import { AiError } from "@/server/ai/llm";
 import { FONT_FAMILIES, FONT_TABLE, snapFace } from "@/features/dossier/layout/fonts";
 import { LayoutError, prepareLayout, SAFE_X, SAFE_Y } from "@/features/dossier/layout/prepare";
 import { textsOutgrewLayout } from "@/features/dossier/layout/notes";
-import { FreeLayout, MAX_PAGES, type FreeLayout as Layout } from "@/features/dossier/layout/schema";
+import { FreeLayout, MAX_PAGES, type FreeLayout as Layout, type PreparedText } from "@/features/dossier/layout/schema";
 import { DAILY_LAYOUT_BATCHES, catalogFor, chooseProposal, layoutIdle, layoutState, requestChange, requestProposals, setFreeLayout, undoLayout } from "@/features/dossier/layout/service";
+import { MIN_WORKS_SHOWN, missingContent } from "@/features/dossier/layout/completeness";
 import { renderDossierPdf, countPages } from "@/features/dossier/service";
 import { GET as layoutGet, POST as layoutPost } from "@/app/api/dossier/layout/route";
 import { req, seedOnboardedCreator, loginDemo } from "../helpers";
@@ -338,12 +339,44 @@ describe("service: batch of proposals, choice, changes, undo", () => {
     // a proposal the guard cannot repair is discarded too (after one retry that tells the model why)
     vi.restoreAllMocks();
     vi.spyOn(agent, "planDirections").mockResolvedValue(mockDirections(3));
-    const bad = layout(page(image(1, 0, 0, 60, 60), image(2, 30, 30, 60, 60)));
+    const bad = layout(page(text("nombre", 8, 80, 84, 10, { size: 40 }), image(1, 0, 0, 60, 60), image(2, 30, 30, 60, 60)), page(text("declaracion", 8, 10, 84, 40), image(3, 8, 55, 84, 40)));
     const spy = vi.spyOn(agent, "designLayout").mockImplementation(async (input) => (input.direction?.name === "Dirección 1" ? bad : mockComposition(input.catalog, 2, input.direction!.name)));
     await requestProposals({ profileId: DEMO_CREATOR_ID });
     await layoutIdle(DEMO_CREATOR_ID);
     expect((await layoutState({ profileId: DEMO_CREATOR_ID })).proposals).toHaveLength(2);
     expect(spy.mock.calls.some((c) => c[0].problem && /solapan/.test(c[0].problem))).toBe(true);
+  });
+
+  it("never keeps a proposal that is not a dossier: no name on the cover, no statement or too few works (it retries telling why)", async () => {
+    await seed(6);
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    const onePage = layout(page(text("nombre", 8, 70, 84, 20, { size: 40 }), image(1, 0, 0, 100, 60, { fit: "cover" })));
+    expect(missingContent(onePage, cat)).toMatch(new RegExp(`declaración|al menos ${MIN_WORKS_SHOWN} obras`));
+    const full = mockComposition(cat, 0);
+    expect(missingContent(full, cat)).toBeUndefined();
+    expect(missingContent({ ...full, pages: full.pages.slice(1) }, cat)).toMatch(/portada/);
+    const fewWorks = { ...full, pages: full.pages.slice(0, 3) };
+    expect(missingContent(fewWorks, cat)).toMatch(/al menos 4 obras distintas \(ahora hay 2\)/);
+    // a change may drop works ("solo texto") but never the artist's name
+    const noImages = { ...full, pages: full.pages.map((p) => ({ ...p, elements: p.elements.filter((e) => e.type !== "image") })) };
+    expect(missingContent(noImages, cat, { request: "solo texto enorme" })).toBeUndefined();
+    const noName = { ...full, pages: full.pages.map((p) => ({ ...p, elements: p.elements.filter((e) => !(e.type === "text" && e.ref === "nombre")) })) };
+    expect(missingContent(noName, cat, { request: "foto grande a toda página" })).toMatch(/nombre/);
+    // a change that shrinks the name on the cover to a footnote is sent back; asking about the name itself is allowed
+    const tinyName = { ...full, pages: full.pages.map((p, i) => (i ? p : { ...p, elements: p.elements.map((e) => (e.type === "text" && e.ref === "nombre" ? { ...e, size: 8 } : e)) })) };
+    expect(missingContent(tinyName, cat, { request: "foto grande a toda página y debajo una cita" })).toMatch(/bien visible/);
+    expect(missingContent(tinyName, cat, { request: "el nombre pequeñito abajo" })).toBeUndefined();
+    expect(missingContent(tinyName, cat)).toMatch(/bien visible/);
+
+    vi.spyOn(agent, "planDirections").mockResolvedValue(mockDirections(3));
+    const spy = vi.spyOn(agent, "designLayout").mockImplementation(async (input) => (input.direction?.name === "Dirección 2" ? onePage : mockComposition(input.catalog, 0, input.direction!.name)));
+    await requestProposals({ profileId: DEMO_CREATOR_ID });
+    await layoutIdle(DEMO_CREATOR_ID);
+    const s = await layoutState({ profileId: DEMO_CREATOR_ID });
+    expect(s.proposals).toHaveLength(2);
+    expect(s.proposals.every((p) => p.prepared.pages.length > 1)).toBe(true);
+    expect(spy.mock.calls.filter((c) => c[0].direction?.name === "Dirección 2")).toHaveLength(2);
+    expect(spy.mock.calls.some((c) => c[0].problem && /declaración|obras distintas/.test(c[0].problem))).toBe(true);
   });
 
   it("falls back to the template design with a Spanish notice when no proposal survives (also without a key)", async () => {
@@ -401,14 +434,14 @@ describe("service: batch of proposals, choice, changes, undo", () => {
     const real = cat.texts["frase.1"]?.paragraphs[0];
     vi.spyOn(agent, "planDirections").mockResolvedValue(mockDirections(1));
     vi.spyOn(agent, "designLayout").mockResolvedValue(
-      layout(page(image(1, 0, 0, 50, 50), image(30, 50, 0, 50, 50), text("nombre", 8, 60, 84, 12, { size: 40 }), quoteText("Premio Nacional de Pintura 1999", 8, 75, 84, 8), ...(real ? [quoteText(real.slice(0, 40), 8, 85, 84, 6)] : []))),
+      layout(page(image(1, 0, 0, 50, 50), image(30, 50, 0, 50, 50), text("nombre", 8, 60, 84, 12, { size: 40 }), quoteText("Premio Nacional de Pintura 1999", 8, 75, 84, 8), ...(real ? [quoteText(real.slice(0, 40), 8, 85, 84, 6)] : [])), page(text("declaracion", 8, 8, 84, 40), image(2, 8, 55, 84, 40))),
     );
     await requestProposals({ profileId: DEMO_CREATOR_ID });
     await layoutIdle(DEMO_CREATOR_ID);
     const s = await layoutState({ profileId: DEMO_CREATOR_ID });
     const els = s.proposals.flatMap((p) => p.prepared.pages.flatMap((pg) => pg.elements));
     for (const e of els) if (e.type === "image") expect(own.has(e.url)).toBe(true);
-    expect(els.filter((e) => e.type === "image")).toHaveLength(1);
+    expect(els.filter((e) => e.type === "image")).toHaveLength(2); // works 1 and 2; "work 30" does not exist and is dropped
     expect(els.flatMap((e) => (e.type === "text" ? e.paragraphs : [])).join(" ")).not.toMatch(/Premio Nacional/);
   });
 });
@@ -510,5 +543,66 @@ describe("guard: unbreakable words and orphan headings", () => {
     expect(!!cat.texts["t.obra"]).toBe(cat.works.length > 0);
     const none = { ...cat, works: [] };
     expect(none.works).toHaveLength(0);
+  });
+});
+
+describe("guard: designer retouches", () => {
+  it("a whole-shown photo hugs its picture and its caption follows it (never centimetres away)", async () => {
+    await seed();
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    cat.works[0].ratio = 1.5; // landscape in a tall box: letterboxed by "contain"
+    const r = prepareLayout(layout(page(image(1, 10, 10, 80, 70, { fit: "contain" }), text("obra.1.ficha", 10, 81.5, 80, 3, { size: 8 }))), cat);
+    const img = r.layout.pages[0].elements.find((e) => e.type === "image")!;
+    const cap = r.layout.pages[0].elements.find((e) => e.type === "text")!;
+    const ratio = (img.w * 595.28) / (img.h * 841.89);
+    expect(ratio).toBeCloseTo(1.5, 1);
+    expect(cap.y - (img.y + img.h)).toBeGreaterThanOrEqual(0.9);
+    expect(cap.y - (img.y + img.h)).toBeLessThanOrEqual(1.7);
+    expect(img.x).toBeCloseTo(10, 0); // a left-aligned caption keeps its edge with the picture
+  });
+
+  it("raises type that would not read in print: body to 9 pt, anything else to 7.5 pt", async () => {
+    await seed();
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    cat.texts.declaracion = { label: "d", paragraphs: ["Una declaración larga ".repeat(20).trim()] };
+    const r = prepareLayout(layout(page(text("declaracion", 8, 10, 84, 60, { size: 6 }), text("ciudad", 8, 80, 40, 4, { size: 6 }))), cat);
+    const [body, small] = r.layout.pages[0].elements.filter((e) => e.type === "text");
+    expect(body.type === "text" && body.size).toBeGreaterThanOrEqual(9);
+    expect(small.type === "text" && small.size).toBeGreaterThanOrEqual(7.5);
+  });
+
+  it("never ends a column with a group heading: it goes with its lines", async () => {
+    await seed();
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    cat.texts.trayectoria = { label: "cv", paragraphs: ["FORMACIÓN", "Bellas Artes, Universidad de Vigo", "Máster en Arte Contemporáneo", "EXPOSICIONES INDIVIDUALES", "2023 · Museo de Pontevedra", "2021 · Sala X"] };
+    const r = prepareLayout(layout(page(text("trayectoria", 8, 10, 84, 30, { size: 10, columns: 2 }))), cat);
+    const cols = r.layout.pages[0].elements.filter((e) => e.type === "text");
+    for (const c of cols) if (c.type === "text") expect(c.paragraphs[c.paragraphs.length - 1]).not.toMatch(/^[A-ZÁÉÍÓÚ ]+$/);
+    expect(cols.flatMap((c) => (c.type === "text" ? c.paragraphs : []))).toHaveLength(6);
+  });
+
+  it("makes room for a caption pushed into its photo by the margin instead of discarding the proposal", async () => {
+    await seed();
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    cat.texts["obra.1.ficha"] = { label: "f", paragraphs: ["Sin título · Fotografía en gelatina de plata sobre papel baritado · 2019 · 50 × 60 cm"] }; // two lines
+    cat.works[0].ratio = 0.66; // stays "cover" in this box
+    const r = prepareLayout(layout(page(image(1, 54, 32, 40, 62, { fit: "cover" }), text("obra.1.ficha", 54, 95, 40, 3, { size: 7 }), text("nombre", 6, 6, 40, 10))), cat);
+    const img = r.layout.pages[0].elements.find((e) => e.type === "image")!;
+    const cap = r.layout.pages[0].elements.find((e) => e.type === "text" && e.paragraphs.join("") === cat.texts["obra.1.ficha"].paragraphs[0]) as PreparedText;
+    expect(img.y + img.h).toBeLessThanOrEqual(cap.y);
+    expect(r.adjustments.join(" ")).toMatch(/sitio a un pie de foto/);
+  });
+});
+
+describe("catalog: untitled works", () => {
+  it("offers no title heading for an untitled work: «Sin título» appears once, in its caption", async () => {
+    await seed(1);
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    const { buildCatalog } = await import("@/features/dossier/layout/catalog");
+    expect(cat.texts["obra.1.titulo"]).toBeDefined();
+    const view = { name: "X", kind: "creator", family: "artes-visuales", statement: [], bio: [], cv: [], contact: [], series: [{ works: [{ id: "w", title: "Sin título", technique: "Óleo", confirmed: true, imageUrl: "/u/w.jpg" }] }] } as unknown as Parameters<typeof buildCatalog>[0];
+    const c = buildCatalog(view);
+    expect(c.texts["obra.1.titulo"]).toBeUndefined();
+    expect(c.texts["obra.1.ficha"].paragraphs[0]).toBe("Sin título · Óleo");
   });
 });
