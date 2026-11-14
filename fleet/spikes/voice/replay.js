@@ -107,6 +107,10 @@ async function runScenario(id) {
     clearInterim();
     console.log(red(`  ✗ descartado (${reason}): ${op.field} = ${op.value}  «${op.source}»${op.injected ? "  [alucinación inyectada a propósito en el mock]" : ""}`));
   });
+  s.on("keyfix", ({ field, from, to }) => {
+    clearInterim();
+    console.log(yellow(`  ~ clave corregida ${from} → ${to} (${field})`));
+  });
   s.on("dossier", ({ call, sections }) => {
     clearInterim();
     console.log(`${ts()} ${cyan(`📄 ${call.type} #${call.n}`)} [${sections.map((x) => x.id).join(", ")}] ${dim(`${call.latencyMs} ms`)}`);
@@ -194,7 +198,7 @@ function summary(runs, sheet) {
     const extracts = r.calls.filter((c) => c.type === "extract");
     const inTok = r.calls.reduce((n, c) => n + (c.usage?.input_tokens ?? 0) + (c.usage?.cache_read_input_tokens ?? 0) + (c.usage?.cache_creation_input_tokens ?? 0), 0);
     const outTok = r.calls.reduce((n, c) => n + (c.usage?.output_tokens ?? 0), 0);
-    console.log(`  ${r.id}: ${extracts.length} extract calls for ${r.state ? countFilled(r.state) : 0} facts, ${r.rejected.length} rejected ops, tail after stop ${(r.tailMs / 1000).toFixed(1)} s${live ? `, tokens in ${inTok} / out ${outTok}` : ""}`);
+    console.log(`  ${r.id}: ${extracts.length} extract calls for ${r.state ? countFilled(r.state) : 0} facts, ${r.rejected.length} rejected ops, ${r.keyFixes?.length ?? 0} corrected keys, tail after stop ${(r.tailMs / 1000).toFixed(1)} s${live ? `, tokens in ${inTok} / out ${outTok}` : ""}`);
   }
 }
 
