@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { apiGet, apiSend } from "@/lib/api-client";
+import { textsOutgrewLayout } from "../layout/notes";
 import type { LayoutState } from "../layout/service";
 import { FreeLayoutThumb, layoutFontUrls } from "./FreeLayoutDocument";
 
@@ -171,7 +172,7 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
           ))}
         </ul>
       ) : null}
-      {chosen && state.adjustments.length ? (
+      {chosen && textsOutgrewLayout(state.adjustments) ? (
         <div className="design-panel__actions">
           <Button
             type="button"

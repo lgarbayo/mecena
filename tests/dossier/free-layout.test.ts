@@ -5,6 +5,7 @@ import * as agent from "@/features/dossier/layout/agent";
 import { AiError } from "@/server/ai/llm";
 import { FONT_FAMILIES, FONT_TABLE, snapFace } from "@/features/dossier/layout/fonts";
 import { LayoutError, prepareLayout, SAFE_X, SAFE_Y } from "@/features/dossier/layout/prepare";
+import { textsOutgrewLayout } from "@/features/dossier/layout/notes";
 import { FreeLayout, MAX_PAGES, type FreeLayout as Layout } from "@/features/dossier/layout/schema";
 import { DAILY_LAYOUT_BATCHES, catalogFor, chooseProposal, layoutIdle, layoutState, requestChange, requestProposals, setFreeLayout, undoLayout } from "@/features/dossier/layout/service";
 import { renderDossierPdf, countPages } from "@/features/dossier/service";
@@ -105,6 +106,10 @@ describe("guard: sources", () => {
     expect(shown).toContain("Nombre Editado");
     expect(shown.join(" ")).not.toContain(real.slice(0, 40));
     expect(after.adjustments.join(" ")).toMatch(/ya no aparece tal cual en tus textos/);
+    // Only then does the panel offer the (AI-spending) re-fit button; routine guard fixes never do.
+    expect(textsOutgrewLayout(before.adjustments)).toBe(false);
+    expect(textsOutgrewLayout(after.adjustments)).toBe(true);
+    expect(textsOutgrewLayout(["He metido los textos en la zona imprimible de la página.", "El texto va repartido en columnas."])).toBe(false);
   });
 
   it("never produces an image that is not one of the artist's works (any request, any work number)", async () => {
