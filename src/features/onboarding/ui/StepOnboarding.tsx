@@ -445,14 +445,17 @@ export function StepOnboarding() {
                   </button>
                 </p>
               )}
-              <button type="button" className={s.link} onClick={() => setShowImport(true)} data-testid="import-open">
-                {C.importLink}
-              </button>
+              {/* the import is the artist's dossier: a pyme tells us about the company in the interview */}
+              {kind === "creator" && (
+                <button type="button" className={s.link} onClick={() => setShowImport(true)} data-testid="import-open">
+                  {C.importLink}
+                </button>
+              )}
             </div>
           </section>
         )}
 
-        {showImport && phase.at === "choose" && (
+        {showImport && kind === "creator" && phase.at === "choose" && (
           <div className={l.sheetBackdrop} onClick={() => setShowImport(false)}>
             <div className={l.sheet} role="dialog" aria-modal="true" aria-label={C.importLink} onClick={(e) => e.stopPropagation()}>
               <header className={l.sheetHead}>
@@ -574,7 +577,8 @@ export function StepOnboarding() {
                 </Link>
               </p>
             ) : null}
-            {live}
+            {/* a pyme's card is already the summary above: the live panel would only repeat it */}
+            {kind === "creator" && live}
             {kind === "business" && (
               <div className={s.importBox}>
                 <MatchesPanel profileId={profile?.id ?? profileId} appUserId={app.appUserId || undefined} refreshKey={shownTurns.filter((t) => t.status === "done").length} knowsEnough={Boolean(profile?.sector && profile?.city)} />
@@ -584,9 +588,12 @@ export function StepOnboarding() {
               <Link className={`${g.btn} ${g.btnPrimary}`} href={kind === "creator" ? ROUTES.works : ROUTES.calls} onClick={guard(kind === "creator" ? ROUTES.works : ROUTES.calls)} aria-disabled={!!leaving || undefined} data-testid="finish-cta">
                 {finishCopy.cta}
               </Link>
-              <Link className={g.btn} href={ROUTES.calls} onClick={guard(ROUTES.calls)} aria-disabled={!!leaving || undefined} data-testid="calls-cta">
-                {C.toCalls}
-              </Link>
+              {/* a pyme's main CTA already goes to its aid: a second link to the same page would only repeat it */}
+              {kind === "creator" && (
+                <Link className={g.btn} href={ROUTES.calls} onClick={guard(ROUTES.calls)} aria-disabled={!!leaving || undefined} data-testid="calls-cta">
+                  {C.toCalls}
+                </Link>
+              )}
             </div>
           </section>
         )}

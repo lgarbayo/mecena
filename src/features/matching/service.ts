@@ -163,7 +163,7 @@ export async function explainCall(input: { callId: string; profileId: string }):
 
 /**
  * Feed for GET /api/calls. Pro sees every match. The free plan gets FREE_MATCHES_PER_MONTH real matches a month (counted
- * in db.usage, in rank order, never a closed edition); the rest are only a count. Closed editions ("recurring") go in
+ * in db.usage, in rank order, never a closed edition); the rest are only a count and their scores (`lockedScores`). Closed editions ("recurring") go in
  * their own list, `editions` ("Próximas ediciones"), as a limited preview.
  */
 export async function callsFeed(input: { profileId: string; appUserId: string; query?: string; now?: Date }) {
@@ -180,11 +180,14 @@ export async function callsFeed(input: { profileId: string; appUserId: string; q
   const editions = ranked.filter((r) => r.call.status === "recurring").map((r) => (pro ? r : { ...r, match: lockedMatch(r.match) }));
   const summary = profileSummary(profile);
   let results = current;
+  let lockedScores: number[] = [];
   if (!pro) {
     // Incomplete profile: a preview that spends nothing, and a search never chooses it (see visibleCalls).
     const candidates = summary.isComplete || !input.query ? openIds(current) : openIds(rankCalls({ profileId: profile.id, ...now }).results);
     const visible = await visibleCalls({ ...who, profileComplete: summary.isComplete }, candidates);
     results = current.filter((r) => visible.has(r.call.id));
+    // Locked cards show only their score (rank order); the call itself stays hidden behind the paywall.
+    lockedScores = current.filter((r) => !visible.has(r.call.id)).map((r) => r.match.score);
   }
   const liveSearch = {
     searching: scheduled === "scheduled" || scheduled === "running" || search?.status === "running",
@@ -192,7 +195,7 @@ export async function callsFeed(input: { profileId: string; appUserId: string; q
     ...(search?.lastRunAt ? { lastRunAt: search.lastRunAt } : {}),
   };
   const diagnostics: CallsDiagnostics = { ...stats, matchedCount: current.length, profileSummary: summary };
-  return { results, editions, lockedCount: current.length - results.length, mode: profile.kind, pro, liveSearch, diagnostics };
+  return { results, editions, lockedCount: current.length - results.length, lockedScores, mode: profile.kind, pro, liveSearch, diagnostics };
 }
 
 /**
