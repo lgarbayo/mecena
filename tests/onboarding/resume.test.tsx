@@ -50,7 +50,7 @@ describe("/onboarding with a profile already filled", () => {
   it("'Empezar de cero' warns what goes, then the first answer resets", async () => {
     render(<StepOnboarding />);
     fireEvent.click(await screen.findByTestId("restart"));
-    expect(screen.getByTestId("resume-note").textContent).toMatch(/borraremos.*Tus obras se quedan/);
+    expect(screen.getByTestId("resume-note").textContent).toMatch(/Borraremos.*Tus obras se quedan/);
     await answerFirstQuestion();
     expect(sent[0]!.reset).toBe(true);
   });

@@ -147,7 +147,7 @@ export const ONBOARDING = {
   writeToggle: "Prefiero escribir",
   textPlaceholder: "Escribe aquí lo que nos contarías en voz alta…",
   send: "Añadir",
-  micNote: "Solo usamos el micrófono mientras hablas con Mecena. La voz la transcribe tu navegador (en Chrome, con servicios de Google); si lo prefieres, escríbelo.",
+  micNote: "La voz la transcribe tu navegador (en Chrome, Google).",
   micDenied: "No tenemos acceso al micrófono. Actívalo en los ajustes del navegador o escribe tu historia.",
   noSpeech: "No te hemos oído bien. Acércate un poco o prueba a escribir.",
   unsupported: "Este navegador no reconoce la voz. Escríbelo y hacemos lo mismo.",

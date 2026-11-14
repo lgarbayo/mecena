@@ -28,6 +28,7 @@ import { Stage, glass as g } from "./Stage";
 import { Transcript, type TranscriptLine } from "./Transcript";
 import { TrustStrip } from "./TrustStrip";
 import { VoiceOrb } from "./VoiceOrb";
+import l from "./live.module.css";
 import s from "./steps.module.css";
 import { Icon } from "@/components/ui/icons";
 
@@ -43,13 +44,6 @@ interface State {
   sections: DossierSection[];
   transcript: TranscriptSegment[];
 }
-
-const filled = (p: Profile | null, fields: string[]) =>
-  !!p &&
-  fields.some((f) => {
-    const v = (p as Record<string, unknown>)[f];
-    return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== null && v !== "";
-  });
 
 function PenIcon() {
   return (
@@ -326,8 +320,8 @@ export function StepOnboarding() {
     <LiveDossier kind={kind} profile={profile} sections={sections} changedSections={changedSections} changedFields={changedFields} version={version} works={kind === "creator" ? works : []} freshWorkId={freshWork} />
   );
   const photoButton = kind === "creator" && (
-    <button type="button" className={`${g.btn} ${s.photoBtn}`} onClick={openPhoto} data-testid="photo-work">
-      <CameraIcon /> {C.photoWork}
+    <button type="button" className={`${g.btn} ${s.iconBtn}`} onClick={openPhoto} aria-label={C.photoWork} title={C.photoWork} data-testid="photo-work">
+      <CameraIcon />
     </button>
   );
 
@@ -353,36 +347,22 @@ export function StepOnboarding() {
               <div className={s.bar} role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={Math.min(total, stepIndex + (phase.at === "done" ? 0 : 1))}>
                 <div className={s.barFill} style={{ width: `${(100 * (phase.at === "done" ? total : stepIndex + 1)) / total}%` }} />
               </div>
-              <div className={s.dots} aria-hidden>
-                {steps.map((st, i) => (
-                  <span key={st.question} className={`${s.dotStep} ${i === stepIndex && phase.at === "step" ? s.dotNow : filled(profile, st.fields) ? s.dotDone : ""}`} />
-                ))}
-              </div>
             </>
           )}
         </header>
 
         {phase.at === "choose" && (
-          <section className={s.body} key="choose">
-            <p className={g.kicker}>{ONBOARDING.kicker[kind]}</p>
-            <h1 className={s.question}>{C.chooseTitle}</h1>
-            <p className={s.example}>{C.chooseLede(steps.length)}</p>
-            {hasPrevious && (
-              <>
-                <p className={s.example} role={restart ? "alert" : undefined} data-testid="resume-note">
-                  {restart ? C.restartWarning : C.resumeNote}
-                </p>
-                <button type="button" className={s.link} onClick={() => setRestart((r) => !r)} data-testid={restart ? "keep-profile" : "restart"}>
-                  {restart ? C.keepProfile : C.restart}
-                </button>
-              </>
-            )}
+          <section className={`${s.body} ${s.chooseBody}`} key="choose">
             <div className={s.kinds} role="group" aria-label="Perfil" aria-busy={switching}>
               {(["creator", "business"] as const).map((k) => (
                 <button key={k} type="button" className={s.kind} aria-pressed={kind === k} disabled={switching || busy} onClick={() => void switchKind(k)} data-testid={`kind-${k}`}>
                   {switching && kind !== k ? C.switching : C.kind[k]}
                 </button>
               ))}
+            </div>
+            <div className={s.chooseHead}>
+              <h1 className={s.question}>{C.chooseTitle}</h1>
+              <p className={s.example}>{C.chooseLede(steps.length)}</p>
             </div>
             {switchError && (
               <p className={s.micError} role="alert">
@@ -415,16 +395,36 @@ export function StepOnboarding() {
                 </span>
               </button>
             </div>
-            {showImport ? (
-              <div className={s.importBox}>
-                <ImportDossier kind={kind} profileId={profileId} onImported={onImported} defaultOpen />
-              </div>
-            ) : (
-              <button type="button" className={s.link} onClick={() => setShowImport(true)}>
+            <div className={s.chooseLinks}>
+              {hasPrevious && (
+                <p className={s.resume} role={restart ? "alert" : undefined} data-testid="resume-note">
+                  {restart ? C.restartWarning : C.resumeNote}{" "}
+                  <button type="button" className={s.link} onClick={() => setRestart((r) => !r)} data-testid={restart ? "keep-profile" : "restart"}>
+                    {restart ? C.keepProfile : C.restart}
+                  </button>
+                </p>
+              )}
+              <button type="button" className={s.link} onClick={() => setShowImport(true)} data-testid="import-open">
                 {C.importLink}
               </button>
-            )}
+            </div>
           </section>
+        )}
+
+        {showImport && phase.at === "choose" && (
+          <div className={l.sheetBackdrop} onClick={() => setShowImport(false)}>
+            <div className={l.sheet} role="dialog" aria-modal="true" aria-label={C.importLink} onClick={(e) => e.stopPropagation()}>
+              <header className={l.sheetHead}>
+                <h2>{C.importLink}</h2>
+                <button type="button" className={l.sheetClose} onClick={() => setShowImport(false)} aria-label={C.close}>
+                  <Icon name="close" size={18} />
+                </button>
+              </header>
+              <div className={l.sheetBody}>
+                <ImportDossier kind={kind} profileId={profileId} onImported={onImported} bare />
+              </div>
+            </div>
+          </div>
         )}
 
         {phase.at === "step" && (
@@ -453,7 +453,7 @@ export function StepOnboarding() {
                   aria-label={speech.listening ? C.tapToPause : speech.tapToResume ? C.tapToResume : C.tapToTalk}
                   data-testid="orb"
                 >
-                  <VoiceOrb active={speech.listening} pulse={pulse} size={180} />
+                  <VoiceOrb active={speech.listening} pulse={pulse} size={132} />
                 </button>
                 <span className={s.orbLabel}>{speech.listening ? C.listening : speech.tapToResume ? C.tapToResume : C.tapToTalk}</span>
                 {quietError && <p className={s.micError}>{quietError}</p>}
@@ -492,7 +492,6 @@ export function StepOnboarding() {
 
             <Transcript lines={lines} interim={mode === "voice" ? speech.interim : undefined} onRetry={(id) => queue.retry(id)} />
             {live}
-            {photoButton}
           </section>
         )}
 
@@ -564,6 +563,7 @@ export function StepOnboarding() {
               <span className={`${s.status} ${s.grow}`} aria-live="polite">
                 {queueStatus}
               </span>
+              {photoButton}
               <button type="button" className={`${g.btn} ${g.btnPrimary}`} onClick={() => go(phase.i + 1)} data-testid="next">
                 {phase.i + 1 === total ? C.finishStep : mode === "text" && !draft.trim() ? C.skip : C.next}
               </button>

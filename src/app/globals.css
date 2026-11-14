@@ -50,6 +50,21 @@ html, body {
   padding: 0;
 }
 
+/* Feel like an app on a phone: no grey flash on tap, no font inflation in landscape, taps fire at once and a
+   long press on a control does not select its label (content text stays selectable). */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+button, a, [role="button"], summary, label:has(> input[type="checkbox"]) {
+  touch-action: manipulation;
+}
+button, [role="button"], summary {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 body {
   position: relative;
   min-height: 100dvh;
