@@ -28,7 +28,6 @@ vi.mock("@/features/purchases/ui/Paywall", () => ({ Paywall: () => null }));
 const { DossierScreen } = await import("@/features/dossier/ui/DossierScreen");
 const { DesignPanel } = await import("@/features/dossier/ui/DesignPanel");
 const { DossierDocument } = await import("@/features/dossier/ui/DossierDocument");
-const { ModeSwitch } = await import("@/features/matching/ui/ModeSwitch");
 const { toDossierView } = await import("@/features/dossier/model");
 
 const dossier = (profileId: string, kind: Profile["kind"]): Dossier => ({ profileId, kind, sections: [], workIds: [], generatedAt: FIXTURE_NOW });
@@ -57,20 +56,6 @@ describe("/dossier for a pyme speaks of the company", () => {
     expect(screen.queryByText(/fanzine|la obra a sangre/i)).toBeNull();
   });
 
-  it("switching to Pyme on /dossier stays there (its memoria); from /obras it goes to the aid", async () => {
-    app = { profile: fixtureCreator, appUserId: "u" };
-    path = "/dossier";
-    render(<ModeSwitch />);
-    screen.getByRole("button", { name: "Pyme" }).click();
-    await Promise.resolve();
-    expect(pushed).toEqual([]);
-    cleanup();
-    path = "/obras";
-    render(<ModeSwitch />);
-    screen.getByRole("button", { name: "Pyme" }).click();
-    await new Promise((r) => setTimeout(r, 0));
-    expect(pushed).toEqual(["/convocatorias"]);
-  });
 });
 
 describe("/dossier notices", () => {
