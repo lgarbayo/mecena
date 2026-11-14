@@ -151,6 +151,7 @@ async function ensureSession() {
   events.addEventListener("extracted", (e) => onExtracted(JSON.parse(e.data)));
   events.addEventListener("dossier", (e) => onDossier(JSON.parse(e.data)));
   events.addEventListener("rejected", (e) => { const d = JSON.parse(e.data); log(`descartado (${d.reason}): ${d.op.field} = ${d.op.value} «${d.op.source}»`, true); });
+  events.addEventListener("ask_rejected", (e) => log(`pregunta descartada (${JSON.parse(e.data).reason})`, true));
   events.addEventListener("error", (e) => { if (e.data) log("error: " + JSON.parse(e.data).message, true); });
   events.addEventListener("stopped", () => log("sesión terminada: dossier final listo"));
 }

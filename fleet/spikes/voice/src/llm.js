@@ -8,8 +8,10 @@ import { patchSchema, dossierSchema, SHEET_SCHEMA, IMAGE_NOTES_SCHEMA, FIT_SCHEM
 import { extractorSystem, dossierSystem, SHEET_SYSTEM, IMAGE_NOTES_SYSTEM, FIT_SYSTEM, variantSystem } from "./prompts.js";
 import { stateForPrompt } from "./profile.js";
 
+// Extraction defaults to Haiku (faster, no mojibake in ask_next; FINDINGS §6, §8.1).
+// EXTRACT_MODEL=claude-sonnet-5-5 switches back to Sonnet.
 export const MODELS = {
-  extract: process.env.EXTRACT_MODEL || "claude-sonnet-5-5",
+  extract: process.env.EXTRACT_MODEL || "claude-haiku-5-5",
   dossier: process.env.DOSSIER_MODEL || "claude-sonnet-5-5",
   sheet: process.env.SHEET_MODEL || "claude-sonnet-5-5",
   fit: process.env.FIT_MODEL || "claude-sonnet-5-5",

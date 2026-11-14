@@ -12,7 +12,7 @@
 //   - stop(): flush pending words, then one consistency pass over every section.
 
 import { EventEmitter } from "node:events";
-import { emptyProfile, validateOp, applyOps, normalize } from "./profile.js";
+import { emptyProfile, validateOp, validateAskNext, applyOps, normalize } from "./profile.js";
 import { FIELDS, DOSSIER_SECTIONS } from "./schemas.js";
 
 const wordCount = (s) => (s.trim() ? s.trim().split(/\s+/).length : 0);
@@ -34,6 +34,7 @@ export class Session extends EventEmitter {
     this.calls = [];
     this.rejected = [];
     this.keyFixes = []; // update ops whose misspelled list key was matched to an existing one
+    this.rejectedAsks = []; // ask_next questions dropped by validateAskNext (e.g. mojibake)
     this.stopped = false;
   }
 
@@ -96,6 +97,11 @@ export class Session extends EventEmitter {
           r.dirtySections.forEach((s) => this.dirty.add(s));
         }
         this.state = state;
+        const ask = validateAskNext(res.ask_next);
+        if (!ask.ok) {
+          this.rejectedAsks.push({ n, ask_next: res.ask_next, reason: ask.reason });
+          this.emit("ask_rejected", { n, ask_next: res.ask_next, reason: ask.reason });
+        }
         const call = {
           type: "extract",
           n,
@@ -109,7 +115,7 @@ export class Session extends EventEmitter {
           usage: res.usage,
         };
         this.calls.push(call);
-        this.emit("extracted", { call, changed, ask_next: res.ask_next, state: this.state });
+        this.emit("extracted", { call, changed, ask_next: ask.question, state: this.state });
       } catch (err) {
         this.sentUpTo = Math.min(this.sentUpTo, newFrom); // retry these words next time
         this.emit("error", err);
@@ -176,6 +182,6 @@ export class Session extends EventEmitter {
     const all = Object.keys(DOSSIER_SECTIONS[this.mode]).filter((s) => this.#factsIn(s) > 0);
     if (all.length) await this.#dossier(all, { final: true });
     this.emit("stopped", { state: this.state, dossier: this.dossier });
-    return { state: this.state, dossier: this.dossier, calls: this.calls, rejected: this.rejected, keyFixes: this.keyFixes };
+    return { state: this.state, dossier: this.dossier, calls: this.calls, rejected: this.rejected, keyFixes: this.keyFixes, rejectedAsks: this.rejectedAsks };
   }
 }
