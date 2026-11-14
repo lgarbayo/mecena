@@ -6,12 +6,15 @@ import { runAgent } from "@/features/agent/service";
 import { requireUser, toolContextFor } from "@/server/auth";
 import { body, json, route } from "@/server/http";
 import { limitAi } from "@/server/ai-limits";
+import { idempotent } from "@/server/idempotency";
 
 export const dynamic = "force-dynamic";
 
-export const POST = route(async (req: Request) => {
-  const user = requireUser(req);
-  limitAi(user, "agent");
-  const { message, history } = await body(req, AgentRequest);
-  return json(await runAgent(message, history, await toolContextFor(user, "app")));
-});
+export const POST = route(
+  idempotent(async (req: Request) => {
+    const user = requireUser(req);
+    limitAi(user, "agent");
+    const { message, history } = await body(req, AgentRequest);
+    return json(await runAgent(message, history, await toolContextFor(user, "app")));
+  }),
+);

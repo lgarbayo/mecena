@@ -6,6 +6,7 @@ import { EntitlementSyncRequest } from "@/contracts/api";
 import { PurchaseVerificationError, resolveEntitlement, syncEntitlement } from "@/features/purchases/server";
 import { requireUser } from "@/server/auth";
 import { json, readJson, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 
 export const dynamic = "force-dynamic";
 
@@ -25,15 +26,17 @@ export const GET = route(async (req: Request) => {
   }
 });
 
-export const POST = route(async (req: Request) => {
-  const user = requireUser(req);
-  const raw = ((await readJson(req)) ?? {}) as Record<string, unknown>;
-  const input = EntitlementSyncRequest.parse(raw);
-  // `via`: which client adapter made the purchase (only labels `source` in the explicit mock mode)
-  const via = raw.via === "revenuecat" ? "revenuecat" : "mock";
-  try {
-    return json({ entitlement: await syncEntitlement({ ...input, appUserId: user.appUserId, via }) });
-  } catch (e) {
-    return unavailable(e);
-  }
-});
+export const POST = route(
+  idempotent(async (req: Request) => {
+    const user = requireUser(req);
+    const raw = ((await readJson(req)) ?? {}) as Record<string, unknown>;
+    const input = EntitlementSyncRequest.parse(raw);
+    // `via`: which client adapter made the purchase (only labels `source` in the explicit mock mode)
+    const via = raw.via === "revenuecat" ? "revenuecat" : "mock";
+    try {
+      return json({ entitlement: await syncEntitlement({ ...input, appUserId: user.appUserId, via }) });
+    } catch (e) {
+      return unavailable(e);
+    }
+  }),
+);

@@ -1,37 +1,53 @@
-/* /entrar: sign in or create an account. Same glass tokens as the rest of the app (globals.css). */
-.wrap { max-width: 420px; margin: 8px auto 0; }
-.lead { color: var(--g-ink-2); margin: 0 0 8px; }
+/* /entrar: sign in or create an account. A clean centred card on the light, monochrome palette (globals.css tokens). */
+.wrap { max-width: 420px; margin: 24px auto 0; }
+.lead { color: var(--text-2); margin: -4px 0 20px; font-size: 16px; line-height: 1.6; }
+.card { padding: 24px; box-shadow: var(--shadow-md); }
+
+/* segmented control: gray track, white active pill */
 .tabs {
-  display: flex; gap: 2px; border: 1px solid var(--g-line); border-radius: 999px; padding: 3px; margin: 0 0 16px;
-  background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  display: flex; gap: 2px; border-radius: var(--radius-pill); padding: 3px; margin: 0 0 20px;
+  background: var(--surface-3);
 }
 .tabs button {
-  flex: 1; border: 0; background: transparent; min-height: 40px; padding: 8px 12px; border-radius: 999px;
-  font: 600 0.95rem var(--sans); color: var(--g-ink-2); cursor: pointer; touch-action: manipulation;
-  transition: background 180ms var(--ease-out), color 180ms var(--ease-out);
+  flex: 1; border: 0; background: transparent; min-height: 36px; padding: 6px 12px; border-radius: var(--radius-pill);
+  font: 500 14px/1 var(--font-sans); color: var(--text-2); cursor: pointer; touch-action: manipulation;
+  transition: background 160ms var(--ease-out), color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
 }
-.tabs button[aria-selected="true"] { background: linear-gradient(135deg, #ff9966, #ff6b4a); color: #1a0d06; }
-.form { display: flex; flex-direction: column; gap: 14px; }
+.tabs button:hover { color: var(--text-1); }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-sm); }
+.tabs button:focus-visible { outline: 1.5px solid var(--focus); outline-offset: 2px; }
+
+.form { display: flex; flex-direction: column; gap: 16px; }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.field > span { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--g-ink-3); font-weight: 700; }
+.field > span { font-size: 14px; font-weight: 500; letter-spacing: 0.01em; color: var(--text-2); }
 .field input {
-  width: 100%; font: 16px/1.4 var(--sans); color: var(--g-ink);
-  background: var(--g-glass); border: 1px solid var(--g-line); border-radius: 14px; padding: 12px 14px;
+  width: 100%; min-height: 44px; font: 16px/1.4 var(--font-sans); color: var(--text-1);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-input); padding: 10px 14px;
+  transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
 }
-.field input::placeholder { color: var(--g-ink-3); }
-.field input:focus { outline: 2px solid var(--g-accent); outline-offset: 0; border-color: transparent; }
-.hint { font-size: 0.82rem; color: var(--g-ink-2); margin: 0; }
+.field input:hover { border-color: var(--border-strong); }
+.field input::placeholder { color: var(--text-3); }
+.field input:focus { outline: none; border-color: var(--gray-950); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 22%, transparent); }
+.hint { font-size: 13px; color: var(--text-3); margin: -8px 0 0; }
 .error {
-  margin: 0; padding: 10px 14px; border-radius: 14px; font-size: 0.92rem;
-  background: rgba(255, 138, 92, 0.14); border: 1px solid rgba(255, 138, 92, 0.4); color: #ffb38a;
+  margin: 0; padding: 10px 14px; border-radius: var(--radius-card-sm); font-size: 14px; line-height: 1.5;
+  background: var(--err-bg); color: var(--err-fg);
 }
-.submit { width: 100%; }
-.foot { font-size: 0.85rem; color: var(--g-ink-2); margin: 16px 0 0; text-align: center; }
-.foot a { color: var(--g-ink); text-decoration: underline; text-underline-offset: 3px; }
+.submit { width: 100%; min-height: 44px; }
+.foot { font-size: 14px; color: var(--text-3); margin: 20px 0 0; text-align: center; line-height: 1.6; }
+.foot a { color: var(--text-1); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 3px; }
+.foot a:hover { text-decoration-color: currentColor; }
+
 /* "Borrar mi cuenta" on /confianza */
-.danger { border-top: 1px solid var(--g-line); padding-top: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
-.danger h2 { margin: 0; font-size: 1.05rem; }
-.danger p { margin: 0; color: var(--g-ink-2); overflow-wrap: anywhere; }
-.confirm { display: flex; flex-direction: column; gap: 0.75rem; }
-.confirmActions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.destructive { background: #e5484d; color: #fff; }
+.danger { border-top: 1px solid var(--border); padding-top: 24px; display: flex; flex-direction: column; gap: 12px; }
+.danger h2 { margin: 0; font-size: 22px; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; color: var(--text-1); }
+.danger p { margin: 0; color: var(--text-2); overflow-wrap: anywhere; line-height: 1.6; }
+.danger strong { color: var(--text-1); font-weight: 500; }
+.danger > button { align-self: flex-start; }
+.confirm {
+  display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--radius-card-sm);
+  border: 1px solid var(--border); background: var(--surface-2);
+}
+.confirmActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.destructive { background: var(--err-fg); color: #fff; }
+.destructive:hover:not(:disabled) { background: color-mix(in srgb, var(--err-fg) 85%, black); }

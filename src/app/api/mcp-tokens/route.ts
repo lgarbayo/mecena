@@ -4,6 +4,7 @@ import { API, serverEnv } from "@/contracts";
 import { McpTokenCreateRequest, type McpTokenCreated, type McpTokensResponse } from "@/contracts/api";
 import { createMcpToken, listMcpTokens, publicMcpToken, requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +15,11 @@ export const GET = route(async (req: Request) => {
   return json<McpTokensResponse>({ tokens: listMcpTokens(user.id).map(publicMcpToken), endpoint: endpoint() });
 });
 
-export const POST = route(async (req: Request) => {
-  const user = requireUser(req);
-  const { label } = await body(req, McpTokenCreateRequest);
-  const { token, record } = await createMcpToken(user.id, label);
-  return json<McpTokenCreated>({ token, info: publicMcpToken(record), endpoint: endpoint() }, { status: 201, headers: { "cache-control": "no-store" } });
-});
+export const POST = route(
+  idempotent(async (req: Request) => {
+    const user = requireUser(req);
+    const { label } = await body(req, McpTokenCreateRequest);
+    const { token, record } = await createMcpToken(user.id, label);
+    return json<McpTokenCreated>({ token, info: publicMcpToken(record), endpoint: endpoint() }, { status: 201, headers: { "cache-control": "no-store" } });
+  }),
+);

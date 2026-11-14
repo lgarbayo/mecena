@@ -3,11 +3,12 @@
  * /cuenta → "Conectar con Claude": personal tokens for the remote MCP endpoint (/api/mcp). The token is shown once,
  * with copy-ready setup for Claude Code and Claude Desktop; the list shows label, prefix and last use, and revokes.
  */
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { API } from "@/contracts";
 import type { McpTokenCreated, McpTokenInfo, McpTokensResponse } from "@/contracts/api";
-import { Button, Card, Spinner } from "@/components/ui";
+import { Button, Card, LoadingRegion, Skeleton, SkeletonList } from "@/components/ui";
 import { apiGet, apiSend, ApiClientError } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import styles from "./connect.module.css";
 
 /** `claude mcp add` for Claude Code (remote HTTP server with a header). */
@@ -72,8 +73,26 @@ export function ConnectClaude() {
   const [data, setData] = useState<McpTokensResponse | null>(null);
   const [created, setCreated] = useState<McpTokenCreated | null>(null);
   const [label, setLabel] = useState("Claude Desktop");
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // the key travels with the request: a double tap or a retried POST never mints two tokens
+  const createError = useRef<unknown>(null);
+  const createToken = useAction(async (idempotencyKey: string, name: string) => {
+    try {
+      return await apiSend<McpTokenCreated>(API.mcpTokens, { label: name }, "POST", undefined, { idempotencyKey });
+    } catch (e) {
+      createError.current = e;
+      throw e;
+    }
+  });
+  const revokeToken = useAction(async (idempotencyKey: string, id: string) => {
+    try {
+      await apiSend(API.mcpToken(id), {}, "DELETE", undefined, { idempotencyKey });
+    } catch (e) {
+      if (!(e instanceof ApiClientError && e.status === 404)) throw e; // already gone counts as revoked
+    }
+    return true;
+  });
+  const busy = createToken.pending;
 
   const load = useCallback(async () => {
     setData(await apiGet<McpTokensResponse>(API.mcpTokens));
@@ -84,23 +103,23 @@ export function ConnectClaude() {
 
   const create = async (e: FormEvent) => {
     e.preventDefault();
-    setBusy(true);
+    if (busy) return;
     setError(null);
     try {
-      setCreated(await apiSend<McpTokenCreated>(API.mcpTokens, { label }));
+      createError.current = null;
+      const made = await createToken.run(label);
+      if (!made) throw createError.current ?? new Error("create");
+      setCreated(made);
       await load();
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "No he podido crear la conexión.");
-    } finally {
-      setBusy(false);
     }
   };
 
   const revoke = async (t: McpTokenInfo) => {
     if (!window.confirm(`¿Revocar «${t.label}»? Claude dejará de poder usar Mecena con ese token.`)) return;
     try {
-      const res = await fetch(API.mcpToken(t.id), { method: "DELETE" });
-      if (!res.ok && res.status !== 404) throw new Error(String(res.status));
+      if (!(await revokeToken.run(t.id))) throw new Error("revoke");
       if (created?.info.id === t.id) setCreated(null);
       await load();
     } catch {
@@ -155,7 +174,17 @@ export function ConnectClaude() {
       <Card>
         <h2 className={styles.h2}>Conexiones activas</h2>
         {!data ? (
-          <Spinner label="Cargando tus conexiones…" />
+          <LoadingRegion label="Cargando tus conexiones…">
+            <SkeletonList count={2}>
+              <div className={styles.skeletonRow}>
+                <div>
+                  <Skeleton width="55%" height={16} />
+                  <Skeleton width="80%" height={12} style={{ marginTop: 8 }} />
+                </div>
+                <Skeleton width={84} height={36} radius={9999} />
+              </div>
+            </SkeletonList>
+          </LoadingRegion>
         ) : data.tokens.length === 0 ? (
           <p className={styles.hint}>Todavía no has conectado Claude.</p>
         ) : (
@@ -168,7 +197,7 @@ export function ConnectClaude() {
                     Creado: {fmt(t.createdAt)} · Último uso: {fmt(t.lastUsedAt)}
                   </p>
                 </div>
-                <Button variant="ghost" onClick={() => void revoke(t)}>
+                <Button variant="ghost" onClick={() => void revoke(t)} disabled={revokeToken.pending}>
                   Revocar
                 </Button>
               </li>

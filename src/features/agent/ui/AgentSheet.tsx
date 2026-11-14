@@ -11,7 +11,9 @@ import type { AgentTurn as AgentResponse } from "@/features/agent/types";
 import { useOptionalApp } from "@/components/shell/AppProvider";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { Icon } from "@/components/ui/icons";
+import { LoadingRegion, SkeletonText } from "@/components/ui";
 import { ApiClientError, apiSend } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import styles from "./agent.module.css";
 
 type Turn = { role: "user" | "assistant"; content: string; tools?: AgentResponse["toolCalls"]; error?: boolean };
@@ -66,7 +68,17 @@ export function Linkified({ text }: { text: string }): ReactNode {
 export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
+  // one Idempotency-Key per question: a double tap or a network retry never runs the agent (and its tools) twice
+  const lastError = useRef<unknown>(null);
+  const ask = useAction(async (idempotencyKey: string, message: string, history: { role: Turn["role"]; content: string }[]) => {
+    try {
+      return await apiSend<AgentResponse>(API.agent, { message, history }, "POST", undefined, { idempotencyKey });
+    } catch (e) {
+      lastError.current = e;
+      throw e;
+    }
+  });
+  const busy = ask.pending;
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const voice = useSpeechRecognition({ onFinal: (t) => setInput((prev) => `${prev} ${t}`.trim()) });
@@ -95,21 +107,25 @@ export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }
       const history = turns.filter((t) => !t.error).map(({ role, content }) => ({ role, content }));
       setTurns((t) => [...t, { role: "user", content: message }]);
       setInput("");
-      setBusy(true);
+      lastError.current = null;
+      let r: AgentResponse | undefined;
+      let failure: unknown = null;
       try {
-        const r = await apiSend<AgentResponse>(API.agent, { message, history });
-        setTurns((t) => [...t, { role: "assistant", content: r.reply, tools: r.toolCalls }]);
+        r = await ask.run(message, history);
       } catch (e) {
-        const msg =
-          e instanceof ApiClientError && e.status === 429
-            ? e.message
-            : "No he podido responder ahora mismo. Inténtalo de nuevo en unos segundos.";
-        setTurns((t) => [...t, { role: "assistant", content: msg, error: true }]);
-      } finally {
-        setBusy(false);
+        failure = e;
       }
+      if (r) {
+        const reply = r;
+        setTurns((t) => [...t, { role: "assistant", content: reply.reply, tools: reply.toolCalls }]);
+        return;
+      }
+      const e = failure ?? lastError.current;
+      const msg =
+        e instanceof ApiClientError && e.status === 429 ? e.message : "No he podido responder ahora mismo. Inténtalo de nuevo en unos segundos.";
+      setTurns((t) => [...t, { role: "assistant", content: msg, error: true }]);
     },
-    [busy, turns, stopVoice],
+    [busy, turns, stopVoice, ask],
   );
 
   const fullInput = voice.listening && voice.interim ? `${input} ${voice.interim}`.trim() : input;
@@ -125,11 +141,14 @@ export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }
       <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
       <section className={styles.sheet} role="dialog" aria-modal="true" aria-labelledby="agent-title">
         <header className={styles.head}>
-          <div>
-            <p className={styles.kicker}>Asistente</p>
-            <h2 id="agent-title" className={styles.title}>
-              Pregúntale a Mecena
-            </h2>
+          <div className={styles.headMain}>
+            <span className={`orb ${styles.headOrb}`} aria-hidden="true" />
+            <div>
+              <p className={styles.kicker}>Asistente</p>
+              <h2 id="agent-title" className={styles.title}>
+                Pregúntale a Mecena
+              </h2>
+            </div>
           </div>
           <button type="button" className={styles.close} onClick={onClose} aria-label="Cerrar">
             <Icon name="close" size={18} />
@@ -166,9 +185,12 @@ export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }
             </div>
           ))}
           {busy && (
-            <p className={`${styles.turn} ${styles.bot} ${styles.thinking}`} role="status">
-              Mecena está trabajando…
-            </p>
+            <LoadingRegion label="Mecena está trabajando…" className={`${styles.turn} ${styles.bot} ${styles.thinking}`}>
+              <span className={`orb ${styles.thinkingOrb}`} aria-hidden="true" />
+              <div className={styles.thinkingLines}>
+                <SkeletonText lines={2} />
+              </div>
+            </LoadingRegion>
           )}
           <div ref={endRef} />
         </div>
@@ -228,7 +250,8 @@ export function AgentLauncher() {
     <>
       {!open && (
         <button type="button" className={styles.fab} onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label="Pregúntale a Mecena" title="Pregúntale a Mecena">
-          <Icon name="sparkle" size={24} />
+          <span className={`orb ${styles.fabOrb}`} aria-hidden="true" />
+          <Icon name="sparkle" size={22} />
         </button>
       )}
       <AgentSheet open={open} onClose={close} />
