@@ -443,3 +443,14 @@
     transition: none;
   }
 }
+
+/* live BDNS catalogue: origin tag on cards and the "searching" line */
+.sourceTag {
+  font-size: 0.8rem;
+}
+.liveLine {
+  margin: 0 0 10px;
+  color: var(--g-ink-2);
+  font-size: 0.86rem;
+  font-style: italic;
+}

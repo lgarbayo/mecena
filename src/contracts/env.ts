@@ -19,6 +19,7 @@ export const ENV = {
   BDNS_API_BASE: "BDNS_API_BASE",
   MECENA_SIGNUP_CODE: "MECENA_SIGNUP_CODE", // optional invite code: when set, creating an account requires it
   MECENA_USER_EMAIL: "MECENA_USER_EMAIL", // MCP server only: the account it acts as
+  MECENA_CALLS_LIVE: "MECENA_CALLS_LIVE",
 } as const;
 
 export const DEFAULT_MODELS = { fast: "claude-sonnet-5-5", smart: "claude-opus-5-5" } as const;

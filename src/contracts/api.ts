@@ -115,6 +115,8 @@ export const CallsResponse = z.object({
   results: z.array(z.object({ call: Call, match: MatchResult })),
   lockedCount: z.number().int(), // matches hidden behind the free limit
   mode: ProfileKind,
+  // Background BDNS search for this profile (step 2): the feed reloads when it finishes.
+  liveSearch: z.object({ searching: z.boolean(), found: z.number().int(), lastRunAt: z.string().optional() }).optional(),
 });
 export type CallsResponse = z.infer<typeof CallsResponse>;
 export const CallResponse = z.object({ call: Call, match: MatchResult, checklist: z.array(z.string()), similarAwards: z.array(PastAward).default([]) });

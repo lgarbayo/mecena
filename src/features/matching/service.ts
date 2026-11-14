@@ -5,6 +5,7 @@ import { winnerShareFor } from "@/features/history/history";
 import { mapProfileKind, normalizeCall, normalizeDiscipline, profileBeneficiaryTypes } from "@/features/normalize";
 import { getAi } from "@/server/ai";
 import { getCall, getCallHistory, getDossier, getProfile, listAwards, listCalls, listWorks, readDb, updateDb } from "@/server/store";
+import { getProfileSearch, scheduleProfileSearch } from "@/features/calls-ingest/live";
 import { checklistFor, evaluate, type MatchContext, type ScoreBreakdown } from "./rules";
 
 export { fitLabel, evaluate, daysLeft, type ScoreBreakdown, type FitLabel } from "./rules";
@@ -88,10 +89,19 @@ export async function explainCall(input: { callId: string; profileId: string }):
 /** Feed for GET /api/calls: Pro sees every match; the free plan sees the top FREE_MATCHES_PER_MONTH, the rest only as a count. */
 export async function callsFeed(input: { profileId: string; appUserId: string; query?: string }) {
   const profile = getProfile(input.profileId);
+  const appUserId = input.appUserId; // resolved from the session by the route
+  // Search BDNS for this profile in the background when its searches are new or a day old (never blocks the feed).
+  const scheduled = scheduleProfileSearch({ profileId: profile.id, appUserId });
+  const search = getProfileSearch(profile.id, appUserId);
   const all = await searchCalls({ profileId: profile.id, query: input.query });
-  const { pro } = await resolveEntitlement(input.appUserId);
+  const { pro } = await resolveEntitlement(appUserId);
   const results = pro ? all : all.slice(0, FREE_MATCHES_PER_MONTH);
-  return { results, lockedCount: all.length - results.length, mode: profile.kind, pro };
+  const liveSearch = {
+    searching: scheduled === "scheduled" || scheduled === "running" || search?.status === "running",
+    found: search?.callIds.length ?? 0,
+    ...(search?.lastRunAt ? { lastRunAt: search.lastRunAt } : {}),
+  };
+  return { results, lockedCount: all.length - results.length, mode: profile.kind, pro, liveSearch };
 }
 
 /**

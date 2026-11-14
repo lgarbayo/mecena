@@ -19,6 +19,7 @@ process.env.REVENUECAT_SECRET_API_KEY = "";
 process.env.MECENA_PUBLIC_URL = "http://localhost:3000";
 delete process.env.MECENA_SIGNUP_CODE;
 delete process.env.MECENA_USER_EMAIL;
+process.env.MECENA_CALLS_LIVE = "0"; // no background BDNS searches or daily refresh (live tests call them directly)
 
 beforeEach(() => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mecena-test-"));

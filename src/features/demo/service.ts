@@ -6,6 +6,7 @@ import type { User } from "@/contracts";
 import { blankProfileFor, newAppUserId } from "@/server/auth";
 import { exportsDir, initialDb, resetDb, updateDb, uploadsDir } from "@/server/store";
 import { forgetDesigns } from "@/features/dossier/designs";
+import { forgetProfileSearches } from "@/features/calls-ingest/live";
 
 export interface DemoResetResult {
   ok: true;
@@ -46,6 +47,7 @@ export async function resetUserDemo(user: User, input: { scenario: "blank" | "on
   });
 
   forgetDesigns(removed.profileIds);
+  await forgetProfileSearches(removed.profileIds);
   removeFiles(uploadsDir(), (f) => removed.workIds.some((id) => f.startsWith(`${id}.`)) || removed.profileIds.some((id) => f.startsWith(`dossier-import-${id}.`)));
   removeFiles(exportsDir(), (f) => removed.profileIds.some((id) => f === `dossier-${id}.pdf` || f.startsWith(`dossier-${id}-`)));
   return { ok: true, appUserId: removed.appUserId, activeProfileId: removed.activeProfileId };
@@ -58,4 +60,5 @@ function removeFiles(dir: string, match: (file: string) => boolean) {
 /** Admin CLI only: back to the initial database (every account and session is gone). */
 export async function resetAllDemo(): Promise<void> {
   await resetDb(initialDb());
+  await forgetProfileSearches();
 }

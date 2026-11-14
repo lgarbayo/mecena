@@ -14,6 +14,10 @@ import { findUserByEmail, toolContextFor } from "@/server/auth";
 import { runTool } from "@/tools/registry";
 import { summarizeToolResult, toolErrorMessage } from "@/tools/present";
 
+// No background BDNS searches from this process: the app server owns the shared catalogue's writes (its file locks
+// are in-process). A profile updated here is searched the next time the app loads its feed.
+process.env.MECENA_CALLS_LIVE ??= "0";
+
 export const MCP_INSTRUCTIONS = [
   "Mecena ayuda a artistas, ilustradores, fotógrafos, pymes y autónomos con el papeleo de convocatorias, becas, premios y subvenciones.",
   "Mecena prepara; la persona usuaria revisa y presenta. Nunca inventes datos del perfil que no haya dicho.",
