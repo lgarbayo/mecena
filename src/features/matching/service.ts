@@ -9,7 +9,7 @@ import { getCall, getCallHistory, getDossier, getProfile, listAwards, listCalls,
 import { getProfileSearch, scheduleProfileSearch } from "@/features/calls-ingest/live";
 import { checklistFor, evaluate, type MatchContext, type ScoreBreakdown } from "./rules";
 import { matchesQuery } from "./search";
-import { applyFreeMatchLimit, canSeeCall, lockedMatch, unlockCalls } from "./usage";
+import { applyFreeMatchLimit, canSeeCall, lockedMatch, visibleCalls } from "./usage";
 
 export { fitLabel, evaluate, daysLeft, type ScoreBreakdown, type FitLabel } from "./rules";
 
@@ -78,8 +78,15 @@ export async function searchCalls(input: { profileId: string; query?: string; ki
  */
 export async function searchCallsForUser(input: Parameters<typeof searchCalls>[0] & { appUserId: string }) {
   const { appUserId, ...rest } = input;
-  return applyFreeMatchLimit(await searchCalls(rest), { appUserId, profileId: input.profileId, ...(input.now ? { now: input.now } : {}) });
+  const now = input.now ? { now: input.now } : {};
+  const profileComplete = profileSummary(getProfile(input.profileId)).isComplete;
+  // incomplete profile + search: the preview is the first calls of the general ranking, never picked by the query
+  const previewCandidates =
+    profileComplete || !rest.query ? undefined : openIds((await searchCalls({ profileId: rest.profileId, kind: rest.kind, ...now })));
+  return applyFreeMatchLimit(await searchCalls(rest), { appUserId, profileId: input.profileId, profileComplete, previewCandidates, ...now });
 }
+
+const openIds = (ranked: readonly Ranked[]) => ranked.filter((r) => r.call.status !== "recurring").map((r) => r.call.id);
 
 function profileSummary(profile: Profile): CallsDiagnostics["profileSummary"] {
   const location = [...new Set([profile.city, profile.province, profile.region].filter((v): v is string => Boolean(v)))].join(", ");
@@ -163,17 +170,20 @@ export async function callsFeed(input: { profileId: string; appUserId: string; q
   const who = { appUserId, profileId: profile.id, ...now };
   const current = ranked.filter((r) => r.call.status !== "recurring");
   const editions = ranked.filter((r) => r.call.status === "recurring").map((r) => (pro ? r : { ...r, match: lockedMatch(r.match) }));
+  const summary = profileSummary(profile);
   let results = current;
   if (!pro) {
-    const unlocked = await unlockCalls(who, current.map((r) => r.call.id));
-    results = current.filter((r) => unlocked.has(r.call.id));
+    // Incomplete profile: a preview that spends nothing, and a search never chooses it (see visibleCalls).
+    const candidates = summary.isComplete || !input.query ? openIds(current) : openIds(rankCalls({ profileId: profile.id, ...now }).results);
+    const visible = await visibleCalls({ ...who, profileComplete: summary.isComplete }, candidates);
+    results = current.filter((r) => visible.has(r.call.id));
   }
   const liveSearch = {
     searching: scheduled === "scheduled" || scheduled === "running" || search?.status === "running",
     found: search?.callIds.length ?? 0,
     ...(search?.lastRunAt ? { lastRunAt: search.lastRunAt } : {}),
   };
-  const diagnostics: CallsDiagnostics = { ...stats, matchedCount: current.length, profileSummary: profileSummary(profile) };
+  const diagnostics: CallsDiagnostics = { ...stats, matchedCount: current.length, profileSummary: summary };
   return { results, editions, lockedCount: current.length - results.length, mode: profile.kind, pro, liveSearch, diagnostics };
 }
 

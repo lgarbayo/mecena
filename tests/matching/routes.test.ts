@@ -98,6 +98,30 @@ describe("free plan: 3 matches a month, counted for real", () => {
     expect(q.results.length).toBeLessThanOrEqual(FREE_MATCHES_PER_MONTH);
   });
 
+  it("an incomplete profile previews 3 calls without spending the month's quota; completing it spends it", async () => {
+    const { readDb } = await import("@/server/store");
+    const usage = () => readDb().usage.find((u) => u.profileId === DEMO_CREATOR_ID)?.callIds ?? [];
+    const empty = { ...structuredClone(fixtureCreator), disciplines: [], city: undefined, province: undefined, region: undefined, territory: undefined, fundingNeeds: [], projectIdea: undefined };
+    await saveProfile(empty);
+
+    const before = await feed();
+    expect(before.diagnostics.profileSummary.isComplete).toBe(false);
+    expect(before.results).toHaveLength(FREE_MATCHES_PER_MONTH);
+    expect(usage()).toEqual([]); // the generic feed shown before the onboarding spends nothing
+
+    // a search cannot choose the preview: it stays within the same first calls
+    const preview = new Set(before.results.map((r: { call: { id: string } }) => r.call.id));
+    const searched = await feed("&q=extra");
+    for (const r of searched.results as { call: { id: string } }[]) expect(preview.has(r.call.id), r.call.id).toBe(true);
+    expect(usage()).toEqual([]);
+
+    await saveProfile(structuredClone(fixtureCreator));
+    const after = await feed();
+    expect(after.diagnostics.profileSummary.isComplete).toBe(true);
+    expect(usage()).toEqual(after.results.map((r: { call: { id: string } }) => r.call.id));
+    expect(usage()).toHaveLength(FREE_MATCHES_PER_MONTH);
+  });
+
   it("Pro sees every detail in full", async () => {
     await saveProfile(structuredClone(fixtureCreator));
     await grantPro();

@@ -46,6 +46,19 @@ export async function unlockCalls(who: Who, candidates: readonly string[]): Prom
   });
 }
 
+/**
+ * The calls a free user sees in full in a listing. A complete profile spends the month's quota on `candidates` (in
+ * order) and it is stored. An incomplete one (before or halfway through the onboarding) gets a preview that is NOT
+ * stored: the calls already unlocked plus the first `candidates` up to the quota. So the month's 3 go to the matches
+ * of the finished profile, not to the generic ones shown while it was still empty.
+ */
+export async function visibleCalls(who: Who & { profileComplete: boolean }, candidates: readonly string[]): Promise<Set<string>> {
+  if (who.profileComplete) return unlockCalls(who, candidates);
+  const current = unlockedCallIds(who);
+  const extra = [...new Set(candidates)].filter((id) => !current.includes(id)).slice(0, Math.max(0, FREE_MATCHES_PER_MONTH - current.length));
+  return new Set([...current, ...extra]);
+}
+
 /** Can this user see the full match for this call? Unlocks it when the month's quota allows. Pro: always. */
 export async function canSeeCall(who: Who & { callId: string; pro?: boolean }): Promise<boolean> {
   const pro = who.pro ?? (await resolveEntitlement(who.appUserId)).pro;
@@ -65,16 +78,16 @@ export type MaybeLocked<T> = T & { locked?: boolean; paywall?: "match_limit" };
  * calls already unlocked this month stay full; the quota left is filled in order with calls you can apply for now
  * (open/upcoming; a closed edition never uses one of your 3 by itself); the rest become a limited preview with
  * `locked: true` and `paywall: "match_limit"`.
+ * With an incomplete profile nothing is spent (see visibleCalls); `previewCandidates` then says which calls the
+ * preview may show, so a search cannot pick them (it would open the whole catalogue for free).
  */
 export async function applyFreeMatchLimit<T extends { call: Call; match: MatchResult }>(
   items: readonly T[],
-  who: Who & { pro?: boolean },
+  who: Who & { pro?: boolean; profileComplete?: boolean; previewCandidates?: readonly string[] },
 ): Promise<MaybeLocked<T>[]> {
   const pro = who.pro ?? (await resolveEntitlement(who.appUserId)).pro;
   if (pro) return [...items];
-  const unlocked = await unlockCalls(
-    who,
-    items.filter((r) => r.call.status !== "recurring").map((r) => r.call.id),
-  );
+  const own = items.filter((r) => r.call.status !== "recurring").map((r) => r.call.id);
+  const unlocked = await visibleCalls({ ...who, profileComplete: who.profileComplete ?? true }, who.previewCandidates ?? own);
   return items.map((r) => (unlocked.has(r.call.id) ? r : { ...r, match: lockedMatch(r.match), locked: true, paywall: "match_limit" as const }));
 }
