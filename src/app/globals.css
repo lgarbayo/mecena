@@ -254,39 +254,6 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   color: var(--text-1);
 }
 
-/* ---- Segmented control ---- */
-.mode-switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  border-radius: var(--radius-pill);
-  padding: 3px;
-  background: var(--surface-3);
-}
-
-.mode-switch button {
-  border: 0;
-  background: transparent;
-  min-height: 32px;
-  padding: 4px 14px;
-  border-radius: var(--radius-pill);
-  font: 500 13px/1 var(--font-sans);
-  color: var(--text-2);
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: background 160ms var(--ease-out), color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
-}
-
-.mode-switch button:hover {
-  color: var(--text-1);
-}
-
-.mode-switch button[aria-pressed="true"] {
-  background: var(--surface);
-  color: var(--text-1);
-  box-shadow: var(--shadow-sm);
-}
-
 /* ---- Bottom navigation ---- */
 .bottom-nav {
   position: fixed;
@@ -816,15 +783,6 @@ textarea.input {
     gap: 6px;
   }
 
-  .mode-switch {
-    gap: 0;
-    padding: 2px;
-  }
-
-  .mode-switch button {
-    min-height: 40px;
-    padding: 0 10px;
-  }
 
   .account {
     flex: none;
@@ -905,7 +863,4 @@ textarea.input {
     gap: 4px;
   }
 
-  .mode-switch button {
-    padding: 0 8px;
-  }
 }
