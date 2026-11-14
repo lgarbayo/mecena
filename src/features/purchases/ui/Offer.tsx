@@ -4,10 +4,10 @@
 // sheet it was squeezed to a sliver on phones). Mock: a "Modo prueba" confirm step.
 // `onPurchased` fires only after the server returned an entitlement that unlocks what the paywall was opened for
 // (after a purchase or after "Restaurar compras").
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { EntitlementState, PaywallTrigger, Plan, PlanId } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
-import { Button } from "@/components/ui";
+import { Button, LoadingRegion } from "@/components/ui";
 import { getPurchases } from "../client";
 import { monthlyPrice, OFFER, PLANS, plansFor, TRIGGER_SUBTITLE, unlocks } from "../offer";
 import s from "./paywall.module.css";
@@ -49,6 +49,7 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
   }, [appUserId, attempt]);
 
   const buy = async (id: PlanId) => {
+    if (busy) return; // one purchase at a time: a double tap never opens two checkouts
     setError(null);
     setInfo(null);
     setBusy(id);
@@ -63,6 +64,7 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
   };
 
   const restore = async () => {
+    if (busy) return;
     setError(null);
     setInfo(null);
     setBusy("restore");
@@ -110,18 +112,19 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
           </Button>
         </div>
       ) : (
-        <div className={s.plans} role="list" aria-busy={!ready}>
-          {shown.map((p) => (
-            <button key={p.id} type="button" role="listitem" className={`${s.plan} ${p.highlight ? s.planBest : ""}`} onClick={() => choose(p.id)} disabled={disabled} data-testid={`plan-${p.id}`}>
-              {p.highlight && <span className={s.badge}>{OFFER.bestValue}</span>}
-              <span className={s.planTitle}>{p.title}</span>
-              <span className={s.planPrice}>{busy === p.id ? "…" : p.priceText}</span>
-              <span className={s.planNote}>{p.bullets.join(" · ")}</span>
-            </button>
-          ))}
-        </div>
+        <PlansLoading loading={!ready && !error} label={OFFER.loading}>
+          <div className={s.plans} role="list" aria-busy={!ready}>
+            {shown.map((p) => (
+              <button key={p.id} type="button" role="listitem" className={`${s.plan} ${p.highlight ? s.planBest : ""}`} onClick={() => choose(p.id)} disabled={disabled} data-testid={`plan-${p.id}`}>
+                {p.highlight && <span className={s.badge}>{OFFER.bestValue}</span>}
+                <span className={s.planTitle}>{p.title}</span>
+                <span className={s.planPrice}>{busy === p.id ? "…" : p.priceText}</span>
+                <span className={s.planNote}>{p.bullets.join(" · ")}</span>
+              </button>
+            ))}
+          </div>
+        </PlansLoading>
       )}
-      {!ready && !error && <p className={s.note}>{OFFER.loading}</p>}
 
       {mode === "revenuecat" && busy && busy !== "restore" && <p className={s.note}>{OFFER.sandboxNote}</p>}
       {error && (
@@ -151,4 +154,9 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
       )}
     </div>
   );
+}
+
+/** While the purchases adapter loads, the real plan cards stay in place (disabled, prices dimmed) inside a busy status region. */
+function PlansLoading({ loading, label, children }: { loading: boolean; label: string; children: ReactNode }) {
+  return loading ? <LoadingRegion label={label}>{children}</LoadingRegion> : <>{children}</>;
 }

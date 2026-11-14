@@ -5,9 +5,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { API, ROUTES, type ApplicationSection, type Invoice } from "@/contracts";
 import type { JustificationResponse } from "@/contracts/api";
-import { Button, Card, PageTitle, Spinner, Tag } from "@/components/ui";
+import { Button, Card, LoadingRegion, PageTitle, Skeleton, SkeletonCard, SkeletonText, Tag } from "@/components/ui";
 import { Icon } from "@/components/ui/icons";
 import { ApiClientError, apiGet, apiSend } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import { downscalePhoto } from "@/features/works/image";
 import { euros } from "../format";
 import { gapCount, memoriaAsText } from "../export";
@@ -38,10 +39,11 @@ const num = (v: string): number | null => {
   return v.trim() && Number.isFinite(n) && n >= 0 ? n : null;
 };
 
+type Action<A extends unknown[], R> = { run: (...args: A) => Promise<R | undefined>; pending: boolean; error: unknown; reset: () => void };
+
 export function JustificationPage({ applicationId }: { applicationId: string }) {
   const [state, setState] = useState<JustificationResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"photo" | "memoria" | "save" | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [hint, setHint] = useState("");
   const [notes, setNotes] = useState("");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -50,52 +52,79 @@ export function JustificationPage({ applicationId }: { applicationId: string }) 
   const load = useCallback(async () => {
     try {
       setState(await apiGet<JustificationResponse>(`${API.justification}?applicationId=${encodeURIComponent(applicationId)}`));
-      setError(null);
+      setLoadError(null);
     } catch (e) {
-      setError(errorText(e, "No hemos podido abrir la justificación."));
+      setLoadError(errorText(e, "No hemos podido abrir la justificación."));
     }
   }, [applicationId]);
   useEffect(() => {
     void load();
   }, [load]);
 
-  const run = async (kind: "photo" | "memoria" | "save", fn: () => Promise<JustificationResponse>, fallback: string) => {
-    setBusy(kind);
-    setError(null);
+  // Every mutation carries an Idempotency-Key: a retried photo upload (same file, same note) never adds a second invoice.
+  const photo = useAction(async (idempotencyKey: string, f: File, note: string) => {
+    const { dataUrl } = await downscalePhoto(f);
+    return apiSend<JustificationResponse>(API.justificationInvoices, { applicationId, imageDataUrl: dataUrl, hint: note.trim() || undefined }, "POST", undefined, { idempotencyKey });
+  });
+  const patch = useAction((idempotencyKey: string, id: string, body: Record<string, unknown>) =>
+    apiSend<JustificationResponse>(API.justificationInvoice(id), body, "PATCH", undefined, { idempotencyKey }),
+  );
+  const remove = useAction((idempotencyKey: string, id: string) =>
+    apiSend<JustificationResponse>(API.justificationInvoice(id), {}, "DELETE", undefined, { idempotencyKey }),
+  );
+  const draft = useAction((idempotencyKey: string, memoNotes: string) =>
+    apiSend<JustificationResponse>(API.justificationMemoria, { applicationId, notes: memoNotes.trim() || undefined }, "POST", undefined, { idempotencyKey }),
+  );
+  const save = useAction((idempotencyKey: string, edited: ApplicationSection[]) =>
+    apiSend<JustificationResponse>(API.justificationMemoria, { applicationId, sections: edited }, "PATCH", undefined, { idempotencyKey }),
+  );
+  type AnyAction = Action<never[], JustificationResponse>;
+  const actions: [AnyAction, string][] = [
+    [photo as unknown as AnyAction, "No hemos podido leer la factura. Prueba otra foto o inténtalo de nuevo."],
+    [patch as unknown as AnyAction, "No hemos podido guardar los cambios."],
+    [remove as unknown as AnyAction, "No hemos podido eliminar la factura."],
+    [draft as unknown as AnyAction, "No hemos podido preparar la memoria. Inténtalo de nuevo."],
+    [save as unknown as AnyAction, "No hemos podido guardar la memoria."],
+  ];
+  const busy: "photo" | "memoria" | "save" | null = photo.pending
+    ? "photo"
+    : draft.pending
+      ? "memoria"
+      : patch.pending || remove.pending || save.pending
+        ? "save"
+        : null;
+  const failed = actions.find(([a]) => a.error);
+  const error = loadError ?? (failed ? errorText(failed[0].error, failed[1]) : null);
+
+  /** Runs one action (clearing the others' errors) and applies the fresh state; true on success. */
+  const fire = async <A extends unknown[]>(a: Action<A, JustificationResponse>, ...args: A): Promise<boolean> => {
+    for (const [other] of actions) if ((other as unknown) !== a) other.reset();
+    setLoadError(null);
+    let next: JustificationResponse | undefined;
     try {
-      setState(await fn());
-      return true;
-    } catch (e) {
-      setError(errorText(e, fallback));
-      return false;
-    } finally {
-      setBusy(null);
+      next = await a.run(...args);
+    } catch {
+      next = undefined;
     }
+    if (next) setState(next);
+    return !!next;
   };
 
   const onPhoto = async (f: File | undefined) => {
     if (!f) return;
-    const ok = await run(
-      "photo",
-      async () => {
-        const { dataUrl } = await downscalePhoto(f);
-        return apiSend<JustificationResponse>(API.justificationInvoices, { applicationId, imageDataUrl: dataUrl, hint: hint.trim() || undefined });
-      },
-      "No hemos podido leer la factura. Prueba otra foto o inténtalo de nuevo.",
-    );
+    const ok = await fire(photo, f, hint);
     if (ok) setHint("");
     if (file.current) file.current.value = "";
   };
 
-  const patchInvoice = (id: string, patch: Record<string, unknown>) =>
-    run("save", () => apiSend<JustificationResponse>(API.justificationInvoice(id), patch, "PATCH"), "No hemos podido guardar los cambios.");
-  const removeInvoice = (id: string) => run("save", () => apiSend<JustificationResponse>(API.justificationInvoice(id), {}, "DELETE"), "No hemos podido eliminar la factura.");
+  const patchInvoice = (id: string, body: Record<string, unknown>) => fire(patch, id, body);
+  const removeInvoice = (id: string) => fire(remove, id);
 
   if (!state)
     return (
       <>
         <PageTitle kicker="Justificación">Justifica tu subvención</PageTitle>
-        {error ? <p className={s.error}>{error}</p> : <Spinner label="Abriendo la justificación…" />}
+        {error ? <p className={s.error}>{error}</p> : <JustificationSkeleton />}
       </>
     );
 
@@ -184,7 +213,12 @@ export function JustificationPage({ applicationId }: { applicationId: string }) 
 
       <Card>
         <h2>Facturas ({invoices.length})</h2>
-        {invoices.length === 0 && <p className={s.note}>Aún no has añadido ninguna.</p>}
+        {invoices.length === 0 && busy !== "photo" && <p className={s.note}>Aún no has añadido ninguna.</p>}
+        {busy === "photo" && (
+          <LoadingRegion label="Leyendo la factura…">
+            <InvoiceSkeleton />
+          </LoadingRegion>
+        )}
         {invoices.map((inv) => (
           <InvoiceCard key={inv.id} inv={inv} lines={application.budget.map((b) => b.concept)} busy={busy !== null} onPatch={patchInvoice} onRemove={removeInvoice} />
         ))}
@@ -204,7 +238,18 @@ export function JustificationPage({ applicationId }: { applicationId: string }) 
           </p>
         )}
         {memoria && gaps > 0 && <p className={s.gaps}>Te faltan {gaps === 1 ? "1 hueco" : `${gaps} huecos`} por completar: están marcados como «[Completa: …]».</p>}
-        {sections.map((sec: ApplicationSection) => (
+        {busy === "memoria" && (
+          <LoadingRegion label="Preparando la memoria…">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className={s.section}>
+                <Skeleton width="40%" height={22} radius={8} style={{ marginBottom: 10 }} />
+                <SkeletonText lines={4} />
+              </div>
+            ))}
+          </LoadingRegion>
+        )}
+        {busy !== "memoria" &&
+          sections.map((sec: ApplicationSection) => (
           <div key={sec.key} className={s.section}>
             <h3>{sec.title}</h3>
             <textarea
@@ -218,7 +263,7 @@ export function JustificationPage({ applicationId }: { applicationId: string }) 
         ))}
         <div className={s.actions}>
           <Button
-            onClick={() => run("memoria", () => apiSend<JustificationResponse>(API.justificationMemoria, { applicationId, notes: notes.trim() || undefined }), "No hemos podido preparar la memoria. Inténtalo de nuevo.").then((ok) => ok && setDrafts({}))}
+            onClick={() => void fire(draft, notes).then((ok) => ok && setDrafts({}))}
             disabled={busy !== null || invoices.length === 0}
           >
             {busy === "memoria" ? "Preparando la memoria…" : memoria ? "Volver a prepararla" : "Preparar la memoria"}
@@ -228,7 +273,7 @@ export function JustificationPage({ applicationId }: { applicationId: string }) 
               <Button
                 variant="ghost"
                 disabled={busy !== null || !dirty}
-                onClick={() => run("save", () => apiSend<JustificationResponse>(API.justificationMemoria, { applicationId, sections }, "PATCH"), "No hemos podido guardar la memoria.").then((ok) => ok && setDrafts({}))}
+                onClick={() => void fire(save, sections).then((ok) => ok && setDrafts({}))}
               >
                 Guardar mis cambios
               </Button>
@@ -248,6 +293,37 @@ export function JustificationPage({ applicationId }: { applicationId: string }) 
         </Link>
       </div>
     </>
+  );
+}
+
+/** Content-shaped placeholder for the whole page while it first loads. */
+export function JustificationSkeleton() {
+  return (
+    <LoadingRegion label="Abriendo la justificación…">
+      <Skeleton width="85%" height={16} radius={8} style={{ marginBottom: 8 }} />
+      <Skeleton width="60%" height={16} radius={8} style={{ marginBottom: 24 }} />
+      <SkeletonCard lines={2} />
+      <SkeletonCard lines={5} />
+      <Card>
+        <Skeleton width="45%" height={24} radius={8} />
+        <InvoiceSkeleton />
+        <InvoiceSkeleton />
+      </Card>
+    </LoadingRegion>
+  );
+}
+
+/** One invoice row being read by the AI: thumbnail, supplier and total, meta line, tag. */
+function InvoiceSkeleton() {
+  return (
+    <div className={s.pendingRow}>
+      <Skeleton width={56} height={56} radius={12} />
+      <div className={s.pendingMain}>
+        <Skeleton width="70%" height={16} radius={8} />
+        <Skeleton width="90%" height={12} radius={6} />
+        <Skeleton width={96} height={24} radius={9999} />
+      </div>
+    </div>
   );
 }
 

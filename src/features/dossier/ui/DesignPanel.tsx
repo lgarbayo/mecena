@@ -4,19 +4,28 @@
  * The three looks are only starting points; every request is applied on top of the current design.
  */
 import { useState } from "react";
-import { Button } from "@/components/ui";
+import { Button, LoadingRegion, SkeletonText } from "@/components/ui";
 import { Icon } from "@/components/ui/icons";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { apiSend } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import type { ProfileKind } from "@/contracts";
 import type { DossierDesign } from "../design";
+import { PaperSkeleton } from "./LayoutPanel";
 import { DOSSIER_STYLES, STYLE_LABELS, type DossierStyle } from "../style";
 
 export const DESIGN_API = "/api/dossier/design";
 
 /** Things to ask for, by profile: an artist talks about their work; a company about its brand and projects. */
 const EXAMPLES_BY_KIND: Record<ProfileKind, string[]> = {
-  creator: ["Más oscuro, como una noche en el puerto", "Que parezca un fanzine", "La obra a sangre y más aire", "Algo breve, de una página", "Añade una sección sobre mi proceso", "Empieza por la obra y deja la biografía fuera"],
+  creator: [
+    "Más oscuro, como una noche en el puerto",
+    "Que parezca un fanzine",
+    "La obra a sangre y más aire",
+    "Algo breve, de una página",
+    "Añade una sección sobre mi proceso",
+    "Empieza por la obra y deja la biografía fuera",
+  ],
   business: ["Más sobrio y moderno", "Con el azul de nuestra marca", "Más claro y luminoso", "Algo breve, de una página", "Añade una sección sobre nuestros clientes"],
 };
 
@@ -45,21 +54,41 @@ export function DesignPanel(props: {
   const [busy, setBusy] = useState<string | null>(null);
   const [adjustments, setAdjustments] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const speech = useSpeechRecognition({ onFinal: (t) => setRequest((r) => (r ? `${r.trim()} ${t}` : t)) });
+  const speech = useSpeechRecognition({
+    onFinal: (t) => setRequest((r) => (r ? `${r.trim()} ${t}` : t)),
+  });
 
-  async function send(body: { request?: string; preset?: DossierStyle }, label: string) {
+  // Idempotent redesigns: a double tap is ignored while one runs, a retry after a failure reuses its key.
+  const action = useAction(async (idempotencyKey: string, body: { request?: string; preset?: DossierStyle }, label: string) => {
     setBusy(label);
     setError(null);
     try {
-      const res = await apiSend<DesignChange>(DESIGN_API, { ...body, workColors: props.workColors, profileId: props.profileId, callId: props.callId });
+      const res = await apiSend<DesignChange>(
+        DESIGN_API,
+        {
+          ...body,
+          workColors: props.workColors,
+          profileId: props.profileId,
+          callId: props.callId,
+        },
+        "POST",
+        undefined,
+        { idempotencyKey },
+      );
       setAdjustments(res.adjustments);
       props.onChange(res);
       if (body.request) setRequest("");
+      return res;
     } catch (e) {
       setError(e instanceof Error ? e.message : "No he podido rediseñarlo. Prueba otra vez.");
+      throw e;
     } finally {
       setBusy(null);
     }
+  });
+  function send(body: { request?: string; preset?: DossierStyle }, label: string) {
+    if (action.pending) return;
+    void action.run(body, label).catch(() => undefined);
   }
 
   const fullRequest = speech.listening && speech.interim ? `${request} ${speech.interim}`.trim() : request;
@@ -86,9 +115,12 @@ export function DesignPanel(props: {
             ? "Estoy preparando tu diseño a partir de lo que me has contado de tu empresa…"
             : "Estoy preparando tu diseño a partir de lo que me has contado y de los colores de tus obras…"}
         </p>
+      ) : busy && busy !== "undo" ? (
+        <DesignSkeleton />
       ) : props.design?.rationale ? (
         <p className="design-panel__why">{props.design.rationale}</p>
       ) : null}
+      {props.autoDesigning ? <DesignSkeleton /> : null}
       {adjustments.length ? (
         <ul className="design-panel__adjust">
           {adjustments.map((a, i) => (
@@ -119,11 +151,7 @@ export function DesignPanel(props: {
               submit();
             }
           }}
-          placeholder={
-            business
-              ? "Ej.: más sobrio, con el azul de nuestra marca"
-              : "Ej.: más oscuro, que empiece por mis piezas"
-          }
+          placeholder={business ? "Ej.: más sobrio, con el azul de nuestra marca" : "Ej.: más oscuro, que empiece por mis piezas"}
           disabled={!!busy || props.autoDesigning}
         />
         <div className="design-panel__actions">
@@ -197,5 +225,17 @@ export function DesignPanel(props: {
         </div>
       </div>
     </section>
+  );
+}
+
+/** While the design agent redraws: a paper-shaped sheet and the lines of its rationale. */
+function DesignSkeleton() {
+  return (
+    <LoadingRegion label="Diseñando…" className="design-panel__skeleton">
+      <div className="layout-proposals" data-testid="design-skeleton">
+        <PaperSkeleton />
+        <SkeletonText lines={4} />
+      </div>
+    </LoadingRegion>
   );
 }

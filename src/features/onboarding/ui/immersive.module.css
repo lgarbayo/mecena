@@ -1,82 +1,60 @@
 /*
- * Immersive full-screen stage (home + stepped onboarding): never scrolls, covers the app shell,
- * drifting colour fields behind frosted-glass panels. Always dark, whatever the system theme.
+ * Full-screen stage (home + stepped onboarding): covers the app shell on a calm, light page. Monochrome surfaces,
+ * generous whitespace; the only colour is the voice orb, and only where someone talks.
  */
 .stage {
-  --g-ink: #f7f2ea;
-  --g-ink-2: rgba(247, 242, 234, 0.72);
-  --g-ink-3: rgba(247, 242, 234, 0.5);
-  --g-glass: rgba(255, 255, 255, 0.07);
-  --g-glass-2: rgba(255, 255, 255, 0.12);
-  --g-line: rgba(255, 255, 255, 0.16);
-  --g-accent: #ff8a5c;
-  --g-accent-2: #b38cff;
-  --g-accent-3: #4fd1c5;
   position: fixed;
   inset: 0;
   z-index: 30;
   height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
-  color: var(--g-ink);
-  background: #0d0b10;
-  font-family: var(--sans);
+  color: var(--text-1);
+  background: var(--bg);
+  font-family: var(--font-sans);
   isolation: isolate;
   overscroll-behavior: contain; /* the stage scrolls; the page behind it never rubber-bands */
-}
-
-/* drifting colour fields */
-/* fixed, not absolute: an absolute layer 20% larger than the stage made it scroll ~170px of empty background */
-.blobs { position: fixed; inset: -20%; z-index: -1; filter: blur(70px) saturate(130%); opacity: 0.85; pointer-events: none; }
-.blob { position: absolute; border-radius: 50%; mix-blend-mode: screen; animation: drift 22s ease-in-out infinite alternate; }
-.blob:nth-child(1) { width: 52vmax; height: 52vmax; left: 2%; top: 4%; background: radial-gradient(circle at 30% 30%, #ff7a45, transparent 62%); }
-.blob:nth-child(2) { width: 46vmax; height: 46vmax; right: 0; top: 18%; background: radial-gradient(circle at 60% 40%, #8b5cf6, transparent 62%); animation-duration: 26s; animation-delay: -6s; }
-.blob:nth-child(3) { width: 40vmax; height: 40vmax; left: 26%; bottom: -2%; background: radial-gradient(circle at 50% 50%, #14b8a6, transparent 62%); animation-duration: 30s; animation-delay: -12s; }
-.grain { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.06; background-image: radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px); background-size: 3px 3px; }
-@keyframes drift {
-  0% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(6vmax, -4vmax, 0) scale(1.08); }
-  100% { transform: translate3d(-5vmax, 5vmax, 0) scale(0.95); }
 }
 
 .inner {
   min-height: 100%;
   max-width: 68rem;
   margin: 0 auto;
-  padding: max(20px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  padding: max(20px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
+@media (min-width: 720px) { .inner { padding-inline: 32px; } }
 
+/* a quiet surface (the name stays: it is used across the onboarding) */
 .glass {
-  background: linear-gradient(145deg, var(--g-glass-2), var(--g-glass));
-  border: 1px solid var(--g-line);
-  border-radius: 24px;
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  backdrop-filter: blur(22px) saturate(150%);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
 }
 
-.brand { font-family: var(--serif); font-size: 1.25rem; color: var(--g-ink); text-decoration: none; letter-spacing: -0.01em; }
-.kicker { text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.7rem; font-weight: 700; color: var(--g-ink-3); margin: 0; }
+.brand { font: 500 1.125rem/1 var(--font-sans); color: var(--text-1); text-decoration: none; letter-spacing: -0.02em; }
+.brand:focus-visible { outline: 1.5px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+.kicker { margin: 0; font-size: 13px; font-weight: 500; letter-spacing: 0.01em; color: var(--text-3); }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  min-height: 48px; padding: 12px 22px; border-radius: 999px;
-  font: 600 1rem var(--sans); text-decoration: none; cursor: pointer;
-  border: 1px solid var(--g-line); color: var(--g-ink); background: var(--g-glass-2);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  transition: transform 140ms ease, background 140ms ease, opacity 140ms ease;
+  min-height: 44px; padding: 0 20px; border-radius: var(--radius-pill);
+  font: 500 14px/1 var(--font-sans); text-decoration: none; cursor: pointer;
+  border: 1px solid var(--border); color: var(--text-1); background: var(--surface);
+  transition: transform 120ms var(--ease-out), background-color 140ms var(--ease-out), opacity 140ms ease;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
 }
-.btn:active { transform: scale(0.97); }
-.btn:disabled { opacity: 0.45; cursor: default; }
-.btnPrimary { background: var(--g-ink); color: #15110d; border-color: transparent; }
-@media (hover: hover) and (pointer: fine) { .btnPrimary:hover { background: #fff; } }
-.btnQuiet { background: transparent; border-color: transparent; color: var(--g-ink-2); }
-
-@media (prefers-reduced-motion: reduce) {
-  .blob { animation: none; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: default; }
+.btn:focus-visible { outline: 1.5px solid var(--focus); outline-offset: 2px; }
+.btnPrimary { background: var(--gray-950); color: #fff; border-color: transparent; }
+.btnQuiet { background: transparent; border-color: transparent; color: var(--text-2); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { background: var(--gray-50); }
+  .btnPrimary:hover { background: var(--gray-600); }
+  .btnQuiet:hover { background: var(--gray-50); color: var(--text-1); }
 }

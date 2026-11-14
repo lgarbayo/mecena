@@ -4,10 +4,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { API } from "@/contracts";
 import type { DeepResearchResponse } from "@/contracts/api";
-import { Button } from "@/components/ui";
+import { Button, LoadingRegion, Skeleton, SkeletonText } from "@/components/ui";
 import { daysLeft, fitLabel } from "@/features/matching/labels";
 import { FIT_COPY, deadlineLabel, isUrgent } from "@/features/matching/ui/format";
 import { ApiClientError, apiGet, apiSend } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import s from "./research.module.css";
 
 type Result = DeepResearchResponse["results"][number];
@@ -37,10 +38,28 @@ function WebCallCard({ call, match }: Result) {
   );
 }
 
+/** Placeholder shaped like an unverified web result card. */
+function WebCallCardSkeleton() {
+  return (
+    <div className={s.skelCard} aria-hidden>
+      <Skeleton width={180} height={24} radius={9999} />
+      <div className={s.top}>
+        <div style={{ flex: 1, display: "grid", gap: 8 }}>
+          <Skeleton width="80%" height={20} radius={8} />
+          <Skeleton width="50%" height={14} radius={6} />
+        </div>
+        <Skeleton width={64} height={28} radius={9999} />
+      </div>
+      <Skeleton width="45%" height={14} radius={6} />
+      <SkeletonText lines={2} />
+    </div>
+  );
+}
+
 export function DeepResearchPanel({ profileId, pro, onNeedPro }: { profileId: string; pro: boolean; onNeedPro(): void }) {
   const [data, setData] = useState<DeepResearchResponse | null>(null);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false); // first GET answered (or failed): stop the placeholder
   const [tick, setTick] = useState(0); // one per poll, so a failed poll still schedules the next one
 
   const load = useCallback(async () => {
@@ -51,11 +70,14 @@ export function DeepResearchPanel({ profileId, pro, onNeedPro }: { profileId: st
       setError(null);
     } catch (e) {
       if (!(e instanceof ApiClientError && e.paymentRequired)) setError(e instanceof Error ? e.message : "No se pudo cargar la búsqueda ampliada");
+    } finally {
+      setLoaded(true);
     }
   }, [profileId, pro]);
 
   useEffect(() => {
     setData(null);
+    setLoaded(false);
     setTick(0);
     load();
   }, [load]);
@@ -71,32 +93,49 @@ export function DeepResearchPanel({ profileId, pro, onNeedPro }: { profileId: st
     return () => clearTimeout(t);
   }, [running, tick, load]);
 
-  async function start() {
-    if (!pro) return onNeedPro();
-    setBusy(true);
+  // One key per launch: a double tap or a retry after a dropped response never starts a second web search.
+  const launch = useAction(async (idempotencyKey: string) => {
     setError(null);
     try {
-      setData(await apiSend<DeepResearchResponse>(API.callsResearch, { profileId }));
+      setData(await apiSend<DeepResearchResponse>(API.callsResearch, { profileId }, "POST", undefined, { idempotencyKey }));
     } catch (e) {
       if (e instanceof ApiClientError && e.paymentRequired) onNeedPro();
       else setError(e instanceof Error ? e.message : "No se pudo lanzar la búsqueda");
-    } finally {
-      setBusy(false);
+      throw e; // keep the key for a retry of the same launch
     }
+  });
+  const busy = launch.pending;
+
+  function start() {
+    if (!pro) return onNeedPro();
+    void launch.run().catch(() => undefined);
   }
 
   const done = data?.status === "done" || (data?.status === "limited" && data.finishedAt);
   const fresh = data?.status === "done" && data.freshUntil && Date.parse(data.freshUntil) > Date.now();
   return (
     <section className={s.panel} aria-labelledby="deep-research-title">
-      <h2 id="deep-research-title" className={s.heading}>
-        Más allá de las ayudas públicas
-      </h2>
-      <p className={s.lead}>Premios, becas y certámenes privados (fundaciones, galerías, festivales) que buscamos en la web para ti.</p>
+      <div className={s.header}>
+        <div>
+          <h2 id="deep-research-title" className={s.heading}>
+            Más allá de las ayudas públicas
+          </h2>
+          <p className={s.lead}>Premios, becas y certámenes privados (fundaciones, galerías, festivales) que buscamos en la web para ti.</p>
+        </div>
+        <span className={`${s.orb} ${running || busy ? s.orbActive : ""}`} aria-hidden />
+      </div>
       {running ? (
-        <p className={s.status} role="status">
-          Buscando en la web para ti… puede tardar un par de minutos.
-        </p>
+        <LoadingRegion label="Buscando en la web para ti…">
+          <p className={s.status} aria-hidden>
+            Buscando en la web para ti… puede tardar un par de minutos.
+          </p>
+          <WebCallCardSkeleton />
+          <WebCallCardSkeleton />
+        </LoadingRegion>
+      ) : pro && !loaded ? (
+        <LoadingRegion label="Cargando la búsqueda ampliada…">
+          <Skeleton width={160} height={40} radius={9999} />
+        </LoadingRegion>
       ) : (
         <Button onClick={start} disabled={busy}>
           {busy ? "Lanzando…" : done ? (fresh ? "Buscar de nuevo" : "Volver a buscar") : "Busca más para mí"}

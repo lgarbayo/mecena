@@ -43,7 +43,7 @@ describe("CaptureWork", () => {
     await act(async () => {
       fireEvent.change(input, { target: { files: [new File(["x"], "obra.jpg", { type: "image/jpeg" })] } });
     });
-    expect(create).toHaveBeenCalledWith("data:image/jpeg;base64,AAAA", undefined, undefined, { describe: false });
+    expect(create).toHaveBeenCalledWith("data:image/jpeg;base64,AAAA", undefined, undefined, { describe: false, idempotencyKey: expect.any(String) });
 
     const note = screen.getByRole("textbox");
     expect(note.getAttribute("maxLength")).toBe("4000");
@@ -54,7 +54,7 @@ describe("CaptureWork", () => {
     await act(async () => upload.resolve(stored));
     expect(await screen.findByRole("button", { name: "Leyendo tu obra…" })).toBeTruthy();
     expect(describeWork).toHaveBeenCalledTimes(1);
-    expect(describeWork).toHaveBeenCalledWith("work_1", "Se llama Faro");
+    expect(describeWork).toHaveBeenCalledWith("work_1", "Se llama Faro", expect.any(String));
 
     await act(async () => reading.resolve({ ...stored, sheet: { title: "Faro" } }));
     await waitFor(() => expect(onCreated).toHaveBeenCalledWith(expect.objectContaining({ sheet: { title: "Faro" } })));
@@ -70,6 +70,6 @@ describe("CaptureWork", () => {
     });
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "Crear ficha" })));
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
-    expect(describeWork).toHaveBeenCalledWith("work_1", undefined);
+    expect(describeWork).toHaveBeenCalledWith("work_1", undefined, expect.any(String));
   });
 });

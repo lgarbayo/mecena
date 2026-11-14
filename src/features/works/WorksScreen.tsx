@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { artFamily, ROUTES, type Work } from "@/contracts";
-import { PageTitle, Spinner } from "@/components/ui";
+import { PageTitle } from "@/components/ui";
 import { useApp } from "@/components/shell/AppProvider";
 import { CaptureWork } from "./CaptureWork";
 import { artCopy } from "./arts";
 import { errorText, worksClient, type WorkPatch } from "./client";
-import { WorkCard } from "./WorkCard";
+import { WorkCard, WorksListSkeleton } from "./WorkCard";
 import { Icon } from "@/components/ui/icons";
 import { TRUST } from "@/features/onboarding/copy";
 import s from "./works.module.css";
@@ -104,7 +104,7 @@ export function WorksScreen() {
       )}
 
       {works === null && !error ? (
-        <Spinner label="Cargando tus obras…" />
+        <WorksListSkeleton />
       ) : works && works.length > 0 ? (
         <>
           <div className={s.listHead}>
@@ -113,10 +113,12 @@ export function WorksScreen() {
               {works.length} {works.length === 1 ? copy.noun : copy.nounPlural} · {confirmed} {confirmed === 1 ? "confirmada" : "confirmadas"}
             </span>
           </div>
-          <p className={s.hint}>El orden de aquí es el orden de tu dossier.</p>
-          {works.map((w, i) => (
-            <WorkCard key={w.id} work={w} index={i} total={works.length} copy={copy} highlight={w.id === fresh} onSave={onSave} onMove={onMove} onRemove={onRemove} />
-          ))}
+          <p className={`${s.hint} ${s.listHint}`}>El orden de aquí es el orden de tu dossier.</p>
+          <div className={s.list}>
+            {works.map((w, i) => (
+              <WorkCard key={w.id} work={w} index={i} total={works.length} copy={copy} highlight={w.id === fresh} onSave={onSave} onMove={onMove} onRemove={onRemove} />
+            ))}
+          </div>
         </>
       ) : (
         works && (

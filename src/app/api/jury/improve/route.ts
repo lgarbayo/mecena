@@ -7,11 +7,12 @@ import { withJuryRun } from "@/features/purchases/server";
 import { getApplication } from "@/server/store";
 import { ownedApplication, requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 
-export const POST = route(async (req: Request) => {
+export const POST = route(idempotent(async (req: Request) => {
   const user = requireUser(req);
   limitAi(user, "jury-improve");
   const { stage, ...input } = await body(req, JuryImproveRequest);
@@ -26,4 +27,4 @@ export const POST = route(async (req: Request) => {
     return json({ application, previous, alreadyRevised: again });
   }
   return json(await charge(() => improveApplication(input)));
-});
+}));

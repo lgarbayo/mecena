@@ -5,6 +5,7 @@
 // Either way the server sync (POST /api/entitlements) is what unlocks drafting: with the RevenueCat secret key it
 // re-reads the customer over REST, and nothing the client claims is trusted.
 import { API, PACKAGES, PRODUCTS, publicEnv, type EntitlementState, type Plan, type PlanId, type PurchaseOutcome, type PurchasesAdapter } from "@/contracts";
+import { IDEMPOTENCY_HEADER, newIdempotencyKey } from "@/lib/api-client";
 import { OFFER, PLANS, plansWithPrices } from "./offer";
 
 /** An /api/entitlements failure, with the server's Spanish message when it sent one. */
@@ -17,8 +18,13 @@ async function entitlementRequest(init?: RequestInit, query = ""): Promise<Entit
   return data.entitlement;
 }
 
-const sync = (body: Record<string, unknown>) =>
-  entitlementRequest({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+/** One key per purchase/restore attempt: a network-level retry replays the stored grant instead of adding a credit. */
+const sync = (body: Record<string, unknown>, idempotencyKey = newIdempotencyKey()) =>
+  entitlementRequest({
+    method: "POST",
+    headers: { "content-type": "application/json", [IDEMPOTENCY_HEADER]: idempotencyKey },
+    body: JSON.stringify(body),
+  });
 
 /** The server always reads the signed-in user's entitlement (no app user id is sent). */
 const readEntitlement = () => entitlementRequest();

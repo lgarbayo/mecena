@@ -8,8 +8,12 @@ import { useRef, useState } from "react";
 import { API, ROUTES, type ProfileKind } from "@/contracts";
 import type { ImportDossierResponse } from "@/contracts/api";
 import { apiSend, fileToDataUrl } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
+import { LoadingRegion, SkeletonText } from "@/components/ui";
 import { fieldLabel } from "../copy";
 import s from "./onboarding.module.css";
+
+type ImportPayload = { fileDataUrl?: string; fileName?: string; text?: string };
 
 const MAX_MB = 20;
 const ACCEPT = "application/pdf,image/jpeg,image/png,image/webp";
@@ -44,33 +48,37 @@ const COPY = {
 
 /** `bare`: no collapsible card of its own, for a sheet that already carries the title (the onboarding on a phone). */
 export function ImportDossier({ kind, profileId, onImported, defaultOpen, bare }: { kind: ProfileKind; profileId?: string; onImported: (res: ImportDossierResponse) => void; defaultOpen?: boolean; bare?: boolean }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
   const [done, setDone] = useState<ImportDossierResponse | null>(null);
   const [text, setText] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const c = COPY[kind];
+  // One idempotency key per import: a double tap is ignored, a retry of the same document reuses the key.
+  const importAction = useAction((idempotencyKey: string, payload: ImportPayload) =>
+    apiSend<ImportDossierResponse>(API.onboardingImport, { ...payload, profileId }, "POST", undefined, { idempotencyKey }),
+  );
+  const busy = importAction.pending;
+  const error = localError ?? (importAction.error ? (importAction.error instanceof Error ? importAction.error.message : c.failed) : null);
 
-  async function send(payload: { fileDataUrl?: string; fileName?: string; text?: string }) {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await apiSend<ImportDossierResponse>(API.onboardingImport, { ...payload, profileId });
-      setDone(res);
-      setText("");
-      onImported(res);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : c.failed);
-    } finally {
-      setBusy(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
+  async function send(payload: ImportPayload) {
+    setLocalError(null);
+    const res = await importAction.run(payload);
+    if (fileRef.current) fileRef.current.value = "";
+    if (!res) return;
+    setDone(res);
+    setText("");
+    onImported(res);
+  }
+
+  function fail(message: string) {
+    importAction.reset();
+    setLocalError(message);
   }
 
   async function onFile(file: File | undefined) {
     if (!file) return;
-    if (file.size > MAX_MB * 1024 * 1024) return setError(`El archivo pesa más de ${MAX_MB} MB. Prueba con un PDF más ligero o pega el texto.`);
-    if (!ACCEPT.split(",").includes(file.type)) return setError("Sube un PDF o una foto (JPG, PNG). Si lo tienes en Word, expórtalo a PDF.");
+    if (file.size > MAX_MB * 1024 * 1024) return fail(`El archivo pesa más de ${MAX_MB} MB. Prueba con un PDF más ligero o pega el texto.`);
+    if (!ACCEPT.split(",").includes(file.type)) return fail("Sube un PDF o una foto (JPG, PNG). Si lo tienes en Word, expórtalo a PDF.");
     await send({ fileDataUrl: await fileToDataUrl(file), fileName: file.name });
   }
 
@@ -96,15 +104,18 @@ export function ImportDossier({ kind, profileId, onImported, defaultOpen, bare }
         }}
       >
         <textarea value={text} rows={3} placeholder={c.placeholder} onChange={(e) => setText(e.target.value)} disabled={busy} aria-label={c.textLabel} />
-        <button type="submit" className="btn btn-ghost" disabled={busy || !text.trim()}>
+        <button type="submit" className="btn btn-secondary" disabled={busy || !text.trim()}>
           Usar este texto
         </button>
       </form>
       <p className={s.muted}>Copiamos tus textos sin reescribirlos; solo corregimos erratas y tildes. El archivo es tuyo: no entrenamos con él.</p>
       {busy && (
-        <p className={s.sending} role="status">
-          {c.reading.replace("…", "")}: tarda unos segundos…
-        </p>
+        <LoadingRegion label={c.reading} className={s.importReading}>
+          <p className={s.sending} aria-hidden>
+            {c.reading.replace("…", "")}: tarda unos segundos…
+          </p>
+          <SkeletonText lines={3} />
+        </LoadingRegion>
       )}
       {error && (
         <p className={s.error} role="alert">

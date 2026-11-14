@@ -7,7 +7,9 @@
  */
 import { useRef, useState } from "react";
 import type { Work } from "@/contracts";
-import { Button } from "@/components/ui";
+import { Button, LoadingRegion, SkeletonText } from "@/components/ui";
+import { newIdempotencyKey } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import type { ArtCopy } from "./arts";
 import { errorText, worksClient } from "./client";
@@ -27,12 +29,17 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
   const [error, setError] = useState<string | null>(null);
   const pending = useRef<Promise<Work> | null>(null);
   const dataUrl = useRef<string | null>(null);
+  // One key per photo: a retried upload (or a double tap) replays the same request, never a second work.
+  const photoKey = useRef<string | null>(null);
+  // The one vision call; useAction ignores taps while it runs and reuses the key when retried after a failure.
+  const reading = useAction((key: string, id: string, text?: string) => worksClient.describe(id, text, key));
 
   const speech = useSpeechRecognition({ onFinal: (t) => setNote((n) => (n ? `${n.trim()} ${t}` : t)) });
 
   function startUpload(url: string) {
     setUpload({ state: "uploading" });
-    const p = worksClient.create(url, undefined, profileId, { describe: false });
+    const key = (photoKey.current ??= newIdempotencyKey());
+    const p = worksClient.create(url, undefined, profileId, { describe: false, idempotencyKey: key });
     pending.current = p;
     p.then(
       (work) => pending.current === p && setUpload({ state: "done", work }),
@@ -48,6 +55,7 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
     try {
       const { dataUrl: url } = await downscalePhoto(file);
       dataUrl.current = url;
+      photoKey.current = newIdempotencyKey();
       setPreview(url);
       startUpload(url);
     } catch (e) {
@@ -61,6 +69,8 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
     speech.stop();
     pending.current = null;
     dataUrl.current = null;
+    photoKey.current = null;
+    reading.reset();
     setPreview(null);
     setUpload(null);
     setNote("");
@@ -75,7 +85,7 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
   }
 
   async function finish() {
-    if (!pending.current) return;
+    if (!pending.current || busy) return;
     speech.stop();
     setError(null);
     try {
@@ -84,9 +94,10 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
       setBusy("read");
       const text = `${note} ${speech.interim}`.trim();
       // The only vision call for this work: photo + note -> sheet + crop.
-      work = await worksClient.describe(work.id, text || undefined);
+      const described = await reading.run(work.id, text || undefined);
+      if (!described) return; // still running (ignored tap) or failed: the error shows below
       reset();
-      onCreated(work);
+      onCreated(described);
     } catch (e) {
       setError(errorText(e));
     } finally {
@@ -107,7 +118,7 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
               </>
             )}
           </label>
-          <label className={`btn btn-ghost ${s.fileBtn} ${preparing ? s.disabled : ""}`}>
+          <label className={`btn btn-secondary ${s.fileBtn} ${preparing ? s.disabled : ""}`}>
             <input type="file" accept="image/jpeg,image/png,image/webp,image/*" disabled={preparing} onChange={(e) => (void onFile(e.target.files?.[0]), (e.target.value = ""))} />
             Elegir de la galería
           </label>
@@ -162,7 +173,16 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
           </button>
         </p>
       )}
-      {error && <p className={s.error} role="alert">{error}</p>}
+      {busy === "read" && (
+        <LoadingRegion label={copy.noun === "foto" ? "Leyendo tu foto…" : "Leyendo tu obra…"} className={s.readingSkeleton}>
+          <SkeletonText lines={3} />
+        </LoadingRegion>
+      )}
+      {(error ?? (reading.error ? errorText(reading.error) : null)) && (
+        <p className={s.error} role="alert">
+          {error ?? errorText(reading.error)}
+        </p>
+      )}
       <div className={s.cardActions}>
         <Button type="button" onClick={finish} disabled={!!busy || upload?.state === "error"}>
           {busy === "upload" ? "Subiendo foto…" : busy === "read" ? (copy.noun === "foto" ? "Leyendo tu foto…" : "Leyendo tu obra…") : "Crear ficha"}

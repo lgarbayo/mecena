@@ -4,15 +4,17 @@
  * start from scratch, load a ready-made scenario, and the per-account switches (deterministic jury, simulated AI).
  */
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { API, ROUTES } from "@/contracts";
 import type { z } from "zod";
 import type { DemoResetResponse } from "@/contracts/api";
-import { Button, Card, Tag } from "@/components/ui";
+import { Card, LoadingRegion, Skeleton, Tag } from "@/components/ui";
 import { useApp } from "@/components/shell/AppProvider";
 import { apiGet, apiSend, ApiClientError } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import { SAMPLE_INVOICE_URL } from "../sample-invoice";
 import type { DemoStatus } from "../status";
+import styles from "./demo.module.css";
 
 type Scenario = "blank" | "onboarded" | "pro" | "business";
 type ResetResult = z.infer<typeof DemoResetResponse>;
@@ -52,6 +54,19 @@ export function DemoReset({ email }: { email: string }) {
   const { refresh, profile } = useApp();
   const [status, setStatus] = useState<DemoStatus | null>(null);
   const [busy, setBusy] = useState<Scenario | "settings" | null>(null);
+  // each confirmed reset / switch carries an Idempotency-Key: a double tap or a retried request runs it once
+  const lastError = useRef<unknown>(null);
+  const resetAction = useAction(async (idempotencyKey: string, scenario: Scenario, business: boolean) => {
+    try {
+      return await apiSend<ResetResult>(API.demoReset, { scenario, withBusiness: business }, "POST", undefined, { idempotencyKey });
+    } catch (e) {
+      lastError.current = e;
+      throw e;
+    }
+  });
+  const settingsAction = useAction((idempotencyKey: string, patch: Partial<Record<"deterministicJury" | "aiMock", boolean>>) =>
+    apiSend<DemoStatus>(API.demoSettings, patch, "POST", undefined, { idempotencyKey }),
+  );
   const [done, setDone] = useState<ResetResult | null>(null);
   const [error, setError] = useState("");
   const [withBusiness, setWithBusiness] = useState(true);
@@ -64,12 +79,14 @@ export function DemoReset({ email }: { email: string }) {
   }, [load]);
 
   const run = async (s: (typeof SCENARIOS)[number]) => {
-    if (!window.confirm(s.confirm)) return;
+    if (busy || !window.confirm(s.confirm)) return;
     setBusy(s.id);
     setError("");
     setDone(null);
+    lastError.current = null;
     try {
-      const r = await apiSend<ResetResult>(API.demoReset, { scenario: s.id, withBusiness });
+      const r = await resetAction.run(s.id, withBusiness);
+      if (!r) throw lastError.current ?? new Error("reset");
       await refresh();
       await load();
       setDone(r);
@@ -81,10 +98,13 @@ export function DemoReset({ email }: { email: string }) {
   };
 
   const toggle = async (key: "deterministicJury" | "aiMock", value: boolean) => {
+    if (busy) return;
     setBusy("settings");
     setError("");
     try {
-      setStatus(await apiSend<DemoStatus>(API.demoSettings, { [key]: value }));
+      const next = await settingsAction.run({ [key]: value });
+      if (!next) throw new Error("settings");
+      setStatus(next);
     } catch {
       setError("No se ha podido cambiar el interruptor. Prueba otra vez.");
     } finally {
@@ -98,11 +118,21 @@ export function DemoReset({ email }: { email: string }) {
   return (
     <>
       <Card>
-        <p style={{ marginTop: 0, color: "var(--g-ink-2)" }}>
+        <p className={styles.lead}>
           Todo lo que hagas aquí afecta solo a la cuenta <strong>{email}</strong>. Las demás cuentas no se tocan.
         </p>
+        {!status && !error && (
+          <LoadingRegion label="Cargando el estado de la demo…">
+            <div className={styles.skeletonTags}>
+              {[72, 112, 128, 64, 108].map((w, i) => (
+                <Skeleton key={i} width={w} height={24} radius={9999} />
+              ))}
+            </div>
+            <Skeleton width="85%" height={13} style={{ marginTop: 14 }} />
+          </LoadingRegion>
+        )}
         {status && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }} aria-label="Estado de la cuenta">
+          <div className={styles.tags} aria-label="Estado de la cuenta">
             <Tag tone={status.effectiveAiMode === "mock" ? "warn" : "ok"}>IA: {status.effectiveAiMode === "mock" ? "simulada" : "Claude"}</Tag>
             <Tag tone={status.settings.deterministicJury ? "warn" : "neutral"}>Tribunal: {status.settings.deterministicJury ? "determinista" : "Claude"}</Tag>
             <Tag tone={status.purchasesMode === "mock" ? "warn" : "ok"}>Pagos: {status.purchasesMode === "mock" ? "modo prueba" : "RevenueCat sandbox"}</Tag>
@@ -111,41 +141,41 @@ export function DemoReset({ email }: { email: string }) {
           </div>
         )}
         {status && (
-          <p style={{ fontSize: "0.85rem", color: "var(--g-ink-2)", marginBottom: 0 }}>
+          <p className={styles.meta}>
             Cliente de RevenueCat: <code>{status.appUserId}</code> · Convocatorias abiertas: {status.openCalls.creator} para artistas, {status.openCalls.business} para pymes
           </p>
         )}
       </Card>
 
       <Card>
-        <h2 style={{ marginTop: 0 }}>Escenarios</h2>
-        <p style={{ color: "var(--g-ink-2)" }}>Cada botón borra tus datos y deja la cuenta lista en un toque. Te pedirá confirmación.</p>
-        <div style={{ display: "grid", gap: "14px" }}>
+        <h2 className={styles.h2}>Escenarios</h2>
+        <p className={styles.intro}>Cada botón borra tus datos y deja la cuenta lista en un toque. Te pedirá confirmación.</p>
+        <div className={styles.scenarios}>
           {SCENARIOS.map((s) => {
             const check = status?.scenarios.find((c) => c.scenario === s.id);
             const locked = s.id === "pro" && proLocked;
             return (
-              <div key={s.id} style={{ borderTop: "1px solid var(--g-line, #ddd)", paddingTop: "12px" }}>
-                <Button variant={s.id === "blank" ? "primary" : "ghost"} onClick={() => run(s)} disabled={busy !== null || locked || check?.ok === false}>
+              <div key={s.id} className={styles.scenario}>
+                <button type="button" className={`btn ${s.id === "blank" ? "btn-primary" : "btn-secondary"}`} onClick={() => run(s)} disabled={busy !== null || locked || check?.ok === false}>
                   {busy === s.id ? "Cargando…" : s.title}
-                </Button>
-                <p style={{ margin: "8px 0 2px" }}>{s.what}</p>
-                <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--g-ink-2)" }}>
+                </button>
+                <p className={styles.what}>{s.what}</p>
+                <p className={styles.when}>
                   <strong>Cuándo:</strong> {s.when}
                 </p>
                 {s.id === "blank" && (
-                  <label style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "6px", fontSize: "0.85rem" }}>
+                  <label className={styles.check}>
                     <input type="checkbox" checked={withBusiness} onChange={(e) => setWithBusiness(e.target.checked)} />
                     Dejar la pyme de ejemplo para el cambio a Pyme
                   </label>
                 )}
                 {locked && (
-                  <p role="note" style={{ margin: "6px 0 0", fontSize: "0.85rem" }}>
+                  <p role="note" className={styles.note}>
                     Solo para las cuentas de demo: el servidor tiene que tener tu email en <code>DEMO_EMAILS</code>. Así no se salta la verificación real de RevenueCat.
                   </p>
                 )}
                 {check && !check.ok && (
-                  <p role="alert" style={{ margin: "6px 0 0", fontSize: "0.85rem" }}>
+                  <p role="alert" className={styles.problem}>
                     No se puede cargar: {check.problems.join(" · ")}
                   </p>
                 )}
@@ -154,7 +184,7 @@ export function DemoReset({ email }: { email: string }) {
           })}
         </div>
         {done && (
-          <p role="status" style={{ marginBottom: 0 }}>
+          <p role="status" className={styles.done}>
             Listo.{" "}
             {done.scenario === "blank" && <Link href={ROUTES.onboarding}>Empieza la entrevista</Link>}
             {done.scenario === "onboarded" && <Link href={ROUTES.dossier}>Abre el dossier</Link>}
@@ -180,31 +210,35 @@ export function DemoReset({ email }: { email: string }) {
             ) : null}
           </p>
         )}
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <p role="alert" className={styles.error}>
+            {error}
+          </p>
+        )}
         {status?.extras?.filter((x) => !x.ok).map((x) => (
-          <p key={x.id} role="alert" style={{ fontSize: "0.85rem" }}>
+          <p key={x.id} role="alert" className={styles.problem}>
             {x.id === "justification" ? "Justificación" : "Panel"} de ejemplo sin cargar: {x.problems.join(" · ")}
           </p>
         ))}
       </Card>
 
       <Card>
-        <h2 style={{ marginTop: 0 }}>Foto de factura para la justificación</h2>
-        <p style={{ color: "var(--g-ink-2)" }}>
+        <h2 className={styles.h2}>Foto de factura para la justificación</h2>
+        <p className={styles.intro}>
           La factura que se fotografía en directo (ficticia, CC0). «Fotografiar una factura» abre la cámara, no la galería: lo más fiable es llevarla impresa en papel (A5) y hacerle la foto
           en escena, o apuntar la cámara a otra pantalla. Con la IA simulada, la primera foto sin nota (sea cual sea) se lee siempre igual: Imprenta Ártabra, 1.450,00 €, partida «Edición»,
           y se pasa de presupuesto.
         </p>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={SAMPLE_INVOICE_URL} alt="Factura de ejemplo de la Imprenta Ártabra, 1.450,00 euros" style={{ maxWidth: "220px", width: "100%", border: "1px solid var(--g-line, #ddd)" }} />
-        <p style={{ marginBottom: 0 }}>
+        <img src={SAMPLE_INVOICE_URL} alt="Factura de ejemplo de la Imprenta Ártabra, 1.450,00 euros" className={styles.invoice} />
+        <p className={styles.download}>
           <a href={SAMPLE_INVOICE_URL} download="factura-ejemplo.png">Descargar la foto</a>
         </p>
       </Card>
 
       <Card>
-        <h2 style={{ marginTop: 0 }}>Interruptores de plan B</h2>
-        <p style={{ color: "var(--g-ink-2)" }}>Solo para esta cuenta. Se quedan como los dejes, aunque empieces de cero.</p>
+        <h2 className={styles.h2}>Interruptores de plan B</h2>
+        <p className={styles.intro}>Solo para esta cuenta. Se quedan como los dejes, aunque empieces de cero.</p>
         <Switch
           label="Tribunal determinista (plan B)"
           help="El tribunal deja de llamar a Claude y da siempre 61 en el primer borrador y 84 al aplicar todas las mejoras, con comentarios por criterio. Úsalo si el tribunal tarda o si quieres el 61 → 84 garantizado."
@@ -219,14 +253,14 @@ export function DemoReset({ email }: { email: string }) {
           disabled={!status || busy !== null || status.aiMode === "mock"}
           onChange={(v) => toggle("aiMock", v)}
         />
-        {status?.aiMode === "mock" && <p style={{ fontSize: "0.85rem", marginBottom: 0 }}>El servidor ya funciona con IA simulada (no hay clave de Anthropic).</p>}
+        {status?.aiMode === "mock" && <p className={styles.foot}>El servidor ya funciona con IA simulada (no hay clave de Anthropic).</p>}
       </Card>
 
       <Card>
-        <h2 style={{ marginTop: 0 }}>Pantallas de la demo</h2>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+        <h2 className={styles.h2}>Pantallas de la demo</h2>
+        <div className={styles.links}>
           {screens(kind).map((l) => (
-            <Link key={l.href} href={l.href} className="btn btn-ghost">
+            <Link key={l.href} href={l.href} className="btn btn-secondary">
               {l.label}
             </Link>
           ))}
@@ -258,12 +292,12 @@ export function screens(kind: "creator" | "business"): { href: string; label: st
 
 function Switch({ label, help, checked, disabled, onChange }: { label: string; help: string; checked: boolean; disabled: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div style={{ marginBottom: "14px" }}>
-      <label style={{ display: "flex", gap: "10px", alignItems: "center", fontWeight: 600 }}>
+    <div className={styles.switch}>
+      <label>
         <input type="checkbox" role="switch" aria-checked={checked} checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
         {label}
       </label>
-      <p style={{ margin: "4px 0 0", fontSize: "0.85rem", color: "var(--g-ink-2)" }}>{help}</p>
+      <p>{help}</p>
     </div>
   );
 }

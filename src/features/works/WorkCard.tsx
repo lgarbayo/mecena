@@ -2,7 +2,7 @@
 /** One work: photo (crop shown with CSS, original one tap away) + its editable technical sheet. */
 import { useEffect, useRef, useState } from "react";
 import { MediaKind, type TechnicalSheet, type Work } from "@/contracts";
-import { Button, Tag } from "@/components/ui";
+import { Button, LoadingRegion, Skeleton, SkeletonList, Tag } from "@/components/ui";
 import { MEDIA_KIND_LABEL, type ArtCopy, type Field, type SheetKey } from "./arts";
 import type { WorkPatch } from "./client";
 import { IDENTITY_CROP } from "./crop";
@@ -278,5 +278,42 @@ export function WorkCard({ work, index, total, copy, highlight, onSave, onMove, 
         </form>
       </div>
     </article>
+  );
+}
+
+/** The shape of a work card (photo + sheet) while the list loads. */
+export function WorkCardSkeleton() {
+  return (
+    <div className={`card ${s.skeletonCard}`} aria-hidden="true">
+      <Skeleton height={280} radius="var(--radius-card-sm)" />
+      <div className={s.skeletonSheet}>
+        <div className={s.sheetHead}>
+          <Skeleton width={36} height={28} radius={8} />
+          <Skeleton width={120} height={24} radius="var(--radius-pill)" />
+        </div>
+        <div className={s.skeletonFields}>
+          <Skeleton height={44} radius="var(--radius-input)" />
+          <Skeleton height={44} radius="var(--radius-input)" />
+          <Skeleton height={44} radius="var(--radius-input)" />
+          <Skeleton height={44} radius="var(--radius-input)" />
+        </div>
+        <Skeleton width={150} height={40} radius="var(--radius-pill)" />
+      </div>
+    </div>
+  );
+}
+
+/** Content-shaped loading state for /obras: the list head and two work cards. */
+export function WorksListSkeleton({ label = "Cargando tus obras…" }: { label?: string }) {
+  return (
+    <LoadingRegion label={label}>
+      <div className={s.listHead}>
+        <Skeleton width={180} height={32} radius={8} />
+        <Skeleton width={140} height={16} radius={6} />
+      </div>
+      <SkeletonList count={2} className={s.skeletonList}>
+        <WorkCardSkeleton />
+      </SkeletonList>
+    </LoadingRegion>
   );
 }
