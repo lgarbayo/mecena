@@ -85,7 +85,26 @@ describe("guard: sources", () => {
     const all = r.layout.pages.flatMap((p) => p.elements).filter((e) => e.type === "text").flatMap((e) => (e.type === "text" ? e.paragraphs : []));
     expect(all.join(" ")).not.toMatch(/Premio Nacional/);
     expect(all).toContain(real.slice(0, 40));
-    expect(r.adjustments.join(" ")).toMatch(/no estaba en lo que me contaste/);
+    expect(r.adjustments.join(" ")).toMatch(/ya no aparece tal cual en tus textos/);
+  });
+
+  it("follows an edited text and tells the artist when the edit made a quote disappear", async () => {
+    await seed();
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    const real = cat.texts["frase.1"].paragraphs[0];
+    const l = layout(page(text("nombre", 10, 10, 80, 10), text("ciudad", 10, 25, 80, 5), text("disciplina", 10, 32, 80, 5), quoteText(real.slice(0, 40), 10, 45, 80, 10)));
+    const before = prepareLayout(l, cat);
+    expect(before.adjustments.join(" ")).not.toMatch(/ya no aparece/);
+
+    // The artist rewrites that text: the same layout repaints with the new words, and the lost quote is reported.
+    const q = real.slice(0, 40);
+    const texts = Object.fromEntries(Object.entries(cat.texts).map(([id, t]) => [id, { ...t, paragraphs: t.paragraphs.map((p) => (p.includes(q) ? "Otra frase completamente distinta." : p)) }]));
+    const edited = { ...cat, texts: { ...texts, nombre: { ...cat.texts.nombre, paragraphs: ["Nombre Editado"] } } };
+    const after = prepareLayout(l, edited);
+    const shown = after.layout.pages.flatMap((p) => p.elements).flatMap((e) => (e.type === "text" ? e.paragraphs : []));
+    expect(shown).toContain("Nombre Editado");
+    expect(shown.join(" ")).not.toContain(real.slice(0, 40));
+    expect(after.adjustments.join(" ")).toMatch(/ya no aparece tal cual en tus textos/);
   });
 
   it("never produces an image that is not one of the artist's works (any request, any work number)", async () => {

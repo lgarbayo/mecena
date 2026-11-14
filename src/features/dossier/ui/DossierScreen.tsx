@@ -147,6 +147,38 @@ export function DossierScreen() {
       .catch(() => undefined)
       .finally(() => setLayoutReady(true));
   }, [profileId, callId]);
+  // Live: texts are edited elsewhere (interview, works). Coming back to this tab, or every 15 s while it is visible,
+  // re-reads the dossier; the layout state is re-read only when the content really changed.
+  const contentKey = data ? JSON.stringify([data.profile, data.dossier.sections, data.works.map((w) => [w.id, w.imageUrl])]) : "";
+  const refreshLayout = useCallback(() => {
+    if (!profileId) return;
+    const q = new URLSearchParams({ profileId, ...(callId ? { callId } : {}) });
+    apiGet<LayoutClientState>(`${LAYOUT_API}?${q}`)
+      .then(setLayout)
+      .catch(() => undefined);
+  }, [profileId, callId]);
+  const firstKey = useRef(true);
+  useEffect(() => {
+    if (!contentKey) return;
+    if (firstKey.current) {
+      firstKey.current = false;
+      return;
+    }
+    refreshLayout();
+  }, [contentKey, refreshLayout]);
+  useEffect(() => {
+    const again = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    const t = setInterval(again, 15000);
+    document.addEventListener("visibilitychange", again);
+    window.addEventListener("focus", again);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", again);
+      window.removeEventListener("focus", again);
+    };
+  }, [load]);
   const freeShown = layout?.mode === "libre" && !!layout.prepared;
   // While there are proposals to choose from (or a batch is running) the template panel would only add clutter.
   const freeBusy = layout?.enabled === true && (layout.busy || layout.proposals.length > 0);
