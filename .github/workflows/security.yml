@@ -1,0 +1,46 @@
+# CI: security scanning. Results appear in the repository's Security tab.
+#   - OpenSSF Scorecard: grades the repo's supply-chain practices (branch protection, pinned
+#     actions, token permissions...). It only runs on the default branch: Scorecard does not
+#     support pull_request events.
+#   - CodeQL: static analysis of the TypeScript/JavaScript code for vulnerabilities.
+name: security
+permissions: read-all
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "30 5 * * 1"
+  workflow_dispatch:
+
+jobs:
+  scorecard:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # upload the SARIF report to the Security tab
+      id-token: write # publish results so the README badge works
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: results.sarif
+
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # upload CodeQL alerts to the Security tab
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
