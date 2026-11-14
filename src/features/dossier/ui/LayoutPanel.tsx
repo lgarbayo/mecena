@@ -6,9 +6,10 @@
  * (history and undo). Generating takes a minute or two: the server runs it in the background and this panel polls.
  */
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui";
+import { Button, LoadingRegion, Skeleton, SkeletonText } from "@/components/ui";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { apiGet, apiSend } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import { textsOutgrewLayout } from "../layout/notes";
 import type { LayoutState } from "../layout/service";
 import { FreeLayoutThumb, layoutFontUrls } from "./FreeLayoutDocument";
@@ -25,23 +26,42 @@ const EXAMPLES = [
   "Texto en dos columnas",
 ];
 
-const THUMB_CSS = `
-  .layout-proposals { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-  .layout-proposal { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid currentColor; border-color: color-mix(in srgb, currentColor 22%, transparent); border-radius: 10px; }
-  .layout-proposal h3 { margin: 0; font-size: 1rem; }
-  .layout-proposal p { margin: 0; font-size: 0.88rem; line-height: 1.45; opacity: 0.85; }
-  .layout-busy { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 0.95rem; }
-  .layout-busy::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: layout-spin 0.9s linear infinite; }
-  @keyframes layout-spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .layout-busy::before { animation: none; } }
-`;
+/** A paper-shaped placeholder (A-series sheet) for a page the agent is still composing. */
+export function PaperSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={`paper-skel${className ? ` ${className}` : ""}`} aria-hidden="true">
+      <Skeleton width="38%" height={10} radius={999} />
+      <Skeleton className="paper-skel__media" width="100%" radius={8} />
+      <SkeletonText lines={3} />
+    </div>
+  );
+}
+
+/** A batch of proposals on its way: one paper-shaped card per proposal. */
+function ProposalSkeletons({ count, label }: { count: number; label: string }) {
+  return (
+    <LoadingRegion label={label}>
+      <div className="layout-proposals" data-testid="layout-skeleton">
+        {Array.from({ length: Math.max(1, Math.min(count, 4)) }, (_, i) => (
+          <div key={i} className="layout-proposal layout-proposal--skeleton">
+            <PaperSkeleton />
+            <Skeleton width="55%" height={22} radius={6} />
+            <SkeletonText lines={2} />
+          </div>
+        ))}
+      </div>
+    </LoadingRegion>
+  );
+}
 
 export function LayoutPanel(props: { profileId: string; callId?: string; state: LayoutClientState | undefined; onState: (s: LayoutClientState) => void }) {
   const { state, onState, profileId, callId } = props;
   const [request, setRequest] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const speech = useSpeechRecognition({ onFinal: (t) => setRequest((r) => (r ? `${r.trim()} ${t}` : t)) });
+  const speech = useSpeechRecognition({
+    onFinal: (t) => setRequest((r) => (r ? `${r.trim()} ${t}` : t)),
+  });
   const working = !!busy || !!state?.busy;
 
   // A job runs in the background on the server: poll until it is idle.
@@ -57,19 +77,27 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
     return () => clearInterval(t);
   }, [serverBusy, profileId, callId, onState]);
 
-  async function send(payload: Record<string, unknown>, label: string) {
+  // Every mutation carries an Idempotency-Key: a double tap is ignored while pending, a retry after a failure
+  // reuses the same key (the server answers once), and a fresh key goes with the next change.
+  const action = useAction(async (idempotencyKey: string, payload: Record<string, unknown>, label: string) => {
     setBusy(label);
     setError(null);
     try {
-      const res = await apiSend<LayoutClientState>(LAYOUT_API, { ...payload, profileId, callId });
+      const res = await apiSend<LayoutClientState>(LAYOUT_API, { ...payload, profileId, callId }, "POST", undefined, { idempotencyKey });
       onState(res);
       if (payload.request) setRequest("");
+      return res;
     } catch (e) {
       setError(e instanceof Error ? e.message : "No he podido maquetarlo. Prueba otra vez.");
+      throw e;
     } finally {
       setBusy(null);
     }
-  }
+  });
+  const send = (payload: Record<string, unknown>, label: string) => {
+    if (action.pending) return;
+    void action.run(payload, label).catch(() => undefined);
+  };
   const fullRequest = speech.listening && speech.interim ? `${request} ${speech.interim}`.trim() : request;
 
   const submit = () => {
@@ -85,7 +113,10 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
         <div className="design-panel__head">
           <h2 id="layout-panel-title">Maquetación libre</h2>
         </div>
-        <p className="design-panel__why">¿Quieres un dossier que no se parezca a ningún otro? Con la maquetación libre te propongo varias composiciones distintas, páginas hechas a partir de tu obra y de tus palabras, y tú eliges y me pides cambios.</p>
+        <p className="design-panel__why">
+          ¿Quieres un dossier que no se parezca a ningún otro? Con la maquetación libre te propongo varias composiciones distintas, páginas hechas a partir de tu obra y
+          de tus palabras, y tú eliges y me pides cambios.
+        </p>
         <div className="design-panel__actions">
           <Button type="button" variant="ghost" disabled={working} onClick={() => send({ enabled: true }, "on")} data-testid="free-layout-on">
             {busy === "on" ? "Activando…" : "Activar maquetación libre"}
@@ -129,7 +160,6 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
         // eslint-disable-next-line @next/next/no-page-custom-font -- faces chosen at runtime by the layout model
         <link key={href} rel="stylesheet" href={href} />
       ))}
-      <style>{THUMB_CSS}</style>
       <div className="design-panel__head">
         <h2 id="layout-panel-title">Maquetación libre</h2>
         {chosen && state.name ? (
@@ -141,13 +171,18 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
 
       {generating ? (
         <p className="layout-busy" role="status" data-testid="layout-generating">
-          Estoy componiendo {count} maquetaciones distintas a partir de tu obra{state.wish ? " y de cómo te imaginas tu dossier" : ""}. Tarda uno o dos minutos; no hace falta que te quedes mirando.
+          Estoy componiendo {count} maquetaciones distintas a partir de tu obra
+          {state.wish ? " y de cómo te imaginas tu dossier" : ""}. Tarda uno o dos minutos; no hace falta que te quedes mirando.
         </p>
       ) : null}
+      {generating ? <ProposalSkeletons count={count} label="Componiendo maquetaciones…" /> : null}
       {changing ? (
-        <p className="layout-busy" role="status">
-          Aplicando tu cambio…
-        </p>
+        <LoadingRegion label="Aplicando tu cambio…" className="layout-changing">
+          <p className="layout-busy">Aplicando tu cambio…</p>
+          <div className="layout-proposals">
+            <PaperSkeleton />
+          </div>
+        </LoadingRegion>
       ) : null}
       {state.notice ? (
         <p className="design-panel__error" role="status" data-testid="layout-notice">
@@ -182,7 +217,14 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
             type="button"
             variant="ghost"
             disabled={working}
-            onClick={() => send({ request: `Ajusta la maquetación a mis textos actuales: ${state.adjustments.join(" ")}` }, "ask")}
+            onClick={() =>
+              send(
+                {
+                  request: `Ajusta la maquetación a mis textos actuales: ${state.adjustments.join(" ")}`,
+                },
+                "ask",
+              )
+            }
             data-testid="layout-refit"
           >
             Ajustar la maquetación a mis textos
@@ -223,7 +265,13 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
               {busy === "ask" || changing ? "Maquetando…" : "Cambiar"}
             </Button>
             {speech.supported ? (
-              <Button type="button" variant="ghost" onClick={() => (speech.listening ? speech.stop() : speech.start())} aria-pressed={speech.listening} disabled={working}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => (speech.listening ? speech.stop() : speech.start())}
+                aria-pressed={speech.listening}
+                disabled={working}
+              >
                 {speech.listening ? "Parar de dictar" : speech.tapToResume ? "Seguir dictando" : "Dictar"}
               </Button>
             ) : null}

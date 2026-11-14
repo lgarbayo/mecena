@@ -11,6 +11,7 @@
 import { z } from "zod";
 import { autoProposals, chooseProposal, requestChange, requestProposals, setFreeLayout, undoLayout, layoutState } from "@/features/dossier/layout/service";
 import { body, json, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 import { requireProfile, requireUser, resolveProfile } from "@/server/auth";
 import { limitAi } from "@/server/ai-limits";
 
@@ -31,25 +32,42 @@ const Post = z.object({
 export const GET = route(async (req: Request) => {
   const sp = new URL(req.url).searchParams;
   const { profile } = await requireProfile(req, sp.get("profileId"));
-  return json(await layoutState({ profileId: profile.id, callId: sp.get("callId") || undefined }));
+  return json(
+    await layoutState({
+      profileId: profile.id,
+      callId: sp.get("callId") || undefined,
+    }),
+  );
 });
 
-export const POST = route(async (req: Request) => {
-  const user = requireUser(req);
-  const input = await body(req, Post);
-  const profile = await resolveProfile(user, input.profileId);
-  if (input.auto) {
-    const { started: _started, ...state } = await autoProposals({ profileId: profile.id, from: input.auto, charge: () => limitAi(user, "dossier-layout-batch") });
-    return json(state);
-  }
-  if (input.undo) return json(await undoLayout({ profileId: profile.id }));
-  if (input.choose) return json(await chooseProposal({ profileId: profile.id, proposalId: input.choose }));
-  if (input.generate) {
-    limitAi(user, "dossier-layout-batch");
-    return json(await requestProposals({ profileId: profile.id }));
-  }
-  if (typeof input.enabled === "boolean" && !input.request) return json(await setFreeLayout({ profileId: profile.id, enabled: input.enabled }));
-  if (!input.request) return json({ error: "bad_request", message: "Cuéntame cómo quieres tu dossier." }, { status: 400 });
-  limitAi(user, "dossier-layout");
-  return json(await requestChange({ profileId: profile.id, request: input.request }));
-});
+export const POST = route(
+  idempotent(async (req: Request) => {
+    const user = requireUser(req);
+    const input = await body(req, Post);
+    const profile = await resolveProfile(user, input.profileId);
+    if (input.auto) {
+      const { started: _started, ...state } = await autoProposals({
+        profileId: profile.id,
+        from: input.auto,
+        charge: () => limitAi(user, "dossier-layout-batch"),
+      });
+      return json(state);
+    }
+    if (input.undo) return json(await undoLayout({ profileId: profile.id }));
+    if (input.choose)
+      return json(
+        await chooseProposal({
+          profileId: profile.id,
+          proposalId: input.choose,
+        }),
+      );
+    if (input.generate) {
+      limitAi(user, "dossier-layout-batch");
+      return json(await requestProposals({ profileId: profile.id }));
+    }
+    if (typeof input.enabled === "boolean" && !input.request) return json(await setFreeLayout({ profileId: profile.id, enabled: input.enabled }));
+    if (!input.request) return json({ error: "bad_request", message: "Cuéntame cómo quieres tu dossier." }, { status: 400 });
+    limitAi(user, "dossier-layout");
+    return json(await requestChange({ profileId: profile.id, request: input.request }));
+  }),
+);

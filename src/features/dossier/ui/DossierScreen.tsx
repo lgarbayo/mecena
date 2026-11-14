@@ -9,14 +9,15 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API, ROUTES, type Call, type Dossier, type Profile, type Work } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
-import { Button, Spinner } from "@/components/ui";
+import { Button, LoadingRegion, Skeleton, SkeletonText } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
 import { apiGet, apiSend } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import { isBlank, toDossierView, type VariantView } from "../model";
 import { googleFontUrls, type DossierDesign } from "../design";
 import { paletteFromPixels, suggestStyle } from "../style";
 import { DESIGN_API, DesignPanel } from "./DesignPanel";
-import { LAYOUT_API, LayoutPanel, type LayoutClientState } from "./LayoutPanel";
+import { LAYOUT_API, LayoutPanel, PaperSkeleton, type LayoutClientState } from "./LayoutPanel";
 import { FreeLayoutDocument, layoutFontUrls } from "./FreeLayoutDocument";
 import { DossierDocument } from "./DossierDocument";
 import { wantsHighResolution, wantsLooseImages } from "../images";
@@ -74,7 +75,12 @@ export function DossierScreen() {
 
   const view = useMemo(() => {
     if (!data) return null;
-    const v = toDossierView({ profile: data.profile, dossier: data.dossier, works: data.works, call: data.call });
+    const v = toDossierView({
+      profile: data.profile,
+      dossier: data.dossier,
+      works: data.works,
+      call: data.call,
+    });
     // Without Pro the dossier keeps the plain order: no "Dossier para…" band on the cover.
     return data.adapted ? v : { ...v, variant: undefined };
   }, [data]);
@@ -94,7 +100,12 @@ export function DossierScreen() {
   }, [loadDesign]);
 
   // Colours of the artist's own photos, for the design agent: a few small samples, never a change to the work.
-  const imageKey = data ? data.works.slice(0, 6).map((w) => w.imageUrl).join("|") : "";
+  const imageKey = data
+    ? data.works
+        .slice(0, 6)
+        .map((w) => w.imageUrl)
+        .join("|")
+    : "";
   useEffect(() => {
     if (!imageKey) return;
     let cancelled = false;
@@ -124,7 +135,12 @@ export function DossierScreen() {
       if (autoTried.current) return;
       autoTried.current = true;
       setAutoDesigning(true);
-      apiSend<{ design: DossierDesign }>(DESIGN_API, { auto: true, workColors, profileId: data.profile.id, callId })
+      apiSend<{ design: DossierDesign }>(DESIGN_API, {
+        auto: true,
+        workColors,
+        profileId: data.profile.id,
+        callId,
+      })
         .then((res) => {
           setDesign(res.design);
           setDesignSaved(true);
@@ -196,6 +212,14 @@ export function DossierScreen() {
 
   const fontUrls = design ? googleFontUrls(design) : [];
 
+  // Undo of the template design: idempotent, and a double tap while it runs is ignored.
+  const undoDesignAction = useAction(async (idempotencyKey: string, pid: string, cid: string | undefined) => {
+    const res = await apiSend<{ design: DossierDesign }>(DESIGN_API, { undo: true, profileId: pid, callId: cid }, "POST", undefined, { idempotencyKey });
+    setDesign(res.design);
+    autoTried.current = true; // undoing to the start must not trigger a new automatic design
+    return res;
+  });
+
   // Progressive build: while sections are still pending (the user is talking), refresh quietly.
   const pending = view ? Object.values(view.states).some((s) => s !== "ready") : false;
   useEffect(() => {
@@ -216,7 +240,7 @@ export function DossierScreen() {
       </div>
     );
   }
-  if (!data || !view) return <Spinner label={callId ? "Adaptando tu dossier a la convocatoria… (unos segundos)" : "Preparando tu dossier…"} />;
+  if (!data || !view) return <DossierScreenSkeleton label={callId ? "Adaptando tu dossier a la convocatoria… (unos segundos)" : "Preparando tu dossier…"} />;
 
   const blank = isBlank(view);
   // The style note is already told by the design panel above; keep it for MCP and the PDF flow only.
@@ -239,7 +263,7 @@ export function DossierScreen() {
           <a className="btn btn-primary" href={pdfHref} target="_blank" rel="noopener" aria-disabled={blank} data-testid="dossier-pdf">
             Descargar PDF
           </a>
-          <Link className="btn btn-ghost" href={ROUTES.calls}>
+          <Link className="btn btn-secondary" href={ROUTES.calls}>
             <Icon name="search" size={18} /> {business ? "Ayudas" : "Convocatorias"}
           </Link>
         </div>
@@ -250,8 +274,10 @@ export function DossierScreen() {
           <p className="dossier-loose__title">Esta convocatoria pide las imágenes sueltas, no un dossier en PDF.</p>
           <p>
             Las bases piden: {data.call.dossierRequirements?.format ?? "archivos de imagen"}
-            {data.call.dossierRequirements?.maxImages ? ` · máx. ${data.call.dossierRequirements.maxImages} ${data.call.dossierRequirements.maxImages === 1 ? "imagen" : "imágenes"}` : ""}.
-            Descarga aquí tus fotos tal como las subiste, sin recorte y sin tocar.
+            {data.call.dossierRequirements?.maxImages
+              ? ` · máx. ${data.call.dossierRequirements.maxImages} ${data.call.dossierRequirements.maxImages === 1 ? "imagen" : "imágenes"}`
+              : ""}
+            . Descarga aquí tus fotos tal como las subiste, sin recorte y sin tocar.
           </p>
           {data.works.length ? (
             <>
@@ -278,8 +304,7 @@ export function DossierScreen() {
           )}
           {wantsHighResolution(data.call) ? (
             <p className="dossier-loose__warn">
-              Ojo: piden alta resolución y Mecena guarda tus fotos a 1600 px para el dossier. Para presentarlas, usa los archivos originales de tu cámara o tu
-              escáner.
+              Ojo: piden alta resolución y Mecena guarda tus fotos a 1600 px para el dossier. Para presentarlas, usa los archivos originales de tu cámara o tu escáner.
             </p>
           ) : null}
         </aside>
@@ -287,8 +312,8 @@ export function DossierScreen() {
 
       {unreviewed > 0 ? (
         <p className="dossier-unreviewed no-print" role="status" data-testid="unreviewed">
-          {unreviewed === 1 ? "1 obra sin revisar" : `${unreviewed} obras sin revisar`}: no {unreviewed === 1 ? "entra" : "entran"} en el PDF hasta que confirmes su ficha.{" "}
-          <Link href={ROUTES.works}>Revisar en Obras</Link>
+          {unreviewed === 1 ? "1 obra sin revisar" : `${unreviewed} obras sin revisar`}: no {unreviewed === 1 ? "entra" : "entran"} en el PDF hasta que confirmes su
+          ficha. <Link href={ROUTES.works}>Revisar en Obras</Link>
         </p>
       ) : null}
 
@@ -307,8 +332,8 @@ export function DossierScreen() {
           callId={callId}
           onChange={(c) => setDesign(c.design)}
           onUndo={async () => {
-            const res = await apiSend<{ design: DossierDesign }>(DESIGN_API, { undo: true, profileId: data.profile.id, callId }).catch(() => undefined);
-            if (res) setDesign(res.design);
+            if (undoDesignAction.pending) return;
+            await undoDesignAction.run(data.profile.id, callId).catch(() => undefined);
             autoTried.current = true; // undoing to the start must not trigger a new automatic design
           }}
         />
@@ -362,7 +387,11 @@ export function DossierScreen() {
             <link key={href} rel="stylesheet" href={href} />
           ))
         : null}
-      {freeShown && layout?.prepared ? <FreeLayoutDocument layout={layout.prepared} /> : <DossierDocument view={view} progressive={blank} className="dossier-bleed" design={design} />}
+      {freeShown && layout?.prepared ? (
+        <FreeLayoutDocument layout={layout.prepared} />
+      ) : (
+        <DossierDocument view={view} progressive={blank} className="dossier-bleed" design={design} />
+      )}
 
       <Paywall
         open={paywall}
@@ -374,6 +403,30 @@ export function DossierScreen() {
         }}
       />
     </div>
+  );
+}
+
+/** The dossier on its way: the toolbar and two paper-shaped pages, inside a polite live region. */
+export function DossierScreenSkeleton({ label = "Preparando tu dossier…" }: { label?: string }) {
+  return (
+    <LoadingRegion label={label} className="dossier-skel">
+      <div className="dossier-skel__bar" aria-hidden="true">
+        <Skeleton width="min(320px, 70%)" height={40} radius={10} />
+        <Skeleton width={120} height={14} radius={999} />
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <Skeleton width={150} height={40} radius={999} />
+          <Skeleton width={150} height={40} radius={999} />
+        </div>
+      </div>
+      <div className="design-panel" aria-hidden="true">
+        <Skeleton width={180} height={26} radius={8} />
+        <SkeletonText lines={2} />
+      </div>
+      <div className="dossier-skel__pages" aria-hidden="true">
+        <PaperSkeleton />
+        <PaperSkeleton />
+      </div>
+    </LoadingRegion>
   );
 }
 
@@ -394,7 +447,9 @@ function PdfSizeLine({ href }: { href: string }) {
       {note}
     </p>
   ) : (
-    <p className="dossier-variant__size dossier-variant__crit">Midiendo el peso del PDF…</p>
+    <LoadingRegion label="Midiendo el peso del PDF…" className="dossier-variant__size">
+      <Skeleton width="min(280px, 80%)" height={14} radius={999} />
+    </LoadingRegion>
   );
 }
 
@@ -422,7 +477,11 @@ function samplePixels(url: string): Promise<Uint8ClampedArray | undefined> {
   });
 }
 
-const CHECK_LABEL = { ok: "Cumple", riesgo: "Revisa", no_aplica: "Lo aportas tú" } as const;
+const CHECK_LABEL = {
+  ok: "Cumple",
+  riesgo: "Revisa",
+  no_aplica: "Lo aportas tú",
+} as const;
 
 /** What the adaptation did and what the user can still add (screen only, never in the PDF). */
 export function VariantPanel({ variant }: { variant: VariantView }) {
@@ -446,7 +505,7 @@ export function VariantPanel({ variant }: { variant: VariantView }) {
               </li>
             ))}
           </ol>
-          <Link className="btn btn-ghost" href={ROUTES.onboarding}>
+          <Link className="btn btn-secondary" href={ROUTES.onboarding}>
             Responder hablando
           </Link>
         </details>
@@ -477,8 +536,8 @@ export function VariantPanel({ variant }: { variant: VariantView }) {
         </details>
       ) : null}
       <p className="dossier-variant__crit">
-        {variant.generatedBy === "ai" ? "Reescrito con IA a partir de tus palabras." : "Adaptación automática sin IA."} Tú tienes la última palabra: revisa cada texto antes
-        de presentarlo.
+        {variant.generatedBy === "ai" ? "Reescrito con IA a partir de tus palabras." : "Adaptación automática sin IA."} Tú tienes la última palabra: revisa cada texto
+        antes de presentarlo.
       </p>
     </div>
   );

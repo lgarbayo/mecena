@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { currentDesign, designHistory, requestDesign, undoDesign } from "@/features/dossier/designs";
 import { body, json, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 import { requireProfile, requireUser, resolveProfile } from "@/server/auth";
 import { getCall } from "@/server/store";
 import { limitAi } from "@/server/ai-limits";
@@ -27,22 +28,34 @@ export const GET = route(async (req: Request) => {
   const sp = new URL(req.url).searchParams;
   const { profile } = await requireProfile(req, sp.get("profileId"));
   const callId = sp.get("callId") || undefined;
-  const { design, saved } = currentDesign({ profile, call: callId ? getCall(callId) : undefined });
+  const { design, saved } = currentDesign({
+    profile,
+    call: callId ? getCall(callId) : undefined,
+  });
   return json({ design, saved, history: designHistory(profile.id) });
 });
 
-export const POST = route(async (req: Request) => {
-  const user = requireUser(req);
-  const input = await body(req, Post);
-  const profile = await resolveProfile(user, input.profileId);
-  if (input.undo) return json(undoDesign({ profileId: profile.id, callId: input.callId }));
-  if (!input.preset && !input.request && !input.auto) return json({ error: "bad_request", message: "Cuéntame cómo quieres tu dossier." }, { status: 400 });
-  limitAi(user, "dossier-design");
-  return json(await requestDesign({ ...input, profileId: profile.id }));
-});
+export const POST = route(
+  idempotent(async (req: Request) => {
+    const user = requireUser(req);
+    const input = await body(req, Post);
+    const profile = await resolveProfile(user, input.profileId);
+    if (input.undo) return json(undoDesign({ profileId: profile.id, callId: input.callId }));
+    if (!input.preset && !input.request && !input.auto) return json({ error: "bad_request", message: "Cuéntame cómo quieres tu dossier." }, { status: 400 });
+    limitAi(user, "dossier-design");
+    return json(await requestDesign({ ...input, profileId: profile.id }));
+  }),
+);
 
-export const DELETE = route(async (req: Request) => {
-  const sp = new URL(req.url).searchParams;
-  const { profile } = await requireProfile(req, sp.get("profileId"));
-  return json(undoDesign({ profileId: profile.id, callId: sp.get("callId") || undefined }));
-});
+export const DELETE = route(
+  idempotent(async (req: Request) => {
+    const sp = new URL(req.url).searchParams;
+    const { profile } = await requireProfile(req, sp.get("profileId"));
+    return json(
+      undoDesign({
+        profileId: profile.id,
+        callId: sp.get("callId") || undefined,
+      }),
+    );
+  }),
+);
