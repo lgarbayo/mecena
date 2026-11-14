@@ -14,13 +14,11 @@ import { clientIp, consumeAttempt } from "@/server/auth/rate-limit";
 import { createMcpServer } from "./core";
 
 /** Tool calls per user: a long Claude conversation fits, a runaway loop (or a leaked token) does not. */
-export const MCP_TOOL_LIMIT = {
-  attempts: 60,
-  windowMs: 15 * 60_000,
-  message: "Has hecho muchas peticiones a Mecena en poco tiempo. Espera unos minutos y vuelve a probar.",
-};
+export const MCP_TOOL_LIMIT = { attempts: 60, windowMs: 15 * 60_000 };
+const MCP_TOOL_LIMIT_MESSAGE = "Has hecho muchas peticiones a Mecena en poco tiempo. Espera unos minutos y vuelve a probar.";
 /** Requests with a missing or wrong token, per client IP. */
-export const MCP_BAD_TOKEN_LIMIT = { attempts: 30, windowMs: 15 * 60_000, message: "Demasiados intentos con un token no válido. Espera unos minutos." };
+export const MCP_BAD_TOKEN_LIMIT = { attempts: 30, windowMs: 15 * 60_000 };
+const MCP_BAD_TOKEN_MESSAGE = "Demasiados intentos con un token no válido. Espera unos minutos.";
 /** JSON-RPC bodies are small (a tool call with its arguments). */
 export const MCP_MAX_BODY_BYTES = 256 * 1024;
 
@@ -39,7 +37,7 @@ const BAD_TOKEN = "Token de Mecena no válido o revocado. Crea uno nuevo en la w
 /** The tool context of the token's user, read fresh for each tool call, after counting the call against the limit. */
 function contextFor(user: User): () => Promise<ToolContext> {
   return async () => {
-    consumeAttempt([`mcp:user:${user.id}`], Date.now(), MCP_TOOL_LIMIT);
+    consumeAttempt([`mcp:user:${user.id}`], Date.now(), MCP_TOOL_LIMIT, MCP_TOOL_LIMIT_MESSAGE);
     const fresh = getUser(user.id);
     if (!fresh) throw new UnauthorizedError(BAD_TOKEN);
     return toolContextFor(fresh, "mcp-remote");
@@ -52,9 +50,9 @@ export async function handleMcpRequest(req: Request, opts: { run?: RunFn } = {})
   const user = userForMcpToken(token);
   if (!user) {
     try {
-      consumeAttempt([`mcp:badtoken:ip:${clientIp(req)}`], Date.now(), MCP_BAD_TOKEN_LIMIT);
+      consumeAttempt([`mcp:badtoken:ip:${clientIp(req)}`], Date.now(), MCP_BAD_TOKEN_LIMIT, MCP_BAD_TOKEN_MESSAGE);
     } catch (e) {
-      return rpcError(429, e instanceof Error ? e.message : MCP_BAD_TOKEN_LIMIT.message);
+      return rpcError(429, e instanceof Error ? e.message : MCP_BAD_TOKEN_MESSAGE);
     }
     return rpcError(401, token ? BAD_TOKEN : NO_TOKEN, { "www-authenticate": 'Bearer realm="Mecena"' });
   }

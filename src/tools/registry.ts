@@ -16,6 +16,7 @@ import { explainCall, searchCalls } from "@/features/matching/service";
 import { draftApplication } from "@/features/drafting/service";
 import { scoreApplication } from "@/features/jury/service";
 import { withJuryRun } from "@/features/purchases/server";
+import { limitAi } from "@/server/ai-limits";
 import { canAdaptDossier, limitMatches, requireCallVisible } from "./limits";
 
 const base = () => serverEnv().publicUrl;
@@ -43,6 +44,7 @@ export const handlers: ToolHandlers = {
     // The call variant is Pro (same rule as /api/dossier): without it, the general dossier plus the call's notes as a
     // preview, built without any model call. That is exactly what the returned link shows to a free user.
     const adapted = await canAdaptDossier(ctx);
+    if (adapted) limitAi({ id: ctx.userId }, "dossier-variant"); // same per-user AI limits as the app's routes
     const dossier = adapted ? await buildDossier({ profileId, callId: input.callId }) : (await loadDossierData({ profileId, callId: input.callId, adapt: false })).dossier;
     return { dossier, url: dossierUrl(profileId, input.callId), adapted };
   },
@@ -50,6 +52,7 @@ export const handlers: ToolHandlers = {
     const profileId = profileFor(input, ctx);
     if (input.callId) getCall(input.callId);
     const adapted = Boolean(input.callId) && (await canAdaptDossier(ctx));
+    if (adapted) limitAi({ id: ctx.userId }, "dossier-variant");
     // The URL is the authenticated download route (same Pro rule); the server-side file path never leaves the server.
     const { url, pages } = await exportDossierPdf({ profileId, callId: adapted ? input.callId : undefined });
     return { url, ...(pages ? { pages } : {}), adapted, ...(input.callId ? { callId: input.callId } : {}) };
@@ -70,14 +73,17 @@ export const handlers: ToolHandlers = {
     const profileId = profileFor(input, ctx);
     getCall(input.callId);
     await requireCallVisible(ctx, profileId, input.callId);
+    limitAi({ id: ctx.userId }, "call-detail");
     return explainCall({ ...input, profileId });
   },
   draft_application: async (input, ctx) => {
+    limitAi({ id: ctx.userId }, "draft");
     const application = await draftApplication({ ...input, profileId: profileFor(input, ctx) }, ctx);
     return { application, url: `${base()}/solicitud/${encodeURIComponent(application.callId)}` };
   },
   score_application: async ({ applicationId }, ctx) => {
     ownedApplication(ctx.userId, applicationId);
+    limitAi({ id: ctx.userId }, "jury");
     const score = await withJuryRun(ctx.appUserId, applicationId, () => scoreApplication(applicationId));
     return { score, url: `${base()}/tribunal/${encodeURIComponent(applicationId)}` };
   },
