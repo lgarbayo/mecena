@@ -1,6 +1,6 @@
 /* Home: one screen, no scroll. Rows: brand · title · data · slogan + CTAs. */
 .home { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; gap: clamp(12px, 2.6vh, 28px); }
-.top { display: flex; justify-content: space-between; align-items: center; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-width: 0; }
 .trustLink { color: var(--g-ink-2); font-size: 0.85rem; text-decoration: none; border-bottom: 1px solid var(--g-line); }
 
 .head { align-self: end; display: flex; flex-direction: column; gap: 10px; }
