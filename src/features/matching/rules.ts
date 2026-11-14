@@ -6,9 +6,12 @@
  *   tree, deadline, age, CNAE sector, size) plus call status. "unknown" never discards: it becomes "Confírmalo: …".
  * Phase B, score (eligible calls only). The score is personal: most of it depends on who the profile is, not on
  *   the call alone, so two different profiles get clearly different orders (the feed sorts by score first).
- *   base (25, or 10 when the call is for other disciplines)
+ *   base (25, or 10 when the call is for other disciplines; minus 8 when a residence rule can't be confirmed and the
+ *     call is from another comunidad, or the profile lives abroad: see doubtfulResidence)
  *   + 0-43 affinity: discipline/sector fit (0-25, disciplineFit / cnaeCheck) + the profile's own words found in the
- *     call (0-18: statement, project idea, funding needs, achievements, bio)
+ *     call (0-18: statement, project idea, funding needs, achievements, bio) + what the profile is looking for that the
+ *     call offers (0-6: residency, production, exhibition, publication, training, touring for creators; investment,
+ *     digitalisation, hiring… for businesses)
  *   + 0-10 documents already available
  *   + 0-10 amount (real cash ranks up; no cash prize = 0; an entry fee costs 4)
  *   + 0-12 deadline (0-6: open now > upcoming > recurring) & proximity (0-6: same province, or same comunidad)
@@ -24,6 +27,9 @@ import {
   evaluateEligibility,
   formatCents,
   isDisciplineId,
+  isWithin,
+  ABROAD,
+  ccaaOf,
   normalizeCall,
   normalizeDiscipline,
   normalizeProfile,
@@ -157,6 +163,8 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
   const breakdown: ScoreBreakdown = { base: 0, affinity: 0, documents: 0, amount: 0, timing: 0 };
   if (eligible) {
     breakdown.base = fit.fit === "none" ? 10 : 25;
+    const territory = checks.find((k) => k.rule === "territory");
+    if (territory?.result === "unknown" && doubtfulResidence(p, c)) breakdown.base = Math.max(0, breakdown.base - TERRITORY_DOUBT);
     breakdown.affinity = affinity(profile, call, p, c, fit, why, miss);
     breakdown.documents = documents(profile, call, ctx, why, miss);
     breakdown.amount = amount(c, call, why, miss);
@@ -194,7 +202,7 @@ const WORDS_MAX = 18;
  * something about this person (discipline, own words, documents, zone, money), not what every eligible call shares.
  */
 function whyRank(w: string): number {
-  if (/^(Encaja con|Habla de lo tuyo|Tu actividad está entre)/.test(w)) return 0;
+  if (/^(Encaja con|Habla de lo tuyo|Tu actividad está entre)/.test(w)) return 0; // incl. "Encaja con lo que buscas"
   if (/^(Ya tienes|Es de tu|Vives en)/.test(w)) return 1;
   if (/^(Con dotación|Cumples|Abre pronto)/.test(w)) return 2;
   if (/^Se convoca cada año/.test(w)) return 3;
@@ -217,6 +225,21 @@ const INTENT_GROUPS: [RegExp, RegExp, string][] = [
   [/\b(darme de alta|darse de alta|empezar como autonom|emprender|iniciar actividad)\b/, /\b(darte de alta|inicio de actividad|empleo autonomo)\b/, "inicio de actividad como autónomo"],
 ];
 
+/**
+ * What a creator is looking for (funding needs, project idea) against what the call offers: [profile, call, label].
+ * The call side reads its type and text; ordinal "edición" (XXX edición) is not publishing.
+ */
+const CREATOR_INTENTS: [RegExp, RegExp, string][] = [
+  [/\b(residencia\w*|estancia\w*)\b/, /\b(residencia\w*|estancia\w*)\b/, "residencia"],
+  [/\b(produc\w*|realizar|rodar|grabar|materiales|crear (?:una|mi|la|el) \w+)\b/, /\b(produc\w*|ayudas? a la creacion|creacion artistica|desarrollo de proyectos?)\b/, "producción"],
+  [/\b(exponer|exposicion\w*|mostrar mi obra|galeria\w*|ensenar mi obra)\b/, /\b(exposicion\w*|expone\w*|muestra)\b/, "exponer tu obra"],
+  [/\b(publicar|publicacion\w*|editar (?:un|una|mi)|fanzine|libro|poemario|novela)\b/, /\b(publicacion\w*|editorial|edicion del (?:libro|poemario|catalogo)|libro)\b/, "publicación"],
+  [/\b(formacion|estudiar|estudios|master|curso|perfeccion\w*)\b/, /\b(formacion|estudios|perfeccion\w*|master)\b/, "formación"],
+  [/\b(gira|giras|conciertos?|distribu\w*|festivales?|circulacion)\b/, /\b(gira|giras|circulacion|distribu\w*|programacion)\b/, "gira y distribución"],
+];
+const INTENT_POINTS = 4;
+const INTENT_MAX = 6;
+
 /** 0-45: discipline/sector fit (0-25) + the profile's own words (statement, project, needs, achievements) found in the call (0-20). */
 function affinity(raw: Profile, call: Call, p: CanonicalProfile, c: CanonicalCall, fit: { fit: Fit; matched: string[] }, why: string[], miss: string[]): number {
   let pts = FIT_POINTS[fit.fit];
@@ -229,6 +252,16 @@ function affinity(raw: Profile, call: Call, p: CanonicalProfile, c: CanonicalCal
   const words = ownWords(raw, call);
   pts += Math.min(WORDS_MAX, words.length * WORD_POINTS);
   if (words.length) why.push(`Habla de lo tuyo: ${displayWords(raw, words).slice(0, 3).join(", ")}`);
+
+  if (!biz) {
+    const wants = norm([raw.projectIdea ?? "", ...raw.fundingNeeds].join(" "));
+    const offers = norm([call.type, call.title, call.summary, ...call.allowedExpenses].join(" "));
+    const matched = CREATOR_INTENTS.filter(([pRe, cRe]) => pRe.test(wants) && cRe.test(offers)).map(([, , label]) => label);
+    if (matched.length) {
+      pts += Math.min(INTENT_MAX, matched.length * INTENT_POINTS);
+      why.push(`Encaja con lo que buscas: ${matched.slice(0, 2).join(", ")}`);
+    }
+  }
 
   if (biz) {
     const profileText = [raw.statement, raw.bio, raw.projectIdea ?? "", ...raw.fundingNeeds, ...raw.achievements, raw.sector ?? ""].join(" ");
@@ -251,7 +284,7 @@ function affinity(raw: Profile, call: Call, p: CanonicalProfile, c: CanonicalCal
       if (pRe.test(intentSource) && cRe.test(cNorm)) matchedIntents.push(label);
     }
     if (matchedIntents.length) {
-      pts += Math.min(6, matchedIntents.length * 4);
+      pts += Math.min(INTENT_MAX, matchedIntents.length * INTENT_POINTS);
       why.push(`Encaja con lo que queréis financiar (${matchedIntents.slice(0, 2).join(", ")})`);
     }
   }
@@ -375,6 +408,23 @@ function timing(p: CanonicalProfile, c: CanonicalCall, call: Call, daysLeft: num
   } else if (daysLeft <= 60) pts = 6;
   else pts = 5;
   return Math.min(SCORE_MAX.timing, pts + proximity(p, c, why));
+}
+
+/** Points a call loses when it may require living somewhere and that can't be confirmed for this profile. */
+const TERRITORY_DOUBT = 8;
+
+/**
+ * A residence rule that can't be confirmed only costs points when it likely leaves the profile out: the profile lives
+ * abroad, or the call belongs to another comunidad. A call with no known area, or from the profile's own comunidad,
+ * keeps its points (the "Confírmalo" line still asks to check the bases).
+ */
+function doubtfulResidence(p: CanonicalProfile, c: CanonicalCall): boolean {
+  if (p.territory === ABROAD) return true;
+  const home = callHome(c);
+  if (!home.length) return false;
+  if (!p.territory) return true;
+  const mine = ccaaOf(p.territory);
+  return !home.some((t) => isWithin(p.territory, t) || (mine !== undefined && ccaaOf(t) === mine));
 }
 
 const LEVEL_PROVINCE = /^ES\d{3}$/;

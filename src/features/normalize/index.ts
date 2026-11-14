@@ -27,6 +27,8 @@ export {
   ccaaOf,
   isWithin,
   territoryCheck,
+  ABROAD,
+  isAbroad,
   type TerritoryResult,
   type TerritoryPreference,
 } from "./territory";
