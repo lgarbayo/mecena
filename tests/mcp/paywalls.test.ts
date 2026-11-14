@@ -100,7 +100,7 @@ describe("search_calls: free limit and status", () => {
   it("an unknown call is 'not found', not a paywall", async () => {
     const r = await call("explain_call", { callId: "no-existe" });
     expect(r.isError).toBe(true);
-    expect(r.text).toMatch(/no encontrad/i);
+    expect(r.text).toMatch(/no encontramos/i);
   });
 });
 

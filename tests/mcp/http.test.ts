@@ -156,7 +156,7 @@ describe("remote MCP endpoint (/api/mcp)", () => {
     expect((await call(them, "get_profile")).json.profile.id).toBe(other.user.activeProfileId);
     const peek = await call(them, "get_profile", { profileId: "demo-creator" });
     expect(peek.isError).toBe(true);
-    expect(peek.text).toMatch(/no encontrad/i);
+    expect(peek.text).toMatch(/no encontramos/i);
   });
 
   it("without a token, or with a wrong or revoked one, answers 401 with a Spanish hint", async () => {
