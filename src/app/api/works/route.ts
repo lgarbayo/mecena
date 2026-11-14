@@ -4,6 +4,7 @@ import { CreateWorkRequest } from "@/contracts/api";
 import { createWork, InvalidImageError } from "@/features/works/service";
 import { requireProfile, requireUser, resolveProfile } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 import { listWorks } from "@/server/store";
 import { limitAi } from "@/server/ai-limits";
 
@@ -17,7 +18,7 @@ export const GET = route(async (req: Request) => {
   return json({ works: listWorks(profile.id) });
 });
 
-export const POST = route(async (req: Request) => {
+export const POST = route(idempotent(async (req: Request) => {
   const user = requireUser(req);
   limitAi(user, "works-create");
   const input = await body(req, CreateWorkRequest, { maxBytes: MAX_WORK_BODY_BYTES });
@@ -28,4 +29,4 @@ export const POST = route(async (req: Request) => {
     if (e instanceof InvalidImageError) return NextResponse.json({ error: "bad_request", message: e.message }, { status: 400 });
     throw e;
   }
-});
+}));

@@ -4,6 +4,7 @@ import { UpdateWorkRequest } from "@/contracts/api";
 import { deleteWork, updateWork } from "@/features/works/service";
 import { ownedWork, requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 
 export const dynamic = "force-dynamic";
 
@@ -13,13 +14,13 @@ const mine = async (req: Request, { params }: Ctx) => ownedWork(requireUser(req)
 
 export const GET = route(async (req: Request, ctx: Ctx) => json({ work: await mine(req, ctx) }));
 
-export const PATCH = route(async (req: Request, ctx: Ctx) => {
+export const PATCH = route(idempotent(async (req: Request, ctx: Ctx) => {
   const work = await mine(req, ctx);
   return json({ work: await updateWork(work.id, await body(req, UpdateWorkRequest)) });
-});
+}));
 
-export const DELETE = route(async (req: Request, ctx: Ctx) => {
+export const DELETE = route(idempotent(async (req: Request, ctx: Ctx) => {
   const work = await mine(req, ctx);
   await deleteWork(work.id);
   return json({ ok: true });
-});
+}));

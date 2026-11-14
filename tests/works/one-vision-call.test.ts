@@ -88,6 +88,17 @@ describe("one vision call per work (capture flow)", () => {
     expect(w.crop).toEqual(IDENTITY);
   });
 
+  it("the same photo uploaded twice while waiting for its reading is one work, not two", async () => {
+    const first = await create({ describe: false });
+    const again = await create({ describe: false });
+    expect(again.id).toBe(first.id);
+    // Once read, the same bytes make a new work (the artist may photograph a piece again on purpose).
+    await describeIt(first.id);
+    const next = await create({ describe: false });
+    expect(next.id).not.toBe(first.id);
+    await describeIt(next.id);
+  });
+
   it("rejects notes over 4000 characters with 400", async () => {
     const stored = await create({ describe: false });
     const r = await describeRoute(req(`/api/works/${stored.id}/describe`, { body: { voiceDescription: "a".repeat(4001) } }), ctx({ id: stored.id }));

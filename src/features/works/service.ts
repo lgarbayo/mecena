@@ -37,6 +37,12 @@ function imagePath(id: string): { file: string; mediaType: Media } | undefined {
   return undefined;
 }
 
+function sameImage(id: string, mediaType: Media, bytes: Buffer): boolean {
+  const stored = imagePath(id);
+  if (!stored || stored.mediaType !== mediaType || fs.statSync(stored.file).size !== bytes.length) return false;
+  return fs.readFileSync(stored.file).equals(bytes);
+}
+
 export async function createWork(input: {
   profileId: string;
   imageDataUrl: string;
@@ -51,6 +57,12 @@ export async function createWork(input: {
   const bytes = Buffer.from(base64, "base64");
   if (!bytes.length) throw new InvalidImageError("La imagen está vacía");
   if (bytes.length > MAX_IMAGE_BYTES) throw new InvalidImageError("La foto pesa demasiado (máx. 6 MB). Prueba otra vez desde la cámara.");
+  // A photo-only upload that repeats one still waiting for its reading (double tap, retry with a new key)
+  // is the same work: hand that one back instead of storing the photo twice.
+  if (input.describe === false) {
+    const twin = listWorks(profile.id).find((w) => w.analysis === "pending" && sameImage(w.id, mediaType, bytes));
+    if (twin) return twin;
+  }
   const id = newId("work");
   fs.writeFileSync(path.join(uploadsDir(), `${id}.${MEDIA[mediaType]}`), bytes);
   const voice = input.voiceDescription?.trim() || undefined;
