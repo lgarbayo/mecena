@@ -143,7 +143,10 @@ export async function resetUserDemo(user: User, input: { scenario?: DemoScenario
         version: 1,
         status: "draft",
         sections: proFile.application.sections.map((s) => ({ ...s, sourceSegmentIds: s.sourceSegmentIds.map((id) => ids.get(id)).filter((x): x is string => Boolean(x)) })),
-        budget: call.allowedExpenses.length ? structuredClone(proFile.application.budget) : [],
+        // the example lines use the fixture's expense types: map them onto whatever the picked call allows
+        budget: call.allowedExpenses.length
+          ? proFile.application.budget.map((l) => ({ ...l, expenseType: call.allowedExpenses.includes(l.expenseType) ? l.expenseType : call.allowedExpenses[0] }))
+          : [],
         checklist: buildChecklist(call),
         createdAt: now,
         updatedAt: now,
