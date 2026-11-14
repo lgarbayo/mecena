@@ -191,8 +191,9 @@ export function DemoReset({ email }: { email: string }) {
       <Card>
         <h2 style={{ marginTop: 0 }}>Foto de factura para la justificación</h2>
         <p style={{ color: "var(--g-ink-2)" }}>
-          La factura que se fotografía en directo (ficticia, CC0). Ábrela en el móvil de la demo y guárdala en la galería antes de salir; en escena, «Hacer foto» con el móvil
-          apuntando a otro móvil, o «Elegir de la galería». Con la IA simulada, la primera foto sin nota se lee siempre igual: Imprenta Ártabra, 1.450,00 €, partida «Edición».
+          La factura que se fotografía en directo (ficticia, CC0). «Fotografiar una factura» abre la cámara, no la galería: lo más fiable es llevarla impresa en papel (A5) y hacerle la foto
+          en escena, o apuntar la cámara a otra pantalla. Con la IA simulada, la primera foto sin nota (sea cual sea) se lee siempre igual: Imprenta Ártabra, 1.450,00 €, partida «Edición»,
+          y se pasa de presupuesto.
         </p>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={SAMPLE_INVOICE_URL} alt="Factura de ejemplo de la Imprenta Ártabra, 1.450,00 euros" style={{ maxWidth: "220px", width: "100%", border: "1px solid var(--g-line, #ddd)" }} />
