@@ -29,7 +29,7 @@ export const POST = route(async (req: Request) => {
     const app = getApplication(applicationId);
     const latest = latestJuryScore(applicationId);
     const cached = !force && !!latest && latest.applicationVersion === app.version;
-    const afterImprove = app.revision?.version === app.version;
+    const afterImprove = !force && app.revision?.version === app.version;
     const score = () => (force ? scoreApplication(applicationId, { onJudge }) : ensureScore(applicationId, { onJudge }).then((r) => r.score));
     if (cached || afterImprove) return { score: await score(), cached };
     return { score: await withJuryRun(user.appUserId, applicationId, score), cached: false };
