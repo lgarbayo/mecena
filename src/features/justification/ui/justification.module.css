@@ -1,0 +1,241 @@
+/* IDEA #7 justification page — same glass look as the jury and draft pages, mobile first */
+.lead {
+  color: var(--g-ink-2);
+  margin: -6px 0 14px;
+}
+
+.note {
+  color: var(--g-ink-2);
+  font-size: 0.9rem;
+  margin: 4px 0 12px;
+}
+
+.capture {
+  display: grid;
+  gap: 10px;
+}
+
+.hint,
+.field input,
+.field select,
+.notes {
+  width: 100%;
+  font: inherit;
+  color: var(--g-ink);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--g-line);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.notes {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.hint:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible,
+.notes:focus-visible {
+  outline: 2px solid var(--g-accent-3);
+  outline-offset: 1px;
+}
+
+.file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.summary {
+  display: grid;
+  gap: 14px;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  display: grid;
+  gap: 6px;
+}
+
+.lineHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lineHead small {
+  color: var(--g-ink-3);
+}
+
+.track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--g-accent-3), var(--g-accent-2));
+}
+
+.fillOver {
+  background: linear-gradient(90deg, var(--g-accent), #ff6b6b);
+}
+
+.alerts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.alert {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--g-line);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.93rem;
+}
+
+.alert svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.danger {
+  border-color: rgba(255, 107, 107, 0.6);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.warn {
+  border-color: rgba(255, 179, 138, 0.55);
+  background: rgba(255, 138, 92, 0.09);
+}
+
+.info {
+  color: var(--g-ink-2);
+}
+
+.invoice {
+  display: grid;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--g-line);
+}
+
+.invoice:first-of-type {
+  border-top: 0;
+}
+
+.invHead {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--g-line);
+  flex: none;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.invMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.invTitle {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.invMeta {
+  color: var(--g-ink-3);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.form {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: var(--g-ink-3);
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.section {
+  margin: 14px 0;
+}
+
+.section h3 {
+  margin: 0 0 6px;
+}
+
+.gaps {
+  color: var(--g-accent);
+  font-weight: 700;
+}
+
+.stale {
+  border: 1px solid rgba(255, 179, 138, 0.55);
+  background: rgba(255, 138, 92, 0.09);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin: 8px 0 12px;
+}
+
+.footer {
+  color: var(--g-ink-3);
+  font-size: 0.85rem;
+  margin-top: 18px;
+}
+
+.error {
+  color: #ffb3b3;
+  margin: 8px 0;
+}
+
+@media (max-width: 420px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+}

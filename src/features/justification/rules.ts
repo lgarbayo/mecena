@@ -15,8 +15,8 @@ export const LINE_MARGIN = 0.1;
 /** Below this confidence the invoice is flagged for a second look. */
 export const LOW_CONFIDENCE = 0.6;
 
-export const round2 = (n: number) => Math.round((Number.isFinite(n) ? n : 0) * 100) / 100;
-export const euros = (n: number) => `${round2(n).toLocaleString("es-ES", { useGrouping: "always", minimumFractionDigits: Number.isInteger(round2(n)) ? 0 : 2 })} €`;
+import { euros, round2 } from "./format";
+export { euros, round2 };
 const pct = (n: number) => `${Math.round(n * 100)} %`;
 
 export const fold = (s: string) =>
