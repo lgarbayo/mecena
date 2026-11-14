@@ -38,7 +38,7 @@ Restart `npm run dev` after editing (`NEXT_PUBLIC_*` values are inlined at build
 
 ## 3. How it works
 
-- **App user id**: the SDK is configured with *our* id (`db.meta.appUserId`, from `/api/profile`), not an anonymous one. The entitlement then survives a PWA reinstall and the server can verify it. `npm run demo:reset` rotates it, so you get a fresh sandbox customer and the paywall shows again (the adapter calls `changeUser`).
+- **App user id**: the SDK is configured with *our* id, one per Mecena account (`User.appUserId`, from `/api/auth/me`), not an anonymous one. The entitlement then survives a PWA reinstall and follows the account across devices, and the server can verify it. The server never takes an app user id from the client: `/api/entitlements`, the draft gate and the calls feed always use the signed-in user's. `/demo` → "Empezar de cero" rotates it for that account, so you get a fresh sandbox customer and the paywall shows again (the adapter calls `changeUser`).
 - **Purchase**: the user picks a plan in our paywall (Hormozi offer) → `Purchases.purchase({ rcPackage, htmlTarget })`. The Web Billing checkout renders **inside our sheet**, so the PWA is never left. A user cancel maps to `{status:"cancelled"}`.
 - **Unlock**: after a successful purchase the client POSTs `/api/entitlements`. With `REVENUECAT_SECRET_API_KEY` the server **ignores the client claim** and reads `GET https://api.revenuecat.com/v1/subscribers/{appUserId}`:
   - `pro` = active entitlement `pro`

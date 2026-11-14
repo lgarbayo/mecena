@@ -15,7 +15,16 @@ Mecena expone sus **8 herramientas** como servidor MCP (stdio). Son exactamente 
 
 Cada llamada devuelve **dos bloques de texto**: un resumen corto en español y, después, el JSON completo. Los enlaces (`url`) usan `MECENA_PUBLIC_URL`, así que si apunta al túnel del móvil, el enlace que te da Claude se abre en el móvil.
 
-Si no tienes Pro, `draft_application` devuelve un error legible: *«Necesitas Mecena Pro o una Solicitud premium… Desbloquéalo aquí: <MECENA_PUBLIC_URL>/pro»*. La compra hecha en el móvil desbloquea también Claude Desktop: el servidor MCP lee la suscripción del almacén compartido (`meta.appUserId`).
+Si no tienes Pro, `draft_application` devuelve un error legible: *«Necesitas Mecena Pro o una Solicitud premium… Desbloquéalo aquí: <MECENA_PUBLIC_URL>/pro»*. La compra hecha en el móvil desbloquea también Claude Desktop: el servidor MCP lee la suscripción de tu cuenta (su `appUserId` de RevenueCat) en el almacén compartido.
+
+## Tu cuenta: `MECENA_USER_EMAIL` (obligatoria)
+
+Mecena tiene cuentas (email + contraseña, en `/entrar`). El servidor MCP actúa **como una sola cuenta**: la del email que pongas en `MECENA_USER_EMAIL`. Usa su perfil activo (el que tengas elegido en la web, creador/a o pyme) y su suscripción, y nunca ve datos de otras cuentas: si Claude le pasa el `profileId` de otra persona, la herramienta responde «no encontrado».
+
+- Crea la cuenta primero en la web (`/entrar` → «Crear cuenta») contra el mismo almacén (`MECENA_DATA_DIR`).
+- Pon el email en la config del cliente MCP (`"env": { "MECENA_USER_EMAIL": "tu@email.com" }`) o en `.env.local` del repo.
+- Sin `MECENA_USER_EMAIL`, o si no hay ninguna cuenta con ese email, el servidor **no arranca** y lo explica en stderr (`[mecena-mcp] MECENA_USER_EMAIL is not set…`).
+- El MCP es una herramienta local de desarrollo (stdio): quien puede lanzarlo ya tiene acceso al disco con los datos, así que no pide contraseña.
 
 ## Requisitos
 
@@ -27,8 +36,8 @@ Si no tienes Pro, `draft_application` devuelve un error legible: *«Necesitas Me
 Prueba rápida, desde cualquier carpeta:
 
 ```bash
-npm --prefix /ABSOLUTE/PATH/TO/mecena run mcp
-# stderr: [mecena-mcp] ready on stdio (cwd /ABSOLUTE/PATH/TO/mecena, public URL http://localhost:3000)
+MECENA_USER_EMAIL=tu@email.com npm --prefix /ABSOLUTE/PATH/TO/mecena run mcp
+# stderr: [mecena-mcp] ready on stdio as tu@email.com (cwd /ABSOLUTE/PATH/TO/mecena, public URL http://localhost:3000)
 # Ctrl+C para salir. stdout es el canal MCP: el servidor solo escribe logs en stderr.
 ```
 
@@ -40,7 +49,7 @@ npm --prefix /ABSOLUTE/PATH/TO/mecena run mcp
    - **Linux:** `~/.config/Claude/claude_desktop_config.json`
 
    También puedes llegar desde Claude Desktop → *Settings* → *Developer* → *Edit Config*.
-2. Copia el bloque `mecena` de [`claude_desktop_config.example.json`](./claude_desktop_config.example.json) dentro de `mcpServers` y cambia las tres apariciones de `/ABSOLUTE/PATH/TO/mecena` por la ruta del repo:
+2. Copia el bloque `mecena` de [`claude_desktop_config.example.json`](./claude_desktop_config.example.json) dentro de `mcpServers`, cambia las tres apariciones de `/ABSOLUTE/PATH/TO/mecena` por la ruta del repo y pon el email de tu cuenta en `MECENA_USER_EMAIL`:
 
    ```json
    {
@@ -52,7 +61,7 @@ npm --prefix /ABSOLUTE/PATH/TO/mecena run mcp
            "tsx", "--tsconfig", "/ABSOLUTE/PATH/TO/mecena/tsconfig.json",
            "/ABSOLUTE/PATH/TO/mecena/src/mcp/server.ts"
          ],
-         "env": { "MECENA_PUBLIC_URL": "http://localhost:3000" }
+         "env": { "MECENA_PUBLIC_URL": "http://localhost:3000", "MECENA_USER_EMAIL": "tu@email.com" }
        }
      }
    }
@@ -69,6 +78,7 @@ Desde cualquier carpeta (`--scope user` para tenerlo en todos tus proyectos):
 ```bash
 claude mcp add mecena --scope user \
   --env MECENA_PUBLIC_URL=http://localhost:3000 \
+  --env MECENA_USER_EMAIL=tu@email.com \
   -- npx --prefix /ABSOLUTE/PATH/TO/mecena tsx \
      --tsconfig /ABSOLUTE/PATH/TO/mecena/tsconfig.json \
      /ABSOLUTE/PATH/TO/mecena/src/mcp/server.ts
@@ -78,7 +88,7 @@ Comprueba con `claude mcp list` (debe salir `mecena … ✓ Connected`) o con `/
 
 ## Guion de la demo (beat 8, opcional)
 
-Antes: web arrancada con el perfil de demo sembrado (`npm run demo:reset`), móvil en la URL del túnel y `MECENA_PUBLIC_URL` apuntando a ese túnel.
+Antes: web arrancada, sesión iniciada en el móvil con la misma cuenta que `MECENA_USER_EMAIL` (con la entrevista hecha), móvil en la URL del túnel y `MECENA_PUBLIC_URL` apuntando a ese túnel. Los enlaces que devuelve Claude solo se abren con la sesión de esa cuenta.
 
 1. En Claude Desktop, escribe:
    > **Hazme el dossier para la convocatoria de artes plásticas de la Diputación y pásamelo en PDF.**
@@ -99,15 +109,19 @@ Si el beat se recorta por tiempo, basta con mencionarlo: «y todo esto también 
 
 ## Agente dentro de la app (`POST /api/agent`)
 
+Necesita sesión (cookie `mecena_session`): sin ella responde 401. Desde la terminal, entra primero y guarda la cookie:
+
 ```bash
-curl -s localhost:3000/api/agent -H 'content-type: application/json' \
+curl -s -c /tmp/mecena.jar localhost:3000/api/auth/login -H 'content-type: application/json' \
+  -d '{"email":"tu@email.com","password":"…"}' > /dev/null
+curl -s -b /tmp/mecena.jar localhost:3000/api/agent -H 'content-type: application/json' \
   -d '{"message":"hazme el dossier para la convocatoria de artes plásticas","history":[]}'
 # → { "reply": "Dossier artístico listo: … Ábrelo aquí: http://localhost:3000/dossier?…", "toolCalls": [{ "name": "build_dossier", … }] }
 ```
 
 - **Con `ANTHROPIC_API_KEY`:** Claude (`MECENA_MODEL_SMART`, por defecto `claude-opus-5-5`) con las 8 herramientas, `tool_choice: auto` (nunca forzado), bucle de hasta 6 pasos; los errores de herramienta vuelven a Claude como `tool_result` con `is_error` para que se explique o corrija.
 - **Sin clave (mocks):** un enrutador por palabras clave: *tribunal/puntúa* → `score_application`; *solicitud* → `draft_application`; *dossier* → `build_dossier` (*pdf* → `export_dossier_pdf`); *explica/bases* + convocatoria conocida → `explain_call`; *convocatoria/beca/ayuda/premio* → `search_calls`; *perfil* → `get_profile`.
-- Campo opcional `appUserId` en el cuerpo: usa la suscripción de ese usuario de RevenueCat; si falta, la del almacén.
+- Las herramientas se ejecutan como la cuenta de la sesión: su perfil activo y su suscripción. Un `appUserId` en el cuerpo se ignora.
 
 ## Problemas frecuentes
 
@@ -119,6 +133,7 @@ curl -s localhost:3000/api/agent -H 'content-type: application/json' \
 | `process.loadEnvFile is not a function` | Node demasiado antiguo: hace falta Node ≥ 22.12. |
 | Error `Unexpected token` / el servidor se desconecta | Algo escribió en stdout. El servidor redirige `console.log` a stderr; no añadas `print`/`console.log` a stdout en código que cargue el servidor MCP. |
 | Los enlaces dan `localhost` en el móvil | Cambia `MECENA_PUBLIC_URL` a la URL del túnel en la config y reinicia Claude Desktop. |
-| «Necesitas Mecena Pro…» | Es el paywall. Compra en el móvil (sandbox) o, en local, `POST /api/entitlements` con `{ "appUserId": "<meta.appUserId>", "pro": true }`. |
-| No salen convocatorias | Ejecuta `npm run demo:reset` (perfil sembrado) o comprueba que existe `data/calls/calls.json`. |
+| «Necesitas Mecena Pro…» | Es el paywall. Compra en el móvil (sandbox) con la misma cuenta o, en local, `POST /api/entitlements` con `{ "pro": true }` y la cookie de sesión de esa cuenta (se aplica a su propio `appUserId`). |
+| `MECENA_USER_EMAIL is not set` / `no Mecena account with email …` | Pon el email de tu cuenta en `env` de la config (o en `.env.local`) y crea la cuenta en `/entrar` contra el mismo `MECENA_DATA_DIR`. |
+| No salen convocatorias | Haz la entrevista con esa cuenta (el perfil empieza vacío) o comprueba que existe `data/calls/calls.json`. |
 | Probar sin Claude Desktop | `npx @modelcontextprotocol/inspector npx --prefix /ABSOLUTE/PATH/TO/mecena tsx --tsconfig /ABSOLUTE/PATH/TO/mecena/tsconfig.json /ABSOLUTE/PATH/TO/mecena/src/mcp/server.ts` |
