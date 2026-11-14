@@ -55,7 +55,7 @@
 
 **Paywall + RevenueCat**
 - [ ] «Prepárame la solicitud» abre la paywall (y la 4.ª convocatoria también).
-- [ ] Se cargan los 3 productos con precios en EUR (9 €/mes, 79 €/año, 15 €) y los textos de [`COPY.md`](COPY.md) §6, garantía incluida.
+- [ ] Se cargan los 3 productos con precios en EUR (3,99 €/mes, 35,88 €/año, 15 €) y los textos de [`COPY.md`](COPY.md) §6, garantía incluida.
 - [ ] Compra **sandbox** completa en el móvil (datos de prueba a mano) en < 15 s.
 - [ ] Tras la compra se desbloquea el entitlement `pro` sin recargar; se ve en el panel de RevenueCat.
 - [ ] «Restaurar compras» y el **usuario de demo ya Pro** funcionan (plan B).

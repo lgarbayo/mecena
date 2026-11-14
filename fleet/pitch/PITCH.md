@@ -82,12 +82,12 @@ Una frase: «Las pymes ya tienen SUBAI o BuscoAyudas; los artistas no tienen a n
 | Plan | Precio | Qué incluye |
 |---|---|---|
 | **Gratis** (gancho) | 0 € | Perfil + dossier en PDF + 3 convocatorias al mes + bases en lenguaje claro |
-| **Pro** | **9 €/mes** o **79 €/año** | Convocatorias y alertas ilimitadas, solicitudes, tribunal simulado, dossier adaptado a cada convocatoria |
+| **Pro** | **3,99 €/mes** o **35,88 €/año** (2,99 €/mes) | Convocatorias y alertas ilimitadas, solicitudes, tribunal simulado, dossier adaptado a cada convocatoria |
 | **Solicitud premium** | **15 €** pago único | Una solicitud completa, para quien no quiere suscripción |
 | **Licencias B2B** | por centro/asociación | Escuelas de arte, asociaciones de artistas (diapositiva 6) |
 
-- **Ancla**: una consultora cobra un **10–15 % de la ayuda**. En una ayuda de 6.000 €, son 600–900 €. Mecena Pro: 79 € al año.
-- **Referencia de mercado**: BuscoAyudas Pro, para pymes, cuesta 19 €/mes según su web. Mecena Pro cuesta 9 €/mes porque un artista no factura como una pyme, y quien no quiere suscripción tiene la **Solicitud premium** de 15 €.
+- **Ancla**: una consultora cobra un **10–15 % de la ayuda**. En una ayuda de 6.000 €, son 600–900 €. Mecena Pro: 35,88 € al año.
+- **Referencia de mercado**: BuscoAyudas Pro, para pymes, cuesta 19 €/mes según su web. Mecena Pro cuesta 3,99 €/mes porque un artista no factura como una pyme, y quien no quiere suscripción tiene la **Solicitud premium** de 15 €.
 - **Garantía**: si en 90 días no has presentado 3 solicitudes, te devolvemos el dinero.
 - Cobro con **RevenueCat** (entitlement `pro`; paywall en «Prepárame la solicitud» y en la 4.ª convocatoria). Lo habéis visto funcionar en sandbox.
 
