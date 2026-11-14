@@ -94,6 +94,15 @@ describe("Paywall (mock purchases)", () => {
     expect(onPurchased.mock.calls[0][0]).toMatchObject({ premiumCredits: 1 });
   });
 
+  it("'Restaurar compras' with only premium credits on a Pro screen says what the credits are for", async () => {
+    await saveEntitlement({ appUserId: "u-paywall", pro: false, premiumCredits: 2, source: "mock", updatedAt: nowIso() });
+    const onPurchased = vi.fn();
+    render(<Paywall open trigger="match_limit" onClose={() => undefined} onPurchased={onPurchased} />);
+    fireEvent.click(screen.getByTestId("restore-purchases"));
+    await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Tienes 2 solicitudes premium"));
+    expect(onPurchased).not.toHaveBeenCalled();
+  });
+
   it("closes with the × button and renders nothing when closed", () => {
     const onClose = vi.fn();
     const { rerender } = render(<Paywall open trigger="jury" onClose={onClose} onPurchased={() => undefined} />);

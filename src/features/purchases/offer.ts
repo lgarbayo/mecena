@@ -11,7 +11,7 @@ export const OFFER = {
   kicker: "Mecena Pro",
   headline: "Presenta más solicitudes, mejor preparadas.",
   stack: [
-    "Todas las convocatorias que encajan contigo, sin límite, y un aviso en la app de las que cierran esta semana",
+    "Todas las convocatorias que encajan contigo, sin límite, y un aviso en la app de las que cierran en los próximos 7 días",
     "Solicitudes escritas con tus palabras: memoria, declaración y presupuesto",
     "Tribunal simulado con los criterios de las bases (o estimados cuando no se publican)",
     "Tu dossier adaptado a cada convocatoria",
@@ -34,6 +34,8 @@ export const OFFER = {
   restore: "Restaurar compras",
   restoring: "Comprobando tus compras…",
   restoreNone: "No hemos encontrado compras activas en esta cuenta.",
+  restoreCreditsOnly: (n: number) =>
+    `${n === 1 ? "Tienes 1 solicitud premium" : `Tienes ${n} solicitudes premium`}: sirve${n === 1 ? "" : "n"} para preparar una solicitud nueva. Esto es de Mecena Pro.`,
   restoreError: "No hemos podido comprobar tus compras ahora mismo. Inténtalo de nuevo en un momento.",
   premiumReady: "Elige una convocatoria y pulsa «Prepárame la solicitud»: Mecena la escribe con tus palabras.",
   premiumReadyLink: "Ver mis convocatorias",

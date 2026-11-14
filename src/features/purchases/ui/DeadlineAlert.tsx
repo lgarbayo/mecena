@@ -11,7 +11,7 @@ export function DeadlineAlert({ pro, results }: { pro: boolean; results: { call:
   if (!soon.length) return null;
   return (
     <section className={s.alert} aria-label="Avisos de cierre" data-testid="deadline-alert">
-      <p className={s.alertTitle}>{soon.length === 1 ? "Una convocatoria tuya cierra esta semana" : "Convocatorias tuyas que cierran esta semana"}</p>
+      <p className={s.alertTitle}>{soon.length === 1 ? "Una convocatoria tuya cierra en los próximos 7 días" : "Convocatorias tuyas que cierran en los próximos 7 días"}</p>
       <ul className={s.alertList}>
         {soon.map(({ call, days }) => (
           <li key={call.id}>

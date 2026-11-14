@@ -21,6 +21,8 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
   const [pendingMock, setPendingMock] = useState<PlanId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [initFailed, setInitFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0); // bump to retry a failed init
   const checkoutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,6 +30,7 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
     let live = true;
     const p = getPurchases();
     setReady(false);
+    setInitFailed(false);
     p.init(appUserId)
       .then(async () => {
         if (!live) return;
@@ -35,11 +38,15 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
         const loaded = await p.getPlans();
         if (live) setPlans(loaded);
       })
-      .catch(() => live && setError(OFFER.loadError));
+      .catch(() => {
+        if (!live) return;
+        setInitFailed(true);
+        setError(OFFER.loadError);
+      });
     return () => {
       live = false;
     };
-  }, [appUserId]);
+  }, [appUserId, attempt]);
 
   const buy = async (id: PlanId) => {
     setError(null);
@@ -49,8 +56,11 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
     const out = await getPurchases().purchase(id, { htmlTarget: checkoutRef.current ?? undefined });
     setBusy(null);
     setPendingMock(null);
-    if (out.status === "purchased") onPurchased(out.entitlement);
-    else if (out.status === "error") setError(out.message || OFFER.error);
+    // the server decides: only an entitlement that unlocks this screen counts as done
+    if (out.status === "purchased") {
+      if (unlocks(trigger, out.entitlement)) onPurchased(out.entitlement);
+      else setError(OFFER.paidNotSynced);
+    } else if (out.status === "error") setError(out.message || OFFER.error);
   };
 
   const restore = async () => {
@@ -60,7 +70,7 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
     try {
       const e = await getPurchases().restore();
       if (unlocks(trigger, e)) onPurchased(e);
-      else setInfo(OFFER.restoreNone);
+      else setInfo(e.premiumCredits > 0 ? OFFER.restoreCreditsOnly(e.premiumCredits) : OFFER.restoreNone);
     } catch (e) {
       setError(e instanceof Error && !e.message.startsWith("sync ") ? e.message : OFFER.restoreError);
     } finally {
@@ -119,7 +129,15 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
       {mode === "revenuecat" && busy && busy !== "restore" && <p className={s.note}>{OFFER.sandboxNote}</p>}
       {error && (
         <p className={s.error} role="alert">
-          {error}
+          {error}{" "}
+          {initFailed && (
+            <Button variant="quiet" onClick={() => {
+                setError(null);
+                setAttempt((n) => n + 1);
+              }}>
+              Reintentar
+            </Button>
+          )}
         </p>
       )}
       {info && (
@@ -130,7 +148,7 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
       <p className={s.guarantee}>{OFFER.guarantee}</p>
       <p className={s.free}>{OFFER.free}</p>
       {!chosen && (
-        <Button variant="quiet" onClick={restore} disabled={disabled} data-testid="restore-purchases">
+        <Button variant="quiet" onClick={restore} disabled={!!busy} data-testid="restore-purchases">
           {busy === "restore" ? OFFER.restoring : OFFER.restore}
         </Button>
       )}
