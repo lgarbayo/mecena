@@ -6,6 +6,7 @@
  */
 import { z } from "zod";
 import {
+  CallType,
   Application,
   ApplicationSection,
   BudgetLine,
@@ -101,6 +102,39 @@ export interface StructureCallInput {
 }
 // returns a Call (validated with the Call schema)
 
+// ---- Deep research (Pro): private calls found on the web for one profile ----
+export interface DeepResearchInput {
+  profile: Profile;
+  today: string; // YYYY-MM-DD (Spain)
+  maxSearches: number; // web searches across the whole run
+  maxOutputTokens: number; // per request
+  maxTotalTokens: number; // input + output across the run
+}
+// No defaults here: this schema is sent to Claude as the structured output format (fallback pass).
+export const DeepResearchCandidate = z.object({
+  title: z.string(),
+  organizer: z.string(),
+  type: CallType,
+  url: z.string().describe("URL exacta de la convocatoria o sus bases, vista durante la búsqueda; vacía si no la hay"),
+  deadline: z.string().nullable().describe("YYYY-MM-DD o null si no se conoce"),
+  deadlineText: z.string(),
+  amountText: z.string(),
+  summary: z.string(),
+  disciplines: z.array(z.string()),
+  beneficiaryKinds: z.array(ProfileKind),
+  region: z.string().nullable(),
+  requirements: z.array(z.string()),
+});
+export type DeepResearchCandidate = z.infer<typeof DeepResearchCandidate>;
+export const DeepResearchCandidates = z.object({ candidates: z.array(DeepResearchCandidate) });
+export interface DeepResearchResult {
+  candidates: DeepResearchCandidate[]; // raw, unvalidated: the service checks them against the Call schema
+  sourceUrls: string[]; // every URL the web search returned (a candidate's URL must come from one of these sites)
+  searches: number;
+  inputTokens: number;
+  outputTokens: number;
+}
+
 // ---- Drafting (WP-08) ----
 export interface DraftApplicationInput {
   profile: Profile;
@@ -144,6 +178,7 @@ export interface AiService {
   explainFit(input: ExplainFitInput): Promise<ExplainFitResult>;
   adaptDossier(input: AdaptDossierInput): Promise<AdaptDossierResult>;
   structureCall(input: StructureCallInput): Promise<Call>;
+  deepResearch(input: DeepResearchInput): Promise<DeepResearchResult>;
   draftApplication(input: DraftApplicationInput): Promise<ApplicationDraftContent>;
   reviseApplication(input: ReviseApplicationInput): Promise<ApplicationDraftContent>;
   judgeApplication(input: JudgeApplicationInput): Promise<JudgeVerdict>;

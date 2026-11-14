@@ -7,6 +7,7 @@ import type { CallsResponse } from "@/contracts/api";
 import { useApp } from "@/components/shell/AppProvider";
 import { Button, Spinner } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
+import { DeepResearchPanel } from "@/features/deep-research/ui/DeepResearchPanel";
 import { apiGet } from "@/lib/api-client";
 import { daysLeft, fitLabel } from "../labels";
 import s from "./calls.module.css";
@@ -154,6 +155,7 @@ export function CallsFeed() {
       {Array.from({ length: data.lockedCount }, (_, i) => (
         <LockedCard key={i} business={business} onOpen={() => setPaywall(true)} />
       ))}
+      {profile && <DeepResearchPanel profileId={profile.id} pro={Boolean(data.pro)} onNeedPro={() => setPaywall(true)} />}
       <Paywall
         open={paywall}
         trigger="match_limit"
