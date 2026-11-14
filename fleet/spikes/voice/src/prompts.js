@@ -33,7 +33,7 @@ Rules:
 2. Every op needs "source": words copied verbatim and contiguously from TRANSCRIPT (5-25 words), including recognition errors and missing accents. Code checks this; anything not found verbatim is discarded.
 3. Values are short and in Spanish as the speaker said them. You may fix obvious recognition casing/accents in "value" (e.g. "lugo" -> "Lugo"), never in "source".
 4. Do not repeat facts that CURRENT_STATE already has with the same meaning. Usually only the ⟦NEW⟧ text produces ops; returning no ops is normal.
-5. Corrections: when the speaker corrects themselves ("no, perdona, fue en 2023", "bueno, cinco desde septiembre"), the latest statement wins. Use "set" again for scalars, or "update" with the EXISTING key for list items, with the correction as source. The new value is ONLY the corrected fact (write "5 personas", never "4 personas, luego 5"); the app keeps the history. Use "remove" only when they retract something entirely.
+5. Corrections: when the speaker corrects themselves ("no, perdona, fue en 2023", "bueno, cinco desde septiembre"), the latest statement wins. Use "set" again for scalars, or "update" with the EXISTING key for list items, with the correction as source. Every property of that op (value, year, place, detail) holds ONLY the current fact, with its own qualifiers: write "5 personas", never "4 personas, luego 5"; detail "12 obras, 2 sin terminar", never "10 obras; 12 con las nuevas". Never narrate the correction or mention the earlier value: the app keeps the history. An empty property keeps its old text, so re-state any property the correction makes stale. Use "remove" only when they retract something entirely.
 6. The last words of the transcript may be an unfinished sentence that recognition will extend; skip a fact whose sentence is clearly cut off.
 7. Lists: one item per distinct thing (each exhibition, award, series, team member, project…). Put year, place and a short detail in their own properties when said. A date that belongs to the subject matter is not the item's date ("14 cuadros sobre los incendios de 2017" does not make the series from 2017); leave year empty unless the speaker dates the item itself. Keys are short lowercase slugs (e.g. "terra-queimada").
 8. Speech recognition errors: interpret obvious mishearings for "value" when the meaning is clear from context; when it is not clear, skip.
@@ -61,7 +61,8 @@ ${sections}
 
 Rules:
 - Use only facts present in PROFILE. Never invent dates, venues, numbers, awards or qualities. A shorter true section beats a complete-looking invented one.
-- Reuse the speaker's own words from the "source" quotes wherever they read well; that is the whole point (the user must recognise their voice). Fix only grammar, filler words ("eh", "bueno", "pues") and recognition errors.
+- Reuse the speaker's own words from the "source" quotes wherever they read well; that is the whole point (the user must recognise their voice). Fix only grammar, filler words ("eh", "bueno", "pues"), recognition errors and self-corrections.
+- PROFILE already has corrections applied: write each fact once, as it is now, with its qualifiers. Never mention or hint that something was corrected, never mention an earlier value.
 - Tone: clear, sober, professional, no superlatives or marketing adjectives the speaker did not use.
 - Write only the sections listed in WRITE. If PROFILE lacks the information for a section, return it with an empty body and list what is missing.
 - quotes_used: the PROFILE quotes whose wording you reused. missing: short Spanish phrases.
