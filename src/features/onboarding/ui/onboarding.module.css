@@ -11,21 +11,11 @@
 .note { margin: 0 0 8px; padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--g-line); color: var(--g-ink-2); }
 .error { margin: 0; padding: 12px 14px; border-radius: 14px; background: rgba(255, 107, 74, 0.16); border: 1px solid rgba(255, 107, 74, 0.4); color: #ffb38a; font-size: 0.95rem; }
 
-/* ---- trust strip ---- */
-.trust {
-  border-left: 3px solid var(--g-accent);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
-  border-top: 1px solid var(--g-line);
-  border-right: 1px solid var(--g-line);
-  border-bottom: 1px solid var(--g-line);
-  border-radius: 18px;
-  padding: 14px 16px;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-.trustTitle { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-family: var(--serif); font-size: 1.08rem; font-weight: 500; }
-.trustTitle svg { color: var(--g-accent); flex: none; }
-.trustMore { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 0.85rem; font-weight: 600; color: var(--g-accent); text-decoration: none; }
+/* ---- trust strip: one line, the promise and where to read more ---- */
+.trust { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--g-line); border-left: 3px solid var(--g-accent); background: rgba(255, 255, 255, 0.05); }
+.trustTitle { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--serif); font-size: 0.95rem; font-weight: 500; line-height: 1.25; }
+.trustTitle svg { color: var(--g-accent); flex: none; width: 18px; height: 18px; }
+.trustMore { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600; color: var(--g-accent); text-decoration: none; white-space: nowrap; }
 
 /* ---- controls ---- */
 .controls { display: flex; flex-direction: column; gap: 12px; }
@@ -84,6 +74,9 @@
 .importBox[open] .importSummary strong::after { content: " ⌄"; }
 .importBody { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
 .importBody > label { align-self: flex-start; cursor: pointer; }
+/* in a sheet on a phone: one column, full-width actions */
+.importBodyBare > label { align-self: stretch; }
+.importBodyBare .textForm { grid-template-columns: 1fr; }
 .importBusy { opacity: 0.6; pointer-events: none; }
 
 .panel {
