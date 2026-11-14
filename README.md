@@ -28,10 +28,10 @@ fly deploy --ha=false --remote-only   # --ha=false: db.json needs exactly one ma
 
 The token expires in a year (Nov 2027). To renew it: `fly tokens create deploy -a mecena -x 8760h | gh secret set FLY_API_TOKEN`.
 
-- Secrets (runtime): `ANTHROPIC_API_KEY` and, optionally, `MECENA_SIGNUP_CODE` (invite-only sign-up) and `BASIC_AUTH_USER` / `BASIC_AUTH_PASSWORD` (`fly secrets set ...`). Without the Anthropic key the app silently falls back to AI mocks.
+- Secrets (runtime): `ANTHROPIC_API_KEY`, **`REVENUECAT_SECRET_API_KEY`** (`sk_…` of the same RevenueCat project as the public key; without it production refuses every purchase, see `docs/revenuecat.md`) and, optionally, `MECENA_SIGNUP_CODE` (invite-only sign-up) and `BASIC_AUTH_USER` / `BASIC_AUTH_PASSWORD` (`fly secrets set ...`). Without the Anthropic key the app silently falls back to AI mocks.
 - Live calls catalogue: besides the curated `data/calls/calls.json`, the server searches BDNS in the background for each profile and refreshes a shared catalogue once a day, in process (`src/instrumentation.ts`, no cron to set up). It lives on the volume (`/data/calls/bdns-live.json`, public call data only). It needs `ANTHROPIC_API_KEY`; `MECENA_CALLS_LIVE=0` turns it off. Details in `data/calls/SOURCES.md`.
 - Pro "Busca más para mí": one background Claude run with web search per profile (capped searches and tokens, cached a week, 3 runs per profile and 6 per user a month), stored per profile in `/data/deep-research.json` and shown as "Sin verificar".
-- `NEXT_PUBLIC_REVENUECAT_*` and `NEXT_PUBLIC_PURCHASES_MOCK` are inlined at build time: pass them as `--build-arg`, not as secrets. The deploy workflow reads them from GitHub repo variables with the same names. Without the public key the paywall runs in mock mode.
+- `NEXT_PUBLIC_REVENUECAT_*` and `NEXT_PUBLIC_PURCHASES_MOCK` are inlined at build time: pass them as `--build-arg`, not as secrets. The deploy workflow reads them from GitHub repo variables with the same names. Without the public key the paywall runs in mock mode, and simulated purchases are only granted outside production with `NEXT_PUBLIC_PURCHASES_MOCK=1`. `NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID` is `mecena_pro`.
 
 ## Local
 
