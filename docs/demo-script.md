@@ -22,7 +22,7 @@
 | **1:30** | PDF abierto | Si pasamos de **1:40**: saltar el cambio a Pyme (6) |
 | **2:02** | Checkout de RevenueCat abierto | Si a **2:25** no está pagado: plan B de la compra |
 | **2:45** | Tribunal en 84 | Si pasamos de **2:45**: saltar el MCP (12) |
-| **2:52** | Cierre | Cierre pase lo que pase |
+| **2:50** | Cierre empezando | Cierre pase lo que pase |
 
 ---
 
@@ -42,10 +42,10 @@
 | 9 | **2:02–2:20** Compra sandbox | «Pro mensual» → checkout de Web Billing dentro de la hoja → tarjeta **4242 4242 4242 4242**, caducidad futura, CVC cualquiera (email de pruebas si lo pide) → pagar → «Activando tu plan…» → la hoja se cierra y **el borrador empieza solo**. | «Esto es RevenueCat Web Billing en sandbox: una compra de pruebas de verdad, con el entitlement `pro` que desbloquea la solicitud.» | Checkout no carga, tarjeta rechazada o > 10 s: «Ahora no» → **cuenta de reserva** (2.º navegador) → «Abre la solicitud». Sin reserva: pestaña 2 → **«Artista Pro con solicitud»** → «Abre la solicitud». · «El pago de pruebas no carga con esta red; seguimos con una cuenta que ya es Pro.» |
 | 10 | **2:20–2:30** Borrador con su voz | «Leyendo las bases… / Usando tus palabras…» → memoria, declaración, presupuesto y documentos → abrir **«Escrito con tus palabras (N)»** en una sección. | «La memoria está escrita con sus palabras: esta frase la ha dicho hace un minuto. Lo que falta lo marca como “[Completa: …]” en vez de inventarlo.» | > 8 s: rellenar («Está leyendo las bases y lo que nos ha contado…»). > 15 s: **cuenta de reserva** o **«Artista Pro con solicitud»** → «Abre la solicitud». · «Mientras piensa, os enseño una ya redactada.» |
 | 11 | **2:30–2:45** Tribunal 61 → 84 | Bajar → **«Pasar el tribunal simulado»** → «Los tres jueces están leyendo tu solicitud…» → **61/100** por criterio → (mejoras ya marcadas) **«Aplicar mejoras»** → **84/100**, «+23 puntos tras las mejoras». | «Un tribunal simulado con los criterios y los pesos oficiales de las bases: 61. Aplicamos lo que piden, solo con datos que ella ha dado… 84. Antes de presentarla. Es orientativo, no una probabilidad.» | Antes de tocar «Pasar el tribunal simulado», si el ensayo no dio 61 → 84 fiable: **«Tribunal determinista (plan B)»** (no cambia una nota ya puesta). Si tarda > 8 s: **cuenta de reserva** o **«Artista Pro con solicitud»** → **«Abre el tribunal (61)»** → «Aplicar mejoras». · «Os enseño el tribunal con la solicitud de Antía.» |
-| 12 | **2:45–2:52** MCP *(opcional)* | Portátil: Claude Desktop con el prompt escrito: «Hazme el dossier para la convocatoria de artes plásticas de la Diputación y pásamelo en PDF.» → `search_calls`, `build_dossier`, `export_dossier_pdf`. | «Y las mismas herramientas son un servidor MCP: desde Claude Desktop, una frase y tienes el dossier para esa convocatoria.» | **Por defecto, solo decir la frase.** El MCP lee el almacén **local** del portátil, no el de Fly: solo enseñarlo si se ha ensayado con servidor local + túnel ([`docs/mcp.md`](mcp.md)). No responde: saltar sin comentarlo. |
-| 13 | **2:52–3:00** Cierre | Volver a `/` o a la diapositiva de tracción. | «Esta noche hemos preguntado a [N] artistas: [X %] [dato de la encuesta]. Tenemos [N] cartas de interés de escuelas y asociaciones. Mecena: tú creas, nosotros hacemos el papeleo. Gracias.» | Sin datos de encuesta ni cartas: solo la frase de marca. **Nunca inventar cifras.** |
+| 12 | **2:45–2:50** MCP *(opcional)* | Portátil: Claude Desktop con el prompt escrito: «Hazme el dossier para la convocatoria de artes plásticas de la Diputación y pásamelo en PDF.» → `search_calls`, `build_dossier`, `export_dossier_pdf`. | «Y las mismas herramientas son un servidor MCP remoto: desde Claude, una frase y tienes el dossier para esa convocatoria.» | **Por defecto, solo decir la frase.** Enseñarlo solo si se ha ensayado con el MCP remoto (`https://mecena.fly.dev/api/mcp`, token de la cuenta de escenario; [`docs/mcp.md`](mcp.md)). No responde: saltar sin comentarlo. |
+| 13 | **2:50–3:00** Cierre | Volver a `/` o a la diapositiva de cierre (8 de [`PITCH.md`](../fleet/pitch/PITCH.md)). | «Mecena prepara; tú presentas. Lo que habéis visto funciona de principio a fin: 37 convocatorias reales, 213 concesiones pasadas y RevenueCat de verdad. Hoy, artistas; mañana, cualquier pyme. Tú creas; Mecena se encarga del papeleo. Gracias.» | Si hemos saltado el MCP, añadir antes de «Hoy»: «Y Claude puede manejarla por MCP». Solo estas cifras, que salen de los datos de la app y de `fleet/IDEA.md`. **Nunca inventar cifras ni decir «millones sin reclamar».** |
 
-Suma: 15 + 40 + 20 + 10 + 5 + 15 + 7 + 5 + 5 + 18 + 10 + 15 + 7 + 8 = **180 s**.
+Suma: 15 + 40 + 20 + 10 + 5 + 15 + 7 + 5 + 5 + 18 + 10 + 15 + 5 + 10 = **180 s** (MCP 5 s, cierre 10 s).
 
 ---
 
@@ -59,7 +59,7 @@ Para un turno corto o un directo torcido. Cuenta de escenario hasta la oferta; c
 | 0:40–0:50 | «Ver convocatorias para mí» → una tarjeta | «Convocatorias reales: por qué encajas y qué te falta.» |
 | 0:50–1:05 | Tarjeta → «Prepárame la solicitud» ×2 → oferta → «Ahora no» | «El dossier es gratis; la solicitud se paga: 9 € al mes con RevenueCat, frente al 10-15 % de una consultora. Con garantía de 90 días.» |
 | 1:05–1:20 | Cuenta de reserva → «Abre el tribunal (61)» → «Aplicar mejoras» → 84 | «Escrita con sus palabras y puntuada con los criterios oficiales antes de presentarla: de 61 a 84.» |
-| 1:20–1:30 | `/` o diapositiva | «[Dato de la encuesta / cartas de interés]. Tú creas; Mecena se encarga del papeleo.» |
+| 1:20–1:30 | `/` o diapositiva | «Mecena prepara; tú presentas. 37 convocatorias reales, RevenueCat de verdad. Tú creas; Mecena se encarga del papeleo.» |
 
 ---
 

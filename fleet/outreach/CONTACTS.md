@@ -1,6 +1,7 @@
 # Mecena: contactos para la encuesta y las LOIs (1hack, 13-14/11/2026)
 
 > Investigado el 13/11/2026 por la noche. Solo datos profesionales y públicos, cada uno con su fuente.
+> **Actualización 14/11:** la encuesta de esta noche y las LOIs son ya **futuras/opcionales**; el cierre de la demo no depende de ellas. Esta lista sirve para los pilotos posteriores.
 > **No se ha contactado con nadie.** Los mensajes son borradores para enviar a mano.
 
 ## Cómo leer esto

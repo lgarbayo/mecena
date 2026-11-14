@@ -28,14 +28,15 @@ Que, con el perfil y el dossier que crea A, el usuario vea **convocatorias reale
 - Cada 2–3 h fusiona `main` en tus ramas abiertas.
 - Claves solo en `.env` (nunca en commits): `NEXT_PUBLIC_REVENUECAT_API_KEY`, `ANTHROPIC_API_KEY`.
 
-## 3. No-código que te toca (tracción)
+## 3. No-código que te toca (tracción) — encuesta y LOIs ahora **futuros / opcionales**
+> Actualización 14/11: no habrá encuesta propia esta noche y probablemente tampoco LOIs. B12, B14 y B16 quedan como trabajo futuro; el cierre de la demo no depende de ellos. B13 y B15 siguen valiendo.
 | # | Tarea | Cuándo |
 |---|---|---|
 | B12 | **Encuesta de 6 preguntas** (Tally o Google Forms) a artistas y creadores; difusión por X y LinkedIn con los textos preparados | Viernes por la noche |
 | B13 | **Contactos concretos**: usa `fleet/outreach/CONTACTS.md` (lo está generando el hilo de outreach) y escribe primero a la prioridad A | Viernes por la noche (artistas) y sábado por la mañana (instituciones) |
 | B14 | **LOIs** no vinculantes de escuelas de arte, asociaciones, academias, gestorías y asociaciones de autónomos, con la plantilla de una página. Un "sí, nos interesa" por mensaje también cuenta (captura con permiso) | Objetivo: 2–3 firmadas antes de las 18:00 del sábado |
 | B15 | **Análisis de competencia** con la skill `competitive-teardown` (Arte Informado y agregadores de convocatorias, consultoras de subvenciones). Sacar 1 diapositiva con "en qué somos distintos" | Sábado, 1 h |
-| B16 | **Números para el cierre de la demo**: % que perdió una convocatoria por enterarse tarde, horas por solicitud, % que pagaría y nº de LOIs. Pásaselos a A antes de las 15:00 | Sábado 15:00 |
+| B16 | *(Futuro/opcional)* Números de encuesta y LOIs. **El cierre de hoy no los usa**: solo 37 convocatorias, 213 concesiones y producto funcionando | — |
 
 ## 4. QA final (con A)
 - 16:00–18:00: recorrido completo de la demo con `hk-qa`. Tú te encargas de que la paywall y la compra sandbox funcionen **en el móvil real**.
