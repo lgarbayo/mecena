@@ -360,6 +360,7 @@ export const NAV: Record<ProfileKind, { key: "onboarding" | "works" | "dossier" 
   ],
   business: [
     { key: "onboarding", label: "Tu empresa" },
+    { key: "dossier", label: "Memoria" }, // company capability memoria (IDEA: dossier = company memoria)
     { key: "calls", label: "Ayudas" },
     { key: "pricing", label: "Pro" },
   ],

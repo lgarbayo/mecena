@@ -261,7 +261,8 @@ export function groupSeries(works: Work[], ctx: { seriesBody?: string; projectId
     }
     out.push({ id, title: g.title || (groups.size === 1 ? fallback : `Otras ${fallback.toLowerCase() === "obra" ? "obras" : fallback.toLowerCase()}`), years: yearsOf(views), description, works: views });
   }
-  if (!out.length && paras.length) out.push({ id: "serie", title: fallback, years: "", description: paras, works: [] });
+  // No works yet: the series text alone, untitled (the rail already names the block; see planCreator).
+  if (!out.length && paras.length) out.push({ id: "serie", title: "", years: "", description: paras, works: [] });
   return out;
 }
 
@@ -324,6 +325,46 @@ export function toCvItem(raw: string, group: CvGroup["key"]): CvItem {
   return { year, text: text.replace(/\s{2,}/g, " ").replace(/[,\s]+$/, ""), place };
 }
 
+const CV_STOP = new Set("el la los las lo un una unos unas de del y e o u en a al con por para que mi mis su sus mas the".split(" "));
+
+/** Content words of a CV line, folded: "Dos EPs publicados: el primero, Dolor…" -> dos, eps, publicados, primero, dolor… */
+function cvTokens(raw: string): string[] {
+  return norm(raw)
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t && !CV_STOP.has(t));
+}
+
+/** Same word, allowing a plural or a short form ("ep"~"eps", "primer"~"primero"); numbers (years) must match exactly. */
+function sameWord(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (/^\d+$/.test(a) || /^\d+$/.test(b)) return false;
+  const [short, long] = a.length <= b.length ? [a, b] : [b, a];
+  return short.length >= 2 && long.startsWith(short) && long.length - short.length <= 2;
+}
+
+/** True when every content word of `a` is in `b` (so `a` says nothing `b` does not already say). */
+function containedIn(a: string[], b: string[]): boolean {
+  return a.length > 0 && a.every((t) => b.some((u) => sameWord(t, u)));
+}
+
+/**
+ * Drops CV lines already said by another line: the profile's achievements and the CV section often repeat the
+ * same facts ("Primer EP: Dolor" and "Dos EPs publicados: el primero, Dolor, y el segundo, Amor"). The fuller line
+ * stays, in the place of the first of them; lines that only share some words are kept.
+ */
+export function dedupeContained(lines: string[]): string[] {
+  const toks = lines.map(cvTokens);
+  const drop = new Set<number>();
+  toks.forEach((a, i) => {
+    toks.forEach((b, j) => {
+      if (i === j || drop.has(i) || drop.has(j)) return;
+      // Strictly fuller line wins; for two lines that contain each other, the first one stays.
+      if (containedIn(a, b) && (!containedIn(b, a) ? true : j < i)) drop.add(i);
+    });
+  });
+  return lines.filter((_, i) => !drop.has(i));
+}
+
 export function buildCv(profile: Profile, cvBody?: string, family: ArtFamily = "artes-visuales"): CvGroup[] {
   const titles = { ...CV_TITLES, ...vocabFor(family).cv };
   const groups = new Map<CvGroup["key"], CvItem[]>();
@@ -338,8 +379,8 @@ export function buildCv(profile: Profile, cvBody?: string, family: ArtFamily = "
     groups.set(g, list);
   };
   profile.education.forEach((e) => add(e, "education"));
-  profile.achievements.forEach((a) => add(a));
-  (bullets(cvBody).length ? bullets(cvBody) : []).forEach((b) => add(b));
+  // Achievements and the CV section's bullets often say the same thing twice: keep each fact once.
+  dedupeContained([...profile.achievements, ...bullets(cvBody)]).forEach((a) => add(a));
   return CV_ORDER.filter((k) => groups.get(k)?.length).map((k) => ({
     key: k,
     title: titles[k],

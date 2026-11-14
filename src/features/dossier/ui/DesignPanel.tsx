@@ -7,12 +7,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { apiSend } from "@/lib/api-client";
+import type { ProfileKind } from "@/contracts";
 import type { DossierDesign } from "../design";
 import { DOSSIER_STYLES, STYLE_LABELS, type DossierStyle } from "../style";
 
 export const DESIGN_API = "/api/dossier/design";
 
-const EXAMPLES = ["Más oscuro, como una noche en el puerto", "Que parezca un fanzine", "La obra a sangre y más aire", "Algo breve, de una página", "Añade una sección sobre mi proceso", "Empieza por la obra y deja la biografía fuera"];
+/** Things to ask for, by profile: an artist talks about their work; a company about its brand and projects. */
+const EXAMPLES_BY_KIND: Record<ProfileKind, string[]> = {
+  creator: ["Más oscuro, como una noche en el puerto", "Que parezca un fanzine", "La obra a sangre y más aire", "Algo breve, de una página", "Añade una sección sobre mi proceso", "Empieza por la obra y deja la biografía fuera"],
+  business: ["Más sobrio y moderno", "Con el azul de nuestra marca", "Más claro y luminoso", "Algo breve, de una página", "Añade una sección sobre nuestros clientes"],
+};
 
 export interface DesignChange {
   design: DossierDesign;
@@ -20,6 +25,8 @@ export interface DesignChange {
 }
 
 export function DesignPanel(props: {
+  /** Profile kind: business gets company wording and examples. Default creator. */
+  kind?: ProfileKind;
   design?: DossierDesign;
   autoDesigning?: boolean;
   suggested: DossierStyle;
@@ -31,6 +38,8 @@ export function DesignPanel(props: {
   onChange: (c: DesignChange) => void;
   onUndo: () => Promise<void>;
 }) {
+  const business = props.kind === "business";
+  const examples = EXAMPLES_BY_KIND[props.kind ?? "creator"];
   const [request, setRequest] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [adjustments, setAdjustments] = useState<string[]>([]);
@@ -61,7 +70,7 @@ export function DesignPanel(props: {
   return (
     <section className="design-panel no-print" aria-labelledby="design-panel-title">
       <div className="design-panel__head">
-        <h2 id="design-panel-title">Diseña tu dossier</h2>
+        <h2 id="design-panel-title">{business ? "Diseña tu memoria" : "Diseña tu dossier"}</h2>
         {props.design ? (
           <p className="design-panel__current">
             Ahora: <strong>{props.design.name}</strong>
@@ -70,7 +79,9 @@ export function DesignPanel(props: {
       </div>
       {props.autoDesigning ? (
         <p className="design-panel__why" role="status">
-          Estoy preparando tu diseño a partir de lo que me has contado y de los colores de tus obras…
+          {business
+            ? "Estoy preparando tu diseño a partir de lo que me has contado de tu empresa…"
+            : "Estoy preparando tu diseño a partir de lo que me has contado y de los colores de tus obras…"}
         </p>
       ) : props.design?.rationale ? (
         <p className="design-panel__why">{props.design.rationale}</p>
@@ -104,7 +115,11 @@ export function DesignPanel(props: {
               submit();
             }
           }}
-          placeholder="Por ejemplo: más oscuro y con letra de libro antiguo, que empiece por mis piezas y añade una sección sobre mi proceso"
+          placeholder={
+            business
+              ? "Por ejemplo: más sobrio, con el azul de nuestra marca, y añade una sección sobre nuestros clientes"
+              : "Por ejemplo: más oscuro y con letra de libro antiguo, que empiece por mis piezas y añade una sección sobre mi proceso"
+          }
           disabled={!!busy || props.autoDesigning}
         />
         <div className="design-panel__actions">
@@ -137,7 +152,7 @@ export function DesignPanel(props: {
       </form>
 
       <div className="design-panel__ideas" aria-label="Ideas">
-        {EXAMPLES.map((ex) => (
+        {examples.map((ex) => (
           <button key={ex} type="button" className="design-chip" disabled={!!busy} onClick={() => send({ request: ex }, "agent")}>
             {ex}
           </button>

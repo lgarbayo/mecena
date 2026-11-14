@@ -17,6 +17,7 @@ import { googleFontUrls, type DossierDesign } from "../design";
 import { paletteFromPixels, suggestStyle } from "../style";
 import { DESIGN_API, DesignPanel } from "./DesignPanel";
 import { DossierDocument } from "./DossierDocument";
+import { wantsHighResolution, wantsLooseImages } from "../images";
 import "./screen.css";
 
 interface DossierPayload {
@@ -25,6 +26,8 @@ interface DossierPayload {
   works: Work[];
   call?: Call;
   adapted: boolean;
+  /** Works whose sheet is not confirmed yet (left out of the PDF). */
+  unreviewed?: number;
 }
 
 export function dossierQuery(p: { profileId?: string; callId?: string; appUserId?: string }): string {
@@ -158,7 +161,11 @@ export function DossierScreen() {
   // The style note is already told by the design panel above; keep it for MCP and the PDF flow only.
   const notes = (data.dossier.variant?.notes ?? []).filter((n) => !n.startsWith("Estilo sugerido"));
   const pdfHref = `${API.dossierPdf}${dossierQuery({ profileId: data.profile.id, callId: data.adapted ? callId : undefined, appUserId })}`;
-  const kindLabel = view.kind === "creator" ? "Dossier artístico" : "Dossier de empresa";
+  const kindLabel = view.kind === "creator" ? "Dossier artístico" : "Memoria de empresa";
+  const business = view.kind === "business";
+  const unreviewed = data.unreviewed ?? 0;
+  const looseImages = !!data.call && wantsLooseImages(data.call);
+  const zipHref = `${API.dossierImages}${dossierQuery({ profileId: data.profile.id, callId })}`;
 
   return (
     <div className="dossier-screen">
@@ -177,8 +184,56 @@ export function DossierScreen() {
         </div>
       </header>
 
+      {looseImages && data.call ? (
+        <aside className="dossier-loose no-print" role="note" data-testid="loose-images">
+          <p className="dossier-loose__title">Esta convocatoria pide las imágenes sueltas, no un dossier en PDF.</p>
+          <p>
+            Las bases piden: {data.call.dossierRequirements?.format ?? "archivos de imagen"}
+            {data.call.dossierRequirements?.maxImages ? ` · máx. ${data.call.dossierRequirements.maxImages} ${data.call.dossierRequirements.maxImages === 1 ? "imagen" : "imágenes"}` : ""}.
+            Descarga aquí tus fotos tal como las subiste, sin recorte y sin tocar.
+          </p>
+          {data.works.length ? (
+            <>
+              <a className="btn btn-primary" href={zipHref} download data-testid="loose-zip">
+                Descargar mis fotos (ZIP)
+              </a>
+              <ul className="dossier-loose__list">
+                {data.works
+                  .filter((w) => w.confirmed !== false)
+                  .slice(0, data.call.dossierRequirements?.maxImages ?? undefined)
+                  .map((w) => (
+                    <li key={w.id}>
+                      <a href={w.imageUrl} download>
+                        {w.sheet.title || "Sin título"}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </>
+          ) : (
+            <p>
+              Aún no tienes fotos confirmadas. <Link href={ROUTES.works}>Súbelas en Obras</Link>.
+            </p>
+          )}
+          {wantsHighResolution(data.call) ? (
+            <p className="dossier-loose__warn">
+              Ojo: piden alta resolución y Mecena guarda tus fotos a 1600 px para el dossier. Para presentarlas, usa los archivos originales de tu cámara o tu
+              escáner.
+            </p>
+          ) : null}
+        </aside>
+      ) : null}
+
+      {unreviewed > 0 ? (
+        <p className="dossier-unreviewed no-print" role="status" data-testid="unreviewed">
+          {unreviewed === 1 ? "1 obra sin revisar" : `${unreviewed} obras sin revisar`}: no {unreviewed === 1 ? "entra" : "entran"} en el PDF hasta que confirmes su ficha.{" "}
+          <Link href={ROUTES.works}>Revisar en Obras</Link>
+        </p>
+      ) : null}
+
       {suggestion ? (
         <DesignPanel
+          kind={view.kind}
           autoDesigning={autoDesigning}
           design={design}
           suggested={suggestion.style}
@@ -207,6 +262,7 @@ export function DossierScreen() {
               ))}
             </ul>
           ) : null}
+          {data.adapted && data.call.dossierRequirements?.maxFileMb !== undefined && !looseImages ? <PdfSizeLine href={pdfHref} /> : null}
           {data.adapted && view.variant ? <VariantPanel variant={view.variant} /> : null}
           {data.adapted ? null : (
             <>
@@ -221,9 +277,16 @@ export function DossierScreen() {
       ) : null}
 
       {blank ? (
-        <p className="dossier-empty no-print">
-          Tu dossier se irá escribiendo mientras hablas con Mecena. <Link href={ROUTES.onboarding}>Empieza la entrevista</Link> o <Link href={ROUTES.works}>fotografía tus obras</Link>.
-        </p>
+        business ? (
+          <p className="dossier-empty no-print">
+            Tu memoria de empresa se irá escribiendo mientras le cuentas a Mecena a qué os dedicáis. <Link href={ROUTES.onboarding}>Cuéntanos tu empresa</Link>.
+          </p>
+        ) : (
+          <p className="dossier-empty no-print">
+            Tu dossier se irá escribiendo mientras hablas con Mecena. <Link href={ROUTES.onboarding}>Empieza la entrevista</Link> o{" "}
+            <Link href={ROUTES.works}>fotografía tus obras</Link>.
+          </p>
+        )
       ) : null}
 
       {fontUrls.map((href) => (
@@ -242,6 +305,27 @@ export function DossierScreen() {
         }}
       />
     </div>
+  );
+}
+
+/** The real size of the call version of the PDF against the call's limit (measured on the server). */
+function PdfSizeLine({ href }: { href: string }) {
+  const [note, setNote] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    apiGet<{ note?: string }>(`${href}${href.includes("?") ? "&" : "?"}info=1`)
+      .then((r) => !cancelled && setNote(r.note ?? null))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [href]);
+  return note ? (
+    <p className="dossier-variant__size" data-testid="pdf-size">
+      {note}
+    </p>
+  ) : (
+    <p className="dossier-variant__size dossier-variant__crit">Midiendo el peso del PDF…</p>
   );
 }
 

@@ -106,7 +106,7 @@ export async function describeWork(id: string, voiceDescription?: string): Promi
   } else {
     // Not touched by hand: the new reading replaces the old one. The concept in particular is replaced,
     // never merged, so a sentence the artist no longer says does not linger.
-    sheet = { ...stripEmpty(w.sheet), ...stripEmpty(r.sheet) };
+    sheet = { title: r.sheet.title, ...stripEmpty(w.sheet), ...stripEmpty(r.sheet) };
     if (!stripEmpty(r.sheet).concept) delete sheet.concept;
   }
   // The artist's own crop (changed or removed by hand) wins; otherwise take the new suggestion.

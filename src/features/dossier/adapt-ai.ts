@@ -9,6 +9,7 @@
 import { AdaptDossierResult, type AdaptDossierInput, type AiSlice, type Call, type CallCriterion, type DossierSection, type Profile } from "@/contracts";
 import { structured } from "@/server/ai/llm";
 import { keywords } from "./variant";
+import { wantsLooseImages } from "./images";
 
 export const SECTION_TITLES: Record<string, string> = {
   statement: "Declaración artística",
@@ -167,23 +168,37 @@ function mockAdapt({ profile, call, sections, works }: AdaptDossierInput): Adapt
     .map((s) => ({ what: SECTION_TITLES[s.key] ?? "Idea de proyecto", why: "No puntúa en ningún criterio de esta convocatoria; sigue en tu dossier general." }));
   const top = [...call.criteria].sort((a, b) => b.maxPoints - a.maxPoints)[0];
   const strategy = top
-    ? `Ordenamos tu dossier por lo que más puntúa en esta convocatoria: primero «${top.name}» (${pts(top)}). Lo que aún no nos has contado queda marcado como [PENDIENTE] para que lo completes; no inventamos nada.`
+    ? `Ordenamos tu ${profile.kind === "business" ? "memoria" : "dossier"} por lo que más puntúa en esta convocatoria: primero «${top.name}» (${pts(top)}). Lo que aún no nos has contado queda marcado como [PENDIENTE] para que lo completes; no inventamos nada.`
     : "Las bases no publican criterios de valoración: abrimos con lo que más se acerca a lo que piden y mantenemos tus textos. Lo que falta queda marcado como [PENDIENTE].";
-  return { strategy, sections: out, omitted, questions: questions.slice(0, 5), formatChecks: formatChecks(call, works.length) };
+  return { strategy, sections: out, omitted, questions: questions.slice(0, 5), formatChecks: formatChecks(call, works.length, profile.kind) };
 }
 
 const pts = (c: CallCriterion) => `${c.maxPoints} ${c.maxPoints === 1 ? "punto" : "puntos"}`;
 
+/**
+ * Required documents this dossier already covers (its sections), so the check says "Sale de este dossier".
+ * Includes the short bio and the series text: both are dossier sections, not something the artist adds apart.
+ */
+export const DOSSIER_DOC =
+  /dossier|portfolio|porfolio|memoria|curr[ií]cul|\bcv\b|trayectoria|statement|declaraci[oó]n art|biograf|\bbio\b|presentaci[oó]n de la serie|texto de la serie/i;
+
 /** Deterministic format checks from the call's rules (also used to complete the model's list). */
-export function formatChecks(call: Call, worksCount: number): AdaptDossierResult["formatChecks"] {
+export function formatChecks(call: Call, worksCount: number, kind: Profile["kind"] = "creator"): AdaptDossierResult["formatChecks"] {
   const req = call.dossierRequirements;
   const out: AdaptDossierResult["formatChecks"] = [];
   if (req?.maxImages !== undefined)
-    out.push({ rule: `Máximo ${req.maxImages} imágenes`, status: "ok", note: worksCount ? `Van ${Math.min(worksCount, req.maxImages)}.` : "Aún no has subido obras." });
-  if (req?.maxFileMb !== undefined) out.push({ rule: `Archivo de ${req.maxFileMb} MB como máximo`, status: "riesgo", note: "Compruébalo al descargar el PDF: depende del peso de tus fotos." });
-  if (req?.format) out.push({ rule: `Formato: ${req.format}`, status: /pdf/i.test(req.format) ? "ok" : "riesgo", note: /pdf/i.test(req.format) ? "Mecena lo exporta en PDF." : "Revisa que el formato coincide." });
+    out.push({ rule: `Máximo ${req.maxImages} imágenes`, status: "ok", note: worksCount ? `Van ${Math.min(worksCount, req.maxImages)}.` : kind === "business" ? "Aún no has subido fotos." : "Aún no has subido obras." });
+  if (req?.maxFileMb !== undefined) out.push({ rule: `Archivo de ${req.maxFileMb} MB como máximo`, status: "riesgo", note: "Al preparar el PDF te decimos cuánto pesa; depende de tus fotos." });
+  if (req?.format) {
+    const loose = wantsLooseImages(call);
+    out.push({
+      rule: `Formato: ${req.format}`,
+      status: loose ? "riesgo" : /pdf/i.test(req.format) ? "ok" : "riesgo",
+      note: loose ? "Pide las imágenes sueltas, no un PDF: descárgalas desde tu dossier." : /pdf/i.test(req.format) ? "Mecena lo exporta en PDF." : "Revisa que el formato coincide.",
+    });
+  }
   for (const d of call.requiredDocuments) {
-    const ours = /dossier|portfolio|porfolio|memoria|curr[ií]cul|\bcv\b|trayectoria|statement|declaraci[oó]n art/i.test(d);
+    const ours = DOSSIER_DOC.test(d);
     out.push({ rule: d, status: ours ? "ok" : "no_aplica", note: ours ? "Sale de este dossier; revísalo antes de presentarlo." : "No va en el dossier: lo aportas tú en la solicitud." });
   }
   return out;

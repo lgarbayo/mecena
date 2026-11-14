@@ -52,7 +52,8 @@ export async function buildDossier(input: { profileId: string; callId?: string; 
   };
   if (!input.callId) return base;
   const call = getCall(input.callId);
-  const plan = planVariant({ works, call, profile, imageBytes: await imageSizer() });
+  // What goes to a call is only what the artist confirmed: unreviewed sheets never count or appear.
+  const plan = planVariant({ works: pdfWorks(works), call, profile, imageBytes: await imageSizer() });
   if (input.ai === false) return { ...base, workIds: plan.workIds, variant: plan.variant };
   const kept = orderWorks(works, plan.workIds);
   const adaptation = await adaptVariant({ profile, call, sections: base.sections, works: kept });
@@ -228,4 +229,27 @@ export async function exportDossierPdf(input: { profileId: string; callId?: stri
   fs.writeFileSync(filePath, bytes);
   const size = pdfReport(bytes);
   return { url: pdfUrl(profile.id, input.callId), filePath, pages: countPages(bytes), sizeMb: Math.round((bytes.length / (1024 * 1024)) * 100) / 100, note: pdfSizeNote(size) };
+}
+
+/**
+ * The artist's own photos as files, for calls that want loose images instead of a PDF: the untouched originals
+ * (no crop, no re-encoding), confirmed works only, in the call's order and limit when there is a call.
+ */
+export async function dossierImages(input: { profileId: string; callId?: string }): Promise<{ name: string; data: Buffer; mediaType: string }[]> {
+  const profile = getProfile(input.profileId);
+  const all = pdfWorks(sortWorks(listWorks(profile.id)));
+  const ids = input.callId ? (await buildDossier({ profileId: profile.id, callId: input.callId, ai: false })).workIds : all.map((w) => w.id);
+  const { readImageBytes, sniff } = await import("./pdf/images");
+  const { imageFileName } = await import("./images");
+  const out: { name: string; data: Buffer; mediaType: string }[] = [];
+  for (const w of orderWorks(all, ids)) {
+    const data = readImageBytes(w.imageUrl);
+    if (!data) continue;
+    const format = sniff(data);
+    const webp = data.subarray(8, 12).toString("latin1") === "WEBP";
+    const ext = format === "png" ? "png" : format === "jpg" ? "jpg" : webp ? "webp" : undefined;
+    if (!ext) continue;
+    out.push({ name: imageFileName(profile.displayName, w, ext, out.length + 1), data, mediaType: ext === "jpg" ? "image/jpeg" : `image/${ext}` });
+  }
+  return out;
 }

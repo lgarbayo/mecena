@@ -11,14 +11,14 @@ import type { PdfImage } from "./images";
 /** Long edge for the "smaller photos" pass when a call caps the file size. */
 export const REDUCED_EDGE = 1200;
 
-type Sharp = typeof import("sharp");
+type Sharp = (typeof import("sharp"))["default"];
 let sharpLib: Sharp | null | undefined;
 
 async function loadSharp(): Promise<Sharp | null> {
   if (sharpLib !== undefined) return sharpLib;
   try {
-    const mod = (await import("sharp")) as unknown as { default?: Sharp } & Sharp;
-    sharpLib = mod.default ?? mod;
+    const mod = (await import("sharp")) as unknown as { default?: Sharp };
+    sharpLib = mod.default ?? (mod as unknown as Sharp);
   } catch (e) {
     console.warn("[dossier] sharp not available: PDF photos go uncropped", e instanceof Error ? e.message : e);
     sharpLib = null;

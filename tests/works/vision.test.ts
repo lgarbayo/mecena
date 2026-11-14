@@ -48,11 +48,30 @@ describe("worksAi.real (Claude vision, mocked transport)", () => {
     expect(r.sheet.dimensions).toBe("50 x 70 cm");
   });
 
-  it("falls back to the mock on AiError", async () => {
+  it("on AiError: sheet from the voice only, whole photo, and flagged so the UI can say so", async () => {
     failWith = new AiError("nope", "refusal");
     const r = await worksAi.real.describeWork(input("Se llama Redeira II, acuarela sobre papel de 2025, 50 por 70, de la serie Redeiras"));
     expect(r.sheet).toMatchObject({ title: "Redeira II", year: 2025, dimensions: "50 x 70 cm", series: "Redeiras" });
+    // Never the mock's example crop: a failed reading must not pretend to have framed the work.
     expect(r.crop).toEqual({ x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 });
+    expect(r.fallback).toBe(true);
+  });
+
+  it("without a voice note, title and concept are never taken from the model (no invention)", async () => {
+    structured.mockResolvedValue({ sheet: { title: "Atardecer en la ría", concept: "Una reflexión sobre el paso del tiempo.", technique: "óleo sobre lienzo" }, crop: { x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 }, confidence: 0.6 });
+    const r = await worksAi.real.describeWork(input());
+    expect(r.sheet.title).toBe("Sin título");
+    expect(r.sheet.concept).toBeUndefined();
+    expect(r.sheet.technique).toBe("óleo sobre lienzo"); // evident from the image: allowed
+  });
+
+  it("with a note, a title the artist never said is dropped; a title they said is kept", async () => {
+    structured.mockResolvedValue({ sheet: { title: "Marea alta", concept: "Habla de mi abuela." }, crop: { x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 }, confidence: 0.6 });
+    const invented = await worksAi.real.describeWork(input("Es un óleo que habla de mi abuela"));
+    expect(invented.sheet.title).toBe("Sin título");
+    expect(invented.sheet.concept).toBe("Habla de mi abuela.");
+    structured.mockResolvedValue({ sheet: { title: "Marea Alta" }, crop: { x: 0, y: 0, width: 1, height: 1, rotationDeg: 0 }, confidence: 0.6 });
+    expect((await worksAi.real.describeWork(input("esta es marea alta, de la serie Costas"))).sheet.title).toBe("Marea Alta");
   });
 
   it("sanitizes crops: out-of-bounds clamped, tiny or wild crops become identity", () => {

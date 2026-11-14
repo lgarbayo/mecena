@@ -243,7 +243,7 @@ function mockFirstDesign(input: DesignDossierInput): Design {
   }
   if (input.workColors[0]) why.push("los colores de tus obras");
   d.name = why.length ? "A partir de tu entrevista" : d.name;
-  d.rationale = `${why.length ? `Lo he diseñado a partir de ${why.join(", ")}.` : "He partido del estilo que mejor encaja con tu trabajo."} Si lo quieres de otra manera, dímelo con tus palabras.`;
+  d.rationale = `${why.length ? `Lo he diseñado a partir de ${why.join(", ")}.`.replace(/\bde el\b/g, "del") : "He partido del estilo que mejor encaja con tu trabajo."} Si lo quieres de otra manera, dímelo con tus palabras.`;
   return d;
 }
 

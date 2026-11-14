@@ -458,7 +458,7 @@ export function CreatorPdf({ view: full, images, st }: { view: CreatorView; imag
           <Page key={`series-${s.id}`} size="A4" style={st.s.page}>
             <Ruled st={st} name={b.title} sub={view.series.length > 1 ? `${vocab.series} ${i + 1} de ${view.series.length}` : undefined}>
               <View wrap={false}>
-                <Text style={st.s.sectionTitle}>{s.title}</Text>
+                {s.title ? <Text style={st.s.sectionTitle}>{s.title}</Text> : null}
                 {s.years ? <Text style={st.s.years}>{s.years}</Text> : null}
                 {s.description.length ? (
                   <View style={st.s.seriesText}>

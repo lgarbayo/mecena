@@ -8,7 +8,8 @@ import { useApp } from "@/components/shell/AppProvider";
 import { apiSend } from "@/lib/api-client";
 
 export function DemoReset({ email }: { email: string }) {
-  const { refresh } = useApp();
+  const { refresh, profile } = useApp();
+  const business = profile?.kind === "business";
   const [state, setState] = useState<"idle" | "busy" | "done" | "error">("idle");
   const reset = async () => {
     if (!window.confirm("Se borrarán tu perfil, tus obras, tu dossier y tus solicitudes. ¿Empezar de cero?")) return;
@@ -47,11 +48,13 @@ export function DemoReset({ email }: { email: string }) {
           <Link href={ROUTES.onboarding} className="btn btn-ghost">
             Hablar / Alta
           </Link>
-          <Link href={ROUTES.works} className="btn btn-ghost">
-            Obras
-          </Link>
+          {business ? null : (
+            <Link href={ROUTES.works} className="btn btn-ghost">
+              Obras
+            </Link>
+          )}
           <Link href={ROUTES.dossier} className="btn btn-ghost">
-            Dossier
+            {business ? "Memoria" : "Dossier"}
           </Link>
           <Link href={ROUTES.calls} className="btn btn-ghost">
             Convocatorias
