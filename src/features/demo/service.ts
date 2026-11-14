@@ -27,7 +27,8 @@ export interface DemoResetResult {
 }
 
 /** Marks the Pro granted by the demo scenario (B's entitlement code leaves it alone, see docs/demo-script.md). */
-export const DEMO_PRODUCT_ID = "demo";
+export { DEMO_PRODUCT_ID } from "@/features/purchases/server";
+import { DEMO_PRODUCT_ID } from "@/features/purchases/server";
 
 /**
  * Whether this account may load the Pro scenario: its email is in DEMO_EMAILS, or purchases are entirely mocked
