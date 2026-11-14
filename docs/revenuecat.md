@@ -30,7 +30,8 @@ Mecena is a web app / PWA, so it sells through **RevenueCat Web Billing** (Strip
 NEXT_PUBLIC_REVENUECAT_API_KEY=rcb_sb_xxxxxxxx   # sandbox public key
 REVENUECAT_SECRET_API_KEY=sk_xxxxxxxx            # optional but recommended: server re-verifies every purchase
 NEXT_PUBLIC_PURCHASES_MOCK=0
-# NEXT_PUBLIC_REVENUECAT_OFFERING_ID=default     # defaults: offering "default", entitlement "pro"
+NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID=mecena_pro   # the entitlement identifier in the dashboard (default "pro")
+# NEXT_PUBLIC_REVENUECAT_OFFERING_ID=default     # default offering "default"
 ```
 
 Restart `npm run dev` after editing (`NEXT_PUBLIC_*` values are inlined at build time).
