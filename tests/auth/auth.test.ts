@@ -34,6 +34,30 @@ describe("passwords", () => {
   });
 });
 
+describe("profile chosen on the first screen", () => {
+  it("sign-up with kind business starts the account in a blank pyme profile", async () => {
+    const res = await signup(signupReq({ email: "taller@example.com", password: TEST_PASSWORD, kind: "business" }));
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.profile).toMatchObject({ kind: "business", ownerId: body.user.id });
+    expect(readDb().profiles.filter((p) => p.ownerId === body.user.id).map((p) => p.kind)).toEqual(["business"]);
+  });
+
+  it("login with a kind switches to that profile (created blank the first time); without one it keeps the last", async () => {
+    await signup(signupReq({ email: "dos@example.com", password: TEST_PASSWORD }));
+    const asPyme = await (await login(loginReq({ email: "dos@example.com", password: TEST_PASSWORD, kind: "business" }))).json();
+    expect(asPyme.profile.kind).toBe("business");
+    const again = await (await login(loginReq({ email: "dos@example.com", password: TEST_PASSWORD }))).json();
+    expect(again.profile.id).toBe(asPyme.profile.id);
+    const back = await (await login(loginReq({ email: "dos@example.com", password: TEST_PASSWORD, kind: "creator" }))).json();
+    expect(back.profile.kind).toBe("creator");
+  });
+
+  it("an unknown kind is a 400", async () => {
+    expect((await signup(signupReq({ email: "x@example.com", password: TEST_PASSWORD, kind: "artist" }))).status).toBe(400);
+  });
+});
+
 describe("POST /api/auth/signup", () => {
   it("creates the account with its own blank creator profile, signs in, and stores only hashes", async () => {
     const res = await signup(signupReq({ email: "  Antia@Example.COM ", password: TEST_PASSWORD }));

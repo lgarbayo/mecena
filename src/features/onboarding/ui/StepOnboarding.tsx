@@ -32,6 +32,7 @@ import { VoiceOrb } from "./VoiceOrb";
 import l from "./live.module.css";
 import s from "./steps.module.css";
 import { Icon } from "@/components/ui/icons";
+import { LogoMark } from "@/components/ui/Logo";
 import { LoadingRegion, SkeletonText } from "@/components/ui";
 
 /** GET current onboarding state (profile, dossier sections, transcript), owned by WP-01. */
@@ -100,8 +101,6 @@ export function StepOnboarding() {
   const [voiceOk, setVoiceOk] = useState(true);
   const [micNotice, setMicNotice] = useState<string | null>(null);
   const [photoOpen, setPhotoOpen] = useState(false);
-  const [switching, setSwitching] = useState(false);
-  const [switchError, setSwitchError] = useState<string | null>(null);
   const [leaving, setLeaving] = useState<string | null>(null);
   /** The person asked to start over: the next onboarding's first turn wipes the earlier one (server-side reset). */
   const [restart, setRestart] = useState(false);
@@ -340,23 +339,6 @@ export function StepOnboarding() {
     }
   };
 
-  const switchKind = async (k: ProfileKind) => {
-    if (k === kind || switching || busy) return;
-    setSwitching(true);
-    setSwitchError(null);
-    try {
-      await app.setMode(k);
-      turnsOffset.current = queue.snapshot.length;
-      setTurns([...queue.snapshot]);
-      setSections([]);
-      setHistory([]);
-    } catch {
-      setSwitchError(C.switchFailed);
-    } finally {
-      setSwitching(false);
-    }
-  };
-
   const openPhoto = () => {
     resumeAfterPhoto.current = speech.listening;
     speech.stop(); // the sheet dictates the work's sheet with its own microphone
@@ -409,6 +391,7 @@ export function StepOnboarding() {
         <header className={s.top}>
           <div className={s.topRow}>
             <Link href={ROUTES.home} className={g.brand} onClick={guard(ROUTES.home)}>
+              <LogoMark size={20} />
               Mecena
             </Link>
             {phase.at !== "choose" && (
@@ -431,25 +414,17 @@ export function StepOnboarding() {
 
         {phase.at === "choose" && (
           <section className={`${s.body} ${s.chooseBody}`} key="choose">
-            <div className={s.kinds} role="group" aria-label="Perfil" aria-busy={switching}>
-              {(["creator", "business"] as const).map((k) => (
-                <button key={k} type="button" className={s.kind} aria-pressed={kind === k} disabled={switching || busy} onClick={() => void switchKind(k)} data-testid={`kind-${k}`}>
-                  {switching && kind !== k ? C.switching : C.kind[k]}
-                </button>
-              ))}
-            </div>
+            {/* the profile was chosen on the opening screen (or with the header switch): here it is only named */}
+            <p className={g.kicker} data-testid="onboarding-kind">
+              {C.kind[kind]}
+            </p>
             <div className={s.chooseHead}>
               <h1 className={s.question}>{C.chooseTitle}</h1>
               <p className={s.example}>{C.chooseLede(steps.length)}</p>
             </div>
-            {switchError && (
-              <p className={s.micError} role="alert">
-                {switchError}
-              </p>
-            )}
             <TrustStrip kind={kind} onNavigate={guard(ROUTES.trust)} />
             <div className={s.choices}>
-              <button type="button" className={`${g.glass} ${s.choice}`} onClick={() => start("voice")} disabled={!voiceOk || switching} data-testid="choose-voice">
+              <button type="button" className={`${g.glass} ${s.choice}`} onClick={() => start("voice")} disabled={!voiceOk} data-testid="choose-voice">
                 <span className={s.choiceIcon}>
                   <MicIcon />
                 </span>
@@ -463,7 +438,7 @@ export function StepOnboarding() {
                   )}
                 </span>
               </button>
-              <button type="button" className={`${g.glass} ${s.choice}`} onClick={() => start("text")} disabled={switching} data-testid="choose-text">
+              <button type="button" className={`${g.glass} ${s.choice}`} onClick={() => start("text")} data-testid="choose-text">
                 <span className={s.choiceIcon}>
                   <PenIcon />
                 </span>

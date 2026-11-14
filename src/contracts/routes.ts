@@ -1,6 +1,7 @@
 /** UI routes (Spanish slugs) and API paths. Use these constants instead of string literals. */
 export const ROUTES = {
   home: "/",
+  start: "/empezar", // first screen, before signing in: creator or pyme (signed out, "/" redirects here)
   onboarding: "/onboarding",
   works: "/obras",
   dossier: "/dossier",
@@ -21,7 +22,17 @@ export const ROUTES = {
  * Pages anyone can open without an account (src/proxy.ts lets them through): the opening data screen (pitch beat 1)
  * and the trust promise. They read no user data on the server; signed in, they show the personal bits too.
  */
-export const PUBLIC_PAGES: readonly string[] = [ROUTES.home, ROUTES.trust];
+export const PUBLIC_PAGES: readonly string[] = [ROUTES.home, ROUTES.start, ROUTES.trust];
+
+/** The profile chosen on the first screen travels to /entrar as ?perfil=creador|pyme (Spanish slugs, like the routes). */
+export const KIND_SLUG = { creator: "creador", business: "pyme" } as const satisfies Record<"creator" | "business", string>;
+export function kindFromSlug(slug: string | null | undefined): "creator" | "business" | undefined {
+  return slug === KIND_SLUG.creator ? "creator" : slug === KIND_SLUG.business ? "business" : undefined;
+}
+/** First screen -> create the account (or sign in) with that profile, then the opening screen. */
+export function startRoute(kind: "creator" | "business"): string {
+  return `${ROUTES.login}?cuenta=nueva&perfil=${KIND_SLUG[kind]}`;
+}
 
 const NEXT_BASE = "http://mecena.invalid";
 

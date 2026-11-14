@@ -2,6 +2,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 export * from "./skeleton";
+export { LogoMark, LOGO_PATH } from "./Logo";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "quiet";
 

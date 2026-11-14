@@ -17,6 +17,19 @@
 .tabs button[aria-selected="true"] { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-sm); }
 .tabs button:focus-visible { outline: 1.5px solid var(--focus); outline-offset: 2px; }
 
+/* the profile chosen on the first screen, and the choice itself when sign-up came without one */
+.chosen { margin: -8px 0 16px; font-size: 14px; color: var(--text-2); }
+.chosen strong { color: var(--text-1); font-weight: 500; }
+.chosen a { color: var(--text-1); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 3px; }
+.kinds { display: flex; gap: 2px; border-radius: var(--radius-pill); padding: 3px; background: var(--surface-3); }
+.kinds button {
+  flex: 1; border: 0; background: transparent; min-height: 36px; padding: 6px 12px; border-radius: var(--radius-pill);
+  font: 500 14px/1 var(--font-sans); color: var(--text-2); cursor: pointer; touch-action: manipulation;
+  transition: background 160ms var(--ease-out), color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+}
+.kinds button[aria-pressed="true"] { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-sm); }
+.kinds button:focus-visible { outline: 1.5px solid var(--focus); outline-offset: 2px; }
+
 .form { display: flex; flex-direction: column; gap: 16px; }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field > span { font-size: 14px; font-weight: 500; letter-spacing: 0.01em; color: var(--text-2); }
