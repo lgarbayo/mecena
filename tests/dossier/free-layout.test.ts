@@ -6,7 +6,7 @@ import { AiError } from "@/server/ai/llm";
 import { FONT_FAMILIES, FONT_TABLE, snapFace } from "@/features/dossier/layout/fonts";
 import { LayoutError, prepareLayout, SAFE_X, SAFE_Y } from "@/features/dossier/layout/prepare";
 import { textsOutgrewLayout } from "@/features/dossier/layout/notes";
-import { FreeLayout, MAX_PAGES, type FreeLayout as Layout } from "@/features/dossier/layout/schema";
+import { FreeLayout, MAX_PAGES, type FreeLayout as Layout, type PreparedText } from "@/features/dossier/layout/schema";
 import { DAILY_LAYOUT_BATCHES, catalogFor, chooseProposal, layoutIdle, layoutState, requestChange, requestProposals, setFreeLayout, undoLayout } from "@/features/dossier/layout/service";
 import { MIN_WORKS_SHOWN, missingContent } from "@/features/dossier/layout/completeness";
 import { renderDossierPdf, countPages } from "@/features/dossier/service";
@@ -339,7 +339,7 @@ describe("service: batch of proposals, choice, changes, undo", () => {
     // a proposal the guard cannot repair is discarded too (after one retry that tells the model why)
     vi.restoreAllMocks();
     vi.spyOn(agent, "planDirections").mockResolvedValue(mockDirections(3));
-    const bad = layout(page(text("nombre", 8, 80, 84, 10), image(1, 0, 0, 60, 60), image(2, 30, 30, 60, 60)), page(text("declaracion", 8, 10, 84, 40), image(3, 8, 55, 84, 40)));
+    const bad = layout(page(text("nombre", 8, 80, 84, 10, { size: 40 }), image(1, 0, 0, 60, 60), image(2, 30, 30, 60, 60)), page(text("declaracion", 8, 10, 84, 40), image(3, 8, 55, 84, 40)));
     const spy = vi.spyOn(agent, "designLayout").mockImplementation(async (input) => (input.direction?.name === "Dirección 1" ? bad : mockComposition(input.catalog, 2, input.direction!.name)));
     await requestProposals({ profileId: DEMO_CREATOR_ID });
     await layoutIdle(DEMO_CREATOR_ID);
@@ -350,7 +350,7 @@ describe("service: batch of proposals, choice, changes, undo", () => {
   it("never keeps a proposal that is not a dossier: no name on the cover, no statement or too few works (it retries telling why)", async () => {
     await seed(6);
     const cat = await catalogFor(DEMO_CREATOR_ID);
-    const onePage = layout(page(text("nombre", 8, 70, 84, 20), image(1, 0, 0, 100, 60, { fit: "cover" })));
+    const onePage = layout(page(text("nombre", 8, 70, 84, 20, { size: 40 }), image(1, 0, 0, 100, 60, { fit: "cover" })));
     expect(missingContent(onePage, cat)).toMatch(new RegExp(`declaración|al menos ${MIN_WORKS_SHOWN} obras`));
     const full = mockComposition(cat, 0);
     expect(missingContent(full, cat)).toBeUndefined();
@@ -362,6 +362,11 @@ describe("service: batch of proposals, choice, changes, undo", () => {
     expect(missingContent(noImages, cat, { request: "solo texto enorme" })).toBeUndefined();
     const noName = { ...full, pages: full.pages.map((p) => ({ ...p, elements: p.elements.filter((e) => !(e.type === "text" && e.ref === "nombre")) })) };
     expect(missingContent(noName, cat, { request: "foto grande a toda página" })).toMatch(/nombre/);
+    // a change that shrinks the name on the cover to a footnote is sent back; asking about the name itself is allowed
+    const tinyName = { ...full, pages: full.pages.map((p, i) => (i ? p : { ...p, elements: p.elements.map((e) => (e.type === "text" && e.ref === "nombre" ? { ...e, size: 8 } : e)) })) };
+    expect(missingContent(tinyName, cat, { request: "foto grande a toda página y debajo una cita" })).toMatch(/bien visible/);
+    expect(missingContent(tinyName, cat, { request: "el nombre pequeñito abajo" })).toBeUndefined();
+    expect(missingContent(tinyName, cat)).toMatch(/bien visible/);
 
     vi.spyOn(agent, "planDirections").mockResolvedValue(mockDirections(3));
     const spy = vi.spyOn(agent, "designLayout").mockImplementation(async (input) => (input.direction?.name === "Dirección 2" ? onePage : mockComposition(input.catalog, 0, input.direction!.name)));
@@ -538,5 +543,66 @@ describe("guard: unbreakable words and orphan headings", () => {
     expect(!!cat.texts["t.obra"]).toBe(cat.works.length > 0);
     const none = { ...cat, works: [] };
     expect(none.works).toHaveLength(0);
+  });
+});
+
+describe("guard: designer retouches", () => {
+  it("a whole-shown photo hugs its picture and its caption follows it (never centimetres away)", async () => {
+    await seed();
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    cat.works[0].ratio = 1.5; // landscape in a tall box: letterboxed by "contain"
+    const r = prepareLayout(layout(page(image(1, 10, 10, 80, 70, { fit: "contain" }), text("obra.1.ficha", 10, 81.5, 80, 3, { size: 8 }))), cat);
+    const img = r.layout.pages[0].elements.find((e) => e.type === "image")!;
+    const cap = r.layout.pages[0].elements.find((e) => e.type === "text")!;
+    const ratio = (img.w * 595.28) / (img.h * 841.89);
+    expect(ratio).toBeCloseTo(1.5, 1);
+    expect(cap.y - (img.y + img.h)).toBeGreaterThanOrEqual(0.9);
+    expect(cap.y - (img.y + img.h)).toBeLessThanOrEqual(1.7);
+    expect(img.x).toBeCloseTo(10, 0); // a left-aligned caption keeps its edge with the picture
+  });
+
+  it("raises type that would not read in print: body to 9 pt, anything else to 7.5 pt", async () => {
+    await seed();
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    cat.texts.declaracion = { label: "d", paragraphs: ["Una declaración larga ".repeat(20).trim()] };
+    const r = prepareLayout(layout(page(text("declaracion", 8, 10, 84, 60, { size: 6 }), text("ciudad", 8, 80, 40, 4, { size: 6 }))), cat);
+    const [body, small] = r.layout.pages[0].elements.filter((e) => e.type === "text");
+    expect(body.type === "text" && body.size).toBeGreaterThanOrEqual(9);
+    expect(small.type === "text" && small.size).toBeGreaterThanOrEqual(7.5);
+  });
+
+  it("never ends a column with a group heading: it goes with its lines", async () => {
+    await seed();
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    cat.texts.trayectoria = { label: "cv", paragraphs: ["FORMACIÓN", "Bellas Artes, Universidad de Vigo", "Máster en Arte Contemporáneo", "EXPOSICIONES INDIVIDUALES", "2023 · Museo de Pontevedra", "2021 · Sala X"] };
+    const r = prepareLayout(layout(page(text("trayectoria", 8, 10, 84, 30, { size: 10, columns: 2 }))), cat);
+    const cols = r.layout.pages[0].elements.filter((e) => e.type === "text");
+    for (const c of cols) if (c.type === "text") expect(c.paragraphs[c.paragraphs.length - 1]).not.toMatch(/^[A-ZÁÉÍÓÚ ]+$/);
+    expect(cols.flatMap((c) => (c.type === "text" ? c.paragraphs : []))).toHaveLength(6);
+  });
+
+  it("makes room for a caption pushed into its photo by the margin instead of discarding the proposal", async () => {
+    await seed();
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    cat.texts["obra.1.ficha"] = { label: "f", paragraphs: ["Sin título · Fotografía en gelatina de plata sobre papel baritado · 2019 · 50 × 60 cm"] }; // two lines
+    cat.works[0].ratio = 0.66; // stays "cover" in this box
+    const r = prepareLayout(layout(page(image(1, 54, 32, 40, 62, { fit: "cover" }), text("obra.1.ficha", 54, 95, 40, 3, { size: 7 }), text("nombre", 6, 6, 40, 10))), cat);
+    const img = r.layout.pages[0].elements.find((e) => e.type === "image")!;
+    const cap = r.layout.pages[0].elements.find((e) => e.type === "text" && e.paragraphs.join("") === cat.texts["obra.1.ficha"].paragraphs[0]) as PreparedText;
+    expect(img.y + img.h).toBeLessThanOrEqual(cap.y);
+    expect(r.adjustments.join(" ")).toMatch(/sitio a un pie de foto/);
+  });
+});
+
+describe("catalog: untitled works", () => {
+  it("offers no title heading for an untitled work: «Sin título» appears once, in its caption", async () => {
+    await seed(1);
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    const { buildCatalog } = await import("@/features/dossier/layout/catalog");
+    expect(cat.texts["obra.1.titulo"]).toBeDefined();
+    const view = { name: "X", kind: "creator", family: "artes-visuales", statement: [], bio: [], cv: [], contact: [], series: [{ works: [{ id: "w", title: "Sin título", technique: "Óleo", confirmed: true, imageUrl: "/u/w.jpg" }] }] } as unknown as Parameters<typeof buildCatalog>[0];
+    const c = buildCatalog(view);
+    expect(c.texts["obra.1.titulo"]).toBeUndefined();
+    expect(c.texts["obra.1.ficha"].paragraphs[0]).toBe("Sin título · Óleo");
   });
 });

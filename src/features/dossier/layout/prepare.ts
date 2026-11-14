@@ -61,6 +61,21 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n
 const wPt = (pct: number) => (pct / 100) * PAGE_W_PT;
 const hPt = (pct: number) => (pct / 100) * PAGE_H_PT;
 const toPctY = (pt: number) => (pt / PAGE_H_PT) * 100;
+const toPctX = (pt: number) => (pt / PAGE_W_PT) * 100;
+/** Below this share of the picture kept by "cover", the photo is shown whole instead. */
+const COVER_MIN_KEEP = 0.62;
+/** Share of the picture that "cover" keeps in this box (1 = nothing cropped). */
+function coverCrop(img: Pick<PreparedImage, "w" | "h" | "matPct">, ratio: number): number {
+  const pad = (img.matPct / 100) * Math.min(wPt(img.w), hPt(img.h));
+  const rb = Math.max(1, wPt(img.w) - 2 * pad) / Math.max(1, hPt(img.h) - 2 * pad);
+  return Math.min(rb / ratio, ratio / rb);
+}
+/** Readable in print: body copy at least 9 pt, any other text at least 7.5 pt. */
+function minSized(size: number, paragraphs: string[]): number {
+  return Math.max(size, paragraphs.join(" ").length > 200 ? 9 : 7.5);
+}
+/** A short all-caps line: a group heading (e.g. "EXPOSICIONES") that must not end a column. */
+const isHeading = (p: string) => p.length <= 60 && p === p.toUpperCase() && /\p{Lu}/u.test(p);
 
 function blend(fg: string, bg: string, a: number): string {
   const f = hexToRgb(fg) ?? [0, 0, 0];
@@ -129,6 +144,8 @@ function fillBox(paragraphs: string[], t: PreparedText, size: number, maxHeightP
       full = true;
     }
   }
+  // a heading never ends a box: it goes with the lines it introduces
+  while (rest.length && fit.length > 1 && isHeading(fit[fit.length - 1])) rest.unshift(fit.pop()!);
   return { fit, rest };
 }
 
@@ -228,7 +245,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
       weight: snapped.weight,
       italic: snapped.italic,
       renderFamily: render.renderFamily,
-      size: el.size,
+      size: minSized(el.size, paragraphs),
       lineHeight: el.lineHeight,
       align: el.align,
       valign: el.valign,
@@ -238,6 +255,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
       tracking: el.tracking,
       rotate: rot,
     };
+    if (base.size > el.size + 0.05) note("He subido el tamaño de un texto que no se habría leído bien impreso.");
     if (rot) return { ...base, ...safeRotatedBox(el, rot) };
     const b = safeBox(el);
     if (columns <= 1) return { ...base, ...b };
@@ -346,6 +364,60 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
     }
   }
 
+  // ---------------------------------------------------------------- A3: a photo that shows whole hugs its picture
+  // "contain" letterboxes the work inside its box; the box shrinks to the picture (centred in it) and a caption that sat
+  // just under the box follows the picture, so a caption never floats centimetres away from its work.
+  for (const page of pages) {
+    for (const it of page.items) {
+      if (it.el.type !== "image") continue;
+      const img = it.el;
+      const work = catalog.works.find((w) => w.id === img.workId);
+      if (!work?.ratio) continue;
+      if (img.fit === "cover" && coverCrop(img, work.ratio) < COVER_MIN_KEEP) {
+        img.fit = "contain";
+        note("He ajustado una foto para que se vea entera en vez de recortarla demasiado.");
+      }
+      if (img.fit !== "contain") continue;
+      const box = { x: img.x, y: img.y, w: img.w, h: img.h };
+      let nw = wPt(box.w);
+      let nh = hPt(box.h);
+      for (let k = 0; k < 3; k++) {
+        const pad = (img.matPct / 100) * Math.min(nw, nh);
+        const iw = wPt(box.w) - 2 * pad;
+        const ih = hPt(box.h) - 2 * pad;
+        if (iw <= 1 || ih <= 1) break;
+        const fw = Math.min(iw, ih * work.ratio);
+        const fh = fw / work.ratio;
+        nw = fw + 2 * pad;
+        nh = fh + 2 * pad;
+      }
+      if (wPt(box.w) - nw < 2 && hPt(box.h) - nh < 2) continue;
+      const bottom = box.y + box.h;
+      const captions = page.items.filter((o) => {
+        if (o.el.type !== "text" || o.el.rotate || o.el.paragraphs.join(" ").length > 220) return false;
+        const t = o.el;
+        const xo = Math.min(t.x + t.w, box.x + box.w) - Math.max(t.x, box.x);
+        return t.y >= bottom - 4 && t.y <= bottom + 8 && xo >= 0.5 * Math.min(t.w, box.w); // -4: a caption the margin pushed up
+      });
+      // horizontally: a left- or right-aligned caption keeps its edge with the picture; otherwise the picture is centred
+      const align = captions.length === 1 ? (captions[0].el as PreparedText).align : "center";
+      const dx = wPt(box.w) - nw;
+      img.x = r2(box.x + toPctX(align === "left" || align === "justify" ? 0 : align === "right" ? dx : dx / 2));
+      img.y = r2(box.y + toPctY((hPt(box.h) - nh) / 2));
+      img.w = r2(toPctX(nw));
+      img.h = r2(toPctY(nh));
+      for (const c of captions) {
+        const t = c.el as PreparedText;
+        const gap = clamp(t.y - bottom, 1, 1.6);
+        t.y = r2(img.y + img.h + gap);
+        if (align !== "center" && captions.length === 1) {
+          if (align === "right") t.x = r2(clamp(img.x + img.w - t.w, SAFE_X, 100 - SAFE_X - t.w));
+          else t.x = r2(clamp(img.x, SAFE_X, 100 - SAFE_X - t.w));
+        }
+      }
+    }
+  }
+
   // ---------------------------------------------------------------- B..E per page (continuations are inserted as we go)
   const out: PreparedPage[] = [];
   for (let pi = 0; pi < pages.length; pi++) {
@@ -443,7 +515,18 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
           const below = ext.y + ext.h / 2 >= img.y + img.h / 2;
           const newTop = below ? img.y + img.h + 1.5 : img.y - 1.5 - ext.h;
           const shift = newTop - ext.y;
-          if (newTop < SAFE_Y || newTop + ext.h > 100 - SAFE_Y) throw new LayoutError(`Un texto pisa una foto en la página ${pageNo} y no cabe fuera.`);
+          if (newTop < SAFE_Y || newTop + ext.h > 100 - SAFE_Y) {
+            // no room beyond the photo (a caption pushed into it by the margin): the photo gives up that strip instead
+            const keepH = below ? ext.y - 1 - img.y : img.y + img.h - (ext.y + ext.h + 1);
+            if (keepH >= 0.75 * img.h && keepH > 3) {
+              if (!below) img.y = r2(ext.y + ext.h + 1);
+              img.h = r2(keepH);
+              note("He hecho sitio a un pie de foto junto a su obra.");
+              moved = true;
+              continue;
+            }
+            throw new LayoutError(`Un texto pisa una foto en la página ${pageNo} y no cabe fuera.`);
+          }
           t.y = r2(clamp(t.y + shift, SAFE_Y, 100 - SAFE_Y - t.h));
           note("He apartado un texto que tapaba una foto.");
           moved = true;
@@ -479,10 +562,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
         img.lineColor = lineColor;
         const work = catalog.works.find((w) => w.id === img.workId);
         if (img.fit === "cover" && work?.ratio) {
-          const short = Math.min(wPt(img.w), hPt(img.h));
-          const pad = (img.matPct / 100) * short;
-          const rb = Math.max(1, wPt(img.w) - 2 * pad) / Math.max(1, hPt(img.h) - 2 * pad);
-          if (Math.min(rb / work.ratio, work.ratio / rb) < 0.62) {
+          if (coverCrop(img, work.ratio) < COVER_MIN_KEEP) {
             img.fit = "contain";
             note("He ajustado una foto para que se vea entera en vez de recortarla demasiado.");
           }
