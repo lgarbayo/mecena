@@ -3,7 +3,7 @@
  * Shared by the web page (React DOM), the progressive build (WP-01) and the PDF (@react-pdf/renderer).
  * No Node or browser APIs here, so it is safe to import from client components.
  */
-import type { Call, Dossier, DossierSection, Profile, Work } from "@/contracts";
+import type { Call, CropSuggestion, Dossier, DossierSection, Profile, Work } from "@/contracts";
 import { familyOf, vocabFor, type ArtFamily } from "./arts";
 
 export type SectionState = "pending" | "filling" | "ready";
@@ -24,6 +24,10 @@ export interface WorkView {
   venue: string;
   links: string[];
   mediaKind: string;
+  /** Light photo crop/straighten (vision suggestion or the artist's own); applied on the untouched original. */
+  crop?: CropSuggestion;
+  /** The artist confirmed the sheet. Unconfirmed works are marked on screen and left out of the PDF. */
+  confirmed: boolean;
 }
 
 export interface SeriesView {
@@ -213,6 +217,8 @@ export function toWorkView(w: Work, catNo: number): WorkView {
     concept: w.sheet.concept?.trim() ?? "",
     imageUrl: w.imageUrl,
     seriesId: slug(w.sheet.series?.trim() || "sin-serie"),
+    crop: w.crop,
+    confirmed: w.confirmed !== false,
   };
 }
 

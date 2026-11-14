@@ -1,6 +1,6 @@
 "use client";
 /** One work: photo (crop shown with CSS, original one tap away) + its editable technical sheet. */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MediaKind, type TechnicalSheet, type Work } from "@/contracts";
 import { Button, Tag } from "@/components/ui";
 import { MEDIA_KIND_LABEL, type ArtCopy, type Field, type SheetKey } from "./arts";
@@ -54,11 +54,27 @@ export function WorkCard({ work, index, total, copy, highlight, onSave, onMove, 
   const links = work.links ?? [];
   const [draft, setDraft] = useState<Draft>(() => toDraft(work.sheet));
   const [showOriginal, setShowOriginal] = useState(false);
-  const [saving, setSaving] = useState(false);
+  // Two kinds of save: the autosave on blur never disables "Confirmar ficha" (else the first tap after
+  // editing a field is lost: blur -> disabled -> no click); only confirming does.
+  const [confirming, setConfirming] = useState(false);
+  const [autosaving, setAutosaving] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
-  useEffect(() => setDraft(toDraft(work.sheet)), [work.sheet]);
+  // What the draft would be had the artist not typed since the last server sheet: a field whose draft
+  // differs from it (or that has the focus) is being written and must survive a server echo.
+  const synced = useRef<Draft>(draft);
+  const focused = useRef<SheetKey | null>(null);
+  useEffect(() => {
+    const server = toDraft(work.sheet);
+    setDraft((d) => {
+      const next = { ...server };
+      for (const k of Object.keys(server) as SheetKey[]) if (k === focused.current || d[k] !== synced.current[k]) next[k] = d[k];
+      return next;
+    });
+    synced.current = server;
+  }, [work.sheet]);
 
   const hasCrop = !isIdentityCrop(work.crop);
+  const canRestore = !hasCrop && !!work.suggestedCrop && !isIdentityCrop(work.suggestedCrop);
   const dirty = JSON.stringify(draft) !== JSON.stringify(toDraft(work.sheet));
   const title = work.sheet.title || "Sin título";
 
@@ -86,13 +102,22 @@ export function WorkCard({ work, index, total, copy, highlight, onSave, onMove, 
   }
 
   async function save(extra: { confirmed?: boolean } = {}) {
-    setSaving(true);
+    const set = extra.confirmed ? setConfirming : setAutosaving;
+    set(true);
     try {
       await onSave(work.id, { ...(dirty || extra.confirmed ? { sheet: sheetPatch() } : {}), ...extra });
     } finally {
-      setSaving(false);
+      set(false);
     }
   }
+
+  const fieldEvents = (key: SheetKey) => ({
+    onFocus: () => (focused.current = key),
+    onBlur: () => {
+      if (focused.current === key) focused.current = null;
+      if (dirty) void save();
+    },
+  });
 
   return (
     <article className={`card ${s.workCard} ${highlight ? s.highlight : ""}`} aria-label={`${copy.noun[0].toUpperCase()}${copy.noun.slice(1)}: ${title}`}>
@@ -108,10 +133,22 @@ export function WorkCard({ work, index, total, copy, highlight, onSave, onMove, 
                 Quitar recorte
               </button>
             </>
+          ) : canRestore ? (
+            <>
+              <span className={s.muted}>Foto original, sin recorte</span>
+              <button type="button" className={s.linkBtn} onClick={() => onSave(work.id, { crop: work.suggestedCrop })}>
+                Restaurar recorte
+              </button>
+            </>
           ) : (
             <span className={s.muted}>Foto original, sin recorte</span>
           )}
         </div>
+        {work.analysis === "failed" ? (
+          <p className={s.notice} role="status">
+            No hemos podido analizar la foto: la ficha sale solo de lo que has dicho y la foto va entera. Complétala a mano.
+          </p>
+        ) : null}
       </div>
 
       <div className={s.sheet}>
@@ -140,14 +177,14 @@ export function WorkCard({ work, index, total, copy, highlight, onSave, onMove, 
             <label key={f.key} className={`${s.field} ${f.wide ? s.wide : ""}`}>
               <span>{f.label}</span>
               {f.multiline ? (
-                <textarea rows={3} value={draft[f.key]} placeholder={f.placeholder} onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })} onBlur={() => dirty && void save()} />
+                <textarea rows={3} value={draft[f.key]} placeholder={f.placeholder} onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })} {...fieldEvents(f.key)} />
               ) : (
                 <input
                   value={draft[f.key]}
                   placeholder={f.placeholder}
                   inputMode={f.key === "year" ? "numeric" : undefined}
                   onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })}
-                  onBlur={() => dirty && void save()}
+                  {...fieldEvents(f.key)}
                 />
               )}
             </label>
@@ -211,10 +248,16 @@ export function WorkCard({ work, index, total, copy, highlight, onSave, onMove, 
                 Editar ficha
               </Button>
             ) : (
-              <Button type="submit" disabled={saving}>
-                {saving ? "Guardando…" : "Confirmar ficha"}
+              // Keep the field's focus on press: the tap confirms (with the edited sheet) instead of being eaten by the blur autosave.
+              <Button type="submit" disabled={confirming} onPointerDown={(e) => e.preventDefault()}>
+                {confirming ? "Guardando…" : "Confirmar ficha"}
               </Button>
             )}
+            {autosaving && !confirming ? (
+              <span className={s.muted} role="status">
+                Guardando…
+              </span>
+            ) : null}
             {confirmRemove ? (
               <span className={s.confirmRemove}>
                 {copy.noun === "foto" ? "¿Quitar esta foto?" : copy.noun === "obra" ? "¿Quitar esta obra?" : copy.noun === "pieza" ? "¿Quitar esta pieza?" : `¿Quitar este ${copy.noun}?`}

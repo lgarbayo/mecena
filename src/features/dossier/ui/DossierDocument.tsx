@@ -5,7 +5,9 @@
  * (pass `progressive` and the per-section states; empty slots render as skeletons, never as placeholder text).
  * Styles live in ./dossier.css, scoped under .dossier-wall.
  */
-import { createContext, useContext, type CSSProperties, type ReactNode } from "react";
+import { createContext, useContext, useState, type CSSProperties, type ReactNode } from "react";
+import type { CropSuggestion } from "@/contracts";
+import { cropStyles, isIdentityCrop } from "@/features/works/image";
 import { isAdapted, type BusinessView, type CreatorView, type DossierView, type FactRow, type SectionState, type VariantView, type WorkView } from "../model";
 import { linkLabel, vocabFor, type ArtFamily } from "../arts";
 import { DEFAULT_TITLES, designTokens, fontStack, type DossierDesign, type SectionTitleKey } from "../design";
@@ -148,11 +150,12 @@ function Prose({ paras, slot, lines = 4 }: { paras: string[]; slot: string; line
   );
 }
 
-function Frame({ work, hint, alt }: { work?: Pick<WorkView, "imageUrl" | "title">; hint: string; alt?: string }) {
+function Frame({ work, hint, alt }: { work?: Pick<WorkView, "imageUrl" | "title" | "crop">; hint: string; alt?: string }) {
   return (
     <div className="frame" data-hint={hint}>
-      {/* eslint-disable-next-line @next/next/no-img-element -- user artwork, never cropped or re-encoded */}
-      {work?.imageUrl ? (
+      {work?.imageUrl && !isIdentityCrop(work.crop) ? (
+        <CroppedPhoto src={work.imageUrl} alt={alt ?? work.title} crop={work.crop} />
+      ) : /* eslint-disable-next-line @next/next/no-img-element -- user artwork, never re-encoded */ work?.imageUrl ? (
         <img
           src={work.imageUrl}
           alt={alt ?? work.title}
@@ -162,6 +165,29 @@ function Frame({ work, hint, alt }: { work?: Pick<WorkView, "imageUrl" | "title"
           onError={(e) => e.currentTarget.remove()}
         />
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * The crop/straighten from /obras, shown with the same CSS as there (cropStyles) on the untouched original:
+ * the crop box keeps its proportion and fits inside the frame (container query units), never squashed.
+ */
+function CroppedPhoto({ src, alt, crop }: { src: string; alt: string; crop?: CropSuggestion }) {
+  const [natural, setNatural] = useState<{ width: number; height: number } | null>(null);
+  const styles = cropStyles(crop, natural, { maxHeight: "100cqh" });
+  return (
+    <div className="frame__crop" style={natural ? styles.frame : { width: "100%", height: "100%" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- user artwork, original bytes */}
+      <img
+        src={src}
+        alt={alt}
+        decoding="async"
+        style={natural ? styles.img : { width: "100%", height: "100%", objectFit: "contain" }}
+        onLoad={(e) => setNatural({ width: e.currentTarget.naturalWidth, height: e.currentTarget.naturalHeight })}
+        onError={(e) => e.currentTarget.parentElement?.remove()}
+        draggable={false}
+      />
     </div>
   );
 }
@@ -189,7 +215,7 @@ function VariantSections({ variant }: { variant: VariantView }) {
           <div className="main prose">
             <h3 className="section-title">{s.heading}</h3>
             {s.criteria.length ? (
-              <ul className="variant-criteria" aria-label="Criterios que cubre">
+              <ul className="variant-criteria no-print" aria-label="Criterios que cubre">
                 {s.criteria.map((c) => (
                   <li key={c}>{c}</li>
                 ))}
@@ -333,6 +359,11 @@ function Work({ w, family }: { w: WorkView; family: ArtFamily }) {
         <p className="label__cat">
           {vocab.cat} {w.catNo}
         </p>
+        {w.confirmed ? null : (
+          <p className="label__review no-print" data-testid="work-unreviewed">
+            Ficha sin revisar: no entra en el PDF hasta que la confirmes en <a href="/obras">Obras</a>.
+          </p>
+        )}
         {w.concept ? <p className="label__concept">{w.concept}</p> : null}
         {w.links.length ? (
           <p className="label__links">

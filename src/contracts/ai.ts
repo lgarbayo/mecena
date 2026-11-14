@@ -57,6 +57,8 @@ export const DescribeWorkResult = z.object({
   sheet: TechnicalSheet,
   crop: CropSuggestion, // framing of the artwork inside the photo; identity crop if unsure
   confidence: z.number().min(0).max(1),
+  // true when vision could not run (API error, refusal): the sheet comes from the voice note only.
+  fallback: z.boolean().optional(),
 });
 export type DescribeWorkResult = z.infer<typeof DescribeWorkResult>;
 

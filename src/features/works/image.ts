@@ -77,16 +77,29 @@ export const isIdentityCrop = (c: CropSuggestion | undefined) =>
 /**
  * CSS that shows only the crop rectangle of the untouched original: the frame gets the crop's aspect
  * ratio, the <img> is scaled/offset inside it (overflow hidden) and rotated around the crop centre.
+ * `maxHeight` is the tallest the frame may be (a CSS length): the frame's width is capped at
+ * maxHeight × ratio, so a tall (portrait) crop shrinks as a whole instead of being squashed.
  */
-export function cropStyles(crop: CropSuggestion | undefined, natural: { width: number; height: number } | null): { frame: CSSProperties; img: CSSProperties } {
+export function cropStyles(
+  crop: CropSuggestion | undefined,
+  natural: { width: number; height: number } | null,
+  opts: { maxHeight?: string } = {},
+): { frame: CSSProperties; img: CSSProperties } {
+  const maxHeight = opts.maxHeight ?? "70vh";
+  const fit = (w: number, h: number): CSSProperties => ({
+    aspectRatio: `${w.toFixed(1)} / ${h.toFixed(1)}`,
+    width: "100%",
+    maxWidth: `calc(${maxHeight} * ${(w / h).toFixed(4)})`,
+    marginInline: "auto",
+  });
   if (!natural || !natural.width || !natural.height || isIdentityCrop(crop) || !crop) {
-    return { frame: natural ? { aspectRatio: `${natural.width} / ${natural.height}` } : {}, img: { width: "100%", height: "100%", objectFit: "contain" } };
+    return { frame: natural && natural.width && natural.height ? fit(natural.width, natural.height) : {}, img: { width: "100%", height: "100%", objectFit: "contain" } };
   }
   const rot = crop.rotationDeg ?? 0;
   const cx = (crop.x + crop.width / 2) * 100;
   const cy = (crop.y + crop.height / 2) * 100;
   return {
-    frame: { aspectRatio: `${(crop.width * natural.width).toFixed(1)} / ${(crop.height * natural.height).toFixed(1)}` },
+    frame: fit(crop.width * natural.width, crop.height * natural.height),
     img: {
       position: "absolute",
       width: `${(100 / crop.width).toFixed(4)}%`,
