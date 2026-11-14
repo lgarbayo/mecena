@@ -92,7 +92,7 @@ describe("search_calls: free limit and status", () => {
     expect((await call("explain_call", { callId: free[0] })).isError).toBe(false);
     const denied = await call("explain_call", { callId: locked.id });
     expect(denied.isError).toBe(true);
-    expect(denied.text).toMatch(/^Con el plan gratuito ves tus 3 convocatorias destacadas.*Desbloquéalo aquí: http:\/\/localhost:3000\/pro/);
+    expect(denied.text).toMatch(/^Con el plan gratuito ves tus 3 convocatorias del mes.*Desbloquéalo aquí: http:\/\/localhost:3000\/pro/);
     await grantPro();
     expect((await call("explain_call", { callId: locked.id })).isError).toBe(false);
   });
