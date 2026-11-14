@@ -10,6 +10,7 @@
  */
 import { NotFoundError, UnauthorizedError, type Application, type Profile, type ToolContext, type User, type Work } from "@/contracts";
 import { readDb } from "@/server/store";
+import { bindAiAccount } from "@/features/demo/ai-mode";
 import { readSessionToken } from "./cookie";
 import { activeProfile, ownedProfile, userForToken } from "./users";
 
@@ -24,6 +25,7 @@ export function getSessionUser(req: Request): User | undefined {
 export function requireUser(req: Request): User {
   const user = getSessionUser(req);
   if (!user) throw new UnauthorizedError();
+  bindAiAccount(user.id); // the AI layer honours this account's /demo switches for the rest of the request
   return user;
 }
 

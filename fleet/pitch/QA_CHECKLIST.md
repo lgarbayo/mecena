@@ -16,7 +16,9 @@
 - [ ] La URL HTTPS (túnel o despliegue) abre en el móvil con la wifi del FIC **y** con el hotspot.
 - [ ] El certificado es válido (sin aviso de seguridad), condición para micro y cámara.
 - [ ] `ANTHROPIC_API_KEY` y clave de RevenueCat cargadas en el entorno que sirve la app (no en mocks por error).
-- [ ] Reset completo en < 10 s y la app vuelve a la pantalla A1.
+- [ ] Reset completo en < 10 s y la app vuelve a la pantalla A1 («Empezar de cero» en `/demo`, con confirmación).
+- [ ] `npm run demo:preflight` en verde contra la URL desplegada (login, config, entitlements, convocatorias open, PDF válido, escenario, sin 500; no gasta IA).
+- [ ] `flyctl status` correcto y `DEMO_EMAILS` con el email de la cuenta de demo (sin él, «Artista Pro con solicitud» sale desactivado).
 
 ## 3. Recorrido de la demo, paso a paso
 **A1 · Datos**
@@ -77,7 +79,10 @@
 - [ ] La app no nombra competidores (solo el pitch, y siempre «según su web»).
 
 ## 5. Planes B listos
-- [ ] Usuario de demo precargado con perfil, dossier, PDF, feed y solicitud con tribunal 61 y 84.
+- [ ] Panel `/demo` probado: «Artista de ejemplo», «Artista Pro con solicitud» (tribunal 61 → 84) y «Pyme de ejemplo» cargan en la cuenta con sesión, sin tocar otras.
+- [ ] Interruptores «Tribunal determinista (plan B)» e «IA simulada para esta cuenta» probados y vueltos a apagar antes de la demo si hay clave real.
+- [ ] Cuentas de reserva creadas antes de subir (el límite por IP del recinto puede bloquear altas).
+- [ ] Guion con plan B por paso: [`docs/demo-script.md`](../../docs/demo-script.md).
 - [ ] Transcripción de respaldo en el portapapeles del móvil y 3 fotos en la galería.
 - [ ] PDF del dossier descargado en el móvil.
 - [ ] Vídeo de respaldo del recorrido completo en el portátil, probado con el proyector y con sonido.

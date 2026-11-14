@@ -1,0 +1,80 @@
+{
+  "$comment": "Demo scenario «Pyme de ejemplo» (fictional company). A Galician ceramics workshop with 4 employees, so it fits real SME aid that asks for a minimum staff (e.g. IGAPE Re-acciona: «mínimo 3 personas trabajadoras»).",
+  "profile": {
+    "kind": "business",
+    "displayName": "Obradoiro Mareira, S.L.",
+    "city": "Lugo",
+    "province": "Lugo",
+    "region": "Galicia",
+    "legalForm": "sl",
+    "cnae": "2341",
+    "sector": "artesanía / cerámica",
+    "employees": 4,
+    "foundedYear": 2019,
+    "annualRevenueEur": 210000,
+    "disciplines": [],
+    "bio": "Taller de cerámica artesanal en Lugo, fundado en 2019. Hace vajilla para restaurantes y piezas de autor, y vende en ferias, en su tienda-taller y por Instagram.",
+    "statement": "Queremos vender online a toda Europa sin perder el trato de taller y crear un puesto más de alfarera.",
+    "achievements": [
+      "Carta Artesana de Galicia (2020)",
+      "Vajilla a medida para 6 restaurantes de Galicia, 2 de ellos con estrella Michelin",
+      "Feira de Artesanía de Galicia, Santiago (2023, 2024 y 2025)"
+    ],
+    "education": [],
+    "links": ["https://example.org/obradoiro-mareira"],
+    "fundingNeeds": ["tienda online con envíos a Europa", "contratar a una alfarera", "horno eléctrico nuevo", "consultoría de estrategia comercial"],
+    "projectIdea": "Abrir la venta online a Europa con una tienda propia y profesionalizar la estrategia comercial del taller.",
+    "languages": ["gallego", "castellano", "inglés"]
+  },
+  "transcript": [
+    { "id": "seg-pyme-1", "source": "voice", "text": "Somos Obradoiro Mareira, un taller de cerámica en Lugo; lo abrimos en 2019 y ahora somos cuatro personas en plantilla." },
+    { "id": "seg-pyme-2", "source": "voice", "text": "Hacemos vajilla a medida para restaurantes, seis en Galicia, y piezas de autor que vendemos en ferias y por Instagram." },
+    { "id": "seg-pyme-3", "source": "voice", "text": "Facturamos unos doscientos diez mil euros el año pasado y tenemos la Carta Artesana de Galicia." },
+    { "id": "seg-pyme-4", "source": "voice", "text": "Queremos vender online a toda Europa sin perder el trato de taller, y contratar a una alfarera más." },
+    { "id": "seg-pyme-5", "source": "voice", "text": "Necesitamos una tienda online con envíos, un horno eléctrico nuevo y alguien que nos ayude con la estrategia comercial." }
+  ],
+  "dossier": [
+    {
+      "key": "activity",
+      "title": "Actividad",
+      "body": "Obradoiro Mareira es un taller de cerámica artesanal en Lugo (CNAE 2341). Hacemos vajilla a medida para restaurantes y piezas de autor que vendemos en ferias, en la tienda-taller y por Instagram.",
+      "sourceSegmentIds": ["seg-pyme-1", "seg-pyme-2"],
+      "status": "confirmed"
+    },
+    {
+      "key": "team",
+      "title": "Equipo",
+      "body": "Cuatro personas en plantilla: dos ceramistas fundadoras, una alfarera y una persona de tienda y envíos. Queremos contratar a una alfarera más.",
+      "sourceSegmentIds": ["seg-pyme-1", "seg-pyme-4"],
+      "status": "confirmed"
+    },
+    {
+      "key": "projects",
+      "title": "Proyectos",
+      "body": "- Vajilla a medida para 6 restaurantes de Galicia\n- Colección de piezas de autor para la Feira de Artesanía de Galicia (2023-2025)\n- Próximo: tienda online con envíos a Europa y estrategia comercial",
+      "sourceSegmentIds": ["seg-pyme-2", "seg-pyme-4", "seg-pyme-5"],
+      "status": "confirmed"
+    },
+    {
+      "key": "figures",
+      "title": "Cifras",
+      "body": "- Fundada en 2019\n- 4 personas en plantilla\n- Facturación 2025: unos 210.000 €\n- Carta Artesana de Galicia",
+      "sourceSegmentIds": ["seg-pyme-1", "seg-pyme-3"],
+      "status": "confirmed"
+    },
+    {
+      "key": "location",
+      "title": "Datos de la empresa",
+      "body": "Obradoiro Mareira, S.L. · Lugo (Galicia) · Sociedad limitada · CNAE 2341 (fabricación de artículos cerámicos de uso doméstico y ornamental).",
+      "sourceSegmentIds": ["seg-pyme-1"],
+      "status": "confirmed"
+    },
+    {
+      "key": "contact",
+      "title": "Contacto",
+      "body": "Lugo (Galicia)\nhttps://example.org/obradoiro-mareira",
+      "sourceSegmentIds": [],
+      "status": "draft"
+    }
+  ]
+}
