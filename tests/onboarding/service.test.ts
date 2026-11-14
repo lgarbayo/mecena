@@ -1,24 +1,29 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import * as aiIndex from "@/server/ai";
 import { getDossier, getProfile, getTranscript } from "@/server/store";
 import { processTurn, getOnboardingState } from "@/features/onboarding/service";
 import { POST } from "@/app/api/onboarding/turn/route";
 import { GET } from "@/app/api/onboarding/route";
-import { fixtureTranscript } from "@/fixtures";
-import { req } from "../helpers";
+import { fixtureTranscript, DEMO_CREATOR_ID } from "@/fixtures";
+import { req, loginDemo } from "../helpers";
 
 afterEach(() => vi.restoreAllMocks());
 
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
+
 describe("processTurn", () => {
   it("builds profile and dossier across the 3 fixture chunks and reports what changed", async () => {
-    const r1 = await processTurn({ text: fixtureTranscript[0].text, source: "voice" });
+    const r1 = await processTurn({ profileId: DEMO_CREATOR_ID, text: fixtureTranscript[0].text, source: "voice" });
     expect(r1.changedProfileFields).toEqual(expect.arrayContaining(["displayName", "city", "disciplines"]));
     expect(r1.changedProfileFields).not.toContain("updatedAt");
     expect(r1.changedSectionKeys).toEqual(["bio"]);
-    const r2 = await processTurn({ text: fixtureTranscript[1].text, source: "voice" });
+    const r2 = await processTurn({ profileId: DEMO_CREATOR_ID, text: fixtureTranscript[1].text, source: "voice" });
     expect(r2.changedSectionKeys).toEqual(["statement"]);
     expect(r2.changedProfileFields).not.toContain("displayName");
-    const r3 = await processTurn({ text: fixtureTranscript[2].text, source: "voice" });
+    const r3 = await processTurn({ profileId: DEMO_CREATOR_ID, text: fixtureTranscript[2].text, source: "voice" });
     expect(r3.profile.displayName).toBe("Antía Varela");
     expect(r3.sections.map((s) => s.key)).toEqual(["statement", "bio", "series"]); // canonical order
     expect(r3.followUpQuestion).toBeTruthy();
@@ -39,10 +44,10 @@ describe("processTurn", () => {
     vi.spyOn(aiIndex, "getAi").mockReturnValue(slow);
     const a = "Me llamo Antía Varela, soy ilustradora de A Coruña.";
     const b = "Tengo una serie de grabados sobre el mar y busco una residencia artística.";
-    const orphan = processTurn({ text: a, source: "voice" }); // A1: the client times out on it...
+    const orphan = processTurn({ profileId: DEMO_CREATOR_ID, text: a, source: "voice" }); // A1: the client times out on it...
     await new Promise((r) => setTimeout(r, 0));
-    await processTurn({ text: a, source: "voice" }); // ...and retries (A2, same segment)
-    const rb = await processTurn({ text: b, source: "voice" }); // then B
+    await processTurn({ profileId: DEMO_CREATOR_ID, text: a, source: "voice" }); // ...and retries (A2, same segment)
+    const rb = await processTurn({ profileId: DEMO_CREATOR_ID, text: b, source: "voice" }); // then B
     release();
     await orphan; // A1 finally returns
     const id = rb.profile.id;
@@ -56,7 +61,7 @@ describe("processTurn", () => {
     const failing = aiIndex.mockAi();
     failing.onboardingTurn = vi.fn().mockRejectedValue(new Error("boom"));
     vi.spyOn(aiIndex, "getAi").mockReturnValue(failing);
-    const r = await processTurn({ text: "Me llamo Antía Varela, soy ilustradora de A Coruña.", source: "voice" });
+    const r = await processTurn({ profileId: DEMO_CREATOR_ID, text: "Me llamo Antía Varela, soy ilustradora de A Coruña.", source: "voice" });
     expect(failing.onboardingTurn).toHaveBeenCalledOnce();
     expect(r.profile.displayName).toBe("Antía Varela");
     expect(getTranscript(r.profile.id).map((s) => s.text)).toEqual(["Me llamo Antía Varela, soy ilustradora de A Coruña."]);
@@ -69,14 +74,14 @@ describe("processTurn", () => {
       sectionUpdates: [{ key: "figures", title: "Cifras", body: "x", sourceSegmentIds: [], status: "draft", updatedAt: "2026-01-01T00:00:00Z" }],
     });
     vi.spyOn(aiIndex, "getAi").mockReturnValue(bad);
-    const r = await processTurn({ text: "Hola", source: "text" });
+    const r = await processTurn({ profileId: DEMO_CREATOR_ID, text: "Hola", source: "text" });
     expect(r.sections).toEqual([]);
     expect(r.changedSectionKeys).toEqual([]);
   });
 
   it("a retry of the same chunk after a failure reuses the stored segment (no duplicates)", async () => {
-    const r1 = await processTurn({ text: "Soy pintora.", source: "voice" });
-    const r2 = await processTurn({ text: "Soy pintora.", source: "voice" });
+    const r1 = await processTurn({ profileId: DEMO_CREATOR_ID, text: "Soy pintora.", source: "voice" });
+    const r2 = await processTurn({ profileId: DEMO_CREATOR_ID, text: "Soy pintora.", source: "voice" });
     expect(r2.segmentId).toBe(r1.segmentId);
     expect(getTranscript(r1.profile.id)).toHaveLength(1);
   });
@@ -93,11 +98,11 @@ describe("onboarding routes", () => {
   });
 
   it("GET /api/onboarding returns the state to resume", async () => {
-    await processTurn({ text: fixtureTranscript[0].text, source: "voice" });
+    await processTurn({ profileId: DEMO_CREATOR_ID, text: fixtureTranscript[0].text, source: "voice" });
     const res = await GET(req("/api/onboarding"));
     const json = await res.json();
     expect(json.transcript).toHaveLength(1);
     expect(json.sections[0].key).toBe("bio");
-    expect(getOnboardingState().profile.id).toBe(getProfile().id);
+    expect(getOnboardingState(DEMO_CREATOR_ID).profile.id).toBe(json.profile.id);
   });
 });

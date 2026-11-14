@@ -1,23 +1,24 @@
 // Owned by WP-07. Entitlements on the server: the draft gate trusts only what is stored here.
 // With REVENUECAT_SECRET_API_KEY the sync ignores client claims and reads the customer from RevenueCat REST.
 import { canDraft, PaymentRequiredError, PRODUCTS, publicEnv, serverEnv, type EntitlementState } from "@/contracts";
-import { getEntitlement, getMeta, nowIso, readDb, saveEntitlement } from "@/server/store";
+import { getEntitlement, nowIso, readDb, saveEntitlement } from "@/server/store";
 
 export const REVENUECAT_API = "https://api.revenuecat.com/v1";
 
-export async function resolveEntitlement(appUserId?: string): Promise<EntitlementState> {
-  return getEntitlement(appUserId ?? getMeta().appUserId);
+/** The entitlement of this RevenueCat app user id (always the signed-in user's own, resolved on the server). */
+export async function resolveEntitlement(appUserId: string): Promise<EntitlementState> {
+  return getEntitlement(appUserId);
 }
 
 /** Throws PaymentRequiredError unless the user is Pro or has a Solicitud premium credit. */
-export async function requireDraftEntitlement(appUserId?: string): Promise<EntitlementState> {
+export async function requireDraftEntitlement(appUserId: string): Promise<EntitlementState> {
   const e = await resolveEntitlement(appUserId);
   if (!canDraft(e)) throw new PaymentRequiredError();
   return e;
 }
 
 /** Call after a successful draft: uses one premium credit when the user is not Pro. */
-export async function consumeDraftCredit(appUserId?: string): Promise<EntitlementState> {
+export async function consumeDraftCredit(appUserId: string): Promise<EntitlementState> {
   const e = await resolveEntitlement(appUserId);
   if (e.pro || e.premiumCredits <= 0) return e;
   return saveEntitlement({ ...e, premiumCredits: e.premiumCredits - 1, updatedAt: nowIso() });

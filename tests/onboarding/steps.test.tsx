@@ -6,8 +6,8 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 vi.mock("@/lib/api-client", async () => {
   const svc = await import("@/features/onboarding/service");
   return {
-    apiGet: async (url: string) => svc.getOnboardingState(new URL(url, "http://x").searchParams.get("profileId") ?? undefined),
-    apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) => svc.processTurn(body),
+    apiGet: async (url: string) => svc.getOnboardingState(new URL(url, "http://x").searchParams.get("profileId") ?? "demo-creator"),
+    apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) => svc.processTurn({ ...body, profileId: body.profileId ?? "demo-creator" }),
   };
 });
 const speech = { supported: true, listening: false, interim: "", error: null as string | null, start: vi.fn(), stop: vi.fn() };

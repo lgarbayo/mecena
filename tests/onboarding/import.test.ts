@@ -1,7 +1,7 @@
 /** Import an existing dossier (CCR-8): mock text path, real path with structured() mocked, merge, route errors. */
 import fs from "node:fs";
 import path from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 
 vi.mock("@/server/ai/llm", async (orig) => {
   const mod = await orig<typeof import("@/server/ai/llm")>();
@@ -12,8 +12,8 @@ import { isMockAi, structured } from "@/server/ai/llm";
 import { importDossier, mergeBody } from "@/features/onboarding/import";
 import { POST } from "@/app/api/onboarding/import/route";
 import { getDossier, getProfile, getTranscript, uploadsDir } from "@/server/store";
-import { fixtureTranscript } from "@/fixtures";
-import { nothingSaid, req } from "../helpers";
+import { fixtureTranscript, DEMO_CREATOR_ID } from "@/fixtures";
+import { nothingSaid, req, loginDemo } from "../helpers";
 
 const mockedStructured = vi.mocked(structured);
 const mockedIsMock = vi.mocked(isMockAi);
@@ -24,10 +24,15 @@ afterEach(() => {
 
 const PDF = `data:application/pdf;base64,${Buffer.from("%PDF-1.4 fake").toString("base64")}`;
 
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
+
 describe("importDossier", () => {
   it("offline: pasted text fills profile and sections through the deterministic extractor", async () => {
     const text = fixtureTranscript.map((s) => s.text).join(" ");
-    const res = await importDossier({ text });
+    const res = await importDossier({ profileId: DEMO_CREATOR_ID, text });
     expect(res.mode).toBe("mock");
     expect(res.profile.displayName).toBe("Antía Varela");
     expect(res.changedSectionKeys.length).toBeGreaterThan(0);
@@ -61,7 +66,7 @@ describe("importDossier", () => {
       worksFound: ["Redeira I, 2025, acuarela, 56 x 76 cm"],
       followUpQuestion: "¿Qué proyecto quieres financiar?",
     });
-    const res = await importDossier({ fileDataUrl: PDF, fileName: "dossier.pdf" });
+    const res = await importDossier({ profileId: DEMO_CREATOR_ID, fileDataUrl: PDF, fileName: "dossier.pdf" });
     const call = mockedStructured.mock.calls[0][0];
     const content = call.user as { type: string }[];
     expect(content[0].type).toBe("document");
@@ -76,7 +81,7 @@ describe("importDossier", () => {
   it("with AI: a photo goes as an image block", async () => {
     mockedIsMock.mockReturnValue(false);
     mockedStructured.mockResolvedValueOnce({ profilePatch: {}, sections: [], worksFound: [], followUpQuestion: "¿?" });
-    await importDossier({ fileDataUrl: "data:image/jpeg;base64,/9j/AAAA" });
+    await importDossier({ profileId: DEMO_CREATOR_ID, fileDataUrl: "data:image/jpeg;base64,/9j/AAAA" });
     expect((mockedStructured.mock.calls[0][0].user as { type: string }[])[0].type).toBe("image");
   });
 });
@@ -85,8 +90,8 @@ describe("importDossier sentinels", () => {
   it("with AI: the required-field sentinels never reach the profile", async () => {
     mockedIsMock.mockReturnValue(false);
     mockedStructured.mockResolvedValueOnce({ profilePatch: { ...nothingSaid("creator"), city: "Lugo" }, sections: [], worksFound: [], followUpQuestion: "¿?" });
-    const before = getProfile();
-    const res = await importDossier({ text: "Vivo en Lugo." });
+    const before = getProfile(DEMO_CREATOR_ID);
+    const res = await importDossier({ profileId: DEMO_CREATOR_ID, text: "Vivo en Lugo." });
     expect(res.profile.city).toBe("Lugo");
     expect(res.profile.displayName).toBe(before.displayName);
     expect(res.profile.birthYear).toBe(before.birthYear);

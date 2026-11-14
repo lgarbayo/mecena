@@ -1,11 +1,12 @@
 import { ProfileModeRequest } from "@/contracts/api";
+import { requireUser, switchMode } from "@/server/auth";
 import { body, json, route } from "@/server/http";
-import { getMeta, setActiveMode } from "@/server/store";
 
 export const dynamic = "force-dynamic";
 
-/** Switch the active demo profile between creator and business (mode switch in the header). */
+/** Mode switch in the header: the user's own creator/business profile (a blank one is created the first time). */
 export const POST = route(async (req: Request) => {
+  const user = requireUser(req);
   const { kind } = await body(req, ProfileModeRequest);
-  return json({ profile: await setActiveMode(kind), appUserId: getMeta().appUserId });
+  return json({ profile: await switchMode(user.id, kind), appUserId: user.appUserId });
 });

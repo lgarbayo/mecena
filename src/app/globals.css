@@ -424,3 +424,64 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   flex-direction: column;
   gap: 12px;
 }
+
+/* ---- Account (header): initial on phones, email from tablet up, and "Salir" ---- */
+.header-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.account-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--g-glass-2);
+  border: 1px solid var(--g-line);
+  font: 700 0.85rem var(--sans);
+  color: var(--g-ink);
+}
+
+.account-email {
+  display: none;
+  font-size: 0.85rem;
+  color: var(--g-ink-2);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-out {
+  border: 0;
+  background: transparent;
+  min-height: 36px;
+  padding: 6px 4px;
+  font: 600 0.85rem var(--sans);
+  color: var(--g-ink-2);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  touch-action: manipulation;
+}
+
+.account-out:hover {
+  color: var(--g-accent);
+}
+
+@media (min-width: 640px) {
+  .account-initial { display: none; }
+  .account-email { display: inline; }
+}

@@ -1,12 +1,12 @@
 import fs from "node:fs";
 import { createElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { describe, expect, it, vi } from "vitest";
-import { DEMO_BUSINESS_ID, fixtureWorks } from "@/fixtures";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { DEMO_BUSINESS_ID, fixtureWorks, DEMO_CREATOR_ID } from "@/fixtures";
 import { DossierPdf } from "@/features/dossier/pdf/DossierPdf";
 import { countPages, dossierView, exportDossierPdf, loadDossierData, pdfRenderer, renderDossierPdf, renderFallbackPdf } from "@/features/dossier/service";
 import { loadPdfImage } from "@/features/dossier/pdf/images";
 import { GET as pdfRoute } from "@/app/api/dossier/pdf/route";
-import { req, seedOnboardedCreator } from "../helpers";
+import { req, seedOnboardedCreator, loginDemo } from "../helpers";
 import { seedUploadWork } from "./fixtures";
 
 /** Expands function components and collects every string in the @react-pdf render tree. */
@@ -35,10 +35,15 @@ async function seedCreatorWithUploads() {
   await seedUploadWork(fixtureWorks[1].id, fixtureWorks[1].sheet, 1);
 }
 
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
+
 describe("dossier PDF", () => {
   it("renders an A4 PDF with embedded uploads, real fonts and Spanish accents", async () => {
     await seedCreatorWithUploads();
-    const bytes = await renderDossierPdf({});
+    const bytes = await renderDossierPdf({ profileId: DEMO_CREATOR_ID });
     expect(bytes.subarray(0, 4).toString("latin1")).toBe("%PDF");
     expect(bytes.length).toBeGreaterThan(5 * 1024);
     const raw = bytes.toString("latin1");
@@ -52,7 +57,7 @@ describe("dossier PDF", () => {
 
   it("the render tree carries the artist's name and the statement with accents intact", async () => {
     await seedCreatorWithUploads();
-    const data = await loadDossierData({});
+    const data = await loadDossierData({ profileId: DEMO_CREATOR_ID });
     const text = collectText(createElement(DossierPdf, { view: dossierView(data), images: {} })).join(" ");
     expect(text).toContain("Antía Varela");
     expect(text).toContain("Declaración");
@@ -73,7 +78,7 @@ describe("dossier PDF", () => {
 
   it("still renders when works only have SVG demo art (empty frames, no crash)", async () => {
     await seedOnboardedCreator();
-    const bytes = await renderDossierPdf({});
+    const bytes = await renderDossierPdf({ profileId: DEMO_CREATOR_ID });
     expect(bytes.subarray(0, 4).toString("latin1")).toBe("%PDF");
     expect(countPages(bytes)).toBeGreaterThan(1);
   });
@@ -90,7 +95,7 @@ describe("dossier PDF", () => {
     await seedOnboardedCreator();
     const spy = vi.spyOn(pdfRenderer, "render").mockRejectedValueOnce(new Error("boom"));
     vi.spyOn(console, "error").mockImplementation(() => {});
-    const bytes = await renderDossierPdf({});
+    const bytes = await renderDossierPdf({ profileId: DEMO_CREATOR_ID });
     expect(bytes.toString("latin1")).toContain("Dossier - Ant");
     expect(bytes.toString("latin1").startsWith("%PDF")).toBe(true);
     spy.mockRestore();
@@ -119,7 +124,7 @@ describe("dossier PDF", () => {
 
   it("exportDossierPdf writes the file and returns a public URL and page count", async () => {
     await seedCreatorWithUploads();
-    const out = await exportDossierPdf({});
+    const out = await exportDossierPdf({ profileId: DEMO_CREATOR_ID });
     expect(fs.existsSync(out.filePath)).toBe(true);
     expect(out.url).toBe("http://localhost:3000/api/dossier/pdf?profileId=demo-creator");
     expect(out.pages).toBeGreaterThanOrEqual(4);

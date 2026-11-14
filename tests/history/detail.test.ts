@@ -1,10 +1,11 @@
+import { beforeEach } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { GET as getCall } from "@/app/api/calls/[id]/route";
 import type { PastAward } from "@/contracts";
 import { summarizeHistory, type BdnsAward } from "@/features/history/history";
 import { DEMO_CREATOR_ID } from "@/fixtures";
-import { ctx, req, seedOnboardedCreator } from "../helpers";
+import { ctx, req, seedOnboardedCreator, loginDemo } from "../helpers";
 
 const CALL = "fixture-beca-artes-plasticas";
 const award = (id: number, beneficiario: string): BdnsAward => ({ codConcesion: String(id), idPersona: id, importe: 1000, beneficiario, fechaConcesion: "2025-10-01" });
@@ -22,6 +23,11 @@ const pastAward = (id: string, kind: PastAward["beneficiaryKind"]): PastAward =>
   beneficiary: `Ganador ${id}`,
   beneficiaryKind: kind,
   sourceUrl: "https://example.org/bdns",
+});
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
 });
 
 describe("GET /api/calls/[id] with B3 history", () => {

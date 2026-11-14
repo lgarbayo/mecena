@@ -12,17 +12,15 @@ import type { AgentHistory, AgentTurn, RunToolFn } from "./types";
 export type { AgentTurn, AgentToolCall, AgentHistory } from "./types";
 
 export interface AgentOptions {
-  /** RevenueCat app user id of the caller; omitted = the store's meta.appUserId. */
-  appUserId?: string;
   /** Force mock/real mode (defaults to isMockAi()). */
   mock?: boolean;
   run?: RunToolFn;
   client?: AgentLlmClient;
 }
 
-export async function runAgent(message: string, history: AgentHistory = [], opts: AgentOptions = {}): Promise<AgentTurn> {
+/** `ctx` is the signed-in user (resolved by the route from the session): every tool runs as them, on their data only. */
+export async function runAgent(message: string, history: AgentHistory, ctx: ToolContext, opts: AgentOptions = {}): Promise<AgentTurn> {
   const run = opts.run ?? runTool;
-  const ctx: ToolContext = { caller: "app", ...(opts.appUserId ? { appUserId: opts.appUserId } : {}) };
   if (opts.mock ?? (isMockAi() && !opts.client)) return runMockAgent(message, run, ctx);
   return runRealAgent(message, history, { run, ctx, client: opts.client });
 }

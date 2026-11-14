@@ -5,7 +5,7 @@
  * convocatoria/beca/ayuda/premio/residencia/subvención → search_calls; perfil → get_profile.
  */
 import type { ToolContext, ToolName } from "@/contracts";
-import { listCalls, readDb, getMeta } from "@/server/store";
+import { listCalls, readDb } from "@/server/store";
 import { summarizeToolResult, toolErrorMessage } from "@/tools/present";
 import type { AgentToolCall, AgentTurn, RunToolFn } from "./types";
 
@@ -32,20 +32,21 @@ export function resolveCallId(message: string): string | undefined {
   return best?.id;
 }
 
-function latestApplicationId(): string | undefined {
+function latestApplicationId(profileId: string | undefined): string | undefined {
+  if (!profileId) return undefined;
   const db = readDb();
-  const pid = getMeta().activeProfileId;
-  return db.applications.filter((a) => a.profileId === pid).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0]?.id;
+  return db.applications.filter((a) => a.profileId === profileId).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0]?.id;
 }
 
 type Plan = { tool: ToolName; input: Record<string, unknown>; lead?: string } | { reply: string };
 
-export function planMockTurn(message: string): Plan {
+/** `profileId`: the caller's active profile (its latest application is the one the jury scores). */
+export function planMockTurn(message: string, profileId?: string): Plan {
   const m = fold(message);
   const callId = resolveCallId(message);
 
   if (/tribunal|puntua|puntuacion|\bnota\b|evalua|jurado/.test(m)) {
-    const applicationId = latestApplicationId();
+    const applicationId = latestApplicationId(profileId);
     if (!applicationId) return { reply: "Todavía no tienes ninguna solicitud preparada. Dime para qué convocatoria quieres que te la redacte y después la paso por el tribunal." };
     return { tool: "score_application", input: { applicationId } };
   }
@@ -64,7 +65,7 @@ export function planMockTurn(message: string): Plan {
 }
 
 export async function runMockAgent(message: string, run: RunToolFn, ctx: ToolContext): Promise<AgentTurn> {
-  const plan = planMockTurn(message);
+  const plan = planMockTurn(message, ctx.profileId);
   if ("reply" in plan) return { reply: plan.reply, toolCalls: [] };
   const call: AgentToolCall = { name: plan.tool, input: plan.input, ok: true };
   try {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import { POST as createRoute } from "@/app/api/works/route";
 import { PATCH as patchRoute } from "@/app/api/works/[id]/route";
 import { POST as describeRoute } from "@/app/api/works/[id]/describe/route";
@@ -9,7 +9,7 @@ import { ART_COPY } from "@/features/works/arts";
 import { inferMediaKind, normalizeLink, normalizeLinks } from "@/features/works/links";
 import { extractLinks, parseVoiceSheet } from "@/features/works/parse";
 import { saveProfile } from "@/server/store";
-import { ctx, req } from "../helpers";
+import { ctx, req, loginDemo } from "../helpers";
 
 const PNG_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 const PNG = `data:image/png;base64,${PNG_B64}`;
@@ -25,6 +25,11 @@ async function create(body: Record<string, unknown>): Promise<Work> {
   expect(r.status).toBe(201);
   return (await r.json()).work;
 }
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
 
 describe("voice -> sheet for every art (CCR-arts)", () => {
   it("music: the demo sentence", async () => {

@@ -3,8 +3,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import type { Profile } from "@/contracts";
-import { fixtureBusiness } from "@/fixtures";
-import { saveProfile, setActiveMode } from "@/server/store";
+import { DEMO_BUSINESS_ID, DEMO_CREATOR_ID, fixtureBusiness } from "@/fixtures";
+import { saveProfile } from "@/server/store";
+
+// The signed-in user's active profile, as the real routes would resolve it from the session.
+let activeProfileId = DEMO_CREATOR_ID;
 
 // Route the client's fetch helpers to the real services (mock AI): onboarding state/turns and the calls feed.
 vi.mock("@/lib/api-client", async () => {
@@ -13,11 +16,11 @@ vi.mock("@/lib/api-client", async () => {
   return {
     apiGet: async (url: string) => {
       const u = new URL(url, "http://x");
-      const profileId = u.searchParams.get("profileId") ?? undefined;
-      if (u.pathname === "/api/calls") return matching.callsFeed({ profileId, appUserId: u.searchParams.get("appUserId") ?? undefined });
+      const profileId = u.searchParams.get("profileId") ?? activeProfileId;
+      if (u.pathname === "/api/calls") return matching.callsFeed({ profileId, appUserId: "u" });
       return onboarding.getOnboardingState(profileId);
     },
-    apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) => onboarding.processTurn(body),
+    apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) => onboarding.processTurn({ ...body, profileId: body.profileId ?? activeProfileId }),
   };
 });
 const speech = { supported: true, listening: false, interim: "", error: null as string | null, start: vi.fn(), stop: vi.fn() };
@@ -61,7 +64,7 @@ const blankBusiness: Profile = {
 
 describe("/onboarding in pyme mode", () => {
   beforeEach(async () => {
-    await setActiveMode("business");
+    activeProfileId = DEMO_BUSINESS_ID;
     app.profile = null;
   });
 

@@ -5,7 +5,7 @@ import { TOOL_NAMES } from "@/contracts";
 import { AGENT_SYSTEM_PROMPT, MAX_AGENT_ITERATIONS, agentTools, historyToMessages, type AgentLlmClient } from "@/features/agent/real";
 import { runAgent } from "@/features/agent/service";
 import { AiError } from "@/server/ai/llm";
-import { grantPro, seedOnboardedCreator } from "../helpers";
+import { grantPro, seedOnboardedCreator, demoToolCtx } from "../helpers";
 
 type Params = Anthropic.Messages.MessageCreateParamsNonStreaming;
 type Block = Anthropic.Messages.ContentBlock;
@@ -75,7 +75,7 @@ describe("runAgent (real mode, fake client)", () => {
       msg([toolUse("t2", "export_dossier_pdf", { callId: CALL_ID })], "tool_use"),
       msg([text("Aquí tienes tu dossier para la beca: http://localhost:3000/dossier")], "end_turn"),
     ]);
-    const turn = await runAgent("Hazme el dossier para la convocatoria de artes plásticas", [], { client });
+    const turn = await runAgent("Hazme el dossier para la convocatoria de artes plásticas", [], await demoToolCtx(), { client });
 
     expect(turn.reply).toMatch(/^Aquí tienes tu dossier/);
     expect(turn.toolCalls).toEqual([
@@ -107,7 +107,7 @@ describe("runAgent (real mode, fake client)", () => {
       msg([toolUse("t1", "draft_application", { callId: CALL_ID })], "tool_use"),
       msg([text("Para redactarla necesitas Mecena Pro: http://localhost:3000/pro")], "end_turn"),
     ]);
-    const turn = await runAgent("Prepárame la solicitud", [], { client });
+    const turn = await runAgent("Prepárame la solicitud", [], await demoToolCtx(), { client });
     expect(turn.toolCalls).toEqual([{ name: "draft_application", input: { callId: CALL_ID }, ok: false }]);
     const result = (calls[1].messages[2].content as Anthropic.Messages.ToolResultBlockParam[])[0];
     expect(result.is_error).toBe(true);
@@ -120,7 +120,7 @@ describe("runAgent (real mode, fake client)", () => {
       msg([toolUse("t1", "explain_call", {}), toolUse("t2", "delete_everything", {})], "tool_use"),
       msg([text("¿De qué convocatoria hablamos?")], "end_turn"),
     ]);
-    const turn = await runAgent("Explícame las bases", [], { client });
+    const turn = await runAgent("Explícame las bases", [], await demoToolCtx(), { client });
     expect(turn.toolCalls.map((t) => t.ok)).toEqual([false, false]);
     const results = calls[1].messages[2].content as Anthropic.Messages.ToolResultBlockParam[];
     expect(results.map((r) => r.is_error)).toEqual([true, true]);
@@ -132,7 +132,7 @@ describe("runAgent (real mode, fake client)", () => {
     await seedOnboardedCreator();
     const loops = Array.from({ length: 10 }, (_, i) => msg([toolUse(`t${i}`, "get_profile", {})], "tool_use"));
     const { client, calls } = fakeClient(loops);
-    const turn = await runAgent("Bucle", [], { client });
+    const turn = await runAgent("Bucle", [], await demoToolCtx(), { client });
     expect(calls).toHaveLength(MAX_AGENT_ITERATIONS);
     expect(turn.toolCalls).toHaveLength(MAX_AGENT_ITERATIONS);
     expect(turn.reply).toMatch(/límite de pasos/);
@@ -141,23 +141,23 @@ describe("runAgent (real mode, fake client)", () => {
   it("uses a custom tool runner and passes the caller context", async () => {
     const seen: unknown[] = [];
     const { client } = fakeClient([msg([toolUse("t1", "search_calls", { query: "residencia" })], "tool_use"), msg([text("Listo.")], "end_turn")]);
-    const turn = await runAgent("Residencias", [], {
+    const ctx0 = { caller: "app" as const, userId: "user-1", profileId: "profile-1", appUserId: "rc-user-1" };
+    const turn = await runAgent("Residencias", [], ctx0, {
       client,
-      appUserId: "rc-user-1",
       run: async (name, input, ctx) => {
         seen.push({ name, input, ctx });
         return { results: [] };
       },
     });
     expect(turn.reply).toBe("Listo.");
-    expect(seen).toEqual([{ name: "search_calls", input: { query: "residencia" }, ctx: { caller: "app", appUserId: "rc-user-1" } }]);
+    expect(seen).toEqual([{ name: "search_calls", input: { query: "residencia" }, ctx: ctx0 }]);
   });
 
   it("refusals get a Spanish reply; API failures surface as AiError", async () => {
     const refused = fakeClient([msg([], "refusal")]);
-    expect((await runAgent("x", [], { client: refused.client })).reply).toMatch(/^Lo siento/);
+    expect((await runAgent("x", [], await demoToolCtx(), { client: refused.client })).reply).toMatch(/^Lo siento/);
 
     const broken: AgentLlmClient = { messages: { create: async () => Promise.reject(new Error("overloaded")) } };
-    await expect(runAgent("x", [], { client: broken })).rejects.toBeInstanceOf(AiError);
+    await expect(runAgent("x", [], await demoToolCtx(), { client: broken })).rejects.toBeInstanceOf(AiError);
   });
 });

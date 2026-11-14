@@ -139,7 +139,7 @@ export function mergeBody(existing: string | undefined, imported: string): strin
   return [existing.trim(), ...extra].join("\n\n");
 }
 
-export async function importDossier(req: ImportDossierRequest): Promise<ImportDossierResponse> {
+export async function importDossier(req: ImportDossierRequest & { profileId: string }): Promise<ImportDossierResponse> {
   const profile = getProfile(req.profileId);
   if (req.fileDataUrl && parseDataUrl(req.fileDataUrl).bytes > MAX_IMPORT_BYTES) throw new ImportUnsupportedError("El archivo pesa más de 20 MB. Prueba con un PDF más ligero o pega el texto.");
   const mock = isMockAi();

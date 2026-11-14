@@ -19,7 +19,7 @@ export const TOOL_NAMES = [
 ] as const;
 export type ToolName = (typeof TOOL_NAMES)[number];
 
-const profileIdIn = z.string().optional().describe("Profile id. Omit to use the active profile.");
+const profileIdIn = z.string().optional().describe("Profile id. Omit to use the user's active profile (recommended).");
 
 export const toolSchemas = {
   get_profile: {
@@ -77,10 +77,18 @@ export const toolSchemas = {
 export type ToolInput<N extends ToolName> = z.infer<(typeof toolSchemas)[N]["input"]>;
 export type ToolOutput<N extends ToolName> = z.infer<(typeof toolSchemas)[N]["output"]>;
 
-/** Who is calling a tool. MCP calls have no browser, so entitlement comes from the store. */
+/**
+ * Who is calling a tool, resolved on the server (session cookie for the app, MECENA_USER_EMAIL for MCP).
+ * Tools only touch this user's data: a profileId in the input must be one of theirs, and entitlements always
+ * come from `appUserId` (never from the model or the client).
+ */
 export interface ToolContext {
   caller: "app" | "mcp";
-  appUserId?: string;
+  userId: string;
+  /** The user's active profile: used when a tool input omits profileId. */
+  profileId: string;
+  /** RevenueCat app user id of this user. */
+  appUserId: string;
 }
 
 export type ToolHandler<N extends ToolName> = (input: ToolInput<N>, ctx: ToolContext) => Promise<ToolOutput<N>>;
@@ -98,5 +106,37 @@ export class NotFoundError extends Error {
   constructor(what: string) {
     super(`${what} no encontrado`);
     this.name = "NotFoundError";
+  }
+}
+
+/** No (valid) session. Routes map it to HTTP 401 { error: "unauthorized" }. */
+export class UnauthorizedError extends Error {
+  constructor(message = "Inicia sesión para continuar.") {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
+/** Signed in, but not allowed (e.g. a wrong invite code). Routes map it to HTTP 403. */
+export class ForbiddenError extends Error {
+  constructor(message = "No tienes permiso para hacer esto.") {
+    super(message);
+    this.name = "ForbiddenError";
+  }
+}
+
+/** The resource already exists (e.g. an account with that email). Routes map it to HTTP 409. */
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
+
+/** Too many attempts (login/signup rate limit). Routes map it to HTTP 429. */
+export class TooManyRequestsError extends Error {
+  constructor(message = "Demasiados intentos. Espera unos minutos y vuelve a probar.") {
+    super(message);
+    this.name = "TooManyRequestsError";
   }
 }

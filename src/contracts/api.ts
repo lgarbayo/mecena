@@ -19,12 +19,36 @@ import {
 } from "./domain";
 
 export const ApiError = z.object({
-  error: z.enum(["bad_request", "not_found", "payment_required", "ai_failed", "internal"]),
+  error: z.enum(["bad_request", "unauthorized", "forbidden", "not_found", "conflict", "payment_required", "too_many_requests", "ai_failed", "internal"]),
   message: z.string(),
 });
 export type ApiError = z.infer<typeof ApiError>;
 
-// /api/profile
+// /api/auth (the only API paths that work without a session)
+export const AuthEmail = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(254)
+  .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Escribe un email válido");
+export const SignupRequest = z.object({
+  email: AuthEmail,
+  password: z.string().min(8, "La contraseña necesita al menos 8 caracteres").max(200),
+  code: z.string().trim().max(200).optional(), // invite code, required only when MECENA_SIGNUP_CODE is set
+});
+export type SignupRequest = z.infer<typeof SignupRequest>;
+export const LoginRequest = z.object({ email: z.string().trim().toLowerCase().max(254), password: z.string().max(200) });
+export type LoginRequest = z.infer<typeof LoginRequest>;
+export const AuthUser = z.object({ id: z.string(), email: z.string() });
+export type AuthUser = z.infer<typeof AuthUser>;
+/** POST signup / login and GET me. */
+export const MeResponse = z.object({ user: AuthUser, profile: Profile, appUserId: z.string() });
+export type MeResponse = z.infer<typeof MeResponse>;
+/** GET /api/auth/config: what the sign-in page needs to know before the user types. */
+export const AuthConfigResponse = z.object({ signupCodeRequired: z.boolean() });
+export type AuthConfigResponse = z.infer<typeof AuthConfigResponse>;
+
+// /api/profile (profileId, when given, must be one of the signed-in user's profiles)
 export const ProfileResponse = z.object({ profile: Profile, appUserId: z.string() });
 export const ProfilePatchRequest = z.object({ profileId: z.string().optional(), patch: ProfilePatch });
 export const ProfileModeRequest = z.object({ kind: ProfileKind });
@@ -96,7 +120,8 @@ export type CallsResponse = z.infer<typeof CallsResponse>;
 export const CallResponse = z.object({ call: Call, match: MatchResult, checklist: z.array(z.string()), similarAwards: z.array(PastAward).default([]) });
 
 // /api/applications
-export const CreateApplicationRequest = z.object({ callId: z.string(), profileId: z.string().optional(), appUserId: z.string() });
+// appUserId is accepted for older clients but ignored: the server always uses the signed-in user's.
+export const CreateApplicationRequest = z.object({ callId: z.string(), profileId: z.string().optional(), appUserId: z.string().optional() });
 export const ApplicationResponse = z.object({ application: Application });
 export const UpdateApplicationRequest = z.object({ sections: Application.shape.sections.optional(), budget: Application.shape.budget.optional(), checklist: Application.shape.checklist.optional() });
 
@@ -110,7 +135,8 @@ export const JuryResponse = z.object({ score: JuryScore, previous: JuryScore.opt
 // /api/entitlements
 export const EntitlementResponse = z.object({ entitlement: EntitlementState });
 export const EntitlementSyncRequest = z.object({
-  appUserId: z.string(),
+  appUserId: z.string().optional(), // ignored: the server syncs the signed-in user's app user id
+
   // mock mode: what was bought; revenuecat mode: server re-verifies via REST when a secret key exists
   purchasedProductId: z.string().optional(),
   pro: z.boolean().optional(),

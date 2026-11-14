@@ -51,7 +51,7 @@ export interface DesignChange {
 }
 
 /** Asks the design agent for a new look from the artist's words, guards it and saves it. */
-export async function requestDesign(input: { profileId?: string; callId?: string; request: string; workColors?: string[]; preset?: string; auto?: boolean }): Promise<DesignChange> {
+export async function requestDesign(input: { profileId: string; callId?: string; request: string; workColors?: string[]; preset?: string; auto?: boolean }): Promise<DesignChange> {
   const profile = getProfile(input.profileId);
   const call = input.callId ? getCall(input.callId) : undefined;
   const store = read();
@@ -95,7 +95,7 @@ function interviewOf(profile: Profile): string[] {
 }
 
 /** Goes back one step. Returns the design now in place (a starting point when history runs out). */
-export function undoDesign(input: { profileId?: string; callId?: string }): { design: DossierDesign; saved: boolean } {
+export function undoDesign(input: { profileId: string; callId?: string }): { design: DossierDesign; saved: boolean } {
   const profile = getProfile(input.profileId);
   const call = input.callId ? getCall(input.callId) : undefined;
   const store = read();
@@ -113,4 +113,12 @@ export function undoDesign(input: { profileId?: string; callId?: string }): { de
 
 export function designHistory(profileId: string): string[] {
   return read()[profileId]?.history.map((h) => h.request) ?? [];
+}
+
+/** Drops the saved designs of these profiles (a user's demo reset). */
+export function forgetDesigns(profileIds: string[]): void {
+  const store = read();
+  let changed = false;
+  for (const id of profileIds) if (id in store) (delete store[id], (changed = true));
+  if (changed) write(store);
 }

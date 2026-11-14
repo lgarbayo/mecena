@@ -9,6 +9,7 @@ import { useApp } from "./AppProvider";
 export function BottomNav() {
   const path = usePathname();
   const { profile } = useApp();
+  if (path?.startsWith(ROUTES.login)) return null; // no navigation before signing in
   const items = NAV[profile?.kind ?? "creator"];
   return (
     <nav className="bottom-nav" aria-label="Principal">

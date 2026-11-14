@@ -1,10 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import { GET as getProfile } from "@/app/api/profile/route";
 import { GET as getCalls } from "@/app/api/calls/route";
 import { POST as createApplication } from "@/app/api/applications/route";
 import { POST as resetDemo } from "@/app/api/demo/reset/route";
 import { DEMO_APP_USER_ID } from "@/fixtures";
-import { req } from "../helpers";
+import { req, loginDemo } from "../helpers";
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
 
 describe("API routes (scaffold)", () => {
   it("GET /api/profile returns the active profile and app user id", async () => {

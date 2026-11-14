@@ -1,5 +1,6 @@
-// STUB (scaffold). Owned by WP-09. Usage: npm run demo:reset [-- --onboarded]
-import { resetDemo } from "@/features/demo/service";
+// Admin CLI. Owned by WP-09. Usage: npm run demo:reset
+// Resets the WHOLE database to its initial state: every account, session and profile is deleted.
+// (Users reset only their own data from the app: POST /api/demo/reset.)
+import { resetAllDemo } from "@/features/demo/service";
 
-const scenario = process.argv.includes("--onboarded") ? "onboarded" : "blank";
-resetDemo({ scenario }).then((r) => console.log(`[demo] reset (${scenario}) appUserId=${r.appUserId}`));
+resetAllDemo().then(() => console.log("[demo] database reset: every account and profile was removed"));

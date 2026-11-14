@@ -3,8 +3,9 @@ import { randomUUID } from "node:crypto";
 import { NextRequest } from "next/server";
 import { proxy } from "@/proxy";
 
-const req = (auth?: string) =>
-  new NextRequest("https://mecena.example/onboarding", { headers: auth ? { authorization: auth } : {} });
+const SESSION = "mecena_session=abc";
+const req = (auth?: string, path = "/onboarding", cookie: string | null = SESSION) =>
+  new NextRequest(`https://mecena.example${path}`, { headers: { ...(auth ? { authorization: auth } : {}), ...(cookie ? { cookie } : {}) } });
 const basic = (u: string, p: string) => `Basic ${btoa(`${u}:${p}`)}`;
 // Generated per run: a literal here reads as a hardcoded secret to scanners.
 const PASS = randomUUID();
@@ -38,5 +39,39 @@ describe("proxy basic auth", () => {
     expect(proxy(req(basic("mecena", PASS))).status).toBe(200);
     process.env.BASIC_AUTH_USER = "luis";
     expect(proxy(req(basic("luis", PASS))).status).toBe(200);
+  });
+
+  it("basic auth still comes first: no session gate before the password", () => {
+    process.env.BASIC_AUTH_PASSWORD = PASS;
+    expect(proxy(req(undefined, "/entrar", null)).status).toBe(401);
+  });
+});
+
+describe("proxy session gate", () => {
+  it("pages without the session cookie redirect to /entrar?next=<path>", () => {
+    const res = proxy(req(undefined, "/obras?x=1", null));
+    expect(res.status).toBe(307);
+    const to = new URL(res.headers.get("location")!);
+    expect(to.pathname).toBe("/entrar");
+    expect(to.searchParams.get("next")).toBe("/obras?x=1");
+    expect(new URL(proxy(req(undefined, "/", null)).headers.get("location")!).search).toBe("");
+  });
+
+  it("API calls without the session cookie get 401 JSON", async () => {
+    const res = proxy(req(undefined, "/api/profile", null));
+    expect(res.status).toBe(401);
+    expect(await res.json()).toMatchObject({ error: "unauthorized" });
+    expect(proxy(req(undefined, "/api/works/w1/image", null)).status).toBe(401);
+  });
+
+  it("public paths work without a session: /entrar, /api/auth/*, build assets and static files", () => {
+    for (const p of ["/entrar", "/entrar?next=%2Fobras", "/api/auth/login", "/api/auth/me", "/_next/static/chunk.js", "/favicon.ico", "/robots.txt", "/demo/obra.jpg"]) {
+      expect(proxy(req(undefined, p, null)).status, p).toBe(200);
+    }
+  });
+
+  it("with the cookie, pages and API pass (the session itself is validated by each route)", () => {
+    expect(proxy(req(undefined, "/obras")).status).toBe(200);
+    expect(proxy(req(undefined, "/api/profile")).status).toBe(200);
   });
 });

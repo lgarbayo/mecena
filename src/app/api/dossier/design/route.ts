@@ -6,7 +6,8 @@
 import { z } from "zod";
 import { currentDesign, designHistory, requestDesign, undoDesign } from "@/features/dossier/designs";
 import { body, json, route } from "@/server/http";
-import { getCall, getProfile } from "@/server/store";
+import { requireProfile, requireUser, resolveProfile } from "@/server/auth";
+import { getCall } from "@/server/store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -23,20 +24,23 @@ const Post = z.object({
 
 export const GET = route(async (req: Request) => {
   const sp = new URL(req.url).searchParams;
-  const profile = getProfile(sp.get("profileId") || undefined);
+  const { profile } = await requireProfile(req, sp.get("profileId"));
   const callId = sp.get("callId") || undefined;
   const { design, saved } = currentDesign({ profile, call: callId ? getCall(callId) : undefined });
   return json({ design, saved, history: designHistory(profile.id) });
 });
 
 export const POST = route(async (req: Request) => {
+  const user = requireUser(req);
   const input = await body(req, Post);
-  if (input.undo) return json(undoDesign({ profileId: input.profileId, callId: input.callId }));
+  const profile = await resolveProfile(user, input.profileId);
+  if (input.undo) return json(undoDesign({ profileId: profile.id, callId: input.callId }));
   if (!input.preset && !input.request && !input.auto) return json({ error: "bad_request", message: "Cuéntame cómo quieres tu dossier." }, { status: 400 });
-  return json(await requestDesign(input));
+  return json(await requestDesign({ ...input, profileId: profile.id }));
 });
 
 export const DELETE = route(async (req: Request) => {
   const sp = new URL(req.url).searchParams;
-  return json(undoDesign({ profileId: sp.get("profileId") || undefined, callId: sp.get("callId") || undefined }));
+  const { profile } = await requireProfile(req, sp.get("profileId"));
+  return json(undoDesign({ profileId: profile.id, callId: sp.get("callId") || undefined }));
 });

@@ -1,16 +1,27 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 vi.mock("@/components/shell/AppProvider", () => ({ useApp: () => ({ appUserId: "u-paywall" }) }));
 // Route the adapter's fetch calls to the real route handlers (mock purchases mode: no keys in tests).
 const { GET, POST } = await import("@/app/api/entitlements/route");
+// The browser sends the session cookie with every same-origin fetch; the routes use the user's own app user id.
+let cookie = "";
 vi.stubGlobal("fetch", async (url: string, init?: RequestInit) => {
-  const r = new Request(`http://localhost${url}`, init);
+  const r = new Request(`http://localhost${url}`, { ...init, headers: { ...(init?.headers as Record<string, string>), cookie } });
   return r.method === "POST" ? POST(r) : GET(r);
 });
 const { Paywall } = await import("@/features/purchases/ui/Paywall");
-const { getEntitlement } = await import("@/server/store");
+const { getEntitlement, updateDb } = await import("@/server/store");
+const { createUser } = await import("../helpers");
+
+beforeEach(async () => {
+  const u = await createUser("paywall@mecena.test");
+  cookie = u.cookie;
+  await updateDb((db) => {
+    db.users.find((x) => x.id === u.user.id)!.appUserId = "u-paywall"; // what AppProvider hands the paywall
+  });
+});
 
 afterEach(cleanup);
 

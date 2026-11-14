@@ -1,17 +1,22 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import type { Call } from "@/contracts";
-import { fixtureCalls, fixtureCreator, fixtureWorks } from "@/fixtures";
+import { fixtureCalls, fixtureCreator, fixtureWorks, DEMO_CREATOR_ID } from "@/fixtures";
 import { mockDesign } from "@/features/dossier/ai";
 import { contrast, DossierDesign, guardDesign, presetDesign } from "@/features/dossier/design";
 import { renderDossierPdf } from "@/features/dossier/service";
 import { GET, POST } from "@/app/api/dossier/design/route";
 import { appendSegment } from "@/server/store";
-import { req, seedOnboardedCreator } from "../helpers";
+import { req, seedOnboardedCreator, loginDemo } from "../helpers";
 import { seedUploadWork } from "./fixtures";
 
 const call = (patch: Partial<Call>): Call => ({ ...structuredClone(fixtureCalls[0]), ...patch });
 const agent = (request: string, extra: Partial<Parameters<typeof mockDesign>[0]> = {}) =>
   mockDesign({ request, current: presetDesign("sobrio", "creator"), profile: fixtureCreator, workColors: ["#2f6a9a"], history: [], ...extra });
+
+// Route handlers need a session: run as the demo account (owns the fixture profiles).
+beforeEach(async () => {
+  await loginDemo();
+});
 
 describe("design agent (literal reading)", () => {
   it("applies an open request on top of the current design", () => {
@@ -90,7 +95,7 @@ describe("design API and PDF", () => {
     await seedOnboardedCreator();
     await seedUploadWork(fixtureWorks[0].id, fixtureWorks[0].sheet, 0);
     await POST(req("/api/dossier/design", { body: { request: "noche, como un catálogo de museo, cartela debajo, mis piezas" } }));
-    const bytes = await renderDossierPdf({});
+    const bytes = await renderDossierPdf({ profileId: DEMO_CREATOR_ID });
     expect(bytes.subarray(0, 4).toString()).toBe("%PDF");
     expect(bytes.length).toBeGreaterThan(5000);
   });

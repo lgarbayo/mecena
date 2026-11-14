@@ -37,7 +37,7 @@ function imagePath(id: string): { file: string; mediaType: Media } | undefined {
   return undefined;
 }
 
-export async function createWork(input: { profileId?: string; imageDataUrl: string; voiceDescription?: string; mediaKind?: MediaKind; links?: string[] }): Promise<Work> {
+export async function createWork(input: { profileId: string; imageDataUrl: string; voiceDescription?: string; mediaKind?: MediaKind; links?: string[] }): Promise<Work> {
   const profile = getProfile(input.profileId);
   const { mediaType, base64 } = parseDataUrl(input.imageDataUrl);
   const bytes = Buffer.from(base64, "base64");

@@ -1,19 +1,24 @@
 // Owned by WP-08. "Prepárame la solicitud": 402 payment_required without Pro / Solicitud premium.
 // GET ?callId&profileId → the existing draft (or null) so the page never re-drafts or spends a second credit.
+// profileId must be one of the user's profiles; entitlement is always the signed-in user's (body appUserId ignored).
 import { CreateApplicationRequest } from "@/contracts/api";
 import { draftApplication, draftSources, findDraft } from "@/features/drafting/service";
+import { requireProfile, requireUser, resolveProfile } from "@/server/auth";
 import { body, json, route } from "@/server/http";
 
 export const dynamic = "force-dynamic";
 
 export const GET = route(async (req: Request) => {
   const sp = new URL(req.url).searchParams;
-  const application = findDraft({ callId: sp.get("callId") ?? "", profileId: sp.get("profileId") ?? undefined });
+  const { profile } = await requireProfile(req, sp.get("profileId"));
+  const application = findDraft({ callId: sp.get("callId") ?? "", profileId: profile.id });
   return json({ application, sources: application ? draftSources(application) : {} });
 });
 
 export const POST = route(async (req: Request) => {
-  const { callId, profileId, appUserId } = await body(req, CreateApplicationRequest);
-  const application = await draftApplication({ callId, profileId }, { caller: "app", appUserId });
+  const user = requireUser(req);
+  const { callId, profileId } = await body(req, CreateApplicationRequest);
+  const profile = await resolveProfile(user, profileId);
+  const application = await draftApplication({ callId, profileId: profile.id }, { appUserId: user.appUserId });
   return json({ application, sources: draftSources(application) }, { status: 201 });
 });
