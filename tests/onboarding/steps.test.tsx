@@ -18,6 +18,8 @@ vi.mock("@/components/voice/useSpeechRecognition", () => ({
     return speech;
   },
 }));
+const push = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }), usePathname: () => "/onboarding" }));
 vi.mock("@/components/shell/AppProvider", () => ({
   useApp: () => ({ profile: null, appUserId: "u", refresh: async () => undefined, setMode: async () => undefined }),
 }));

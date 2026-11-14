@@ -148,7 +148,7 @@ export const ONBOARDING = {
   writeToggle: "Prefiero escribir",
   textPlaceholder: "Escribe aquí lo que nos contarías en voz alta…",
   send: "Añadir",
-  micNote: "Para escucharte necesitamos el micrófono. Solo lo usamos mientras pulses «Empezar a hablar». La voz la transcribe tu navegador (en Chrome, con servicios de Google); si lo prefieres, escríbelo.",
+  micNote: "Solo usamos el micrófono mientras hablas con Mecena. La voz la transcribe tu navegador (en Chrome, con servicios de Google); si lo prefieres, escríbelo.",
   micDenied: "No tenemos acceso al micrófono. Actívalo en los ajustes del navegador o escribe tu historia.",
   noSpeech: "No te hemos oído bien. Acércate un poco o prueba a escribir.",
   unsupported: "Este navegador no reconoce la voz. Escríbelo y hacemos lo mismo.",
@@ -165,8 +165,8 @@ export const ONBOARDING = {
   finishBusinessCount: (n: number) => (n === 1 ? "Ver la ayuda que encaja" : `Ver las ${n} ayudas que encajan`),
   followUpKicker: "Para seguir",
   sending: "Anotando…",
-  slow: "Va más lento de lo normal. Puedes seguir hablando: no se pierde nada.",
-  failed: "Algo ha fallado por nuestra parte. Vuelve a intentarlo; no has perdido nada.",
+  slow: "Va más lento de lo normal. Puedes seguir hablando: lo guardamos en orden.",
+  failed: "Algo ha fallado por nuestra parte. Tu texto sigue aquí: vuelve a intentarlo.",
   retry: "Reintentar",
   fromYourWords: "Con tus palabras",
   finish: {
@@ -345,8 +345,15 @@ export const HOME_BUSINESS = {
 /** Trust strip for a pyme: there is no artwork to protect, but there are company data and a submission to sign. */
 export const TRUST_BUSINESS = {
   title: "Tu negocio es tuyo; nosotros hacemos el papeleo.",
+  intro: "Mecena hace el trabajo de oficina para que tú sigas con tu negocio. Estas son nuestras reglas, sin letra pequeña.",
+  points: [
+    { icon: "lock", title: "No entrenamos con tus datos.", body: "Los datos de tu empresa son tuyos y solo se usan para encontrar ayudas y preparar tus solicitudes." },
+    { icon: "pen", title: "Tú tienes la última palabra.", body: "Cada texto sale de lo que tú cuentas, y puedes cambiarlo todo antes de usarlo." },
+    { icon: "stamp", title: "Nosotros preparamos; tú presentas.", body: "La solicitud la envías tú, con tu certificado digital o Cl@ve. Nunca presentamos nada en tu nombre." },
+  ] satisfies TrustPoint[],
   strip: ["No entrenamos con los datos de tu empresa.", "Nosotros preparamos; tú presentas la solicitud.", "Tú tienes la última palabra."],
   stripMore: "Cómo cuidamos tus datos",
+  cta: "Entendido, empezamos",
 } as const;
 
 /** Main navigation per mode: a pyme has no works or dossier to build; it looks for aid and applies. */

@@ -1,29 +1,47 @@
 "use client";
 /**
  * /onboarding, step by step: choose voice or text, then one question per screen with a progress bar.
- * Same pipeline as the live onboarding: every answer (typed, or each final voice chunk) becomes a queued turn
- * (POST /api/onboarding/turn) that fills the profile and the dossier in the background.
+ * Every answer (typed, or each final voice chunk) becomes a queued turn (POST /api/onboarding/turn) and, while the
+ * person talks, the profile and the dossier grow on screen section by section next to the transcript (LiveDossier).
+ * Creators can photograph a work without leaving the conversation (PhotoSheet). Leaving waits for the queue.
  */
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { API, ROUTES, type Profile, type ProfileKind } from "@/contracts";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { API, ROUTES, type DossierSection, type Profile, type ProfileKind, type TranscriptSegment, type Work } from "@/contracts";
 import type { ImportDossierResponse, OnboardingTurnResponse } from "@/contracts/api";
 import { useApp } from "@/components/shell/AppProvider";
-import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
+import { MIC_BLOCKED, useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
+import { worksClient } from "@/features/works/client";
 import { apiGet, apiSend } from "@/lib/api-client";
-import { FIELD_LABELS, HOME, LEGAL_FORM_LABELS, ONBOARDING } from "../copy";
+import { ONBOARDING, fieldLabel } from "../copy";
+import { isVisualFamily, onboardingFamily } from "../family";
 import { STEPS_COPY as C, stepsFor } from "../steps";
 import { TurnQueue, type QueuedTurn } from "../turnQueue";
+import { filledRows } from "./format";
 import { MicIcon } from "./icons";
 import { ImportDossier } from "./ImportDossier";
+import { LiveDossier } from "./LiveDossier";
 import { MatchesPanel } from "./MatchesPanel";
-import { ONBOARDING_STATE_API } from "./OnboardingClient";
+import { PhotoSheet } from "./PhotoSheet";
 import { Stage, glass as g } from "./Stage";
+import { Transcript, type TranscriptLine } from "./Transcript";
+import { TrustStrip } from "./TrustStrip";
 import { VoiceOrb } from "./VoiceOrb";
 import s from "./steps.module.css";
 
+/** GET current onboarding state (profile, dossier sections, transcript), owned by WP-01. */
+export const ONBOARDING_STATE_API = "/api/onboarding";
+/** How long a changed section / profile chip stays highlighted. */
+const FLASH_MS = 2600;
+
 type Mode = "voice" | "text";
 type Phase = { at: "choose" } | { at: "step"; i: number } | { at: "done" };
+interface State {
+  profile: Profile;
+  sections: DossierSection[];
+  transcript: TranscriptSegment[];
+}
 
 const filled = (p: Profile | null, fields: string[]) =>
   !!p &&
@@ -31,30 +49,6 @@ const filled = (p: Profile | null, fields: string[]) =>
     const v = (p as Record<string, unknown>)[f];
     return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== null && v !== "";
   });
-
-function extractLiveTags(p: Profile | null): { label: string; value: string }[] {
-  if (!p) return [];
-  const tags: { label: string; value: string }[] = [];
-  if (p.displayName) tags.push({ label: p.kind === "business" ? "Empresa" : "Nombre", value: p.displayName });
-  if (p.city || p.region) tags.push({ label: "Ciudad", value: p.city || p.region || "" });
-  if (p.kind === "creator" && p.disciplines.length > 0) {
-    tags.push({ label: "Disciplina", value: p.disciplines.slice(0, 2).join(", ") });
-  }
-  if (p.kind === "business" && p.sector) {
-    tags.push({ label: "Sector", value: p.sector });
-  }
-  if (p.legalForm) {
-    tags.push({ label: "Forma", value: LEGAL_FORM_LABELS[p.legalForm] ?? p.legalForm });
-  }
-  if (p.fundingNeeds.length > 0) {
-    const need = p.fundingNeeds[0];
-    tags.push({ label: "Necesidad", value: need.length > 34 ? `${need.slice(0, 32)}…` : need });
-  } else if (p.projectIdea) {
-    const idea = p.projectIdea;
-    tags.push({ label: "Proyecto", value: idea.length > 34 ? `${idea.slice(0, 32)}…` : idea });
-  }
-  return tags;
-}
 
 function PenIcon() {
   return (
@@ -65,42 +59,66 @@ function PenIcon() {
   );
 }
 
+function CameraIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+      <circle cx="12" cy="13.5" r="3.5" />
+    </svg>
+  );
+}
+
 export function StepOnboarding() {
   const app = useApp();
   const appRef = useRef(app);
   appRef.current = app;
+  const router = useRouter();
   const kind: ProfileKind = app.profile?.kind ?? "creator";
+  const kindRef = useRef(kind);
+  kindRef.current = kind;
   const steps = useMemo(() => stepsFor(kind), [kind]);
-  const stepsRef = useRef(steps);
-  stepsRef.current = steps;
 
   const [phase, setPhase] = useState<Phase>({ at: "choose" });
   const [mode, setMode] = useState<Mode>("voice");
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [liveProfile, setLiveProfile] = useState<Profile | null>(null);
-  const [, setIsFirstTurn] = useState(true);
-  const firstTurnRef = useRef(false);
-  const stepKeyQueueRef = useRef<(string | undefined)[]>([]);
-  const stepIndexRef = useRef(0);
-  stepIndexRef.current = phase.at === "step" ? phase.i : 0;
-
+  const [sections, setSections] = useState<DossierSection[]>([]);
+  const [history, setHistory] = useState<TranscriptSegment[]>([]);
+  const [works, setWorks] = useState<Work[]>([]);
+  const [freshWork, setFreshWork] = useState<string | null>(null);
   const [turns, setTurns] = useState<QueuedTurn[]>([]);
   const [followUp, setFollowUp] = useState<string>();
   const [noted, setNoted] = useState<{ text: string; key: number } | null>(null);
+  const [changedFields, setChangedFields] = useState<Set<string>>(new Set());
+  const [changedSections, setChangedSections] = useState<Set<string>>(new Set());
+  const [version, setVersion] = useState(0);
   const [draft, setDraft] = useState("");
-  const [heard, setHeard] = useState("");
   const [pulse, setPulse] = useState(0);
   const [showImport, setShowImport] = useState(false);
   const [voiceOk, setVoiceOk] = useState(true);
+  const [micNotice, setMicNotice] = useState<string | null>(null);
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const [switchError, setSwitchError] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState<string | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const resumeAfterPhoto = useRef(false);
+  /** Turns of the queue that belong to an earlier profile (before a creator <-> pyme switch) are not shown. */
+  const turnsOffset = useRef(0);
+
+  const total = steps.length;
+  const stepIndex = phase.at === "step" ? phase.i : phase.at === "done" ? total : 0;
+  /** The step the person is on now; a turn's follow-up question from an earlier step is stale. */
+  const stepRef = useRef(-1);
+  stepRef.current = phase.at === "step" ? phase.i : phase.at === "done" ? total : -1;
+
+  const stepsRef = useRef(steps);
+  stepsRef.current = steps;
+  /** Set when a new onboarding starts: its first turn resets what an earlier one left in the profile. */
+  const freshRef = useRef(false);
 
   const profileId = app.profile?.id;
   const pidRef = useRef(profileId);
   pidRef.current = profileId;
-
-  const stepKeyFor = useCallback((idx: number): string | undefined => {
-    const st = stepsRef.current[idx] as ((typeof steps)[number] & { key?: string }) | undefined;
-    return st?.key ?? st?.fields[0] ?? `step-${idx + 1}`;
-  }, []);
 
   useEffect(() => {
     const w = window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown };
@@ -108,50 +126,45 @@ export function StepOnboarding() {
     setShowImport(new URLSearchParams(window.location.search).get("subir") === "1");
   }, []);
 
-  useEffect(() => {
-    if (!profileId) return;
-    apiGet<{ profile: Profile; transcript?: unknown[] }>(`${ONBOARDING_STATE_API}?profileId=${encodeURIComponent(profileId)}`)
+  const loadState = useCallback((id: string) => {
+    apiGet<State>(`${ONBOARDING_STATE_API}?profileId=${encodeURIComponent(id)}`)
       .then((st) => {
-        const untouchedBusinessSeed =
-          st.profile.kind === "business" &&
-          st.profile.displayName === "Cerámica Mareira" &&
-          st.profile.cnae === "2341" &&
-          Array.isArray(st.transcript) &&
-          st.transcript.length === 0;
-        if (untouchedBusinessSeed) {
-          setProfile({
-            ...st.profile,
-            displayName: "",
-            city: undefined,
-            province: undefined,
-            region: undefined,
-            territory: undefined,
-            legalForm: undefined,
-            cnae: undefined,
-            sector: undefined,
-            employees: undefined,
-            foundedYear: undefined,
-            annualRevenueEur: undefined,
-            bio: "",
-            statement: "",
-            achievements: [],
-            education: [],
-            links: [],
-            fundingNeeds: [],
-            projectIdea: undefined,
-          });
-        } else {
-          setProfile(st.profile);
-        }
+        if (pidRef.current !== id) return;
+        const untouchedSeed = st.profile.kind === "business" && st.profile.displayName === "Cerámica Mareira" && st.profile.cnae === "2341" && (st.transcript ?? []).length === 0;
+        setProfile(untouchedSeed ? { ...st.profile, displayName: "", city: undefined, province: undefined, region: undefined, territory: undefined, legalForm: undefined, cnae: undefined, sector: undefined, employees: undefined, foundedYear: undefined, annualRevenueEur: undefined, bio: "", statement: "", achievements: [], education: [], links: [], fundingNeeds: [], projectIdea: undefined } : st.profile);
+        setSections(st.sections ?? []);
+        setHistory(st.transcript ?? []);
       })
       .catch(() => undefined);
-  }, [profileId]);
+  }, []);
 
-  const onResult = useCallback((res: OnboardingTurnResponse) => {
+  useEffect(() => {
+    if (!profileId) return;
+    loadState(profileId);
+    setFollowUp(undefined);
+    if (kindRef.current !== "creator") return setWorks([]);
+    worksClient
+      .list(profileId)
+      .then((ws) => pidRef.current === profileId && setWorks(Array.isArray(ws) ? ws : []))
+      .catch(() => undefined);
+  }, [profileId, loadState]);
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
+
+  const onResult = useCallback((res: OnboardingTurnResponse, turn?: QueuedTurn) => {
     setProfile(res.profile);
-    setLiveProfile(res.profile);
-    if (res.followUpQuestion) setFollowUp(res.followUpQuestion);
-    const labels = res.changedProfileFields.map((f) => FIELD_LABELS[f]).filter(Boolean);
+    setSections(res.sections);
+    // A question for a step the person has already left would answer the wrong screen.
+    const stale = turn?.step !== undefined && turn.step < stepRef.current;
+    if (res.followUpQuestion && !stale) setFollowUp(res.followUpQuestion);
+    setChangedFields(new Set(res.changedProfileFields));
+    setChangedSections(new Set(res.changedSectionKeys));
+    setVersion((v) => v + 1);
+    clearTimeout(flashTimer.current);
+    flashTimer.current = setTimeout(() => {
+      setChangedFields(new Set());
+      setChangedSections(new Set());
+    }, FLASH_MS);
+    const labels = res.changedProfileFields.map((f) => fieldLabel(kindRef.current, f)).filter(Boolean);
     if (labels.length) setNoted({ text: ONBOARDING.noted(labels.join(", ")), key: Date.now() });
     if (res.changedProfileFields.length) appRef.current.refresh().catch(() => undefined);
   }, []);
@@ -160,39 +173,21 @@ export function StepOnboarding() {
     () =>
       new TurnQueue(
         (t, signal) => {
-          const stepKey = stepKeyQueueRef.current.shift() ?? stepKeyFor(stepIndexRef.current);
-          const reset = firstTurnRef.current;
-          if (reset) {
-            firstTurnRef.current = false;
-            setIsFirstTurn(false);
-          }
-          return apiSend<OnboardingTurnResponse>(
-            API.onboardingTurn,
-            { ...t, profileId: pidRef.current, stepKey, reset },
-            "POST",
-            signal,
-          );
+          // The first turn of a fresh onboarding starts the profile from scratch (server-side reset).
+          const reset = freshRef.current;
+          freshRef.current = false;
+          const stepKey = t.step === undefined ? undefined : (stepsRef.current[t.step]?.fields[0] ?? `step-${t.step + 1}`);
+          return apiSend<OnboardingTurnResponse>(API.onboardingTurn, { text: t.text, source: t.source, profileId: pidRef.current, stepKey, reset }, "POST", signal);
         },
         { change: setTurns, result: onResult },
       ),
-    [onResult, stepKeyFor],
-  );
-
-  const send = useCallback(
-    (stepKey: string | undefined, raw: string, source: "voice" | "text") => {
-      const clean = raw.trim();
-      if (!clean) return;
-      stepKeyQueueRef.current.push(stepKey);
-      queue.enqueue(clean, source);
-    },
-    [queue],
+    [onResult],
   );
 
   const speech = useSpeechRecognition({
     onFinal: (text) => {
       if (!text) return;
-      send(stepKeyFor(stepIndexRef.current), text, "voice");
-      setHeard(text);
+      queue.enqueue(text, "voice", Math.max(0, stepRef.current));
       setPulse((p) => p + 1);
     },
   });
@@ -200,39 +195,69 @@ export function StepOnboarding() {
     if (speech.interim) setPulse((p) => p + 1);
   }, [speech.interim]);
 
-  const busy = turns.some((t) => t.status === "sending" || t.status === "queued");
-  const failed = turns.find((t) => t.status === "failed");
-  const slow = turns.some((t) => t.slow);
-  const total = steps.length;
-  const stepIndex = phase.at === "step" ? phase.i : phase.at === "done" ? total : 0;
+  // No microphone (denied, blocked or missing): voice cannot work, so carry on typing on the same step.
+  const blocked = !!speech.errorCode && MIC_BLOCKED.has(speech.errorCode);
+  useEffect(() => {
+    if (!blocked) return;
+    speech.stop();
+    setMode("text");
+    setMicNotice(speech.error ?? ONBOARDING.micDenied);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- react to a new blocking error only
+  }, [blocked, speech.errorCode]);
 
-  const chooseKind = (k: ProfileKind) => {
-    firstTurnRef.current = true;
-    setIsFirstTurn(true);
-    setLiveProfile(null);
-    void app.setMode(k);
+  const shownTurns = turns.slice(turnsOffset.current);
+  const busy = shownTurns.some((t) => t.status === "sending" || t.status === "queued");
+  const failed = shownTurns.find((t) => t.status === "failed");
+  const slow = shownTurns.some((t) => t.slow);
+
+  // Leaving while answers are still on their way: wait for the queue, then go. A tab close gets the browser's prompt.
+  useEffect(() => {
+    if (!busy && !failed) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [busy, failed]);
+  useEffect(() => {
+    if (leaving && !busy && !failed) router.push(leaving);
+  }, [leaving, busy, failed, router]);
+  const guard = (href: string) => (e: MouseEvent) => {
+    speech.stop();
+    if (!busy && !failed) return;
+    e.preventDefault();
+    setLeaving(href);
   };
 
   const start = (m: Mode) => {
-    firstTurnRef.current = true;
-    setIsFirstTurn(true);
-    setLiveProfile(null);
+    freshRef.current = true;
     setMode(m);
+    setMicNotice(null);
     setPhase({ at: "step", i: 0 });
     if (m === "voice") speech.start();
   };
 
+  const toText = () => {
+    speech.stop(); // a pending final still arrives and is queued: nothing said is lost
+    setMode("text");
+  };
+  const toVoice = () => {
+    setMicNotice(null);
+    setMode("voice");
+    speech.start();
+  };
+
   const go = (i: number) => {
-    const currentKey = stepKeyFor(stepIndexRef.current);
-    if (mode === "text" && draft.trim()) {
-      send(currentKey, draft.trim(), "text");
+    if (mode === "text" && draft.trim() && phase.at === "step") {
+      queue.enqueue(draft.trim(), "text", phase.i);
       setDraft("");
-    } else if (mode === "voice") {
-      const maybeFlush = (speech as { flush?: () => void }).flush;
-      if (maybeFlush) maybeFlush();
-      else if (speech.interim.trim()) send(currentKey, speech.interim.trim(), "voice");
+    } else if (mode === "voice" && phase.at === "step") {
+      // What is still being said is not lost: the hook hands it out, or we queue the interim text ourselves.
+      const flush = (speech as { flush?: () => void }).flush;
+      if (flush) flush();
+      else if (speech.interim.trim()) queue.enqueue(speech.interim.trim(), "voice", phase.i);
     }
-    setHeard("");
     setFollowUp(undefined);
     if (i >= total) {
       speech.stop();
@@ -240,27 +265,71 @@ export function StepOnboarding() {
     } else if (i < 0) {
       speech.stop();
       setPhase({ at: "choose" });
-    } else {
-      setPhase({ at: "step", i });
-      if (mode === "voice") speech.start();
+    } else setPhase({ at: "step", i });
+  };
+
+  const switchKind = async (k: ProfileKind) => {
+    if (k === kind || switching || busy) return;
+    setSwitching(true);
+    setSwitchError(null);
+    try {
+      await app.setMode(k);
+      turnsOffset.current = queue.snapshot.length;
+      setTurns([...queue.snapshot]);
+      setSections([]);
+      setHistory([]);
+    } catch {
+      setSwitchError(C.switchFailed);
+    } finally {
+      setSwitching(false);
     }
   };
 
+  const openPhoto = () => {
+    resumeAfterPhoto.current = speech.listening;
+    speech.stop(); // the sheet dictates the work's sheet with its own microphone
+    setPhotoOpen(true);
+  };
+  const closePhoto = useCallback(() => {
+    setPhotoOpen(false);
+    if (resumeAfterPhoto.current) speechStart.current();
+    resumeAfterPhoto.current = false;
+  }, []);
+  const speechStart = useRef(speech.start);
+  speechStart.current = speech.start;
+  const onWork = useCallback((w: Work) => {
+    setWorks((ws) => [...ws.filter((x) => x.id !== w.id), w]);
+    setFreshWork(w.id);
+  }, []);
+
   const onImported = (res: ImportDossierResponse) => {
     onResult({ ...res, segmentId: res.segmentIds.at(-1) ?? "" });
+    if (profileId) loadState(profileId);
     setShowImport(false);
   };
 
-  const micError = speech.error && !/no-speech|aborted/.test(speech.error) ? speech.error : null;
-  const activeProfile = liveProfile ?? profile;
-  const liveTags = useMemo(() => extractLiveTags(activeProfile), [activeProfile]);
+  const quietError = speech.error && speech.errorCode && !/no-speech|aborted/.test(speech.errorCode) && !blocked ? speech.error : null;
+  const lines: TranscriptLine[] = [...history.map((h) => ({ id: h.id, text: h.text, status: "done" as const })), ...shownTurns.map((t) => ({ id: t.id, text: t.text, status: t.status }))];
+  const finishCopy = kind === "creator" && !isVisualFamily(onboardingFamily(profile?.disciplines)) ? ONBOARDING.finish.creatorLive : ONBOARDING.finish[kind];
+  const rows = filledRows(kind, profile);
+  // A failed turn is retried from its line in the transcript; the footer only says so.
+  const queueStatus = failed ? C.turnStatus.failed : busy ? (slow ? ONBOARDING.slow : ONBOARDING.sending) : "";
+
+  const live = (
+    <LiveDossier kind={kind} profile={profile} sections={sections} changedSections={changedSections} changedFields={changedFields} version={version} works={kind === "creator" ? works : []} freshWorkId={freshWork} />
+  );
+  const photoButton = kind === "creator" && (
+    <button type="button" className={`${g.btn} ${s.photoBtn}`} onClick={openPhoto} data-testid="photo-work">
+      <CameraIcon /> {C.photoWork}
+    </button>
+  );
 
   return (
     <Stage label="Cuéntanos">
       <div className={s.wrap}>
         <header className={s.top}>
           <div className={s.topRow}>
-            <Link href={ROUTES.home} className={g.brand}>
+            <Link href={ROUTES.home} className={g.brand} onClick={guard(ROUTES.home)}>
               Mecena
             </Link>
             {phase.at !== "choose" && (
@@ -268,7 +337,7 @@ export function StepOnboarding() {
                 {phase.at === "done" ? "Listo" : C.step(stepIndex + 1, total)}
               </span>
             )}
-            <Link href={ROUTES.home} className={s.close} aria-label="Salir">
+            <Link href={ROUTES.home} className={s.close} aria-label="Salir" onClick={guard(ROUTES.home)} data-testid="exit">
               ×
             </Link>
           </div>
@@ -279,7 +348,7 @@ export function StepOnboarding() {
               </div>
               <div className={s.dots} aria-hidden>
                 {steps.map((st, i) => (
-                  <span key={st.question} className={`${s.dotStep} ${i === stepIndex && phase.at === "step" ? s.dotNow : filled(activeProfile, st.fields) ? s.dotDone : ""}`} />
+                  <span key={st.question} className={`${s.dotStep} ${i === stepIndex && phase.at === "step" ? s.dotNow : filled(profile, st.fields) ? s.dotDone : ""}`} />
                 ))}
               </div>
             </>
@@ -291,27 +360,42 @@ export function StepOnboarding() {
             <p className={g.kicker}>{ONBOARDING.kicker[kind]}</p>
             <h1 className={s.question}>{C.chooseTitle}</h1>
             <p className={s.example}>{C.chooseLede}</p>
-            <div className={s.kinds} role="group" aria-label="Perfil">
+            <div className={s.kinds} role="group" aria-label="Perfil" aria-busy={switching}>
               {(["creator", "business"] as const).map((k) => (
-                <button key={k} type="button" className={s.kind} aria-pressed={kind === k} onClick={() => chooseKind(k)}>
-                  {C.kind[k]}
+                <button key={k} type="button" className={s.kind} aria-pressed={kind === k} disabled={switching || busy} onClick={() => void switchKind(k)} data-testid={`kind-${k}`}>
+                  {switching && kind !== k ? C.switching : C.kind[k]}
                 </button>
               ))}
             </div>
+            {switchError && (
+              <p className={s.micError} role="alert">
+                {switchError}
+              </p>
+            )}
+            <TrustStrip kind={kind} onNavigate={guard(ROUTES.trust)} />
             <div className={s.choices}>
-              <button type="button" className={`${g.glass} ${s.choice}`} onClick={() => start("voice")} disabled={!voiceOk} data-testid="choose-voice">
+              <button type="button" className={`${g.glass} ${s.choice}`} onClick={() => start("voice")} disabled={!voiceOk || switching} data-testid="choose-voice">
                 <span className={s.choiceIcon}>
                   <MicIcon />
                 </span>
-                <strong>{C.voice.label}</strong>
-                <small>{voiceOk ? C.voice.hint : ONBOARDING.unsupported}</small>
+                <span className={s.choiceText}>
+                  <strong>{C.voice.label}</strong>
+                  <small>{voiceOk ? C.voice.hint : ONBOARDING.unsupported}</small>
+                  {voiceOk && (
+                    <small className={s.micNote} data-testid="mic-note">
+                      {ONBOARDING.micNote}
+                    </small>
+                  )}
+                </span>
               </button>
-              <button type="button" className={`${g.glass} ${s.choice}`} onClick={() => start("text")} data-testid="choose-text">
+              <button type="button" className={`${g.glass} ${s.choice}`} onClick={() => start("text")} disabled={switching} data-testid="choose-text">
                 <span className={s.choiceIcon}>
                   <PenIcon />
                 </span>
-                <strong>{C.text.label}</strong>
-                <small>{C.text.hint}</small>
+                <span className={s.choiceText}>
+                  <strong>{C.text.label}</strong>
+                  <small>{C.text.hint}</small>
+                </span>
               </button>
             </div>
             {showImport ? (
@@ -327,20 +411,20 @@ export function StepOnboarding() {
         )}
 
         {phase.at === "step" && (
-          <section className={s.body}>
-            <div key={`step-${phase.i}`}>
-              {followUp ? (
-                <h1 className={`${s.question} ${s.questionLoaded}`}>{followUp}</h1>
-              ) : busy ? (
-                <div className={s.questionSkeleton} aria-busy="true" aria-label="Cargando pregunta…">
-                  <div className={s.skeletonLine} style={{ width: "85%" }} />
-                  <div className={s.skeletonLine} style={{ width: "60%" }} />
-                </div>
-              ) : (
-                <h1 className={s.question}>{steps[phase.i].question}</h1>
-              )}
-              <p className={s.example}>{steps[phase.i].example}</p>
-            </div>
+          <section className={`${s.body} ${s.stepBody}`} key={`step-${phase.i}`}>
+            {followUp ? (
+              <h1 className={`${s.question} ${s.questionStep} ${s.questionLoaded}`} data-testid="follow-up">
+                {followUp}
+              </h1>
+            ) : busy && phase.i > 0 ? (
+              <div className={s.questionSkeleton} aria-busy="true" aria-label="Cargando pregunta…">
+                <div className={s.skeletonLine} style={{ width: "85%" }} />
+                <div className={s.skeletonLine} style={{ width: "60%" }} />
+              </div>
+            ) : (
+              <h1 className={`${s.question} ${s.questionStep}`}>{steps[phase.i].question}</h1>
+            )}
+            <p className={s.example}>{steps[phase.i].example}</p>
 
             {mode === "voice" ? (
               <div className={s.voice}>
@@ -349,55 +433,55 @@ export function StepOnboarding() {
                   className={s.orbBtn}
                   onClick={speech.listening ? speech.stop : speech.start}
                   aria-pressed={speech.listening}
-                  aria-label={speech.listening ? C.tapToPause : C.tapToTalk}
+                  aria-label={speech.listening ? C.tapToPause : speech.tapToResume ? C.tapToResume : C.tapToTalk}
                   data-testid="orb"
                 >
-                  <VoiceOrb active={speech.listening} pulse={pulse} size={260} />
+                  <VoiceOrb active={speech.listening} pulse={pulse} size={180} />
                 </button>
-                <span className={s.orbLabel}>{speech.listening ? C.listening : C.tapToTalk}</span>
-                <p className={s.said} aria-live="polite">
-                  {speech.interim ? <em>{speech.interim}</em> : heard}
-                </p>
-                {micError && <p className={s.micError}>{micError}</p>}
+                <span className={s.orbLabel}>{speech.listening ? C.listening : speech.tapToResume ? C.tapToResume : C.tapToTalk}</span>
+                {quietError && <p className={s.micError}>{quietError}</p>}
+                <button type="button" className={s.switchBtn} onClick={toText} data-testid="prefer-text">
+                  <PenIcon /> {C.preferText}
+                </button>
               </div>
             ) : (
-              <textarea
-                className={`${g.glass} ${s.answer}`}
-                value={draft}
-                autoFocus
-                placeholder={ONBOARDING.textPlaceholder}
-                aria-label={steps[phase.i].question}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    go(phase.i + 1);
-                  }
-                }}
-              />
-            )}
-
-            {(busy || liveTags.length > 0) && (
-              <div className={`${g.glass} ${s.liveStrip}`} aria-live="polite" data-testid="live-profile-strip">
-                {busy && <span className={s.liveAnalyzing}>Analizando respuesta…</span>}
-                {liveTags.length > 0 && (
-                  <div className={s.liveTags}>
-                    <span className={s.livePrefix}>Detectado:</span>
-                    {liveTags.map((t) => (
-                      <span key={`${t.label}-${t.value}`} className={s.liveChip}>
-                        <b>{t.label}:</b> {t.value}
-                      </span>
-                    ))}
-                  </div>
+              <div className={s.textStep}>
+                {micNotice && (
+                  <p className={s.notice} role="status" data-testid="mic-notice">
+                    {micNotice}
+                  </p>
+                )}
+                <textarea
+                  className={`${g.glass} ${s.answer}`}
+                  value={draft}
+                  autoFocus
+                  placeholder={ONBOARDING.textPlaceholder}
+                  aria-label={steps[phase.i].question}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      go(phase.i + 1);
+                    }
+                  }}
+                />
+                {voiceOk && !blocked && (
+                  <button type="button" className={s.switchBtn} onClick={toVoice} data-testid="prefer-voice">
+                    <MicIcon /> {C.preferVoice}
+                  </button>
                 )}
               </div>
             )}
+
+            <Transcript lines={lines} interim={mode === "voice" ? speech.interim : undefined} onRetry={(id) => queue.retry(id)} />
+            {live}
+            {photoButton}
           </section>
         )}
 
         {phase.at === "done" && (
-          <section className={s.body} key="done">
-            <h1 className={s.question}>{C.doneTitle[kind]}</h1>
+          <section className={`${s.body} ${s.stepBody}`} key="done">
+            <h1 className={`${s.question} ${s.questionStep}`}>{C.doneTitle[kind]}</h1>
             {failed ? (
               <p className={s.example} role="alert">
                 {ONBOARDING.failed}{" "}
@@ -408,105 +492,73 @@ export function StepOnboarding() {
             ) : (
               <p className={s.example}>{busy ? (slow ? ONBOARDING.slow : ONBOARDING.sending) : C.doneLede}</p>
             )}
-
-            <div className={`${g.glass} ${s.fitProcess}`} data-testid="fitting-pipeline">
-              <div className={s.fitSteps}>
-                <span className={`${s.fitStep} ${s.fitStepDone}`}>1. Perfil extraído</span>
-                <span className={`${s.fitStep} ${busy ? s.fitStepActive : s.fitStepDone}`}>2. Filtrando requisitos y territorio</span>
-                <span className={`${s.fitStep} ${busy ? "" : s.fitStepDone}`}>3. Calculando afinidad artística/sectorial</span>
-              </div>
-              {liveTags.length > 0 && (
-                <div className={s.liveTags}>
-                  <span className={s.livePrefix}>Detectado:</span>
-                  {liveTags.map((t) => (
-                    <span key={`${t.label}-${t.value}`} className={s.liveChip}>
-                      <b>{t.label}:</b> {t.value}
-                    </span>
-                  ))}
+            <dl className={`${g.glass} ${s.summary}`} data-testid="summary">
+              {rows.map((r) => (
+                <div key={r.field} className={s.row}>
+                  <dt>{r.label}</dt>
+                  <dd>{r.values.join(", ")}</dd>
                 </div>
-              )}
-            </div>
-
-            <dl className={`${g.glass} ${s.summary}`}>
-              {Object.entries(FIELD_LABELS)
-                .filter(([f]) => filled(activeProfile, [f]))
-                .map(([f, label]) => {
-                  const v = (activeProfile as Record<string, unknown>)[f];
-                  return (
-                    <div key={f} className={s.row}>
-                      <dt>{label}</dt>
-                      <dd>{Array.isArray(v) ? v.join(", ") : String(v)}</dd>
-                    </div>
-                  );
-                })}
-              {!Object.keys(FIELD_LABELS).some((f) => filled(activeProfile, [f])) && <p className={s.example}>{C.doneEmpty}</p>}
+              ))}
+              {rows.length === 0 && <p className={s.example}>{C.doneEmpty}</p>}
             </dl>
-
-            <div className={s.importBox}>
-              <MatchesPanel
-                profileId={profileId}
-                appUserId={app.appUserId || undefined}
-                refreshKey={turns.filter((t) => t.status === "done").length}
-                knowsEnough={Boolean((activeProfile?.sector || activeProfile?.disciplines?.length) && (activeProfile?.city || activeProfile?.region))}
-              />
-            </div>
-
+            {live}
+            {kind === "business" && (
+              <div className={s.importBox}>
+                <MatchesPanel profileId={profile?.id ?? profileId} appUserId={app.appUserId || undefined} refreshKey={shownTurns.filter((t) => t.status === "done").length} knowsEnough={Boolean(profile?.sector && profile?.city)} />
+              </div>
+            )}
             <div className={s.ctas}>
-              <Link
-                className={`${g.btn} ${g.btnPrimary} ${busy ? s.ctaDisabled : ""}`}
-                href={kind === "creator" ? ROUTES.works : ROUTES.calls}
-                aria-disabled={busy}
-                onClick={(e) => {
-                  if (busy) e.preventDefault();
-                }}
-                data-testid="finish-cta"
-              >
-                {busy ? "Calculando tu encaje…" : ONBOARDING.finish[kind].cta}
+              <Link className={`${g.btn} ${g.btnPrimary}`} href={kind === "creator" ? ROUTES.works : ROUTES.calls} onClick={guard(kind === "creator" ? ROUTES.works : ROUTES.calls)} aria-disabled={!!leaving || undefined} data-testid="finish-cta">
+                {finishCopy.cta}
               </Link>
-              <Link
-                className={`${g.btn} ${busy ? s.ctaDisabled : ""}`}
-                href={ROUTES.calls}
-                aria-disabled={busy}
-                onClick={(e) => {
-                  if (busy) e.preventDefault();
-                }}
-              >
-                {busy ? "Calculando tu encaje…" : C.toCalls}
+              <Link className={g.btn} href={ROUTES.calls} onClick={guard(ROUTES.calls)} aria-disabled={!!leaving || undefined} data-testid="calls-cta">
+                {C.toCalls}
               </Link>
             </div>
           </section>
         )}
 
         <footer className={s.foot}>
-          {phase.at === "step" ? (
+          {leaving ? (
+            <div className={`${g.glass} ${s.leaving}`} role="status" data-testid="leaving">
+              {failed ? (
+                <>
+                  <span>{C.leaveFailed}</span>
+                  <span className={s.leavingActions}>
+                    <button type="button" className={s.link} onClick={() => queue.retry(failed.id)}>
+                      {ONBOARDING.retry}
+                    </button>
+                    <Link href={leaving} className={s.link}>
+                      {C.leaveAnyway}
+                    </Link>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className={s.spinner} aria-hidden /> {C.saving}
+                </>
+              )}
+            </div>
+          ) : phase.at === "step" ? (
             <>
               <button type="button" className={`${g.btn} ${g.btnQuiet}`} onClick={() => go(phase.i - 1)}>
                 {C.back}
               </button>
               <span className={`${s.status} ${s.grow}`} aria-live="polite">
-                {failed ? (
-                  <button type="button" className={s.link} onClick={() => queue.retry(failed.id)}>
-                    {ONBOARDING.retry}
-                  </button>
-                ) : busy ? (
-                  slow ? ONBOARDING.slow : ONBOARDING.sending
-                ) : (
-                  ""
-                )}
+                {queueStatus}
               </span>
               <button type="button" className={`${g.btn} ${g.btnPrimary}`} onClick={() => go(phase.i + 1)} data-testid="next">
                 {phase.i + 1 === total ? C.finishStep : mode === "text" && !draft.trim() ? C.skip : C.next}
               </button>
             </>
           ) : phase.at === "done" ? (
-            <button type="button" className={`${g.btn} ${g.btnQuiet}`} onClick={() => go(total - 1)}>
-              {C.back}
-            </button>
-          ) : (
-            <Link className={`${g.btn} ${g.btnQuiet}`} href={ROUTES.trust}>
-              {HOME.secondary}
-            </Link>
-          )}
+            <>
+              <button type="button" className={`${g.btn} ${g.btnQuiet}`} onClick={() => go(total - 1)}>
+                {C.back}
+              </button>
+              {photoButton}
+            </>
+          ) : null}
         </footer>
 
         {noted && (
@@ -514,6 +566,7 @@ export function StepOnboarding() {
             {noted.text}
           </p>
         )}
+        {photoOpen && <PhotoSheet profile={profile} profileId={profileId} onCreated={onWork} onClose={closePhoto} />}
       </div>
     </Stage>
   );

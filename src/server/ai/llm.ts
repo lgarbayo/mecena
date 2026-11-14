@@ -4,7 +4,9 @@
  *
  * - fast  = MECENA_MODEL_FAST  (default claude-sonnet-5-5), effort "low"  -> onboarding turns, fit explanations, vision
  * - smart = MECENA_MODEL_SMART (default claude-opus-5-5),   effort "high" -> drafting, jury, revisions
- * Server-side refusal fallbacks are enabled ("default" routing) via the server-side-fallback beta.
+ * Server-side refusal fallbacks are enabled ("default" routing) via the server-side-fallback beta, except on Haiku models,
+ * which have no server-side fallback (a fallback list there is a 400; "default" is a no-op).
+ * A request can override the tier's model and pass SDK per-request options (timeout, retries) plus a hard deadline.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
@@ -61,24 +63,50 @@ export interface StructuredRequest<S extends z.ZodType> {
   schema: S;
   maxTokens?: number;
   effort?: "low" | "medium" | "high" | "xhigh" | "max";
+  /** Overrides the tier's model (e.g. MECENA_MODEL_ONBOARDING). */
+  model?: string;
+  /** Per-attempt HTTP timeout in ms (SDK per-request option). Omitted: the client default (10 min). */
+  timeoutMs?: number;
+  /** SDK retries (408/409/429/5xx, connection errors, timeouts). Omitted: the client default (2). */
+  maxRetries?: number;
+  /**
+   * Hard wall-clock cap in ms for the whole call, retries included. The SDK honours any retry-after a 429 sends, with
+   * no upper bound, so timeoutMs x (maxRetries + 1) alone does not bound the wait. On expiry the call fails as AiError("api").
+   */
+  deadlineMs?: number;
+  /** "disabled" turns thinking off. Only for models that accept it (Haiku 5.5 at effort <= high); omitted: model default. */
+  thinking?: "disabled";
+}
+
+/** Haiku models have no server-side refusal fallback: never send `fallbacks` to them. */
+export function supportsServerFallback(model: string): boolean {
+  return !/haiku/i.test(model);
 }
 
 /** One Claude call that returns a schema-validated object. Throws AiError on refusal / unparseable output. */
 export async function structured<S extends z.ZodType>(req: StructuredRequest<S>): Promise<z.infer<S>> {
   chargeAiCall();
+  const model = req.model ?? modelFor(req.tier);
+  const options: { timeout?: number; maxRetries?: number; signal?: AbortSignal } = {};
+  if (req.timeoutMs !== undefined) options.timeout = req.timeoutMs;
+  if (req.maxRetries !== undefined) options.maxRetries = req.maxRetries;
+  if (req.deadlineMs !== undefined) options.signal = AbortSignal.timeout(req.deadlineMs);
   const res = await anthropic()
-    .beta.messages.parse({
-      model: modelFor(req.tier),
-      max_tokens: req.maxTokens ?? 16000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      system: req.system,
-      messages: [{ role: "user", content: req.user }],
-      output_config: {
-        format: betaZodOutputFormat(req.schema),
-        effort: req.effort ?? (req.tier === "fast" ? "low" : "high"),
+    .beta.messages.parse(
+      {
+        model,
+        max_tokens: req.maxTokens ?? 16000,
+        ...(supportsServerFallback(model) ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
+        ...(req.thinking === "disabled" ? { thinking: { type: "disabled" as const } } : {}),
+        system: req.system,
+        messages: [{ role: "user", content: req.user }],
+        output_config: {
+          format: betaZodOutputFormat(req.schema),
+          effort: req.effort ?? (req.tier === "fast" ? "low" : "high"),
+        },
       },
-    })
+      Object.keys(options).length ? options : undefined, // other callers: exactly the previous single-argument call
+    )
     .catch((e: unknown) => {
       throw new AiError(e instanceof Error ? e.message : String(e), "api");
     });
