@@ -12,6 +12,7 @@ import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import type { ArtCopy } from "./arts";
 import { errorText, worksClient } from "./client";
 import { downscalePhoto } from "./image";
+import { Icon } from "@/components/ui/icons";
 import s from "./works.module.css";
 
 type Upload = { state: "uploading" } | { state: "done"; work: Work } | { state: "error"; message: string };
@@ -100,7 +101,11 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
         <div className={s.captureButtons}>
           <label className={`btn btn-primary ${s.fileBtn} ${preparing ? s.disabled : ""}`}>
             <input type="file" accept="image/*" capture="environment" disabled={preparing} onChange={(e) => (void onFile(e.target.files?.[0]), (e.target.value = ""))} />
-            {preparing ? "Preparando la foto…" : "📷 Hacer foto"}
+            {preparing ? "Preparando la foto…" : (
+              <>
+                <Icon name="camera" /> Hacer foto
+              </>
+            )}
           </label>
           <label className={`btn btn-ghost ${s.fileBtn} ${preparing ? s.disabled : ""}`}>
             <input type="file" accept="image/jpeg,image/png,image/webp,image/*" disabled={preparing} onChange={(e) => (void onFile(e.target.files?.[0]), (e.target.value = ""))} />
@@ -140,7 +145,7 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
           <div className={s.voiceActions}>
             {speech.supported && (
               <Button type="button" variant={speech.listening ? "primary" : "ghost"} onClick={speech.listening ? speech.stop : speech.start} aria-pressed={speech.listening}>
-                {speech.listening ? "■ Parar" : "🎙 Dictar"}
+                <Icon name={speech.listening ? "stop" : "mic"} /> {speech.listening ? "Parar" : "Dictar"}
               </Button>
             )}
             {speech.listening && <span className={s.live}>Te escucho…</span>}

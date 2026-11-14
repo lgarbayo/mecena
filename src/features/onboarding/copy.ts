@@ -79,7 +79,6 @@ export const TRUST = {
     },
   ] satisfies TrustPoint[],
   /** Compact strip shown on /onboarding before the mic button. */
-  strip: ["No generamos ni modificamos obra: solo recortamos, enderezamos y corregimos el color.", "No entrenamos con tu obra.", "Tú tienes la última palabra."],
   stripMore: "Cómo cuidamos tu obra",
   modeQuestion: "¿Qué te trae por aquí?",
   modes: {
@@ -351,7 +350,6 @@ export const TRUST_BUSINESS = {
     { icon: "pen", title: "Tú tienes la última palabra.", body: "Cada texto sale de lo que tú cuentas, y puedes cambiarlo todo antes de usarlo." },
     { icon: "stamp", title: "Nosotros preparamos; tú presentas.", body: "La solicitud la envías tú, con tu certificado digital o Cl@ve. Nunca presentamos nada en tu nombre." },
   ] satisfies TrustPoint[],
-  strip: ["No entrenamos con los datos de tu empresa.", "Nosotros preparamos; tú presentas la solicitud.", "Tú tienes la última palabra."],
   stripMore: "Cómo cuidamos tus datos",
   cta: "Entendido, empezamos",
 } as const;
@@ -362,7 +360,7 @@ export const NAV: Record<ProfileKind, { key: "onboarding" | "works" | "dossier" 
     { key: "onboarding", label: "Hablar" },
     { key: "works", label: "Obras" },
     { key: "dossier", label: "Dossier" },
-    { key: "calls", label: "Convocatorias" },
+    { key: "calls", label: "Ayudas" }, // "Convocatorias" does not fit five tabs on a phone
     { key: "pricing", label: "Pro" },
   ],
   business: [

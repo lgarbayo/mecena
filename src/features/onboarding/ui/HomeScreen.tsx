@@ -4,6 +4,7 @@ import { HOME, SLOGAN } from "../copy";
 import { HomeActions } from "./HomeActions";
 import { Stage, glass as g } from "./Stage";
 import s from "./home.module.css";
+import { Icon } from "@/components/ui/icons";
 
 export function HomeScreen() {
   return (
@@ -28,7 +29,7 @@ export function HomeScreen() {
               <strong className={s.figure}>{d.figure}</strong>
               <p className={s.text}>{d.text}</p>
               <a className={s.source} href={d.sourceUrl} target="_blank" rel="noopener noreferrer">
-                {HOME.sourcesLabel}: {d.sourceLabel} ↗
+                {HOME.sourcesLabel}: {d.sourceLabel} <Icon name="external" size={13} />
               </a>
             </li>
           ))}

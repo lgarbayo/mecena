@@ -29,6 +29,7 @@ import { Transcript, type TranscriptLine } from "./Transcript";
 import { TrustStrip } from "./TrustStrip";
 import { VoiceOrb } from "./VoiceOrb";
 import s from "./steps.module.css";
+import { Icon } from "@/components/ui/icons";
 
 /** GET current onboarding state (profile, dossier sections, transcript), owned by WP-01. */
 export const ONBOARDING_STATE_API = "/api/onboarding";
@@ -344,7 +345,7 @@ export function StepOnboarding() {
               </span>
             )}
             <Link href={ROUTES.home} className={s.close} aria-label="Salir" onClick={guard(ROUTES.home)} data-testid="exit">
-              ×
+              <Icon name="close" size={18} />
             </Link>
           </div>
           {phase.at !== "choose" && (
@@ -365,7 +366,7 @@ export function StepOnboarding() {
           <section className={s.body} key="choose">
             <p className={g.kicker}>{ONBOARDING.kicker[kind]}</p>
             <h1 className={s.question}>{C.chooseTitle}</h1>
-            <p className={s.example}>{C.chooseLede}</p>
+            <p className={s.example}>{C.chooseLede(steps.length)}</p>
             {hasPrevious && (
               <>
                 <p className={s.example} role={restart ? "alert" : undefined} data-testid="resume-note">

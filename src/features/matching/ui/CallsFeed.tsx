@@ -6,6 +6,7 @@ import { API, ROUTES } from "@/contracts";
 import type { CallsDiagnostics, CallsResponse } from "@/contracts/api";
 import { useApp } from "@/components/shell/AppProvider";
 import { Button, Spinner } from "@/components/ui";
+import { Icon } from "@/components/ui/icons";
 import { Paywall } from "@/features/purchases/ui/Paywall";
 import { DeadlineAlert } from "@/features/purchases/ui/DeadlineAlert";
 import { DeepResearchPanel } from "@/features/deep-research/ui/DeepResearchPanel";
@@ -25,15 +26,6 @@ const BREAKDOWN_PARTS = [
   ["amount", "Cuantía"],
   ["timing", "Plazo y zona"],
 ] as const satisfies readonly (readonly [keyof typeof SCORE_MAX, string])[];
-
-const LEGAL_LABELS: Record<string, string> = {
-  autonomo: "Autónomo/a",
-  sl: "S.L.",
-  sa: "S.A.",
-  cooperativa: "Cooperativa",
-  asociacion: "Asociación",
-  otra: "Otra forma",
-};
 
 export function CallCard({ call, match, breakdown }: Result) {
   const label = fitLabel(match.score);
@@ -60,16 +52,19 @@ export function CallCard({ call, match, breakdown }: Result) {
         <span className={isUrgent(days) ? s.urgent : undefined}>{deadlineLabel(call, days)}</span>
       </div>
       {breakdown && (
-        <div className={s.pillBreakdown} aria-label="Desglose de puntuación" data-testid="card-breakdown">
-          {BREAKDOWN_PARTS.map(([key, name]) => (
-            <span key={key} className={s.scorePill}>
-              <span>{name}</span>
-              <b>
-                {Math.round(breakdown[key])}/{SCORE_MAX[key]}
-              </b>
-            </span>
-          ))}
-        </div>
+        <ul className={s.miniBreakdown} aria-label="Desglose de puntuación" data-testid="card-breakdown">
+          {BREAKDOWN_PARTS.map(([key, name]) => {
+            const value = Math.round(breakdown[key]);
+            return (
+              <li key={key} style={{ flexGrow: SCORE_MAX[key] }} title={`${name}: ${value}/${SCORE_MAX[key]}`}>
+                <span className={s.miniFill} style={{ width: `${Math.min(100, (value / SCORE_MAX[key]) * 100)}%` }} />
+                <span className={s.srOnly}>
+                  {name}: {value}/{SCORE_MAX[key]}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       )}
       {match.whyYouFit.length > 0 && (
         <>
@@ -179,7 +174,7 @@ export function CallsFeed() {
   const filteredResults = useMemo(() => {
     if (!data) return [];
     return data.results.filter(({ call, match }) => {
-      if (quickFilter === "high") return match.score >= 75;
+      if (quickFilter === "high") return fitLabel(match.score) === "alto";
       if (quickFilter === "local") {
         const loc = (diagnostics?.profileSummary.location ?? "").toLowerCase();
         const inWhy = match.whyYouFit.some((w) => /de tu zona|tu comunidad|tu provincia|tu municipio/i.test(w));
@@ -205,12 +200,6 @@ export function CallsFeed() {
   const total = data.results.length + data.lockedCount;
   const { profileSummary } = diagnostics;
   const discardedTotal = diagnostics.discardedByEligibility + diagnostics.discardedByDiscipline;
-  const profileChips: string[] = [
-    ...(profileSummary.kind === "business" && profileSummary.sector ? [profileSummary.sector] : profileSummary.disciplines),
-    ...(profileSummary.location ? [profileSummary.location] : []),
-    ...(profileSummary.legalForm ? [LEGAL_LABELS[profileSummary.legalForm] ?? profileSummary.legalForm] : []),
-    ...profileSummary.fundingNeeds.slice(0, 2),
-  ];
   const dynamicFilterChips: string[] = [
     ...(profileSummary.kind === "business" && profileSummary.sector ? [profileSummary.sector] : profileSummary.disciplines.slice(0, 2)),
     ...profileSummary.fundingNeeds.slice(0, 1),
@@ -235,105 +224,85 @@ export function CallsFeed() {
         </span>
       </p>
 
-      <section className={s.fitPanel} aria-label="Panel de encaje con tu perfil" data-testid="matching-pipeline">
-        <div className={s.pipelineGrid}>
-          <div className={s.pipelineStep}>
-            <span className={s.stepBadge}>1 · Perfil detectado</span>
-            <strong className={s.stepTitle}>{profileSummary.displayName || (business ? "Tu empresa" : "Tu perfil creativo")}</strong>
-            {profileChips.length > 0 ? (
-              <div className={s.profileChips}>
-                {profileChips.map((chip) => (
-                  <span key={chip} className={s.profileChip}>
-                    {chip}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <span className={s.stepSub}>Sin etiquetas específicas todavía</span>
-            )}
+      <section className={s.fitPanel} aria-label="Cómo hemos elegido tus convocatorias" data-testid="matching-pipeline">
+        <dl className={s.funnel}>
+          <div>
+            <dt>Analizadas</dt>
+            <dd>{diagnostics.totalEvaluated}</dd>
           </div>
-
-          <div className={s.pipelineStep}>
-            <span className={s.stepBadge}>2 · Cribado de bases y territorio</span>
-            <strong className={s.stepTitle}>{diagnostics.totalEvaluated} analizadas</strong>
-            <span className={s.stepSub}>{discardedTotal} descartadas por requisitos o disciplina</span>
+          <div>
+            <dt>Descartadas</dt>
+            <dd>{discardedTotal}</dd>
           </div>
-
-          <div className={s.pipelineStep}>
-            <span className={s.stepBadge}>3 · Ranking de afinidad</span>
-            <strong className={s.stepTitle}>{diagnostics.matchedCount} convocatorias ordenadas para ti</strong>
-            <span className={s.stepSub}>Puntuadas de 0 a 100 según tu perfil</span>
+          <div className={s.funnelHit}>
+            <dt>Encajan</dt>
+            <dd>{diagnostics.matchedCount}</dd>
           </div>
-        </div>
+        </dl>
 
         {!profileSummary.isComplete && (
           <div className={s.incompleteAlert} role="region" aria-label="Perfil incompleto" data-testid="incomplete-profile-banner">
-            <p className={s.incompleteText}>
-              Tu perfil aún no tiene disciplina, ubicación ni proyecto definidos. Estamos mostrando convocatorias generales abiertas. Completa las 5 preguntas para filtrar y puntuar las que realmente encajan contigo.
-            </p>
+            <p>{business ? "Faltan datos de tu empresa: te enseñamos ayudas generales." : "Tu perfil está a medias: te enseñamos convocatorias generales."}</p>
             <Link href={ROUTES.onboarding} className={s.incompleteCta}>
-              Personalizar mi perfil ahora →
+              Completar perfil <Icon name="arrow-right" size={16} />
             </Link>
           </div>
         )}
 
-        <div className={s.filterControls}>
-          <div className={s.searchRow}>
-            <input
-              type="search"
-              className={s.searchInput}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Filtrar por disciplina, ciudad, beca, residencia, premio…"
-              aria-label="Filtrar por disciplina, ciudad, beca, residencia, premio"
-              data-testid="calls-search"
-            />
-            <Link href={ROUTES.onboarding} className={s.editProfileLink}>
-              Editar respuestas del perfil
-            </Link>
-          </div>
-
-          <div className={s.quickPills} role="group" aria-label="Filtros rápidos">
-            <button
-              type="button"
-              className={`${s.quickPill} ${quickFilter === "all" && !appliedQuery ? s.quickPillActive : ""}`}
-              onClick={() => {
-                setQuickFilter("all");
-                setSearchInput("");
-                setAppliedQuery("");
-              }}
-            >
-              Todas
-            </button>
-            <button
-              type="button"
-              className={`${s.quickPill} ${quickFilter === "high" ? s.quickPillActive : ""}`}
-              onClick={() => setQuickFilter((f) => (f === "high" ? "all" : "high"))}
-            >
-              Mayor afinidad (≥75%)
-            </button>
-            <button
-              type="button"
-              className={`${s.quickPill} ${quickFilter === "local" ? s.quickPillActive : ""}`}
-              onClick={() => setQuickFilter((f) => (f === "local" ? "all" : "local"))}
-            >
-              De tu zona
-            </button>
-            {dynamicFilterChips.map((chip) => {
-              const active = appliedQuery.toLowerCase() === chip.toLowerCase();
-              return (
-                <button
-                  key={chip}
-                  type="button"
-                  className={`${s.quickPill} ${active ? s.quickPillActive : ""}`}
-                  onClick={() => toggleKeywordChip(chip)}
-                >
-                  {chip}
-                </button>
-              );
-            })}
-          </div>
+        <div className={s.searchRow}>
+          <Icon name="search" size={18} className={s.searchIcon} />
+          <input
+            type="search"
+            className={s.searchInput}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder={business ? "Sector, ciudad, tipo de ayuda…" : "Disciplina, ciudad, beca, premio…"}
+            aria-label={business ? "Filtrar por sector, ciudad o tipo de ayuda" : "Filtrar por disciplina, ciudad, beca, residencia, premio"}
+            data-testid="calls-search"
+          />
         </div>
+
+        <div className={s.quickPills} role="group" aria-label="Filtros rápidos">
+          <button
+            type="button"
+            className={`${s.quickPill} ${quickFilter === "all" && !appliedQuery ? s.quickPillActive : ""}`}
+            aria-pressed={quickFilter === "all" && !appliedQuery}
+            onClick={() => {
+              setQuickFilter("all");
+              setSearchInput("");
+              setAppliedQuery("");
+            }}
+          >
+            Todas
+          </button>
+          <button
+            type="button"
+            className={`${s.quickPill} ${quickFilter === "high" ? s.quickPillActive : ""}`}
+            aria-pressed={quickFilter === "high"}
+            onClick={() => setQuickFilter((f) => (f === "high" ? "all" : "high"))}
+          >
+            Encaje alto
+          </button>
+          <button
+            type="button"
+            className={`${s.quickPill} ${quickFilter === "local" ? s.quickPillActive : ""}`}
+            aria-pressed={quickFilter === "local"}
+            onClick={() => setQuickFilter((f) => (f === "local" ? "all" : "local"))}
+          >
+            De tu zona
+          </button>
+          {dynamicFilterChips.map((chip) => {
+            const active = appliedQuery.toLowerCase() === chip.toLowerCase();
+            return (
+              <button key={chip} type="button" className={`${s.quickPill} ${active ? s.quickPillActive : ""}`} aria-pressed={active} onClick={() => toggleKeywordChip(chip)}>
+                {chip}
+              </button>
+            );
+          })}
+        </div>
+        <Link href={ROUTES.onboarding} className={s.editProfileLink}>
+          Editar mi perfil
+        </Link>
       </section>
 
       <DeadlineAlert pro={Boolean(data.pro)} results={data.results} />
@@ -373,9 +342,11 @@ export function CallsFeed() {
         <LockedCard key={i} business={business} onOpen={() => setPaywall(true)} />
       ))}
       {data.editions && data.editions.length > 0 && (
-        <section aria-label="Próximas ediciones" data-testid="editions">
-          <h3 className={s.empty}>Próximas ediciones</h3>
-          <p className={s.empty}>Convocatorias que se repiten cada año y cuya edición actual ya cerró: te avisamos para la siguiente.</p>
+        <section className={s.editions} aria-labelledby="editions-title" data-testid="editions">
+          <h2 id="editions-title" className={s.sectionHeading}>
+            Próximas ediciones
+          </h2>
+          <p className={s.sectionLead}>Ya cerraron este año. Te avisamos cuando abra la siguiente.</p>
           {data.editions.map((r) => (
             <CallCard key={r.call.id} {...r} />
           ))}

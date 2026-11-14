@@ -3,7 +3,7 @@
 
 .top { display: grid; gap: 12px; }
 .topRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.close { color: var(--g-ink-2); text-decoration: none; font-size: 1.4rem; line-height: 1; padding: 6px 10px; border-radius: 999px; }
+.close { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; color: var(--g-ink-2); text-decoration: none; border-radius: 999px; }
 .close:hover { background: var(--g-glass-2); color: var(--g-ink); }
 .progressText { font-size: 0.8rem; color: var(--g-ink-2); font-variant-numeric: tabular-nums; font-style: normal; }
 .bar { height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
@@ -58,7 +58,7 @@
 .kind[aria-pressed="true"] { background: var(--g-ink); color: #15110d; border-color: transparent; font-weight: 600; }
 .link { all: unset; cursor: pointer; color: var(--g-ink-2); font-size: 0.9rem; border-bottom: 1px solid var(--g-line); justify-self: start; font-style: normal; }
 .kind:disabled { opacity: 0.55; cursor: default; }
-.link { all: unset; cursor: pointer; color: var(--g-ink-2); font-size: 0.9rem; border-bottom: 1px solid var(--g-line); justify-self: start; }
+.link { all: unset; cursor: pointer; color: var(--g-ink-2); font-size: 0.9rem; border-bottom: 1px solid var(--g-line); justify-self: start; align-self: flex-start; }
 .importBox { padding: 14px; max-height: 38vh; overflow: auto; color: var(--g-ink); background: rgba(18, 15, 24, 0.85); border: 1px solid var(--g-line); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-radius: 18px; }
 
 /* step: question on top, then voice/text, transcript and the live dossier (scrolls inside the Stage) */

@@ -22,12 +22,17 @@
   --ok: #4fd1c5;
   --warn: #ffb38a;
   --radius: 22px;
-  --serif: var(--font-serif), "Newsreader", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  --sans: var(--font-sans), "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* next/font/local exposes the self-hosted families as --font-dossier-* (src/features/dossier/ui/fonts.ts) */
+  --serif: var(--font-dossier-serif, "Newsreader"), "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: var(--font-dossier-sans, "Schibsted Grotesk"), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --gutter: clamp(16px, 4.5vw, 24px);
   --maxw: 760px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Line icons for CSS pseudo-elements (mask-image + background: currentColor). Same set as components/ui/icons.tsx. */
+  --icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  --icon-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.5v5.5M12 16.4v.1'/%3E%3C/svg%3E");
+  --icon-shield: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5 5 6v5.5c0 4.3 3 7.6 7 9 4-1.4 7-4.7 7-9V6z'/%3E%3Cpath d='m9 12 2.2 2.2L15.5 10'/%3E%3C/svg%3E");
   color-scheme: dark;
 }
 
@@ -112,6 +117,15 @@ h2 {
 
 p {
   text-wrap: pretty;
+}
+
+/* Inline icons (components/ui/icons.tsx) sit on the text's optical centre and never shrink in flex rows */
+svg {
+  flex: none;
+}
+
+:where(a, button, label, span, li, p) > svg {
+  vertical-align: -0.18em;
 }
 
 a {
@@ -209,11 +223,11 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   left: 0;
   right: 0;
   z-index: 10;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 2px;
+  padding: 6px max(4px, calc((100% - var(--maxw)) / 2)) calc(6px + env(safe-area-inset-bottom));
   background: rgba(13, 11, 16, 0.78);
   backdrop-filter: blur(24px) saturate(165%);
   -webkit-backdrop-filter: blur(24px) saturate(165%);
@@ -223,22 +237,33 @@ body:has([aria-label="Mecena"]) .bottom-nav {
 
 .bottom-nav a {
   position: relative;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 8px 14px;
-  border-radius: 999px;
+  gap: 3px;
+  min-width: 0;
+  min-height: 52px;
+  padding: 6px 0;
+  border: 1px solid transparent;
+  border-radius: 16px;
   text-decoration: none;
-  font-size: 0.82rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--g-ink-2);
+  letter-spacing: -0.01em;
+  color: var(--g-ink-3);
   touch-action: manipulation;
   transition:
     color 160ms var(--ease-out),
     background 160ms var(--ease-out),
     transform 140ms var(--ease-out);
+}
+
+.bottom-nav a span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bottom-nav a:hover {
@@ -253,9 +278,12 @@ body:has([aria-label="Mecena"]) .bottom-nav {
 .bottom-nav a.active {
   color: #fffaf3;
   font-weight: 700;
-  background: linear-gradient(135deg, rgba(255, 138, 92, 0.22), rgba(179, 140, 255, 0.16));
-  border: 1px solid rgba(255, 138, 92, 0.42);
-  box-shadow: 0 4px 18px rgba(255, 138, 92, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, rgba(255, 138, 92, 0.2), rgba(179, 140, 255, 0.12));
+  border-color: rgba(255, 138, 92, 0.36);
+}
+
+.bottom-nav a.active svg {
+  color: var(--g-accent);
 }
 
 /* ---- Page titles & kickers ---- */

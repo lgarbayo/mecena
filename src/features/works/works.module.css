@@ -2,18 +2,14 @@
 .intro { color: var(--ink-2); margin: -8px 0 12px; }
 
 .trust {
-  display: flex; flex-direction: column; gap: 2px;
-  padding: 14px 16px; margin: 0 0 4px;
-  border-left: 3px solid var(--g-accent-3); border-radius: 16px;
-  background: linear-gradient(145deg, rgba(79, 209, 197, 0.12), rgba(255, 255, 255, 0.04));
-  border-top: 1px solid rgba(79, 209, 197, 0.24);
-  border-right: 1px solid var(--g-line);
-  border-bottom: 1px solid var(--g-line);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  font-size: 0.9rem;
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 4px; padding: 10px 14px;
+  border-radius: 14px; border: 1px solid rgba(79, 209, 197, 0.28);
+  background: rgba(79, 209, 197, 0.08);
+  color: var(--g-ink-2); font-size: 0.86rem; text-decoration: none;
 }
-.trust span { color: var(--ink-2); }
+.trust svg { color: var(--g-accent-3); }
+.trust:hover { color: var(--g-ink); }
 
 /* capture */
 .capture { display: flex; flex-direction: column; gap: 12px; }

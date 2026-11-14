@@ -9,6 +9,7 @@ import { IDENTITY_CROP } from "./crop";
 import { isIdentityCrop } from "./image";
 import { linkLabel, normalizeLink } from "./links";
 import { WorkPhoto } from "./WorkPhoto";
+import { Icon } from "@/components/ui/icons";
 import s from "./works.module.css";
 
 /** Fields a family does not show, but that are kept visible when the sheet already has them. */
@@ -158,10 +159,10 @@ export function WorkCard({ work, index, total, copy, highlight, onSave, onMove, 
           {work.sheetSource === "voice" && <Tag>Con tus palabras</Tag>}
           <span className={s.reorder}>
             <button type="button" className={s.iconBtn} aria-label="Subir" disabled={index === 0} onClick={() => onMove(work.id, -1)}>
-              ↑
+              <Icon name="arrow-up" size={18} />
             </button>
             <button type="button" className={s.iconBtn} aria-label="Bajar" disabled={index === total - 1} onClick={() => onMove(work.id, 1)}>
-              ↓
+              <Icon name="arrow-down" size={18} />
             </button>
           </span>
         </div>

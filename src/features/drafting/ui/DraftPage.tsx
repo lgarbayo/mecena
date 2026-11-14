@@ -16,6 +16,7 @@ import { Paywall } from "@/features/purchases/ui/Paywall";
 import { ApiClientError, apiGet, apiSend } from "@/lib/api-client";
 import { closedEdition, draftAsText } from "./export";
 import s from "./draft.module.css";
+import { Icon } from "@/components/ui/icons";
 
 type Sources = Record<string, TranscriptSegment>;
 interface AppRes {
@@ -374,7 +375,7 @@ export function DraftPage({ callId }: { callId: string }) {
                         save({ budget: app.budget.filter((_, j) => j !== i) })
                       }
                     >
-                      ×
+                      <Icon name="close" size={18} />
                     </Button>
                   </td>
                 </tr>
@@ -455,7 +456,7 @@ export function DraftPage({ callId }: { callId: string }) {
           Pasar el tribunal simulado
         </Link>
         <Link href={ROUTES.call(call.id)} className="btn btn-quiet">
-          Volver a la convocatoria
+          Ver convocatoria
         </Link>
       </div>
     </>

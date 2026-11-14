@@ -31,7 +31,7 @@ export function stepsFor(kind: ProfileKind): Step[] {
 
 export const STEPS_COPY = {
   chooseTitle: "¿Cómo prefieres contárnoslo?",
-  chooseLede: "Te haremos cinco preguntas. Mientras respondes, montamos tu perfil y tu dossier.",
+  chooseLede: (n: number) => `Te haremos ${n} preguntas. Mientras respondes, montamos tu perfil y tu dossier.`,
   voice: { label: "Hablando", hint: "Como si se lo contaras a alguien en tu taller" },
   text: { label: "Escribiendo", hint: "Una pregunta por pantalla, a tu ritmo" },
   kind: { creator: "Soy creador/a", business: "Tengo una pyme o soy autónomo/a" },

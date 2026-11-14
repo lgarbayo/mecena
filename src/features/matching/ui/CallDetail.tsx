@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { API, ROUTES, type Call, type MatchResult, type PastAward } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
 import { Card, PageTitle, Spinner, Tag } from "@/components/ui";
+import { Icon } from "@/components/ui/icons";
 import { apiGet } from "@/lib/api-client";
 import { wantsLooseImages } from "@/features/dossier/images";
 import { daysLeft, fitLabel, SCORE_MAX } from "../labels";
@@ -141,7 +142,7 @@ export function CallDetail({ id }: { id: string }) {
           {d.checklistItems.map(({ item, done }) => (
             <li key={item}>
               <span className={`${s.box} ${done ? s.boxDone : ""}`} aria-label={done ? "Ya lo tienes" : "Pendiente"}>
-                {done ? "✓" : ""}
+                {done ? <Icon name="check" size={14} /> : null}
               </span>
               <span>{item}</span>
             </li>
@@ -258,8 +259,12 @@ export function CallDetail({ id }: { id: string }) {
         <Link href={ROUTES.application(call.id)} className="btn btn-primary">
           Prepárame la solicitud
         </Link>
-        <Link href={`${ROUTES.dossier}?callId=${encodeURIComponent(call.id)}`} className="btn btn-ghost">
-          {business ? "Memoria para esta ayuda" : wantsLooseImages(call) ? "Imágenes para esta convocatoria" : "Dossier para esta convocatoria"}
+        <Link
+          href={`${ROUTES.dossier}?callId=${encodeURIComponent(call.id)}`}
+          className="btn btn-ghost"
+          aria-label={business ? "Memoria para esta ayuda" : wantsLooseImages(call) ? "Imágenes para esta convocatoria" : "Dossier para esta convocatoria"}
+        >
+          <Icon name={wantsLooseImages(call) ? "image" : "doc"} size={18} /> {business ? "Memoria" : wantsLooseImages(call) ? "Imágenes" : "Dossier"}
         </Link>
       </div>
     </>

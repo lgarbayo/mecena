@@ -5,6 +5,7 @@
  */
 import { useState } from "react";
 import { Button } from "@/components/ui";
+import { Icon } from "@/components/ui/icons";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { apiSend } from "@/lib/api-client";
 import type { ProfileKind } from "@/contracts";
@@ -102,7 +103,7 @@ export function DesignPanel(props: {
         }}
       >
         <label htmlFor="design-request" className="design-panel__label">
-          ¿Lo quieres de otra manera? Dímelo con tus palabras
+          Pide un cambio
         </label>
         <textarea
           id="design-request"
@@ -117,8 +118,8 @@ export function DesignPanel(props: {
           }}
           placeholder={
             business
-              ? "Por ejemplo: más sobrio, con el azul de nuestra marca, y añade una sección sobre nuestros clientes"
-              : "Por ejemplo: más oscuro y con letra de libro antiguo, que empiece por mis piezas y añade una sección sobre mi proceso"
+              ? "Ej.: más sobrio, con el azul de nuestra marca"
+              : "Ej.: más oscuro, que empiece por mis piezas"
           }
           disabled={!!busy || props.autoDesigning}
         />
@@ -127,13 +128,25 @@ export function DesignPanel(props: {
             {busy === "agent" ? "Diseñando…" : "Rediseñar"}
           </Button>
           {speech.supported ? (
-            <Button type="button" variant="ghost" onClick={() => (speech.listening ? speech.stop() : speech.start())} aria-pressed={speech.listening} disabled={!!busy}>
-              {speech.listening ? "Parar de dictar" : "Dictar"}
+            <Button
+              type="button"
+              variant="ghost"
+              className="design-panel__icon"
+              onClick={() => (speech.listening ? speech.stop() : speech.start())}
+              aria-pressed={speech.listening}
+              aria-label={speech.listening ? "Parar de dictar" : "Dictar"}
+              title={speech.listening ? "Parar de dictar" : "Dictar"}
+              disabled={!!busy}
+            >
+              <Icon name={speech.listening ? "stop" : "mic"} />
             </Button>
           ) : null}
           <Button
             type="button"
             variant="ghost"
+            className="design-panel__icon"
+            aria-label="Deshacer"
+            title="Deshacer"
             disabled={!!busy}
             onClick={async () => {
               setBusy("undo");
@@ -141,7 +154,7 @@ export function DesignPanel(props: {
               setAdjustments([]);
             }}
           >
-            Deshacer
+            <Icon name="undo" />
           </Button>
         </div>
         {error || speech.error ? (
@@ -158,19 +171,24 @@ export function DesignPanel(props: {
           </button>
         ))}
       </div>
-      <p className="design-panel__start">
-        O empieza desde{" "}
-        {DOSSIER_STYLES.map((s, i) => (
-          <span key={s}>
-            <button type="button" className="design-link" disabled={!!busy} onClick={() => send({ preset: s }, s)}>
-              {STYLE_LABELS[s]}
+      <div className="design-panel__start">
+        <span className="design-panel__label">Estilos base</span>
+        <div className="design-panel__ideas">
+          {DOSSIER_STYLES.map((st) => (
+            <button
+              key={st}
+              type="button"
+              className={`design-chip${st === props.suggested ? " design-chip--suggested" : ""}`}
+              disabled={!!busy}
+              onClick={() => send({ preset: st }, st)}
+              title={st === props.suggested ? `Sugerido ${props.forCall ? "para esta convocatoria" : "para tu perfil"}: ${props.suggestedReason}` : undefined}
+            >
+              {STYLE_LABELS[st]}
+              {st === props.suggested ? <span className="design-panel__tag">Sugerido</span> : null}
             </button>
-            {s === props.suggested ? <span className="design-panel__tag"> (sugerido)</span> : null}
-            {i < DOSSIER_STYLES.length - 2 ? ", " : i === DOSSIER_STYLES.length - 2 ? " o " : "."}
-          </span>
-        ))}{" "}
-        {props.forCall ? "Para esta convocatoria" : "Para tu perfil"} sugerimos «{STYLE_LABELS[props.suggested]}» porque {props.suggestedReason}.
-      </p>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
