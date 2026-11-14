@@ -7,7 +7,7 @@ import { resolveDeadline } from "./dates";
 import { normalizeDiscipline } from "./disciplines";
 import { normalizeDocuments } from "./documents";
 import { parseAmountRange, eurosToCents } from "./money";
-import { parseAgeRange } from "./ranges";
+import { parseAgeRange, parseMinEmployees } from "./ranges";
 import { type BeneficiaryType } from "./taxonomy";
 import { ccaaOf, normalizeTerritory, territoryNode } from "./territory";
 import { unique } from "./text";
@@ -126,6 +126,8 @@ export function normalizeCall(call: Call, opts: NormalizeCallOptions = {}): Norm
   if (age.min !== undefined && age.max !== undefined && age.min > age.max)
     warnings.push(warn("age-inconsistent", "eligibility", `Edad mínima (${age.min}) mayor que la máxima (${age.max})`, undefined, "error"));
 
+  const minEmployees = call.eligibility.minEmployees ?? parseMinEmployees(call.eligibility.other.join(". "));
+
   const docs = normalizeDocuments(call.requiredDocuments);
   for (const u of docs.unmapped) warnings.push(warn("unmapped-document", "requiredDocuments", `Documento sin equivalencia: «${u}»`, u, "info"));
 
@@ -140,6 +142,10 @@ export function normalizeCall(call: Call, opts: NormalizeCallOptions = {}): Norm
       beneficiaryTypes: ben.types,
       beneficiarySource: ben.source,
       territories: territories.value,
+      // No stored territories and no residence rule: ["ES"] is a fallback, state-wide only when the scope says so.
+      ...(!call.territories?.length && !call.eligibility.residence.length ? { territoryImplicit: true } : {}),
+      scope: call.scope,
+      ...(call.region ? { region: call.region } : {}),
       disciplines: disc.any ? [] : disc.ids,
       sectors,
       amount: amount.value,
@@ -147,6 +153,7 @@ export function normalizeCall(call: Call, opts: NormalizeCallOptions = {}): Norm
       deadline: deadline.value,
       age,
       ...(call.eligibility.maxEmployees !== undefined ? { maxEmployees: call.eligibility.maxEmployees } : {}),
+      ...(minEmployees !== undefined ? { minEmployees } : {}),
       requiredDocuments: docs.ids,
       criteria: crit.criteria,
     },

@@ -69,3 +69,52 @@ describe("GET /api/calls/[id]", () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe("free plan: 3 matches a month, counted for real", () => {
+  const feed = async (q = "") => (await getCalls(req(`/api/calls?profileId=${DEMO_CREATOR_ID}${q}`))).json();
+  const detail = async (id: string) => (await getCall(req(`/api/calls/${id}?profileId=${DEMO_CREATOR_ID}`), ctx({ id }))).json();
+
+  it("the detail of a call beyond the 3 unlocked ones is a limited preview with the match_limit paywall", async () => {
+    await saveProfile(structuredClone(fixtureCreator));
+    const body = await feed();
+    const shown = new Set(body.results.map((r: { call: { id: string } }) => r.call.id));
+    const hidden = ["fixture-beca-extra-1", "fixture-beca-extra-2", "fixture-beca-extra-3", "fixture-beca-extra-4", "fixture-beca-artes-plasticas"].find((id) => !shown.has(id));
+    expect(hidden).toBeTruthy();
+    const d = await detail(hidden!);
+    expect(d.locked).toBe(true);
+    expect(d.paywall).toBe("match_limit");
+    expect(d.match.whyYouFit).toEqual([]);
+    expect(d.checklistItems).toEqual([]);
+    // an unlocked one stays complete, and opening it again does not use another place
+    const ok = await detail([...shown][0] as string);
+    expect(ok.locked).toBe(false);
+    expect((await feed()).results).toHaveLength(FREE_MATCHES_PER_MONTH);
+  });
+
+  it("a ?q= search cannot be used to get more than 3 full matches", async () => {
+    await saveProfile(structuredClone(fixtureCreator));
+    await feed();
+    const q = await feed("&q=beca");
+    expect(q.results.length).toBeLessThanOrEqual(FREE_MATCHES_PER_MONTH);
+  });
+
+  it("Pro sees every detail in full", async () => {
+    await saveProfile(structuredClone(fixtureCreator));
+    await grantPro();
+    const d = await detail("fixture-beca-extra-4");
+    expect(d.locked).toBe(false);
+  });
+
+  it("the same count lives in db.usage and resets with the month", async () => {
+    const { readDb } = await import("@/server/store");
+    const { unlockCalls, monthKey } = await import("@/features/matching/usage");
+    const who = { appUserId: "u1", profileId: "p1", now: new Date("2026-11-14T10:00:00Z") };
+    const first = await unlockCalls(who, ["a", "b", "c", "d"]);
+    expect([...first]).toEqual(["a", "b", "c"]);
+    expect(readDb().usage.find((u) => u.appUserId === "u1")?.callIds).toEqual(["a", "b", "c"]);
+    expect([...(await unlockCalls(who, ["d"]))]).toEqual(["a", "b", "c"]);
+    const december = await unlockCalls({ ...who, now: new Date("2026-12-02T10:00:00Z") }, ["d"]);
+    expect([...december]).toEqual(["d"]);
+    expect(monthKey(who.now)).toBe("2026-11");
+  });
+});

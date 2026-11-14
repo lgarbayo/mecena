@@ -7,9 +7,14 @@
  * Phase B, score (eligible calls only). The score is personal: most of it depends on who the profile is, not on
  *   the call alone, so two different profiles get clearly different orders (the feed sorts by score first).
  *   base (25, or 10 when the call is for other disciplines)
- *   + 0-45 affinity: discipline/sector fit (0-25, disciplineFit / cnaeCheck) + the profile's own words found in the
- *     call (0-20: statement, project idea, funding needs, achievements, bio)
- *   + 0-12 documents already available + 0-8 amount + 0-10 deadline & territory = 0-100.
+ *   + 0-43 affinity: discipline/sector fit (0-25, disciplineFit / cnaeCheck) + the profile's own words found in the
+ *     call (0-18: statement, project idea, funding needs, achievements, bio)
+ *   + 0-10 documents already available
+ *   + 0-10 amount (real cash ranks up; no cash prize = 0; an entry fee costs 4)
+ *   + 0-12 deadline (0-6: open now > upcoming > recurring) & proximity (0-6: same province, or same comunidad)
+ *   = 0-100.
+ * whyYouFit is ordered by how specific a reason is to this profile (discipline, own words, documents, zone, money)
+ * before the generic eligibility passes (beneficiary type, open to all Spain): the card shows the first two.
  */
 import type { Call, MatchResult, Profile } from "@/contracts";
 import {
@@ -17,11 +22,15 @@ import {
   disciplineFit,
   disciplineLabel,
   evaluateEligibility,
+  formatCents,
   isDisciplineId,
   normalizeCall,
   normalizeDiscipline,
   normalizeProfile,
   normalizeTerritory,
+  parseAgeRange,
+  parseMinEmployees,
+  territoryAncestors,
   territoryCheck,
   territoryName,
   type CanonicalCall,
@@ -37,10 +46,10 @@ export interface MatchContext {
 
 export interface ScoreBreakdown {
   base: number; // 25 when eligible (10 when the call is for other disciplines)
-  affinity: number; // 0-45
-  documents: number; // 0-12
-  amount: number; // 0-8
-  timing: number; // 0-10 (deadline preparability + territory bonus)
+  affinity: number; // 0-43
+  documents: number; // 0-10
+  amount: number; // 0-10
+  timing: number; // 0-12 (can you apply now + proximity)
 }
 
 export interface RuleResult {
@@ -122,7 +131,8 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
   }
 
   // Phase A on canonical data. Reasons come in Spanish from the standard.
-  for (const k of evaluateEligibility(p, c, { today }).checks) {
+  const checks = evaluateEligibility(p, c, { today }).checks;
+  for (const k of checks) {
     if (k.rule === "deadline") {
       if (k.result === "fail") {
         excluded = true;
@@ -135,8 +145,13 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
     else miss.push(k.reason);
   }
 
-  // Other, not machine-checkable requirements → always "Confírmalo"
-  for (const o of call.eligibility.other.slice(0, 2)) miss.push(`Confírmalo: ${o}`);
+  // Other, not machine-checkable requirements → "Confírmalo". Age and staff-size sentences are left out when the
+  // standard already checked them (its own line says pass, fail or confirm): never the same requirement twice.
+  const ruled = new Set(checks.map((k) => k.rule));
+  const others = call.eligibility.other.filter(
+    (o) => !(ruled.has("age") && Object.keys(parseAgeRange(o)).length) && !(ruled.has("employees") && parseMinEmployees(o) !== undefined),
+  );
+  for (const o of others.slice(0, 2)) miss.push(`Confírmalo: ${o}`);
 
   const fit = fitOf(profile, p, c, call);
   const breakdown: ScoreBreakdown = { base: 0, affinity: 0, documents: 0, amount: 0, timing: 0 };
@@ -144,7 +159,7 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
     breakdown.base = fit.fit === "none" ? 10 : 25;
     breakdown.affinity = affinity(profile, call, p, c, fit, why, miss);
     breakdown.documents = documents(profile, call, ctx, why, miss);
-    breakdown.amount = amount(c);
+    breakdown.amount = amount(c, call, why, miss);
     breakdown.timing = timing(p, c, call, call.deadline ? daysUntil(call.deadline, now) : undefined, why, miss);
   }
   const score = Object.values(breakdown).reduce((s, x) => s + x, 0);
@@ -155,7 +170,7 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
       profileId: profile.id,
       score: Math.max(0, Math.min(100, Math.round(score))),
       eligible,
-      whyYouFit: why,
+      whyYouFit: bySpecificity(why),
       whatYouMiss: miss,
       generatedBy: "rules",
     },
@@ -172,7 +187,23 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
 const FIT_POINTS: Record<Fit, number> = { exact: 25, within: 25, sector: 25, general: 18, any: 14, related: 10, "sector-unknown": 8, none: 0 };
 /** Points per word of the profile's narrative that the call also uses, and their cap. */
 const WORD_POINTS = 4;
-const WORDS_MAX = 20;
+const WORDS_MAX = 18;
+
+/**
+ * How specific a "por qué encajas" reason is to this profile (lower = first). The card shows two: they must say
+ * something about this person (discipline, own words, documents, zone, money), not what every eligible call shares.
+ */
+function whyRank(w: string): number {
+  if (/^(Encaja con|Habla de lo tuyo|Tu actividad está entre)/.test(w)) return 0;
+  if (/^(Ya tienes|Es de tu|Vives en)/.test(w)) return 1;
+  if (/^(Con dotación|Cumples|Abre pronto)/.test(w)) return 2;
+  if (/^Se convoca cada año/.test(w)) return 3;
+  return 4; // generic passes: beneficiary type, open to all Spain
+}
+/** Stable sort of the reasons by specificity, without duplicates. */
+export function bySpecificity(why: string[]): string[] {
+  return [...new Set(why)].map((w, i) => [whyRank(w), i, w] as const).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(([, , w]) => w);
+}
 
 const INTENT_GROUPS: [RegExp, RegExp, string][] = [
   [/\b(tienda online|web|comercio electronico|digitaliz\w*|software|app|ia|inteligencia artificial|ciberseguridad|crm|factura electronica)\b/, /\b(digital\w*|tienda online|software|ia|inteligencia artificial|ciberseguridad|web|innov\w*)\b/, "digitalización e innovación"],
@@ -195,7 +226,9 @@ function affinity(raw: Profile, call: Call, p: CanonicalProfile, c: CanonicalCal
   else if (fit.fit === "none" && c.disciplines.length) miss.push(`Es para ${biz ? "otras actividades" : "otras disciplinas"}: ${discNames(c.disciplines).join(", ")}`);
   else if (fit.fit === "sector") why.push("Tu actividad está entre los sectores de la convocatoria");
 
-  pts += Math.min(WORDS_MAX, ownWords(raw, call).length * WORD_POINTS);
+  const words = ownWords(raw, call);
+  pts += Math.min(WORDS_MAX, words.length * WORD_POINTS);
+  if (words.length) why.push(`Habla de lo tuyo: ${displayWords(raw, words).slice(0, 3).join(", ")}`);
 
   if (biz) {
     const profileText = [raw.statement, raw.bio, raw.projectIdea ?? "", ...raw.fundingNeeds, ...raw.achievements, raw.sector ?? ""].join(" ");
@@ -234,6 +267,17 @@ export function ownWords(raw: Profile, call: Call): string[] {
   const callText = [call.title, call.summary, ...call.criteria.flatMap((k) => [k.name, k.description]), ...call.allowedExpenses].join(" ");
   const places = tokens([raw.city, raw.province, raw.region].filter(Boolean).join(" "));
   return overlap(tokens(profileText), tokens(callText)).filter((w) => !places.has(w));
+}
+
+/** The profile's own spelling of the matched word stems ("acuarelas", "rederas"), for the reason line. */
+function displayWords(raw: Profile, stems: string[]): string[] {
+  const text = [raw.projectIdea ?? "", raw.statement, ...raw.fundingNeeds, raw.bio, ...raw.achievements].join(" ");
+  const out: string[] = [];
+  for (const stem of stems) {
+    const word = text.split(/[^\p{L}\p{N}]+/u).find((w) => w.length >= 5 && norm(w).slice(0, 7) === stem);
+    out.push((word ?? stem).toLowerCase());
+  }
+  return [...new Set(out)];
 }
 
 const DOC_RULES: { test: RegExp; has: (p: Profile, ctx: MatchContext, doc?: string) => boolean; label: string; businessLabel?: string }[] = [
@@ -276,39 +320,81 @@ function documents(p: Profile, c: Call, ctx: MatchContext, why: string[], miss: 
       miss.push(`Te falta: ${label}`);
     }
   }
-  return known ? Math.round((SCORE_MAX.documents * have) / known) : 6;
+  return known ? Math.round((SCORE_MAX.documents * have) / known) : Math.round(SCORE_MAX.documents / 2);
 }
 
-/** 0-8: concrete money is more useful than visibility-only calls. */
-function amount(c: CanonicalCall): number {
+const NO_CASH = /sin dotaci|sin premio en metalico|no (?:hay|tiene|conlleva) (?:premio|dotacion|cuantia)|sin cuantia|premio honorifico|sin contraprestacion economica/;
+const ENTRY_FEE = /cuota de (?:inscripcion|participacion)|tasa de (?:inscripcion|participacion)|derechos? de inscripcion|precio de inscripcion|\d+(?:[.,]\d+)? ?(?:€|euros?) (?:de|por) (?:inscripcion|participacion|obra presentada)/;
+
+/**
+ * 0-10: money you can actually get. A real cash prize or grant ranks up; visibility-only calls (exhibition, no cash
+ * prize) score 0, and an entry fee costs 4: for an artist, paying to apply is a cost, not an opportunity.
+ */
+function amount(c: CanonicalCall, call: Call, why: string[], miss: string[]): number {
   const cents = c.amount.maxCents ?? c.amount.minCents;
-  if (cents === undefined) return c.amount.totalCents && c.amount.totalCents >= 10_000_000 ? 6 : 3;
-  if (cents >= 300_000) return 8;
-  if (cents >= 100_000) return 6;
-  return 5;
+  const text = norm(`${call.amountText} ${call.summary} ${call.eligibility.other.join(" ")}`);
+  let pts: number;
+  if (cents === 0 || (cents === undefined && NO_CASH.test(text))) {
+    pts = 0;
+    miss.push("Sin premio en metálico");
+  } else if (cents === undefined) pts = c.amount.totalCents && c.amount.totalCents >= 10_000_000 ? 6 : 3;
+  else if (cents >= 300_000) pts = 10;
+  else if (cents >= 100_000) pts = 8;
+  else pts = 6;
+  if (cents !== undefined && cents >= 100_000) why.push(`Con dotación económica: ${c.amount.minCents !== undefined && c.amount.minCents !== cents ? "hasta " : ""}${formatCents(cents)}`);
+  if (ENTRY_FEE.test(text)) {
+    pts = Math.max(0, pts - 4);
+    miss.push("Cobra cuota de inscripción");
+  }
+  return Math.min(SCORE_MAX.amount, pts);
+}
+
+/** The province (or municipality) and comunidad the call belongs to: residence territories first, else the organiser's region. */
+function callHome(c: CanonicalCall): string[] {
+  const local = c.territories.filter((t) => t !== "ES" && t !== "WORLD");
+  if (local.length) return local;
+  if (!c.region) return [];
+  const t = normalizeTerritory(c.region, { prefer: "broadest" }).id;
+  return t ? [t] : [];
 }
 
 /**
- * 0-10: can you apply now (0-7) + local call bonus (0-3) when the profile is inside a non-state-wide territory.
- * An open call always beats an upcoming one, and that one a recurring call whose current edition has closed: with
- * the same fit, what you can apply for now ranks first (closing in a few days is urgent, not a penalty).
+ * 0-12: can you apply now (0-6) + proximity (0-6). An open call always beats an upcoming one, and that one a recurring
+ * call whose edition has closed. Proximity: the call is from your province (6) or your comunidad (4), whether it
+ * requires living there or a town organises it for everyone; local calls have less competition and are the
+ * beachhead's (Galicia) real offer.
  */
 function timing(p: CanonicalProfile, c: CanonicalCall, call: Call, daysLeft: number | undefined, why: string[], miss: string[]): number {
   let pts: number;
-  if (call.status === "recurring") pts = 2;
-  else if (call.status === "upcoming") pts = 4;
-  else if (daysLeft === undefined) pts = 5;
+  if (call.status === "recurring") pts = 0;
+  else if (call.status === "upcoming") pts = 3;
+  else if (daysLeft === undefined) pts = 4;
   else if (daysLeft <= 3) {
-    pts = 6;
+    pts = 5;
     miss.push(daysLeft === 0 ? "Cierra hoy: hay que darse prisa" : `Cierra en ${daysLeft} ${daysLeft === 1 ? "día" : "días"}: hay que darse prisa`);
-  } else if (daysLeft <= 60) pts = 7;
-  else pts = 6;
-  const local = c.territories.filter((t) => t !== "ES" && t !== "WORLD");
-  if (local.length && territoryCheck(p.territory, local) === "pass") {
-    pts += 4;
-    why.push(`Es de tu zona (${local.map(territoryName).join(", ")})`);
+  } else if (daysLeft <= 60) pts = 6;
+  else pts = 5;
+  return Math.min(SCORE_MAX.timing, pts + proximity(p, c, why));
+}
+
+const LEVEL_PROVINCE = /^ES\d{3}$/;
+const LEVEL_CCAA = /^ES\d{2}$/;
+function proximity(p: CanonicalProfile, c: CanonicalCall, why: string[]): number {
+  if (!p.territory) return 0;
+  const mine = new Set(territoryAncestors(p.territory));
+  const home = callHome(c);
+  // Most specific shared unit between the call's home and the profile: municipality/province > comunidad.
+  let best: { pts: number; name: string } | null = null;
+  for (const t of home) {
+    for (const a of territoryAncestors(t)) {
+      if (!mine.has(a)) continue;
+      const pts = a.startsWith("mun:") || LEVEL_PROVINCE.test(a) ? 6 : LEVEL_CCAA.test(a) ? 4 : 0;
+      if (pts && (!best || pts > best.pts)) best = { pts, name: territoryName(a) };
+    }
   }
-  return Math.min(10, pts);
+  if (!best) return 0;
+  why.push(best.pts === 6 ? `Es de tu zona (${best.name})` : `Es de tu comunidad (${best.name})`);
+  return best.pts;
 }
 
 /** Required documents as a checklist, ticking what the user already has in Mecena (same rules as the score). */

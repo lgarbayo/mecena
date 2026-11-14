@@ -137,7 +137,7 @@ describe("pyme feed keeps artist-tagged calls that admit companies", () => {
     const dir = process.env.MECENA_CALLS_DIR!;
     fs.writeFileSync(path.join(dir, "calls.json"), JSON.stringify([...fixtureCalls, open]));
     const { searchCalls } = await import("@/features/matching/service");
-    const ids = (await searchCalls({ profileId: fixtureBusiness.id })).map((r) => r.call.id);
+    const ids = (await searchCalls({ profileId: fixtureBusiness.id, query: "ilustración" })).map((r) => r.call.id);
     expect(ids).toContain("fixture-open-to-companies");
     expect(ids).not.toContain(art.id);
   });

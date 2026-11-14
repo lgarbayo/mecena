@@ -372,6 +372,15 @@ export function CallsFeed() {
       {Array.from({ length: data.lockedCount }, (_, i) => (
         <LockedCard key={i} business={business} onOpen={() => setPaywall(true)} />
       ))}
+      {data.editions && data.editions.length > 0 && (
+        <section aria-label="Próximas ediciones" data-testid="editions">
+          <h3 className={s.empty}>Próximas ediciones</h3>
+          <p className={s.empty}>Convocatorias que se repiten cada año y cuya edición actual ya cerró: te avisamos para la siguiente.</p>
+          {data.editions.map((r) => (
+            <CallCard key={r.call.id} {...r} />
+          ))}
+        </section>
+      )}
       {profile && <DeepResearchPanel profileId={profile.id} pro={Boolean(data.pro)} onNeedPro={() => setPaywall(true)} />}
       <Paywall
         open={paywall}
