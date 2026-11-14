@@ -50,7 +50,7 @@ export const AuthEmail = z
 export const SignupRequest = z.object({
   email: AuthEmail,
   password: z.string().min(8, "La contraseña necesita al menos 8 caracteres").max(200),
-  code: z.string().trim().max(200).optional(), // invite code, required only when MECENA_SIGNUP_CODE is set
+  code: z.string().trim().max(200).optional(), // invite code: required when sign-up is invite-only, optional (still gifts) with MECENA_SIGNUP_OPEN=1
 });
 export type SignupRequest = z.infer<typeof SignupRequest>;
 export const LoginRequest = z.object({ email: z.string().trim().toLowerCase().max(254), password: z.string().max(200) });
@@ -61,7 +61,7 @@ export type AuthUser = z.infer<typeof AuthUser>;
 export const MeResponse = z.object({ user: AuthUser, profile: Profile, appUserId: z.string() });
 export type MeResponse = z.infer<typeof MeResponse>;
 /** GET /api/auth/config: what the sign-in page needs to know before the user types. */
-export const AuthConfigResponse = z.object({ signupCodeRequired: z.boolean() });
+export const AuthConfigResponse = z.object({ signupCodeRequired: z.boolean(), signupCodeAccepted: z.boolean() });
 export type AuthConfigResponse = z.infer<typeof AuthConfigResponse>;
 
 // /api/profile (profileId, when given, must be one of the signed-in user's profiles)

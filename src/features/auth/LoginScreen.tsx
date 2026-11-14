@@ -10,7 +10,17 @@ import styles from "./auth.module.css";
 
 type Mode = "login" | "signup";
 
-export function LoginScreen({ next, signupCodeRequired, initialMode = "login" }: { next: string; signupCodeRequired: boolean; initialMode?: Mode }) {
+export function LoginScreen({
+  next,
+  signupCodeRequired,
+  signupCodeAccepted = signupCodeRequired,
+  initialMode = "login",
+}: {
+  next: string;
+  signupCodeRequired: boolean;
+  signupCodeAccepted?: boolean; // show the field as optional (open sign-up, but a code can still gift credits)
+  initialMode?: Mode;
+}) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +35,7 @@ export function LoginScreen({ next, signupCodeRequired, initialMode = "login" }:
     if (signup && password.length < 8) return setError("La contraseña necesita al menos 8 caracteres.");
     setBusy(true);
     try {
-      const body = signup ? { email, password, ...(signupCodeRequired ? { code } : {}) } : { email, password };
+      const body = signup ? { email, password, ...(signupCodeAccepted && code.trim() ? { code } : {}) } : { email, password };
       await apiSend<MeResponse>(signup ? API.authSignup : API.authLogin, body);
       window.location.assign(safeNext(next)); // checked again here: never leave the site after signing in
     } catch (err) {
@@ -70,12 +80,13 @@ export function LoginScreen({ next, signupCodeRequired, initialMode = "login" }:
             />
           </label>
           {signup && <p className={styles.hint}>Al menos 8 caracteres.</p>}
-          {signup && signupCodeRequired && (
+          {signup && signupCodeAccepted && (
             <label className={styles.field}>
-              <span>Código de invitación</span>
-              <input type="text" name="code" autoComplete="off" required value={code} onChange={(e) => setCode(e.target.value)} />
+              <span>{signupCodeRequired ? "Código de invitación" : "Código de invitación (opcional)"}</span>
+              <input type="text" name="code" autoComplete="off" required={signupCodeRequired} value={code} onChange={(e) => setCode(e.target.value)} />
             </label>
           )}
+          {signup && signupCodeAccepted && !signupCodeRequired && <p className={styles.hint}>Si te han dado uno, puede regalarte créditos premium.</p>}
           {error && (
             <p className={styles.error} role="alert">
               {error}

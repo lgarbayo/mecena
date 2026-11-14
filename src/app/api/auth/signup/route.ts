@@ -1,6 +1,7 @@
 // POST { email, password, code? } -> creates the account (+ its first blank profile), signs in (session cookie).
 // Invite-only when MECENA_SIGNUP_CODE is set or invite codes exist (`npm run invite`): `code` must match one (AI calls
-// spend the owner's key). A db code is consumed, tags the account with its cohort and may gift premium credits.
+// spend the owner's key). With MECENA_SIGNUP_OPEN=1 the code is optional. A db code is consumed, tags the account with
+// its cohort and may gift premium credits.
 import { SignupRequest } from "@/contracts/api";
 import { activeProfile, checkSignupCode, createSession, createUser, publicUser, setSessionCookie } from "@/server/auth";
 import { consumeLimits, limitKeys, refundAttempt } from "@/server/auth/rate-limit";

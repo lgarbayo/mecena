@@ -101,10 +101,10 @@ describe("POST /api/auth/signup", () => {
 
 describe("invite code (MECENA_SIGNUP_CODE)", () => {
   it("open sign-up when unset; required and checked when set", async () => {
-    expect(await (await config()).json()).toEqual({ signupCodeRequired: false });
+    expect(await (await config()).json()).toEqual({ signupCodeRequired: false, signupCodeAccepted: false });
     process.env.MECENA_SIGNUP_CODE = "rederas-2026";
     try {
-      expect(await (await config()).json()).toEqual({ signupCodeRequired: true });
+      expect(await (await config()).json()).toEqual({ signupCodeRequired: true, signupCodeAccepted: true });
       const none = await signup(signupReq({ email: "x@example.com", password: TEST_PASSWORD }));
       expect(none.status).toBe(403);
       expect((await none.json()).message).toMatch(/código de invitación/);

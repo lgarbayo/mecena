@@ -19,6 +19,7 @@ export const ENV = {
   MECENA_SEED_FILE: "MECENA_SEED_FILE",
   BDNS_API_BASE: "BDNS_API_BASE",
   MECENA_SIGNUP_CODE: "MECENA_SIGNUP_CODE", // optional invite code: when set, creating an account requires it
+  MECENA_SIGNUP_OPEN: "MECENA_SIGNUP_OPEN", // "1": anyone can sign up; invite codes become optional (they still gift)
   MECENA_USER_EMAIL: "MECENA_USER_EMAIL", // MCP server only: the account it acts as
   MECENA_CALLS_LIVE: "MECENA_CALLS_LIVE",
   MECENA_AI_DAILY_CAP: "MECENA_AI_DAILY_CAP", // global Claude requests per day (src/server/ai/budget.ts)
@@ -44,6 +45,7 @@ export function serverEnv() {
     publicUrl: (e.MECENA_PUBLIC_URL || "http://localhost:3000").replace(/\/$/, ""),
     bdnsApiBase: e.BDNS_API_BASE || "https://www.infosubvenciones.es/bdnstrans/api",
     signupCode: e.MECENA_SIGNUP_CODE?.trim() || undefined,
+    signupOpen: e.MECENA_SIGNUP_OPEN === "1",
     mcpUserEmail: e.MECENA_USER_EMAIL?.trim().toLowerCase() || undefined,
   };
 }

@@ -16,7 +16,7 @@ import { activeProfile, ownedProfile, userForToken } from "./users";
 
 export { SESSION_COOKIE, readSessionToken, setSessionCookie, clearSessionCookie } from "./cookie";
 export * from "./users";
-export { checkSignupCode, signupCodeRequired, type Redemption } from "./invites";
+export { checkSignupCode, signupCodeAccepted, signupCodeRequired, type Redemption } from "./invites";
 export { bearerToken, createMcpToken, listMcpTokens, publicMcpToken, revokeMcpToken, userForMcpToken, MAX_MCP_TOKENS } from "./mcp-tokens";
 
 /** The signed-in user for this request, or undefined. Reads the cookie header, so it works with plain Requests. */
