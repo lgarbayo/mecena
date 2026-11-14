@@ -10,6 +10,11 @@ updates:
     commit-message:
       prefix: "build"
       include: "scope"
+    ignore:
+      # @types/node must match the Node major we run (22 LTS, see engines and the Dockerfile).
+      # Bump it by hand together with Node itself.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       minor-and-patch:
         update-types:
@@ -27,5 +32,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # Stay on the Node LTS line: odd majors (23, 25...) are short-lived and never become LTS.
+      # Move to the next LTS (24) on purpose, together with engines and @types/node.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "build"
