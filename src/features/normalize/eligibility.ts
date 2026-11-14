@@ -6,7 +6,7 @@
 import { beneficiaryCheck, beneficiaryLabel } from "./beneficiary";
 import { cnaeCheck, cnaeLabel } from "./cnae";
 import { ageCheck, type CheckResult } from "./ranges";
-import { territoryCheck, territoryName } from "./territory";
+import { ABROAD, territoryCheck, territoryName } from "./territory";
 import type { CanonicalCall, CanonicalProfile } from "./types";
 
 export interface EligibilityCheck {
@@ -122,6 +122,12 @@ const SCOPE_LABEL: Record<string, string> = { local: "municipal", provincial: "p
 /** Territory rule with honest wording about who can apply (residence), never confusing it with the organiser's area. */
 function territoryEligibility(profile: CanonicalProfile, call: CanonicalCall): EligibilityCheck {
   const wide = call.territories.every((x) => x === "ES" || x === "WORLD");
+  const abroad = profile.territory === ABROAD;
+  // Living abroad: open-to-anyone calls pass and calls for a part of Spain fail (below); a Spain-wide call may or may
+  // not admit residents abroad (Spanish nationals often can), so it is to confirm, never assumed.
+  if (abroad && wide && !call.territories.includes("WORLD")) {
+    return { rule: "territory", result: "unknown", reason: "Confírmalo: vives fuera de España; revisa si las bases admiten residentes en el extranjero" };
+  }
   if (wide && call.territoryImplicit && call.scope !== "estatal" && call.scope !== "europeo") {
     const where = call.region ? `de ${call.region}` : "";
     return {

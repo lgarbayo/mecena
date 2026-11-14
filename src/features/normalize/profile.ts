@@ -3,11 +3,11 @@ import type { Profile } from "@/contracts/domain";
 import { profileBeneficiaryTypes } from "./beneficiary";
 import { inferCnaeFromSector, normalizeCnae } from "./cnae";
 import { normalizeDiscipline } from "./disciplines";
-import { isWithin, normalizeTerritory, territoryName, territoryNode } from "./territory";
+import { ABROAD, isAbroad, isWithin, normalizeTerritory, territoryName, territoryNode } from "./territory";
 import { type CanonicalProfile, type DataWarning, type Normalized, warn } from "./types";
 
 /**
- * The profile's most specific known place: city (narrowest reading) → province → region.
+ * The profile's most specific known place: city (narrowest reading) → province → region; ABROAD when it is a foreign place.
  * Warns when they disagree ("Vigo" with province "Lugo") and keeps the most specific consistent one.
  */
 export function profileTerritory(profile: Pick<Profile, "city" | "province" | "region">): Normalized<string | null> {
@@ -27,6 +27,8 @@ export function profileTerritory(profile: Pick<Profile, "city" | "province" | "r
     else warnings.push(warn("unmapped-territory", field, `No reconocemos el lugar «${value}»`, value));
   }
   if (!resolved.length) {
+    // Lives outside Spain: a known place, not a missing one (calls that require living in Spain or a part of it fail).
+    if (fields.some(([, value]) => isAbroad(value))) return { value: ABROAD, warnings };
     warnings.push(warn("missing-territory", "city", "Falta dónde vive o tiene sede: no podemos comprobar requisitos de residencia", undefined, "info"));
     return { value: null, warnings };
   }

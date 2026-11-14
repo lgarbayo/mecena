@@ -122,6 +122,33 @@ export function normalizeTerritory(input: string | number | null | undefined, op
   return none;
 }
 
+/**
+ * A profile that lives outside Spain is stored with this territory: inside no Spanish unit, so calls that require
+ * living in a comunidad, province or town fail, and calls open to anyone (WORLD) still pass.
+ */
+export const ABROAD = "WORLD";
+
+// Countries and big foreign cities (es/en), folded. Only names that are no Spanish place: "Santiago", "Córdoba",
+// "Valencia", "Mérida", "Guadalajara", "León"… are left out (Spanish names are resolved first anyway).
+const FOREIGN_PLACES = (
+  "extranjero|fuera de espana|abroad|china|pekin|beijing|shanghai|hong kong|japon|japan|tokio|tokyo|corea|korea|seul|seoul|" +
+  "india|nueva delhi|bombay|mumbai|tailandia|bangkok|vietnam|singapur|singapore|indonesia|filipinas|australia|sidney|sydney|melbourne|" +
+  "nueva zelanda|estados unidos|eeuu|ee uu|usa|united states|nueva york|new york|los angeles|san francisco|chicago|miami|boston|canada|toronto|montreal|vancouver|" +
+  "mexico|ciudad de mexico|cdmx|argentina|buenos aires|chile|colombia|bogota|medellin|peru|venezuela|caracas|ecuador|quito|uruguay|montevideo|" +
+  "paraguay|bolivia|cuba|la habana|brasil|brazil|sao paulo|rio de janeiro|francia|france|paris|marsella|lyon|alemania|germany|berlin|munich|hamburgo|" +
+  "italia|italy|roma|milan|napoles|florencia|portugal|lisboa|oporto|porto|reino unido|united kingdom|inglaterra|england|escocia|londres|london|" +
+  "manchester|edimburgo|irlanda|ireland|dublin|paises bajos|holanda|netherlands|amsterdam|rotterdam|belgica|belgium|bruselas|brussels|suiza|zurich|ginebra|" +
+  "austria|viena|vienna|suecia|estocolmo|noruega|oslo|dinamarca|copenhague|finlandia|helsinki|polonia|varsovia|chequia|praga|hungria|budapest|grecia|atenas|" +
+  "rumania|bucarest|bulgaria|ucrania|kiev|rusia|moscu|turquia|estambul|istanbul|israel|tel aviv|egipto|el cairo|marruecos|morocco|rabat|casablanca|tanger|" +
+  "argelia|tunez|senegal|dakar|nigeria|lagos|kenia|nairobi|sudafrica|ciudad del cabo|emiratos|dubai|abu dabi|qatar|doha|arabia saudi"
+).split("|");
+const FOREIGN_RE = new RegExp(`(?:^|[^a-z0-9])(?:${FOREIGN_PLACES.join("|")})(?:$|[^a-z0-9])`);
+
+/** "Beijing", "Pekín (China)", "Berlín", "vivo en el extranjero" → true. Only for text that resolved to no Spanish place. */
+export function isAbroad(text: string | null | undefined): boolean {
+  return Boolean(text?.trim()) && FOREIGN_RE.test(fold(text!));
+}
+
 /** All territories mentioned in a free-text eligibility sentence ("residentes en Galicia o en Asturias"). */
 export function extractTerritories(text: string): string[] {
   // "Asturias" names both ES12 and ES120: keep one id per equivalent unit (the broadest).
