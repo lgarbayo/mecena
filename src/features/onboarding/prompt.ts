@@ -1,6 +1,7 @@
 /**
  * Real-AI onboarding turn: system prompt, compact user payload and a lean output schema for Claude.
- * The schema avoids defaults/unions so structured outputs stay simple; ai.ts maps it onto OnboardingTurnResult.
+ * The schema avoids defaults/unions/optional fields so structured outputs stay simple (profilePatch uses "not said"
+ * sentinels, stripped by cleanProfilePatch); ai.ts maps it onto OnboardingTurnResult.
  * Aligned with fleet/spikes/voice/FINDINGS.md (branch spike/voice-extraction) where it fits the per-turn contract:
  * finals only (interims never sent), corrections win, nothing invented, schema pre-warm (ai.ts).
  * Their words, without their typos: sections and profile texts are lexically corrected (WORDING_RULE) while the
@@ -8,7 +9,7 @@
  * TODO(WP-01 follow-up): the spike's verbatim per-op source quotes and server-side coalescing are not ported yet.
  */
 import { z } from "zod";
-import { BusinessSectionKey, CreatorSectionKey, type OnboardingTurnInput, type ProfileKind } from "@/contracts";
+import { BusinessSectionKey, CreatorSectionKey, type OnboardingTurnInput, type ProfileKind, type ProfilePatch } from "@/contracts";
 import { WORDING_RULE } from "@/server/ai/wording";
 import { FAMILY_INTERVIEW, sectionTitles } from "./copy";
 import { onboardingFamily } from "./family";
@@ -16,35 +17,52 @@ import { onboardingFamily } from "./family";
 /** How many previous segments the model sees for context (the new one is sent separately). */
 export const CONTEXT_SEGMENTS = 10;
 
-const LegalForm = z.enum(["autonomo", "sl", "sa", "cooperativa", "asociacion", "otra"]);
+/** "" = not said yet (every profilePatch field is required, see llmTurnSchema). */
+const LegalForm = z.enum(["", "autonomo", "sl", "sa", "cooperativa", "asociacion", "otra"]);
 
+/** Fields where 0 is the "not said" sentinel (cleanProfilePatch drops it). */
+export const NUMERIC_PATCH_FIELDS = ["birthYear", "employees", "foundedYear", "annualRevenueEur"] as const;
+
+/**
+ * Every profilePatch field is REQUIRED, with sentinels for "not said in this fragment": "" for texts, [] for lists,
+ * 0 for numbers, "" for legalForm. Optional fields blow up the structured-output grammar (17 optional business fields:
+ * 400 "Schema is too complex" / "Grammar compilation timed out", measured 2026-11-14); required ones compile in ~3-6 s.
+ * cleanProfilePatch() strips the sentinels before anything reaches the profile.
+ */
 export function llmTurnSchema(kind: ProfileKind) {
   const key = kind === "creator" ? CreatorSectionKey : BusinessSectionKey;
+  const text = (what: string) => z.string().describe(`${what}. "" si este fragmento no lo dice`);
+  const list = (what: string) => z.array(z.string()).describe(`${what}. [] si este fragmento no dice nada nuevo`);
+  const year = (what: string) => z.number().int().describe(`${what}. 0 si este fragmento no lo dice`);
   const common = {
-    displayName: z.string().optional().describe("Nombre artístico, de la banda o compañía, o comercial, tal como lo dice (solo corrige mayúsculas)"),
-    city: z.string().optional(),
-    province: z.string().optional(),
-    region: z.string().optional().describe("Comunidad autónoma, p. ej. Galicia"),
-    achievements: z.array(z.string()).optional().describe("Exposiciones, conciertos, discos, estrenos, festivales, publicaciones, premios, clientes: solo los nuevos"),
-    education: z.array(z.string()).optional().describe("Bellas Artes, conservatorio, arte dramático, escuela de cine, filología, talleres…"),
-    links: z.array(z.string()).optional(),
-    fundingNeeds: z.array(z.string()).optional().describe("Para qué quiere dinero o tiempo, con sus palabras y sin erratas"),
-    projectIdea: z.string().optional().describe("El proyecto que presentaría (una serie, un disco, una gira, una pieza, una película, un libro…), una frase"),
-    languages: z.array(z.string()).optional(),
+    displayName: text("Nombre artístico, de la banda o compañía, o comercial, tal como lo dice (solo corrige mayúsculas)"),
+    city: text("Municipio"),
+    province: text("Provincia"),
+    region: text("Comunidad autónoma, p. ej. Galicia"),
+    achievements: list("Exposiciones, conciertos, discos, estrenos, festivales, publicaciones, premios, clientes: solo los nuevos"),
+    education: list("Bellas Artes, conservatorio, arte dramático, escuela de cine, filología, talleres…"),
+    links: list("Webs, redes, correos"),
+    fundingNeeds: list("Para qué quiere dinero o tiempo, con sus palabras y sin erratas"),
+    projectIdea: text("El proyecto que presentaría (una serie, un disco, una gira, una pieza, una película, un libro…), una frase"),
+    languages: list("Idiomas"),
   };
   const profilePatch =
     kind === "creator"
-      ? z.object({ ...common, birthYear: z.number().int().optional(), disciplines: z.array(z.string()).optional().describe(
-              "En minúscula, cualquier arte: pintura, ilustración, fotografía, escultura; música, composición, jazz, música tradicional; teatro, danza, circo; cine, documental, animación; poesía, narrativa, ensayo; diseño gráfico, moda; cerámica, joyería; comisariado…",
-            ) })
+      ? z.object({
+          ...common,
+          birthYear: year("Año de nacimiento"),
+          disciplines: list(
+            "En minúscula, cualquier arte: pintura, ilustración, fotografía, escultura; música, composición, jazz, música tradicional; teatro, danza, circo; cine, documental, animación; poesía, narrativa, ensayo; diseño gráfico, moda; cerámica, joyería; comisariado…",
+          ),
+        })
       : z.object({
           ...common,
-          legalForm: LegalForm.optional(),
-          cnae: z.string().optional(),
-          sector: z.string().optional(),
-          employees: z.number().int().optional(),
-          foundedYear: z.number().int().optional(),
-          annualRevenueEur: z.number().optional(),
+          legalForm: LegalForm.describe('Forma jurídica (autónomo/a = autonomo, sociedad limitada = sl…). "" si no la dice: nunca la deduzcas'),
+          cnae: text("Código CNAE, solo si lo dice"),
+          sector: text("Actividad con sus palabras"),
+          employees: year("Plantilla total, contando a quien habla"),
+          foundedYear: year("Año de inicio"),
+          annualRevenueEur: z.number().describe("Facturación anual en euros. 0 si este fragmento no la dice"),
         });
   return z.object({
     profilePatch,
@@ -59,6 +77,26 @@ export function llmTurnSchema(kind: ProfileKind) {
   });
 }
 export type LlmTurn = z.infer<ReturnType<typeof llmTurnSchema>>;
+
+/**
+ * Claude's profilePatch → ProfilePatch without the "not said" sentinels: "" (and blank) texts, legalForm "",
+ * empty lists (and blank items), 0 in the numeric fields. Idempotent, so it also accepts an already clean patch.
+ */
+export function cleanProfilePatch(raw: Readonly<Record<string, unknown>>): ProfilePatch {
+  const patch: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (v === undefined || v === null) continue;
+    if (typeof v === "string" && !v.trim()) continue;
+    if (v === 0 && (NUMERIC_PATCH_FIELDS as readonly string[]).includes(k)) continue;
+    if (Array.isArray(v)) {
+      const items = v.filter((x) => !(typeof x === "string" && !x.trim()));
+      if (items.length) patch[k] = items;
+      continue;
+    }
+    patch[k] = v;
+  }
+  return patch as ProfilePatch;
+}
 
 /** What matters in each art, so questions and sections speak its language (creators only). */
 function familyGuide(): string {
@@ -109,7 +147,7 @@ function intro(goal: string, keys: string): string[] {
     `Eres Mecena, asistente que ${goal}.`,
     "Recibes el perfil actual, las secciones actuales del dossier, los últimos fragmentos de la transcripción y el NUEVO fragmento.",
     "Devuelve solo lo que el nuevo fragmento aporta:",
-    "- profilePatch: solo los campos que el fragmento dice o corrige. Si corrige algo (\"no, quería decir…\"), devuelve el valor corregido. Omite el resto.",
+    "- profilePatch: rellena solo los campos que el fragmento dice o corrige. Si corrige algo (\"no, quería decir…\"), devuelve el valor corregido. Todos los demás van vacíos: \"\" en los textos (también legalForm), [] en las listas y 0 en los números (0 = no lo ha dicho).",
     "- Si dice lo que busca o necesita (\"busco…\", \"quiero…\", \"necesito…\", \"me gustaría…\": una beca, una residencia, producir, grabar, girar, publicar, estrenar, exponer, digitalizar, contratar…), ponlo en fundingNeeds con sus palabras, aunque también lo uses en projectIdea.",
     "- sectionUpdates: solo las secciones que cambian, con el texto COMPLETO de la sección (lo que ya había más lo nuevo), reescrito en primera persona, con sus palabras pero bien escritas (sin erratas ni fallos del dictado), sin adornos ni adjetivos que no haya dicho. Si lo que ya había tiene erratas, corrígelas también. Cada sección lista en sourceSegmentIds los ids de los fragmentos de los que sale (incluye el nuevo si lo usas).",
     `- Claves de sección permitidas: ${keys}.`,
@@ -120,7 +158,7 @@ function rules(): string[] {
   return [
     "Reglas: castellano de España (tú, nunca voseo) en la pregunta y en lo que dijo en castellano. NUNCA inventes datos que no haya dicho: ni fechas, ni cifras, ni premios, ni lugares. Mantén su forma de decir las cosas. La persona tiene la última palabra.",
     WORDING_RULE,
-    "Si el fragmento no aporta nada (muletillas, ruido), devuelve profilePatch vacío y sectionUpdates vacío, con una pregunta para seguir.",
+    "Si el fragmento no aporta nada (muletillas, ruido), devuelve profilePatch con todos los campos vacíos y sectionUpdates vacío, con una pregunta para seguir.",
   ];
 }
 

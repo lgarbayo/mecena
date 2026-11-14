@@ -7,6 +7,7 @@ import { mockOnboardingTurn } from "@/features/onboarding/mock";
 import { toTurnResult } from "@/features/onboarding/ai";
 import { systemPrompt } from "@/features/onboarding/prompt";
 import { draftingAi } from "@/features/drafting/ai";
+import { nothingSaid } from "../helpers";
 
 const seg = (id: string, text: string, source: "voice" | "text" = "text"): TranscriptSegment => ({ id, text, source, at: FIXTURE_NOW });
 
@@ -99,7 +100,7 @@ describe("onboarding writes the dossier without the typos", () => {
     const newSegment = seg("s1", "levo 15 anos pintando o mar cos meus pais");
     const input = { kind: "creator" as const, profile: blankCreator, sections: [] as DossierSection[], transcript: [newSegment], newSegment };
     const r = toTurnResult(input, {
-      profilePatch: {},
+      profilePatch: nothingSaid("creator"),
       sectionUpdates: [{ key: "bio", body: "Levo 15 anos pintando o mar cos meus pais.", sourceSegmentIds: ["s1"] }],
       followUpQuestion: "¿Dónde vives?",
     });
@@ -111,7 +112,7 @@ describe("onboarding writes the dossier without the typos", () => {
     const newSegment = seg("s1", "y quiero aser una serie echa con a cuarelas", "voice");
     const input = { kind: "creator" as const, profile: blankCreator, sections: [prev], transcript: [newSegment], newSegment };
     const r = toTurnResult(input, {
-      profilePatch: {},
+      profilePatch: nothingSaid("creator"),
       sectionUpdates: [{ key: "series", body: "Pinto a las rederas.\n\nQuiero hacer una serie hecha con acuarelas.", sourceSegmentIds: ["s0", "s1"] }],
       followUpQuestion: "¿Dónde vives?",
     });

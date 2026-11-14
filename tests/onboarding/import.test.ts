@@ -11,9 +11,9 @@ vi.mock("@/server/ai/llm", async (orig) => {
 import { isMockAi, structured } from "@/server/ai/llm";
 import { importDossier, mergeBody } from "@/features/onboarding/import";
 import { POST } from "@/app/api/onboarding/import/route";
-import { getDossier, getTranscript, uploadsDir } from "@/server/store";
+import { getDossier, getProfile, getTranscript, uploadsDir } from "@/server/store";
 import { fixtureTranscript } from "@/fixtures";
-import { req } from "../helpers";
+import { nothingSaid, req } from "../helpers";
 
 const mockedStructured = vi.mocked(structured);
 const mockedIsMock = vi.mocked(isMockAi);
@@ -78,6 +78,20 @@ describe("importDossier", () => {
     mockedStructured.mockResolvedValueOnce({ profilePatch: {}, sections: [], worksFound: [], followUpQuestion: "¿?" });
     await importDossier({ fileDataUrl: "data:image/jpeg;base64,/9j/AAAA" });
     expect((mockedStructured.mock.calls[0][0].user as { type: string }[])[0].type).toBe("image");
+  });
+});
+
+describe("importDossier sentinels", () => {
+  it("with AI: the required-field sentinels never reach the profile", async () => {
+    mockedIsMock.mockReturnValue(false);
+    mockedStructured.mockResolvedValueOnce({ profilePatch: { ...nothingSaid("creator"), city: "Lugo" }, sections: [], worksFound: [], followUpQuestion: "¿?" });
+    const before = getProfile();
+    const res = await importDossier({ text: "Vivo en Lugo." });
+    expect(res.profile.city).toBe("Lugo");
+    expect(res.profile.displayName).toBe(before.displayName);
+    expect(res.profile.birthYear).toBe(before.birthYear);
+    expect(res.changedProfileFields).toContain("city");
+    for (const k of ["displayName", "birthYear", "disciplines", "achievements"]) expect(res.changedProfileFields).not.toContain(k);
   });
 });
 

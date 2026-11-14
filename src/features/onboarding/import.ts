@@ -18,7 +18,7 @@ import { WORDING_RULE } from "@/server/ai/wording";
 import { appendSegment, getDossier, getProfile, listWorks, mergeProfile, nowIso, saveDossier, saveProfile, uploadsDir } from "@/server/store";
 import { sectionTitles } from "./copy";
 import { extractProfilePatch, followUpFor, mockOnboardingTurn } from "./mock";
-import { llmTurnSchema } from "./prompt";
+import { cleanProfilePatch, llmTurnSchema } from "./prompt";
 import { changedFields } from "./service";
 
 export class ImportUnsupportedError extends Error {
@@ -44,7 +44,8 @@ export function importSchema(kind: ProfileKind) {
     followUpQuestion: z.string().describe("Una pregunta breve sobre lo más importante que falta para optar a convocatorias"),
   });
 }
-export type ImportResult = z.infer<ReturnType<typeof importSchema>>;
+/** profilePatch already without the "not said" sentinels the schema requires (cleanProfilePatch). */
+export type ImportResult = Omit<z.infer<ReturnType<typeof importSchema>>, "profilePatch"> & { profilePatch: ProfilePatch };
 
 function system(kind: ProfileKind): string {
   const titles = Object.entries(sectionTitles(kind))
@@ -56,7 +57,7 @@ function system(kind: ProfileKind): string {
     return [
       `Eres Mecena. Una pyme o un/a autónomo/a te da un documento sobre su negocio (presentación, web, memoria…; PDF, foto o texto) para rellenar la ficha de su empresa y buscarle ayudas y subvenciones. No le estás haciendo un dossier.`,
       "Tu trabajo es ordenar, no escribir:",
-      "- profilePatch (lo más importante): nombre del negocio, actividad con sus palabras (sector), municipio/provincia/comunidad, forma jurídica (legalForm: autonomo, sl, sa, cooperativa, asociacion u otra), plantilla total (employees), año de inicio (foundedYear), facturación anual (annualRevenueEur), clientes y proyectos (achievements), enlaces e idiomas. CNAE solo si aparece. Omite lo que no diga.",
+      "- profilePatch (lo más importante): nombre del negocio, actividad con sus palabras (sector), municipio/provincia/comunidad, forma jurídica (legalForm: autonomo, sl, sa, cooperativa, asociacion u otra), plantilla total (employees), año de inicio (foundedYear), facturación anual (annualRevenueEur), clientes y proyectos (achievements), enlaces e idiomas. CNAE solo si aparece. Lo que no diga va vacío: \"\" en los textos (también legalForm), [] en las listas y 0 en los números.",
       "- Si habla de algo que quiere hacer o financiar (invertir, digitalizar, contratar, exportar, ahorrar energía, innovar), ponlo en profilePatch.projectIdea (una frase) y en fundingNeeds.",
       `- sections: la descripción de la empresa que irá en sus solicitudes, en estas secciones: ${titles}. ${copyRule}`,
       "- worksFound: devuelve [].",
@@ -67,7 +68,7 @@ function system(kind: ProfileKind): string {
   return [
     `Eres Mecena. Una persona (${who}) te da el dossier que ya tenía (PDF, foto o texto) para no empezar de cero.`,
     "Tu trabajo es ordenar, no escribir:",
-    "- profilePatch: los datos que el documento dice (nombre, ciudad, disciplinas, formación, exposiciones, conciertos, discos, estrenos, festivales, publicaciones, premios o clientes, enlaces, idiomas, año de nacimiento o de fundación…). Omite lo que no diga.",
+    "- profilePatch: los datos que el documento dice (nombre, ciudad, disciplinas, formación, exposiciones, conciertos, discos, estrenos, festivales, publicaciones, premios o clientes, enlaces, idiomas, año de nacimiento o de fundación…). Lo que no diga va vacío: \"\" en los textos, [] en las listas y 0 en los números.",
     `- sections: reparte el contenido del documento en estas secciones: ${titles}. ${copyRule}`,
     "- Series, colecciones y proyectos (también los que aún va a hacer) van en su sección (series/projects) con el texto del documento. Si habla de un proyecto que quiere hacer o financiar, ponlo además en profilePatch.projectIdea (una frase) y lo que necesita en fundingNeeds.",
     "- Exposiciones, premios, publicaciones o clientes también en profilePatch.achievements; estudios en education. Disciplinas en minúscula.",
@@ -104,7 +105,8 @@ async function extractWithClaude(profile: Profile, req: ImportDossierRequest): P
   if (req.text?.trim()) content.push({ type: "text", text: `TEXTO DEL DOSSIER:\n${req.text.trim()}` });
   const { id: _i, updatedAt: _u, ...current } = profile;
   content.push({ type: "text", text: `PERFIL ACTUAL (no repitas lo que ya está): ${JSON.stringify(current)}` });
-  return structured({ tier: "fast", effort: "low", maxTokens: 12000, system: system(profile.kind), user: content, schema: importSchema(profile.kind) });
+  const out = await structured({ tier: "fast", effort: "low", maxTokens: 12000, system: system(profile.kind), user: content, schema: importSchema(profile.kind) });
+  return { ...out, profilePatch: cleanProfilePatch(out.profilePatch) };
 }
 
 /** Offline: pasted text through the deterministic extractor (whole text as one chunk). */
@@ -144,7 +146,7 @@ export async function importDossier(req: ImportDossierRequest): Promise<ImportDo
   if (mock && !req.text?.trim()) throw new ImportUnsupportedError("Ahora mismo no podemos leer archivos. Pega el texto de tu dossier y lo ordenamos igual.");
 
   const result = mock ? extractMock(profile, req.text!.trim()) : await extractWithClaude(profile, req);
-  const patch = result.profilePatch as ProfilePatch;
+  const patch = result.profilePatch;
   if (patch.disciplines) patch.disciplines = patch.disciplines.map((d) => d.toLocaleLowerCase("es-ES").trim());
   // Backstop (as in onboarding turns): matching needs the project and the needs; the model often leaves them in the text.
   if (!patch.projectIdea || !patch.fundingNeeds?.length) {
