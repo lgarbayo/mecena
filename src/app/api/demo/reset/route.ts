@@ -1,10 +1,12 @@
-// Owned by WP-09. Resets the signed-in user's own data (never anyone else's) and rotates their RevenueCat app user id.
+// Owned by WP-09. Resets the signed-in user's own data (never anyone else's), rotates their RevenueCat app user id and
+// optionally loads a demo scenario into that same account (POST { scenario: blank | onboarded | pro | business }).
 import { DemoResetRequest } from "@/contracts/api";
 import { resetUserDemo } from "@/features/demo/service";
 import { requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export const POST = route(async (req: Request) => {
   const user = requireUser(req);

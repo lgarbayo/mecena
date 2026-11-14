@@ -208,8 +208,25 @@ export const EntitlementSyncRequest = z.object({
 });
 
 // /api/demo/reset
-export const DemoResetRequest = z.object({ scenario: z.enum(["blank", "onboarded"]).default("blank") });
-export const DemoResetResponse = z.object({ ok: z.literal(true), appUserId: z.string(), activeProfileId: z.string() });
+// blank = "Empezar de cero"; onboarded = "Artista de ejemplo"; pro = "Artista Pro con solicitud"; business = "Pyme de ejemplo"
+export const DemoScenario = z.enum(["blank", "onboarded", "pro", "business"]);
+export const DemoResetRequest = z.object({
+  scenario: DemoScenario.default("blank"),
+  // blank only: also load the example pyme (inactive) so the Creador/a ↔ Pyme switch has something to show
+  withBusiness: z.boolean().default(false),
+});
+export const DemoResetResponse = z.object({
+  ok: z.literal(true),
+  scenario: DemoScenario,
+  appUserId: z.string(),
+  activeProfileId: z.string(),
+  pro: z.boolean(),
+  applicationId: z.string().optional(), // pro: the drafted application (open it at /tribunal/<id>)
+  callId: z.string().optional(),
+});
+
+// /api/demo/settings: the signed-in account's plan-B switches
+export const DemoSettingsRequest = z.object({ deterministicJury: z.boolean().optional(), aiMock: z.boolean().optional() });
 
 // /api/agent
 export const AgentRequest = z.object({

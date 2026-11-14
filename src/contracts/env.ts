@@ -22,6 +22,7 @@ export const ENV = {
   MECENA_USER_EMAIL: "MECENA_USER_EMAIL", // MCP server only: the account it acts as
   MECENA_CALLS_LIVE: "MECENA_CALLS_LIVE",
   MECENA_AI_DAILY_CAP: "MECENA_AI_DAILY_CAP", // global Claude requests per day (src/server/ai/budget.ts)
+  DEMO_EMAILS: "DEMO_EMAILS", // stage accounts (comma separated) allowed to load the demo Pro scenario in production
 } as const;
 
 export const DEFAULT_MODELS = { fast: "claude-sonnet-5-5", smart: "claude-opus-5-5" } as const;

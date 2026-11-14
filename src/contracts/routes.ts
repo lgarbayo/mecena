@@ -77,6 +77,7 @@ export const API = {
   juryImprove: "/api/jury/improve", // POST { applicationId, scoreId }
   entitlements: "/api/entitlements", // GET the user's entitlement, POST sync after a purchase
   agent: "/api/agent", // POST { message, history }
-  demoReset: "/api/demo/reset", // POST: resets the signed-in user's own data only
+  demoReset: "/api/demo/reset", // POST { scenario }: resets the signed-in user's own data only (and loads a scenario)
+  demoSettings: "/api/demo/settings", // GET status + scenario checks; POST { deterministicJury?, aiMock? } (own account)
   health: "/api/health", // GET -> { ok: true }, public (Fly health check)
 } as const;
