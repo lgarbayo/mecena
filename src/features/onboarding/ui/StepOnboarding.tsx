@@ -86,7 +86,7 @@ export function StepOnboarding() {
   }, []);
 
   const queue = useMemo(
-    () => new TurnQueue((t) => apiSend<OnboardingTurnResponse>(API.onboardingTurn, { ...t, profileId: pidRef.current }), { change: setTurns, result: onResult }),
+    () => new TurnQueue((t, signal) => apiSend<OnboardingTurnResponse>(API.onboardingTurn, { ...t, profileId: pidRef.current }, "POST", signal), { change: setTurns, result: onResult }),
     [onResult],
   );
 
@@ -104,6 +104,7 @@ export function StepOnboarding() {
 
   const busy = turns.some((t) => t.status === "sending" || t.status === "queued");
   const failed = turns.find((t) => t.status === "failed");
+  const slow = turns.some((t) => t.slow);
   const total = steps.length;
   const stepIndex = phase.at === "step" ? phase.i : phase.at === "done" ? total : 0;
 
@@ -259,7 +260,16 @@ export function StepOnboarding() {
         {phase.at === "done" && (
           <section className={s.body} key="done">
             <h1 className={s.question}>{C.doneTitle[kind]}</h1>
-            <p className={s.example}>{busy ? ONBOARDING.sending : C.doneLede}</p>
+            {failed ? (
+              <p className={s.example} role="alert">
+                {ONBOARDING.failed}{" "}
+                <button type="button" className={s.link} onClick={() => queue.retry(failed.id)}>
+                  {ONBOARDING.retry}
+                </button>
+              </p>
+            ) : (
+              <p className={s.example}>{busy ? (slow ? ONBOARDING.slow : ONBOARDING.sending) : C.doneLede}</p>
+            )}
             <dl className={`${g.glass} ${s.summary}`}>
               {Object.entries(FIELD_LABELS)
                 .filter(([f]) => filled(profile, [f]))
@@ -302,7 +312,7 @@ export function StepOnboarding() {
                     {ONBOARDING.retry}
                   </button>
                 ) : busy ? (
-                  ONBOARDING.sending
+                  slow ? ONBOARDING.slow : ONBOARDING.sending
                 ) : (
                   ""
                 )}

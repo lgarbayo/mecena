@@ -3,10 +3,17 @@
  * Voice-reactive orb: while `active`, reads the microphone through Web Audio (AnalyserNode) and morphs an organic
  * shape by frequency band; volume drives size, glow and hue. Without mic access it falls back to `pulse`
  * (bumped whenever the dictation produces text). Idle: slow breathing. Reduced motion: static gradient.
+ * Phones and tablets never get that second microphone stream: there it competes with the dictation itself
+ * (SpeechRecognition stops hearing the person once the orb holds the mic), so the orb uses the pulse instead.
  */
 import { useEffect, useRef } from "react";
 
 const POINTS = 120;
+/** Android and iOS/iPadOS: one capture at a time, and the dictation must win. */
+export function micSharingUnsafe(nav: Pick<Navigator, "userAgent" | "maxTouchPoints"> = navigator): boolean {
+  return /Android|iPhone|iPad|iPod/i.test(nav.userAgent) || (/Macintosh/.test(nav.userAgent) && nav.maxTouchPoints > 1);
+}
+
 const PALETTE: [number, number, number][] = [
   [255, 122, 69], // terracotta
   [179, 140, 255], // violet
@@ -20,7 +27,7 @@ export function VoiceOrb({ active, pulse = 0, size = 280 }: { active: boolean; p
 
   // mic stream only while active
   useEffect(() => {
-    if (!active) return;
+    if (!active || micSharingUnsafe()) return;
     let stream: MediaStream | undefined;
     let ctx: AudioContext | undefined;
     let cancelled = false;

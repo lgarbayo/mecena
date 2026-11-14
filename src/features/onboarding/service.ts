@@ -47,14 +47,21 @@ export async function processTurn(input: { profileId?: string; text: string; sou
     newSegment: segment,
   });
 
-  const nextProfile = await saveProfile(mergeProfile(profile, result.profilePatch));
+  // Apply the result to the state as it is NOW, not to the snapshot the AI saw: a slow run the client already gave up
+  // on (and retried) can finish after later turns, and must not overwrite what they saved. A section that changed
+  // meanwhile keeps the newer text.
+  const current = getProfile(profile.id);
+  const latest = getDossier(profile.id);
+  const nextProfile = await saveProfile(mergeProfile(current, result.profilePatch));
 
   const allowed = sectionTitles(profile.kind);
   const updates = result.sectionUpdates.filter((s) => s.key in allowed);
-  const byKey = new Map(sections.map((s) => [s.key, s]));
+  const seen = new Map(sections.map((s) => [s.key, s.body]));
+  const byKey = new Map((latest?.sections ?? []).map((s) => [s.key, s]));
   const changedSectionKeys: string[] = [];
   for (const s of updates) {
     const prev = byKey.get(s.key);
+    if (prev && prev.body !== seen.get(s.key)) continue;
     if (prev && prev.body === s.body) continue;
     byKey.set(s.key, { ...s, updatedAt: nowIso() });
     changedSectionKeys.push(s.key);
@@ -66,15 +73,15 @@ export async function processTurn(input: { profileId?: string; text: string; sou
     profileId: profile.id,
     kind: profile.kind,
     sections: nextSections,
-    workIds: dossier?.workIds ?? listWorks(profile.id).map((w) => w.id),
-    variant: dossier?.variant,
+    workIds: latest?.workIds ?? listWorks(profile.id).map((w) => w.id),
+    variant: latest?.variant,
     generatedAt: nowIso(),
   });
   return {
     profile: nextProfile,
     sections: nextSections,
     changedSectionKeys,
-    changedProfileFields: changedFields(profile, nextProfile),
+    changedProfileFields: changedFields(current, nextProfile),
     followUpQuestion: result.followUpQuestion,
     segmentId: segment.id,
   };

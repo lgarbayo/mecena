@@ -21,8 +21,8 @@ export async function apiGet<T>(url: string): Promise<T> {
   return handle<T>(await fetch(url, { cache: "no-store" }));
 }
 
-export async function apiSend<T>(url: string, body: unknown, method: "POST" | "PATCH" = "POST"): Promise<T> {
-  return handle<T>(await fetch(url, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) }));
+export async function apiSend<T>(url: string, body: unknown, method: "POST" | "PATCH" = "POST", signal?: AbortSignal): Promise<T> {
+  return handle<T>(await fetch(url, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal }));
 }
 
 /** Read a File/Blob as a data: URL (photos -> POST /api/works). */

@@ -121,7 +121,7 @@ export function OnboardingClient() {
   pidRef.current = profileId;
   const queue = useMemo(
     () =>
-      new TurnQueue((t) => apiSend<OnboardingTurnResponse>(API.onboardingTurn, { ...t, profileId: pidRef.current }), {
+      new TurnQueue((t, signal) => apiSend<OnboardingTurnResponse>(API.onboardingTurn, { ...t, profileId: pidRef.current }, "POST", signal), {
         change: setTurns,
         result: onResult,
       }),
@@ -261,7 +261,7 @@ export function OnboardingClient() {
       <section className={s.panel} aria-labelledby="transcript-title">
         <header className={s.panelHead}>
           <h2 id="transcript-title">{ONBOARDING.transcriptPanel}</h2>
-          {busy && <span className={s.sending}>{ONBOARDING.sending}</span>}
+          {busy && <span className={s.sending}>{turns.some((t) => t.slow) ? ONBOARDING.slow : ONBOARDING.sending}</span>}
         </header>
         {history.length === 0 && pendingTurns.length === 0 && !speech.interim && <p className={s.muted}>{ONBOARDING.transcriptEmpty}</p>}
         <ol className={s.transcript} data-testid="transcript">
