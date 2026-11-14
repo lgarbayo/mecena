@@ -243,6 +243,9 @@ body:has([aria-label="Mecena"]) .bottom-nav {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
   font-size: 1.375rem;
   font-weight: 500;
   letter-spacing: -0.04em;

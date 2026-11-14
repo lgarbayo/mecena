@@ -5,13 +5,17 @@ import { HomeActions } from "./HomeActions";
 import { Stage, glass as g } from "./Stage";
 import s from "./home.module.css";
 import { Icon } from "@/components/ui/icons";
+import { LogoMark } from "@/components/ui/Logo";
 
 export function HomeScreen() {
   return (
     <Stage label="Mecena">
       <div className={s.home}>
         <div className={s.top}>
-          <span className={g.brand}>Mecena</span>
+          <span className={g.brand}>
+            <LogoMark size={20} />
+            Mecena
+          </span>
           {/* the app header is hidden on this full-screen page: keep the mode switch and "Salir" reachable */}
           <HeaderEnd />
         </div>
