@@ -33,7 +33,7 @@ Tres ideas: los artistas viven al límite y son autónomos sin estructura; las a
 2. **Ayudas públicas españolas y convocatorias que encajan** (BDNS, DOG, diputaciones, fundaciones) → por qué encajas y qué te falta, bases en lenguaje claro, checklist de documentos.
 3. **Prepárame la solicitud** → memoria, statement y presupuesto con las partidas que admiten las bases, **escritos con tus palabras**, en castellano o gallego.
 4. **Tribunal simulado** → puntuación con los criterios y pesos oficiales, y mejoras antes de presentar (61 → 84).
-5. **Tú presentas** con tu certificado digital. Después, te ayudamos a justificar.
+5. **Tú presentas** con tu certificado digital. Después, te ayudamos a **justificar**: foto de la factura → partida del presupuesto → avisos de desviación → memoria final.
 
 Pie: El arte es tuyo — no generamos ni alteramos obra, no entrenamos con ella, la última palabra es tuya.
 
@@ -96,24 +96,27 @@ Lógica de oferta: regalamos lo que más cuesta hacer a mano (el dossier) y cobr
 
 ---
 
-## 6 · Panel B2B para escuelas y asociaciones *(solo diapositiva)*
+## 6 · Panel B2B para escuelas y asociaciones *(ya funciona: `/panel`)*
 **En pantalla**
-- Maqueta de un panel: lista de alumnos/socios, convocatorias abiertas que encajan con cada uno, estado de cada solicitud (borrador · tribunal · presentada), avisos de plazos.
+- Panel real (`/panel`): las personas que han **aceptado la invitación** de la escuela o asociación, las convocatorias abiertas que encajan con cada una y los próximos plazos. Solo se ve lo que cada persona comparte: nunca su dossier, sus obras ni sus borradores.
+- Siguiente: estado de cada solicitud (borrador · tribunal · presentada).
 - Para: **escuelas de arte y diseño, asociaciones de artistas y academias**; más adelante, gestorías y asociaciones de autónomos.
 - Licencia anual por centro con [N] cuentas Pro incluidas. Precio: por validar en los pilotos.
 
 **Notas del orador**
-Es el canal de distribución: una escuela o asociación nos trae decenas de artistas y le da a su gente un servicio que hoy no puede ofrecer. No está construido y no hay cartas de interés todavía: es la hipótesis de distribución que validaremos con los primeros pilotos (escuelas y asociaciones gallegas).
+Es el canal de distribución: una escuela o asociación nos trae decenas de artistas y le da a su gente un servicio que hoy no puede ofrecer. El panel ya funciona (en la demo, con una escuela de ejemplo y miembros ficticios que ya aceptaron). Lo que no tenemos todavía es ninguna escuela real ni cartas de interés: es la hipótesis de distribución que validaremos con los primeros pilotos (escuelas y asociaciones gallegas).
 
 ---
 
 ## 7 · Lo que ya funciona (producto, no promesas)
 **En pantalla**
-- **De principio a fin, en producción** ([mecena.fly.dev](https://mecena.fly.dev)): voz → perfil y dossier → convocatorias reales → compra → solicitud con tus palabras → tribunal simulado.
+- **De principio a fin, en producción** ([mecena.fly.dev](https://mecena.fly.dev)): voz → perfil y dossier → convocatorias reales (y ganadores parecidos) → compra → solicitud con tus palabras → tribunal simulado → justificación con fotos de facturas.
 - **37 convocatorias reales** estructuradas desde sus bases, con enlace a la fuente.
 - **213 concesiones históricas** como evidencia orientativa de qué gana (nunca una probabilidad inventada).
 - **RevenueCat real, en sandbox**: entitlement `pro`, paywall y compra de pruebas de verdad.
 - **MCP remoto**: Claude (Desktop o Code) maneja tu cuenta de Mecena con 8 herramientas.
+- **Justificación**: foto de una factura → partida del presupuesto → avisos de desviación → memoria final.
+- **Panel B2B** para escuelas y asociaciones, con consentimiento de cada persona.
 - **Camino a pymes ya construido**: un toque cambia perfil y convocatorias.
 - **Mecena prepara; tú presentas**: nunca enviamos nada en tu nombre.
 
@@ -127,7 +130,7 @@ No tenemos encuesta propia ni cartas de interés, y no lo disimulamos: lo que en
 - **Entrada**: artistas visuales e ilustradores en Galicia.
 - **Expansión**: artistas → todos los creadores (música, escénicas, audiovisual) → **autónomos y pymes** (digitalización, contratación, internacionalización). Mismo motor, un toque en la app (lo habéis visto en la demo).
 - **Foso de datos**: cada convocatoria estructurada (requisitos, criterios y pesos) y cada concesión pasada (BDNS) mejoran el encaje y el tribunal. Cuantas más solicitudes pasan por Mecena, mejor sabemos qué gana.
-- **Después de ganar**: justificación (facturas → partidas, desvíos, memoria final). Si justificas mal, devuelves la ayuda.
+- **Después de ganar**: justificación (facturas → partidas, desvíos, memoria final), ya construida: si justificas mal, devuelves la ayuda.
 - **Os pedimos**: [10] artistas para un piloto este mes · presentaciones a escuelas de arte y asociaciones de artistas gallegas · contacto con quien gestiona las ayudas a la cultura en Galicia.
 
 **Notas del orador**
