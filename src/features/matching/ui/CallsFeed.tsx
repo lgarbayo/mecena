@@ -7,6 +7,7 @@ import type { CallsResponse } from "@/contracts/api";
 import { useApp } from "@/components/shell/AppProvider";
 import { Button, Spinner } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
+import { DeepResearchPanel } from "@/features/deep-research/ui/DeepResearchPanel";
 import { apiGet } from "@/lib/api-client";
 import { daysLeft, fitLabel } from "../labels";
 import s from "./calls.module.css";
@@ -22,7 +23,10 @@ export function CallCard({ call, match }: Result) {
       <div className={s.top}>
         <div>
           <h2 className={s.title}>{call.title}</h2>
-          <p className={s.organizer}>{call.organizer}</p>
+          <p className={s.organizer}>
+            {call.organizer}
+            {call.source === "bdns" && <span className={s.sourceTag}> · BDNS, sin revisión manual</span>}
+          </p>
         </div>
         <span className={`${s.fitTag} ${s[`fit-${label}`]}`} aria-label={`${FIT_COPY[label]}: ${match.score} de 100`}>
           <b>{match.score}</b>
@@ -80,6 +84,7 @@ export function CallsFeed() {
   const [data, setData] = useState<CallsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paywall, setPaywall] = useState(false);
+  const [polls, setPolls] = useState(0);
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -94,8 +99,20 @@ export function CallsFeed() {
 
   useEffect(() => {
     setData(null);
+    setPolls(0);
     load();
   }, [load]);
+
+  // While Mecena searches BDNS for this profile in the background, reload now and then to show what it adds.
+  const searching = data?.liveSearch?.searching ?? false;
+  useEffect(() => {
+    if (!searching || polls >= 12) return;
+    const t = setTimeout(() => {
+      setPolls((n) => n + 1);
+      load();
+    }, 15_000);
+    return () => clearTimeout(t);
+  }, [searching, polls, load]);
 
   if (error)
     return (
@@ -118,6 +135,7 @@ export function CallsFeed() {
           {total} {total === 1 ? "encaja" : "encajan"} contigo
         </span>
       </p>
+      {searching && <p className={s.liveLine}>Buscando en la BDNS convocatorias públicas para tu perfil…</p>}
       {total === 0 && (
         <p className={s.empty}>
           {business ? (
@@ -137,6 +155,7 @@ export function CallsFeed() {
       {Array.from({ length: data.lockedCount }, (_, i) => (
         <LockedCard key={i} business={business} onOpen={() => setPaywall(true)} />
       ))}
+      {profile && <DeepResearchPanel profileId={profile.id} pro={Boolean(data.pro)} onNeedPro={() => setPaywall(true)} />}
       <Paywall
         open={paywall}
         trigger="match_limit"

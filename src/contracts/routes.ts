@@ -65,6 +65,7 @@ export const API = {
   dossierPdf: "/api/dossier/pdf", // GET ?profileId&callId -> application/pdf
   calls: "/api/calls", // GET ?profileId&q
   call: (id: string) => `/api/calls/${encodeURIComponent(id)}`,
+  callsResearch: "/api/calls/research", // Pro deep research: GET ?profileId state + results, POST { profileId? } start
   applications: "/api/applications", // POST { callId, profileId? }
   application: (id: string) => `/api/applications/${encodeURIComponent(id)}`,
   jury: "/api/jury", // POST { applicationId }

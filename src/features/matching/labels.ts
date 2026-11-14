@@ -1,9 +1,16 @@
 // Client-safe helpers (no taxonomy imports): fit label and calendar days left.
 import type { Call } from "@/contracts";
 
+/** Maximum of each score part (rules.ts adds them up; the call detail draws its bars from them). Sums to 100. */
+export const SCORE_MAX = { base: 25, affinity: 45, documents: 12, amount: 8, timing: 10 } as const;
+
 export type FitLabel = "alto" | "medio" | "bajo";
+/**
+ * Thresholds measured on data/calls/calls.json with the 25-base scale: own discipline/sector plus some of the profile's
+ * own words → alto; general aid for its kind or a related discipline → medio; other disciplines → bajo.
+ */
 export function fitLabel(score: number): FitLabel {
-  return score >= 75 ? "alto" : score >= 60 ? "medio" : "bajo";
+  return score >= 70 ? "alto" : score >= 55 ? "medio" : "bajo";
 }
 
 /** Calendar days from today (Spain) to the deadline: 0 = closes today, -1 = closed yesterday. */

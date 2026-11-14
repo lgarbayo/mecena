@@ -6,6 +6,7 @@
  */
 import { serverEnv, toolSchemas, TOOL_NAMES, type ToolContext, type ToolHandlers, type ToolInput, type ToolName, type ToolOutput } from "@/contracts";
 import { patchProfile } from "@/server/store";
+import { scheduleProfileSearch } from "@/features/calls-ingest/live";
 import { ownedApplication, ownedProfile } from "@/server/auth";
 import { buildDossier, dossierUrl, exportDossierPdf } from "@/features/dossier/service";
 import { explainCall, searchCalls } from "@/features/matching/service";
@@ -19,7 +20,11 @@ const profileFor = (input: { profileId?: string }, ctx: ToolContext): string => 
 
 export const handlers: ToolHandlers = {
   get_profile: async (input, ctx) => ({ profile: ownedProfile(ctx.userId, profileFor(input, ctx)) }),
-  update_profile: async (input, ctx) => ({ profile: await patchProfile(profileFor(input, ctx), input.patch) }),
+  update_profile: async (input, ctx) => {
+    const profile = await patchProfile(profileFor(input, ctx), input.patch);
+    scheduleProfileSearch({ profileId: profile.id, appUserId: ctx.appUserId }); // background BDNS search (off in the MCP process)
+    return { profile };
+  },
   build_dossier: async (input, ctx) => {
     const dossier = await buildDossier({ ...input, profileId: profileFor(input, ctx) });
     return { dossier, url: dossierUrl(dossier.profileId, input.callId) };

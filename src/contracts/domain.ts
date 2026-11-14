@@ -236,7 +236,8 @@ export const Call = z.object({
   sourceUrl: z.string().url(), // official page or boletín
   basesUrl: z.string().url().optional(),
   bdnsId: z.string().optional(),
-  source: z.enum(["seed", "bdns"]),
+  // seed = curated by hand; bdns = BDNS record structured by Claude; web = found by deep research, unverified
+  source: z.enum(["seed", "bdns", "web"]),
   verifiedAt: z.string(), // date the data was checked
 });
 export type Call = z.infer<typeof Call>;

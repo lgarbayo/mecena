@@ -4,7 +4,8 @@
  * Writes are serialised in-process and atomic (tmp + rename). Good enough for one machine.
  * Multi-user: every profile has an ownerId (User.id) and everything else hangs from a profile. This module does NOT
  * check ownership; callers resolve the signed-in user first (src/server/auth) and pass explicit, owned ids.
- * Calls are read-only data: data/calls/calls.json (+ data/calls/bdns-cache.json if present).
+ * Calls are read-only data: data/calls/calls.json (+ data/calls/bdns-cache.json if present), plus the shared
+ * runtime BDNS catalogue <MECENA_DATA_DIR>/calls/bdns-live.json (public call data only).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -218,28 +219,48 @@ const CALLS_FILES = ["calls.json", "bdns-cache.json"];
 export function callsDir(): string {
   return path.resolve(process.cwd(), serverEnv().callsDir);
 }
+/**
+ * Shared BDNS catalogue filled at runtime (src/features/calls-ingest/live.ts): public call data only, on the
+ * persistent data dir (the image's data/calls is read-only). Merged after the seed files, so the seed wins.
+ */
+export function liveCallsFile(): string {
+  return path.join(dataDir(), "calls", "bdns-live.json");
+}
+function readCallsFile(f: string): unknown[] {
+  try {
+    const raw = JSON.parse(fs.readFileSync(f, "utf8")) as unknown;
+    return Array.isArray(raw) ? raw : [];
+  } catch (e) {
+    console.warn(`[store] unreadable ${path.basename(f)}, skipping it:`, e instanceof Error ? e.message : e);
+    return [];
+  }
+}
 export function listCalls(): Call[] {
   const out: Call[] = [];
   const seen = new Set<string>();
+  const seenBdns = new Set<string>();
   let anyFile = false;
-  for (const rel of CALLS_FILES) {
-    const f = path.join(callsDir(), rel);
+  const live = liveCallsFile();
+  for (const f of [...CALLS_FILES.map((rel) => path.join(callsDir(), rel)), live]) {
     if (!fs.existsSync(f)) continue;
-    anyFile = true;
-    const raw = JSON.parse(fs.readFileSync(f, "utf8")) as unknown[];
+    if (f !== live) anyFile = true;
+    const rel = path.basename(f);
+    const raw = f === live ? readCallsFile(f) : (JSON.parse(fs.readFileSync(f, "utf8")) as unknown[]);
     for (const item of raw) {
       const parsed = Call.safeParse(item);
       if (!parsed.success) {
         console.warn(`[store] skipping invalid call in ${rel}:`, parsed.error.issues[0]);
         continue;
       }
-      if (seen.has(parsed.data.id)) continue;
+      // Seed first: a later file never repeats an id, nor a BDNS call the seed already curated under its own slug.
+      if (seen.has(parsed.data.id) || (parsed.data.bdnsId && seenBdns.has(parsed.data.bdnsId))) continue;
       seen.add(parsed.data.id);
+      if (parsed.data.bdnsId) seenBdns.add(parsed.data.bdnsId);
       out.push(withCanonicalCallFields(parsed.data));
     }
   }
   // Until WP-05 lands data/calls/calls.json the app runs on clearly-labelled fictional fixtures.
-  return anyFile ? out : structuredClone(fixtureCalls);
+  return anyFile ? out : [...structuredClone(fixtureCalls), ...out.filter((c) => !fixtureCalls.some((f) => f.id === c.id))];
 }
 /** <callsDir>/awards.json (WP-05, optional). */
 export function listAwards(): PastAward[] {

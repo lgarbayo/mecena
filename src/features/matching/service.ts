@@ -5,6 +5,7 @@ import { winnerShareFor } from "@/features/history/history";
 import { mapProfileKind, normalizeCall, normalizeDiscipline, profileBeneficiaryTypes } from "@/features/normalize";
 import { getAi } from "@/server/ai";
 import { getCall, getCallHistory, getDossier, getProfile, listAwards, listCalls, listWorks, readDb, updateDb } from "@/server/store";
+import { getProfileSearch, scheduleProfileSearch } from "@/features/calls-ingest/live";
 import { checklistFor, evaluate, type MatchContext, type ScoreBreakdown } from "./rules";
 
 export { fitLabel, evaluate, daysLeft, type ScoreBreakdown, type FitLabel } from "./rules";
@@ -18,9 +19,9 @@ export function ruleMatch(profile: Profile, call: Call, ctx?: MatchContext): Mat
   return evaluate(profile, call, ctx ?? contextFor(profile)).match;
 }
 
-export async function searchCalls(input: { profileId: string; query?: string; kind?: ProfileKind; limit?: number }): Promise<{ call: Call; match: MatchResult }[]> {
+export async function searchCalls(input: { profileId: string; query?: string; kind?: ProfileKind; limit?: number; now?: Date }): Promise<{ call: Call; match: MatchResult }[]> {
   const profile = getProfile(input.profileId);
-  const ctx = contextFor(profile);
+  const ctx: MatchContext = { ...contextFor(profile), ...(input.now ? { now: input.now } : {}) };
   const q = input.query?.trim().toLowerCase();
   // A pyme only sees aid open to businesses: artist becas/premios are for someone else. Creators keep business-tagged
   // calls (an autónomo artist can apply for autónomo aid). An explicit `kind` (agent/MCP) still wins.
@@ -31,8 +32,9 @@ export async function searchCalls(input: { profileId: string; query?: string; ki
     .filter((c) => !q || `${c.title} ${c.summary} ${c.disciplines.join(" ")} ${c.sectors.join(" ")}`.toLowerCase().includes(q))
     .map((call) => ({ call, r: evaluate(profile, call, ctx) }))
     .filter(({ r }) => !r.excluded && r.match.eligible)
-    // actionable first (open → upcoming → recurring), then score, then the soonest deadline
-    .sort((a, b) => STATUS_RANK[a.call.status] - STATUS_RANK[b.call.status] || b.r.match.score - a.r.match.score || (a.call.deadline ?? "9999").localeCompare(b.call.deadline ?? "9999"))
+    // The personal score decides the order; status (open → upcoming → recurring) and the soonest deadline only break
+    // ties. Whether you can apply now is part of the score (timing), so with the same fit an open call ranks first.
+    .sort((a, b) => b.r.match.score - a.r.match.score || STATUS_RANK[a.call.status] - STATUS_RANK[b.call.status] || (a.call.deadline ?? "9999").localeCompare(b.call.deadline ?? "9999"))
     .slice(0, input.limit ?? 25)
     .map(({ call, r }) => ({ call, match: r.match }));
 }
@@ -63,8 +65,9 @@ export async function explainCall(input: { callId: string; profileId: string }):
 
   const cached = readDb().matchCache.find((m) => m.cacheKey === key);
   if (cached) {
+    // Only the wording is cached: score and eligibility always come from the current rules.
     const { cacheKey: _k, ...match } = cached;
-    return { call, match, checklist: call.requiredDocuments };
+    return { call, match: { ...match, score: base.score, eligible: base.eligible }, checklist: call.requiredDocuments };
   }
 
   let match: MatchResult = base;
@@ -86,10 +89,19 @@ export async function explainCall(input: { callId: string; profileId: string }):
 /** Feed for GET /api/calls: Pro sees every match; the free plan sees the top FREE_MATCHES_PER_MONTH, the rest only as a count. */
 export async function callsFeed(input: { profileId: string; appUserId: string; query?: string }) {
   const profile = getProfile(input.profileId);
+  const appUserId = input.appUserId; // resolved from the session by the route
+  // Search BDNS for this profile in the background when its searches are new or a day old (never blocks the feed).
+  const scheduled = scheduleProfileSearch({ profileId: profile.id, appUserId });
+  const search = getProfileSearch(profile.id, appUserId);
   const all = await searchCalls({ profileId: profile.id, query: input.query });
-  const { pro } = await resolveEntitlement(input.appUserId);
+  const { pro } = await resolveEntitlement(appUserId);
   const results = pro ? all : all.slice(0, FREE_MATCHES_PER_MONTH);
-  return { results, lockedCount: all.length - results.length, mode: profile.kind, pro };
+  const liveSearch = {
+    searching: scheduled === "scheduled" || scheduled === "running" || search?.status === "running",
+    found: search?.callIds.length ?? 0,
+    ...(search?.lastRunAt ? { lastRunAt: search.lastRunAt } : {}),
+  };
+  return { results, lockedCount: all.length - results.length, mode: profile.kind, pro, liveSearch };
 }
 
 /**

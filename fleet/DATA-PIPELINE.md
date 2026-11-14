@@ -125,14 +125,20 @@ Discard the call unless **all** hold:
 ### Phase B — Deterministic fit score (code)
 
 ```
-score = 40                                          // passed all hard requirements
-      + 0–25  discipline/sector match               // profile keywords ∩ call keywords
-                                                    // (optionally embedding similarity
-                                                    //  dossier ↔ call object; still deterministic)
-      + 0–15  docs already available / docs required
-      + 0–10  amount relevant to the profile
-      + 0–10  deadline urgency (not expired, preparable)
+score = 25                                          // passed all hard requirements (10 if the call is for other disciplines)
+      + 0–45  affinity: 0–25 discipline/sector match (taxonomy / CNAE)
+                      + 0–20 the profile's own words (statement, project idea,
+                        funding needs, achievements, bio) found in the call text
+      + 0–12  docs already available / docs required
+      + 0–8   amount relevant to the profile
+      + 0–10  can you apply now (open 5–7 > upcoming 4 > recurring 2) + 0–3 local-call bonus
 ```
+
+Fit points: exact/within/sector 25 · general business aid for a pyme 18 · open to any discipline 14 · related 10 ·
+unknown sector 8 · other disciplines 0. "Own words" leave out discipline labels, place names and words every call uses.
+The feed is sorted by this score; status (open → upcoming → recurring) and the soonest deadline only break ties.
+Most of the score depends on the profile, so two different profiles see a clearly different top.
+Labels: alto ≥ 70, medio ≥ 55, bajo below. Cached Claude explanations never carry the score: it is always recomputed.
 
 Shown to the user as a **label** (alto / medio / bajo) plus the visible breakdown — never a fake precise "probability of winning".
 

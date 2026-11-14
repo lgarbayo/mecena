@@ -10,9 +10,10 @@ import { callsIngestAi } from "@/features/calls-ingest/ai";
 import { draftingAi } from "@/features/drafting/ai";
 import { juryAi } from "@/features/jury/ai";
 import { dossierAi } from "@/features/dossier/adapt-ai";
+import { deepResearchAi } from "@/features/deep-research/ai";
 import { isMockAi } from "./llm";
 
-const slices = [onboardingAi, worksAi, matchingAi, callsIngestAi, draftingAi, juryAi, dossierAi];
+const slices = [onboardingAi, worksAi, matchingAi, callsIngestAi, draftingAi, juryAi, dossierAi, deepResearchAi];
 
 export function getAi(forceMock = false): AiService {
   const mock = forceMock || isMockAi();

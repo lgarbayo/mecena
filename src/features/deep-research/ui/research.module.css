@@ -1,0 +1,121 @@
+/* Pro deep research: kept apart from the feed, and its cards look unverified on purpose (dashed edge, label). */
+.panel {
+  margin: 32px 0 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--g-line);
+}
+
+.heading {
+  font-family: var(--serif);
+  font-size: clamp(1.2rem, 3.4vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  color: var(--g-ink);
+}
+
+.lead {
+  margin: 0 0 14px;
+  color: var(--g-ink-2);
+  font-size: 0.92rem;
+}
+
+.status {
+  margin: 12px 0;
+  color: var(--g-ink-2);
+  font-size: 0.9rem;
+}
+
+.note {
+  margin: 10px 0 0;
+  color: var(--g-ink-3);
+  font-size: 0.82rem;
+}
+
+.card {
+  display: block;
+  text-decoration: none;
+  color: var(--g-ink);
+  background: var(--g-glass);
+  border: 1px dashed var(--g-line-strong);
+  border-radius: 24px;
+  padding: clamp(16px, 4vw, 22px);
+  margin: 14px 0;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  touch-action: manipulation;
+  transition: border-color 180ms var(--ease-out);
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--g-ink-2);
+}
+
+.warning {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--g-accent);
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--serif);
+  font-size: clamp(1.1rem, 3.4vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0 0 4px;
+  overflow-wrap: anywhere;
+}
+
+.organizer {
+  margin: 0;
+  color: var(--g-ink-2);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.fit {
+  flex: none;
+  font-size: 0.78rem;
+  color: var(--g-ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fit b {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--g-ink);
+}
+
+.facts {
+  margin: 12px 0 8px;
+  font-size: 0.9rem;
+  color: var(--g-ink-2);
+}
+
+.facts strong {
+  color: var(--g-ink);
+}
+
+.urgent {
+  color: var(--g-accent);
+  font-weight: 700;
+}
+
+.summary {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--g-ink-2);
+}

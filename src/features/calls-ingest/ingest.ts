@@ -4,6 +4,8 @@
  * 3. keep open, applicable calls for Galicia or all of Spain → 4. deterministic fields from the data
  * standard (bdnsToCallPatch) + Claude/mock structuring of the text (getAi().structureCall) → Call.parse →
  * 5. write <callsDir>/bdns-cache.json. Any network/API failure keeps the previous cache (never breaks the app).
+ * The BDNS client (backoff on 429/5xx, raw-record cache) and the record → Call step are shared with the live,
+ * per-profile catalogue in ./live.ts.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -29,8 +31,11 @@ export interface BdnsDetail {
   [k: string]: unknown;
 }
 
+/** One BDNS search: `descripcion`, `finalidad`, `regiones`… (ids from the BDNS catalogues, see data/calls/SOURCES.md). */
+export type BdnsQuery = Record<string, string>;
+
 /** Searches used by default: creators nationwide + Galicia, SMEs in Galicia (finalidad/regiones ids from BDNS catalogues). */
-export const DEFAULT_QUERIES: Record<string, string>[] = [
+export const DEFAULT_QUERIES: BdnsQuery[] = [
   { finalidad: "11", regiones: "3" }, // cultura · Galicia
   { finalidad: "11", regiones: "1" }, // cultura · España
   { descripcion: "artes plásticas" },
@@ -47,7 +52,7 @@ export interface IngestOptions {
   ai: Pick<AiService, "structureCall">;
   callsDir?: string;
   apiBase?: string;
-  queries?: Record<string, string>[];
+  queries?: BdnsQuery[];
   since?: string; // dd/mm/yyyy, default 90 days ago
   maxCalls?: number;
   today?: string; // YYYY-MM-DD
@@ -72,10 +77,10 @@ export function isApplicable(d: Pick<BdnsDetail, "tipoConvocatoria" | "descripci
   return /concurrencia/i.test(d.tipoConvocatoria ?? "");
 }
 
-/** Galicia (ES11…), all of Spain (ES) or no region at all. */
-export function isRelevantRegion(d: Pick<BdnsDetail, "regiones">): boolean {
+/** All of Spain (ES), no region at all, or inside one of `regions` (NUTS prefixes; default Galicia, ES11). */
+export function isRelevantRegion(d: Pick<BdnsDetail, "regiones">, regions: readonly string[] = ["ES11"]): boolean {
   const codes = (d.regiones ?? []).map((r) => (r.descripcion ?? "").split(" - ")[0].trim());
-  return codes.length === 0 || codes.some((c) => c === "ES" || c.startsWith("ES11"));
+  return codes.length === 0 || codes.some((c) => c === "ES" || regions.some((r) => c.startsWith(r)));
 }
 
 /** Open = flagged open, end date not passed, or a text-only deadline published in the last 60 days. */
@@ -101,21 +106,36 @@ export function recordText(d: BdnsDetail): string {
   ].join("\n");
 }
 
-export async function runIngest(opts: IngestOptions): Promise<IngestResult> {
-  const env = serverEnv();
+export interface BdnsClientOptions {
+  fetchImpl?: typeof fetch;
+  apiBase?: string;
+  /** Pause between requests and the base of the 429/5xx backoff (ms). */
+  delayMs?: number;
+  /** Where full records are cached as <code>.json (offline re-runs, no second download). */
+  rawDir?: string;
+  /** Per-request timeout (ms): a hung BDNS request must not hang a background job. */
+  timeoutMs?: number;
+  /** Re-download a cached record older than this (open/closed and dates change). Default: never (offline re-runs). */
+  rawMaxAgeMs?: number;
+}
+
+/** BDNS REST client: retries 429/5xx with exponential backoff, caches full records on disk. */
+export function createBdnsClient(opts: BdnsClientOptions = {}) {
   const fetchImpl = opts.fetchImpl ?? fetch;
-  const dir = path.resolve(opts.callsDir ?? env.callsDir);
-  const api = opts.apiBase ?? env.bdnsApiBase;
-  const today = opts.today ?? new Date().toISOString().slice(0, 10);
-  const since = opts.since ?? ddmmyyyy(new Date(Date.parse(today) - 90 * 864e5));
+  const api = opts.apiBase ?? serverEnv().bdnsApiBase;
   const delay = opts.delayMs ?? 800;
-  const log = opts.log ?? (() => {});
-  const cacheFile = path.join(dir, "bdns-cache.json");
-  const rawDir = path.join(dir, "raw");
-  const previous = fs.existsSync(cacheFile) ? (JSON.parse(fs.readFileSync(cacheFile, "utf8")) as unknown[]).length : 0;
+  const timeoutMs = opts.timeoutMs ?? 30_000;
 
   async function getJson<T>(url: string, attempt = 0): Promise<T> {
-    const res = await fetchImpl(url, { headers: { accept: "application/json" } });
+    let res: Response;
+    try {
+      res = await fetchImpl(url, { headers: { accept: "application/json" }, signal: AbortSignal.timeout(timeoutMs) });
+    } catch (e) {
+      // network error or timeout: two more tries with backoff, then give up
+      if (attempt >= 2) throw e;
+      await sleep(delay * 2 ** (attempt + 1));
+      return getJson(url, attempt + 1);
+    }
     if ((res.status === 429 || res.status >= 500) && attempt < 4) {
       await sleep(delay * 2 ** (attempt + 1));
       return getJson(url, attempt + 1);
@@ -124,53 +144,96 @@ export async function runIngest(opts: IngestOptions): Promise<IngestResult> {
     return (await res.json()) as T;
   }
 
+  return {
+    api,
+    /** BDNS codes matching one search (first page, 50 hits, published since `since` dd/mm/yyyy). */
+    async search(q: BdnsQuery, since: string): Promise<string[]> {
+      const params = new URLSearchParams({ vpd: "GE", page: "0", pageSize: "50", fechaDesde: since, ...q });
+      const page = await getJson<{ content?: { numeroConvocatoria: string | number }[] }>(`${api}/convocatorias/busqueda?${params}`);
+      await sleep(delay);
+      return (page.content ?? []).map((it) => String(it.numeroConvocatoria));
+    },
+    /** Full record, from the raw cache when present. */
+    async detail(code: string): Promise<BdnsDetail> {
+      const rawFile = opts.rawDir ? path.join(opts.rawDir, `${code}.json`) : undefined;
+      if (rawFile && fs.existsSync(rawFile)) {
+        const fresh = opts.rawMaxAgeMs === undefined || Date.now() - fs.statSync(rawFile).mtimeMs < opts.rawMaxAgeMs;
+        if (fresh) {
+          try {
+            return JSON.parse(fs.readFileSync(rawFile, "utf8")) as BdnsDetail;
+          } catch {
+            // a torn or corrupt cache file: download it again below
+          }
+        }
+      }
+      const d = await getJson<BdnsDetail>(`${api}/convocatorias?numConv=${encodeURIComponent(code)}&vpd=GE`);
+      if (rawFile) {
+        fs.mkdirSync(path.dirname(rawFile), { recursive: true });
+        const tmp = `${rawFile}.${process.pid}.tmp`;
+        fs.writeFileSync(tmp, JSON.stringify(d, null, 2));
+        fs.renameSync(tmp, rawFile);
+      }
+      await sleep(delay);
+      return d;
+    },
+  };
+}
+
+/**
+ * One BDNS record → Call: Claude (or its mock) structures the text, then the deterministic BDNS fields win over the
+ * model; residence stays what the text says (BDNS regiones = impact area, not residence). Marked `source: "bdns"`.
+ */
+export async function detailToCall(d: BdnsDetail, ai: Pick<AiService, "structureCall">, ctx: { apiBase: string; today: string }): Promise<Call> {
+  const code = String(d.codigoBDNS);
+  const sourceUrl = `https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/${code}`;
+  const structured = await ai.structureCall({ rawText: recordText(d), sourceUrl, bdnsId: code });
+  const patch = bdnsToCallPatch(d);
+  const call = Call.parse({
+    ...structured,
+    ...patch,
+    id: `bdns-${code}`,
+    organizer: patch.organizer ?? structured.organizer,
+    disciplines: [...new Set([...patch.disciplines, ...structured.disciplines])],
+    eligibility: { ...structured.eligibility, legalForms: patch.eligibility.legalForms.length ? patch.eligibility.legalForms : structured.eligibility.legalForms },
+    amountText: structured.amountText && structured.amountText !== "Consultar bases" ? structured.amountText : patch.amountText,
+    status: "open",
+    sourceUrl,
+    ...(d.documentos?.[0] ? { basesUrl: `${ctx.apiBase}/convocatorias/documentos?idDocumento=${d.documentos[0].id}` } : {}),
+    source: "bdns",
+    verifiedAt: ctx.today,
+  });
+  return withCanonicalCallFields(call);
+}
+
+export async function runIngest(opts: IngestOptions): Promise<IngestResult> {
+  const env = serverEnv();
+  const dir = path.resolve(opts.callsDir ?? env.callsDir);
+  const today = opts.today ?? new Date().toISOString().slice(0, 10);
+  const since = opts.since ?? ddmmyyyy(new Date(Date.parse(today) - 90 * 864e5));
+  const log = opts.log ?? (() => {});
+  const cacheFile = path.join(dir, "bdns-cache.json");
+  const client = createBdnsClient({ fetchImpl: opts.fetchImpl, apiBase: opts.apiBase, delayMs: opts.delayMs, rawDir: path.join(dir, "raw") });
+  const previous = fs.existsSync(cacheFile) ? (JSON.parse(fs.readFileSync(cacheFile, "utf8")) as unknown[]).length : 0;
+
   try {
     const codes = new Set<string>();
     for (const q of opts.queries ?? DEFAULT_QUERIES) {
-      const params = new URLSearchParams({ vpd: "GE", page: "0", pageSize: "50", fechaDesde: since, ...q });
-      const page = await getJson<{ content: { numeroConvocatoria: string }[] }>(`${api}/convocatorias/busqueda?${params}`);
-      for (const it of page.content ?? []) codes.add(String(it.numeroConvocatoria));
-      log(`search ${JSON.stringify(q)}: ${page.content?.length ?? 0}`);
-      await sleep(delay);
+      const found = await client.search(q, since);
+      found.forEach((c) => codes.add(c));
+      log(`search ${JSON.stringify(q)}: ${found.length}`);
     }
 
-    fs.mkdirSync(rawDir, { recursive: true });
     const out: Call[] = [];
     const skipped: IngestResult["skipped"] = [];
     for (const code of codes) {
       if (out.length >= (opts.maxCalls ?? 30)) break;
-      const rawFile = path.join(rawDir, `${code}.json`);
-      let d: BdnsDetail;
-      if (fs.existsSync(rawFile)) d = JSON.parse(fs.readFileSync(rawFile, "utf8"));
-      else {
-        d = await getJson<BdnsDetail>(`${api}/convocatorias?numConv=${encodeURIComponent(code)}&vpd=GE`);
-        fs.writeFileSync(rawFile, JSON.stringify(d, null, 2));
-        await sleep(delay);
-      }
+      const d = await client.detail(code);
       if (!isApplicable(d)) { skipped.push({ bdnsId: code, reason: "no aplicable (concesión directa / convenio)" }); continue; }
       if (!isRelevantRegion(d)) { skipped.push({ bdnsId: code, reason: "fuera de Galicia / España" }); continue; }
       if (!isOpenish(d, today)) { skipped.push({ bdnsId: code, reason: "cerrada" }); continue; }
 
-      const sourceUrl = `https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/${code}`;
       try {
-        const ai = await opts.ai.structureCall({ rawText: recordText(d), sourceUrl, bdnsId: code });
-        const patch = bdnsToCallPatch(d);
-        // Deterministic BDNS fields win over the model; residence stays what the text says (BDNS regiones = impact area, not residence).
-        const call = Call.parse({
-          ...ai,
-          ...patch,
-          id: `bdns-${code}`,
-          organizer: patch.organizer ?? ai.organizer,
-          disciplines: [...new Set([...patch.disciplines, ...ai.disciplines])],
-          eligibility: { ...ai.eligibility, legalForms: patch.eligibility.legalForms.length ? patch.eligibility.legalForms : ai.eligibility.legalForms },
-          amountText: ai.amountText && ai.amountText !== "Consultar bases" ? ai.amountText : patch.amountText,
-          status: "open",
-          sourceUrl,
-          ...(d.documentos?.[0] ? { basesUrl: `${api}/convocatorias/documentos?idDocumento=${d.documentos[0].id}` } : {}),
-          source: "bdns",
-          verifiedAt: today,
-        });
-        out.push(withCanonicalCallFields(call));
+        out.push(await detailToCall({ ...d, codigoBDNS: code }, opts.ai, { apiBase: client.api, today }));
       } catch (e) {
         skipped.push({ bdnsId: code, reason: `no estructurable: ${e instanceof Error ? e.message.slice(0, 120) : e}` });
       }

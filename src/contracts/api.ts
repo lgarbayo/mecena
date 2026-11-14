@@ -115,8 +115,24 @@ export const CallsResponse = z.object({
   results: z.array(z.object({ call: Call, match: MatchResult })),
   lockedCount: z.number().int(), // matches hidden behind the free limit
   mode: ProfileKind,
+  pro: z.boolean().optional(),
+  // Background BDNS search for this profile (step 2): the feed reloads when it finishes.
+  liveSearch: z.object({ searching: z.boolean(), found: z.number().int(), lastRunAt: z.string().optional() }).optional(),
 });
 export type CallsResponse = z.infer<typeof CallsResponse>;
+// /api/calls/research (Pro deep research: unverified private calls found on the web)
+export const DeepResearchRequest = z.object({ profileId: z.string().optional() }); // default: the user's active profile
+export const DeepResearchResponse = z.object({
+  status: z.enum(["idle", "running", "done", "failed", "limited"]),
+  startedAt: z.string().optional(),
+  finishedAt: z.string().optional(),
+  results: z.array(z.object({ call: Call, match: MatchResult })),
+  discarded: z.number().int(),
+  runsLeft: z.number().int(),
+  freshUntil: z.string().optional(), // a new search for the same profile data returns this one until then
+  message: z.string().optional(),
+});
+export type DeepResearchResponse = z.infer<typeof DeepResearchResponse>;
 export const CallResponse = z.object({ call: Call, match: MatchResult, checklist: z.array(z.string()), similarAwards: z.array(PastAward).default([]) });
 
 // /api/applications
