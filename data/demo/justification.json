@@ -1,0 +1,53 @@
+{
+  "_comment": "Justification demo (IDEA #7): invoices already assigned to the budget lines of data/demo/artist-pro.json (one line overspent on purpose) and the invoice the presenter photographs live (public/demo/factura-ejemplo.png). Images: data/demo/invoices, CC0, see LICENSE.md there. Figures in scripts/demo-invoices.py.",
+  "invoices": [
+    {
+      "image": "papeleria-sol.png",
+      "supplier": "Papelería Sol, S.L.",
+      "taxId": "B-00000011",
+      "number": "F-2026-0412",
+      "date": "2026-10-03",
+      "concept": "Papel de algodón 300 g y bloques de acuarela",
+      "baseEur": 1025.21,
+      "vatEur": 215.29,
+      "totalEur": 1240.5,
+      "lineConcept": "Papel de algodón y pigmentos para la serie"
+    },
+    {
+      "image": "colores-atlantico.png",
+      "supplier": "Colores do Atlántico, S.L.",
+      "taxId": "B-00000012",
+      "number": "A-1893",
+      "date": "2026-10-17",
+      "concept": "Pigmentos naturales y aglutinante",
+      "baseEur": 773.88,
+      "vatEur": 162.51,
+      "totalEur": 936.39,
+      "lineConcept": "Papel de algodón y pigmentos para la serie"
+    },
+    {
+      "image": "marqueteria-riazor.png",
+      "supplier": "Marquetería Riazor",
+      "taxId": "B-00000013",
+      "number": "2026/0731",
+      "date": "2026-11-02",
+      "concept": "Marcos de madera y montaje de 12 piezas",
+      "baseEur": 2148.76,
+      "vatEur": 451.24,
+      "totalEur": 2600,
+      "lineConcept": "Producción de las acuarelas de gran formato"
+    }
+  ],
+  "sample": {
+    "image": "factura-ejemplo.png",
+    "supplier": "Imprenta Ártabra, S.L.",
+    "taxId": "B-00000014",
+    "number": "F-0087",
+    "date": "2026-11-09",
+    "concept": "Edición e impresión de catálogo, 12 piezas",
+    "baseEur": 1198.35,
+    "vatEur": 251.65,
+    "totalEur": 1450,
+    "lineConcept": "Edición de un catálogo con las doce piezas"
+  }
+}
