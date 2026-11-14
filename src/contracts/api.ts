@@ -66,7 +66,9 @@ export type AuthConfigResponse = z.infer<typeof AuthConfigResponse>;
 
 // /api/profile (profileId, when given, must be one of the signed-in user's profiles)
 export const ProfileResponse = z.object({ profile: Profile, appUserId: z.string() });
-export const ProfilePatchRequest = z.object({ profileId: ID.optional(), patch: capped(ProfilePatch, 30_000) });
+// replace: the fields sent are set as they are ("" or [] clears them) instead of merged; used when the person edits a value.
+export const ProfilePatchRequest = z.object({ profileId: ID.optional(), patch: capped(ProfilePatch, 30_000), replace: z.boolean().optional() });
+export const OnboardingResetRequest = z.object({ profileId: ID.optional() });
 export const ProfileModeRequest = z.object({ kind: ProfileKind });
 
 // /api/onboarding/turn

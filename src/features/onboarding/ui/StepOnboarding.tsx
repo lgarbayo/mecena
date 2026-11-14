@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { API, ROUTES, type DossierSection, type Profile, type ProfileKind, type TranscriptSegment, type Work } from "@/contracts";
+import { API, ROUTES, type DossierSection, type Profile, type ProfileKind, type ProfilePatch, type TranscriptSegment, type Work } from "@/contracts";
 import type { ImportDossierResponse, OnboardingTurnResponse } from "@/contracts/api";
 import { useApp } from "@/components/shell/AppProvider";
 import { MIC_BLOCKED, useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
@@ -124,6 +124,8 @@ export function StepOnboarding() {
   stepsRef.current = steps;
   /** Set when a new onboarding starts: its first turn resets what an earlier one left in the profile. */
   const freshRef = useRef(false);
+  // "Empezar de cero" in flight: the first answer waits for it (and redoes it if it failed), so nothing old survives.
+  const resetting = useRef<Promise<unknown> | null>(null);
 
   const profileId = app.profile?.id;
   const pidRef = useRef(profileId);
@@ -185,7 +187,11 @@ export function StepOnboarding() {
   const queue = useMemo(
     () =>
       new TurnQueue(
-        (t, signal) => {
+        async (t, signal) => {
+          if (resetting.current) {
+            await resetting.current.catch(() => (resetting.current = apiSend(API.onboardingReset, { profileId: pidRef.current }, "POST", signal)));
+            resetting.current = null;
+          }
           // The first turn of a fresh onboarding starts the profile from scratch (server-side reset).
           const reset = freshRef.current;
           freshRef.current = false;
@@ -266,7 +272,25 @@ export function StepOnboarding() {
   // Something is already on file (an earlier interview, an imported dossier): never wipe it without being asked.
   const hasPrevious = history.length > 0 || sections.length > 0 || filledRows(kind, profile).length > 0;
   const start = (m: Mode) => {
-    freshRef.current = !hasPrevious || restart;
+    if (restart) {
+      // Wipe now, on screen and on the server: the step starts empty, not with the old dossier still showing.
+      const req = apiSend<State>(API.onboardingReset, { profileId: pidRef.current }, "POST");
+      resetting.current = req;
+      req
+        .then((st) => {
+          if (resetting.current === req) resetting.current = null;
+          setProfile(st.profile);
+          setSections(st.sections ?? []);
+          appRef.current.refresh().catch(() => undefined);
+        })
+        .catch(() => undefined); // the first answer retries it
+      turnsOffset.current = queue.snapshot.length;
+      setTurns([...queue.snapshot]);
+      setHistory([]);
+      setSections([]);
+      setProfile((p) => p && { id: p.id, ownerId: p.ownerId, kind: p.kind, beneficiaryTypes: [], displayName: "", disciplines: [], bio: "", statement: "", achievements: [], education: [], links: [], fundingNeeds: [], languages: p.languages, updatedAt: p.updatedAt });
+    }
+    freshRef.current = !hasPrevious;
     setRestart(false);
     setMode(m);
     setMicNotice(null);
@@ -357,8 +381,14 @@ export function StepOnboarding() {
   // A failed turn is retried from its line in the transcript; the footer only says so.
   const queueStatus = failed ? C.turnStatus.failed : busy ? (slow ? ONBOARDING.slow : ONBOARDING.sending) : "";
 
+  const editProfile = async (patch: ProfilePatch) => {
+    const res = await apiSend<{ profile: Profile }>(API.profile, { profileId: pidRef.current, patch, replace: true }, "PATCH");
+    setProfile(res.profile);
+    appRef.current.refresh().catch(() => undefined);
+  };
+
   const live = (
-    <LiveDossier kind={kind} profile={profile} sections={sections} changedSections={changedSections} changedFields={changedFields} version={version} works={kind === "creator" ? works : []} freshWorkId={freshWork} />
+    <LiveDossier kind={kind} profile={profile} sections={sections} changedSections={changedSections} changedFields={changedFields} version={version} works={kind === "creator" ? works : []} freshWorkId={freshWork} onEditProfile={editProfile} />
   );
   const photoButton = kind === "creator" && (
     <button type="button" className={`${g.btn} ${s.iconBtn}`} onClick={openPhoto} aria-label={C.photoWork} title={C.photoWork} data-testid="photo-work">

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Db } from "@/contracts";
 import { DEMO_BUSINESS_ID, DEMO_CREATOR_ID } from "@/fixtures";
-import { getProfile, listCalls, mergeProfile, patchProfile, readDb } from "@/server/store";
+import { getProfile, listCalls, mergeProfile, patchProfile, readDb, replaceProfileFields } from "@/server/store";
 
 describe("store (scaffold)", () => {
   it("starts from the blank creator + fixture business, with no accounts, when no seed exists", () => {
@@ -52,5 +52,15 @@ describe("store (scaffold)", () => {
     expect(db.sessions).toEqual([]);
     expect(db.variantCache).toEqual([]);
     expect(db.profiles[0].ownerId).toBeUndefined();
+  });
+
+  it("an edit by hand replaces values: lists can shrink, a field can be cleared, a new city re-derives the territory", () => {
+    const p = { ...getProfile(DEMO_CREATOR_ID), city: "Vigo", province: "Pontevedra", disciplines: ["pintura", "grabado"], projectIdea: "Una serie" };
+    const next = replaceProfileFields(p, { city: "A Coruña", disciplines: ["pintura"], projectIdea: "" });
+    expect(next.disciplines).toEqual(["pintura"]);
+    expect(next.projectIdea).toBeUndefined();
+    expect(next.city).toBe("A Coruña");
+    expect(next.province).toBeUndefined(); // the old province no longer fits
+    expect(next.territory).toMatch(/^mun:15030$|^ES111$/);
   });
 });

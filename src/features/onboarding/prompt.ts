@@ -45,8 +45,8 @@ export function llmTurnSchema(kind: ProfileKind) {
   const year = (what: string) => z.number().int().describe(`${what}. 0 si este fragmento no lo dice`);
   const common = {
     displayName: text("Nombre artístico, de la banda o compañía, o comercial, tal como lo dice (solo corrige mayúsculas)"),
-    city: text("Municipio"),
-    province: text("Provincia"),
+    city: text("Municipio donde vive y está empadronada o tiene la sede (lo que miran las bases), no donde nació ni de dónde es: «soy de Venezuela y vivo en Vigo» es Vigo. Si solo dice dónde trabaja, ese"),
+    province: text("Provincia de ese municipio"),
     region: text("Comunidad autónoma, p. ej. Galicia"),
     achievements: list("Exposiciones, conciertos, discos, estrenos, festivales, publicaciones, premios, clientes: solo los nuevos"),
     education: list("Bellas Artes, conservatorio, arte dramático, escuela de cine, filología, talleres…"),

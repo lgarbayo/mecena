@@ -181,6 +181,12 @@ function redesignFromInterview(profileId: string, segment: TranscriptSegment, lo
 }
 
 /** Current onboarding state for this profile: lets /onboarding resume after a reload. */
+/** "Empezar de cero": wipes the interview, the profile it produced and the dossier text now (works stay). */
+export async function restartOnboarding(profileId: string) {
+  await resetProfile(getProfile(profileId));
+  return getOnboardingState(profileId);
+}
+
 export function getOnboardingState(profileId: string) {
   const profile = getProfile(profileId);
   warmOnboardingAi(profile.kind);

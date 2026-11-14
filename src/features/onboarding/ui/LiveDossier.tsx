@@ -6,7 +6,7 @@
  * the full profile, every section and the photographed works with their sheets.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { DossierSection, Profile, ProfileKind, Work } from "@/contracts";
+import type { DossierSection, Profile, ProfileKind, ProfilePatch, Work } from "@/contracts";
 import { WorkPhoto } from "@/features/works/WorkPhoto";
 import { ONBOARDING, sectionTitles } from "../copy";
 import { STEPS_COPY as C } from "../steps";
@@ -29,6 +29,8 @@ export interface LiveDossierProps {
   version: number;
   works?: Work[];
   freshWorkId?: string | null;
+  /** Corrects a profile value by hand (the full sheet's rows become editable). */
+  onEditProfile?: (patch: ProfilePatch) => Promise<void>;
 }
 
 /** One line of a work's technical sheet: "Mareas · 2024 · óleo sobre lino · 50 × 70 cm". */
@@ -45,7 +47,7 @@ function firstLines(body: string): string {
     .join(" ");
 }
 
-export function LiveDossier({ kind, profile, sections, changedSections, changedFields, version, works = [], freshWorkId }: LiveDossierProps) {
+export function LiveDossier({ kind, profile, sections, changedSections, changedFields, version, works = [], freshWorkId, onEditProfile }: LiveDossierProps) {
   const [open, setOpen] = useState(false);
   // A pyme sees only its company card grow: the capability memoria adds nothing to its onboarding.
   const memoria = kind === "creator";
@@ -167,7 +169,7 @@ export function LiveDossier({ kind, profile, sections, changedSections, changedF
               </button>
             </header>
             <div className={s.sheetBody}>
-              <ProfilePanel kind={kind} profile={profile} changed={changedFields} version={version} />
+              <ProfilePanel kind={kind} profile={profile} changed={changedFields} version={version} onEdit={onEditProfile} />
               {works.length > 0 && (
                 <section className={s.sheetWorks} aria-label={C.worksTitle}>
                   <h3>{C.worksTitle}</h3>
