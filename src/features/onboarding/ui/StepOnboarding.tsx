@@ -14,9 +14,9 @@ import { useApp } from "@/components/shell/AppProvider";
 import { MIC_BLOCKED, useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { worksClient } from "@/features/works/client";
 import { apiGet, apiSend } from "@/lib/api-client";
-import { ONBOARDING, fieldLabel } from "../copy";
+import { DOSSIER_LOOK_QUESTION, ONBOARDING, fieldLabel } from "../copy";
 import { isVisualFamily, onboardingFamily } from "../family";
-import { STEPS_COPY as C, stepsFor } from "../steps";
+import { DOSSIER_LOOK_STEP, STEPS_COPY as C, stepsFor } from "../steps";
 import { TurnQueue, type QueuedTurn } from "../turnQueue";
 import { filledRows } from "./format";
 import { MicIcon } from "./icons";
@@ -153,7 +153,9 @@ export function StepOnboarding() {
     setSections(res.sections);
     // A question for a step the person has already left would answer the wrong screen.
     const stale = turn?.step !== undefined && turn.step < stepRef.current;
-    if (res.followUpQuestion && !stale) setFollowUp(res.followUpQuestion);
+    // The stepped interview has its own "¿cómo te imaginas tu dossier?" step: never ask it twice.
+    const lookAgain = res.followUpQuestion === DOSSIER_LOOK_QUESTION && stepsRef.current.some((x) => x.key === DOSSIER_LOOK_STEP);
+    if (res.followUpQuestion && !stale && !lookAgain) setFollowUp(res.followUpQuestion);
     setChangedFields(new Set(res.changedProfileFields));
     setChangedSections(new Set(res.changedSectionKeys));
     setVersion((v) => v + 1);
@@ -174,7 +176,8 @@ export function StepOnboarding() {
           // The first turn of a fresh onboarding starts the profile from scratch (server-side reset).
           const reset = freshRef.current;
           freshRef.current = false;
-          const stepKey = t.step === undefined ? undefined : (stepsRef.current[t.step]?.fields[0] ?? `step-${t.step + 1}`);
+          const step = t.step === undefined ? undefined : stepsRef.current[t.step];
+          const stepKey = t.step === undefined ? undefined : (step?.key ?? step?.fields[0] ?? `step-${t.step + 1}`);
           return apiSend<OnboardingTurnResponse>(API.onboardingTurn, { text: t.text, source: t.source, profileId: pidRef.current, stepKey, reset }, "POST", signal);
         },
         { change: setTurns, result: onResult },
@@ -207,6 +210,19 @@ export function StepOnboarding() {
   const busy = shownTurns.some((t) => t.status === "sending" || t.status === "queued");
   const failed = shownTurns.find((t) => t.status === "failed");
   const slow = shownTurns.some((t) => t.slow);
+
+  // The free layout is the first design: once every answer is saved, the dossier proposals start composing by
+  // themselves from what the artist told us (and how they imagine their dossier). The server decides if there is
+  // enough to go on; a visual artist without photos yet gets them when the dossier opens.
+  const [composing, setComposing] = useState<number | null>(null);
+  const autoAsked = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (phase.at !== "done" || kind !== "creator" || busy || failed || !profileId || autoAsked.current === profileId) return;
+    autoAsked.current = profileId;
+    apiSend<{ busy: boolean; busyKind?: string; count: number }>("/api/dossier/layout", { auto: "onboarding", profileId })
+      .then((st) => pidRef.current === profileId && setComposing(st.busy && st.busyKind === "batch" ? st.count : null))
+      .catch(() => undefined);
+  }, [phase.at, kind, busy, failed, profileId]);
 
   // Leaving while answers are still on their way: wait for the queue, then go. A tab close gets the browser's prompt.
   useEffect(() => {
@@ -523,6 +539,14 @@ export function StepOnboarding() {
               ))}
               {rows.length === 0 && <p className={s.example}>{C.doneEmpty}</p>}
             </dl>
+            {composing ? (
+              <p className={s.example} role="status" data-testid="layout-composing">
+                {C.composing(composing)}{" "}
+                <Link href={ROUTES.dossier} className={s.link} onClick={guard(ROUTES.dossier)}>
+                  {C.seeDossier}
+                </Link>
+              </p>
+            ) : null}
             {live}
             {kind === "business" && (
               <div className={s.importBox}>

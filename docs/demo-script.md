@@ -9,7 +9,7 @@
 |---|---|
 | **Presentador/a** | Habla, mira el reloj, nunca toca el móvil. |
 | **Operador/a** | Lleva el móvil, toca, ejecuta los planes B. Nunca habla. |
-| **Artista** | Contesta 5 preguntas en voz alta (≈ 25 s, frases cortas) y dicta la ficha de 1 obra (≈ 10 s). |
+| **Artista** | Contesta 6 preguntas en voz alta (≈ 30 s, frases cortas) y dicta la ficha de 1 obra (≈ 10 s). |
 
 **Los ocho puntos de [`fleet/IDEA.md`](../fleet/IDEA.md) salen en la demo, todos de principio a fin:** (1) voz + fotos + dossier + PDF · (2) MCP · (3) feed de convocatorias · (4) «Prepárame la solicitud» con RevenueCat y borrador · (5) tribunal 61 → 84 · (6) «Ganadores parecidos a ti» · (7) justificación · (8) panel B2B.
 
@@ -43,7 +43,7 @@ La cuenta de reserva sigue siendo el plan B de la compra, el borrador y el tribu
 | # | Tiempo | Pantalla y toques (operador) | Dice el presentador | Plan B: botón de `/demo` (operador) · frase (presentador) |
 |---|---|---|---|---|
 | 1 | **0:00–0:10** Gancho | `/` (A1): 3 datos con su fuente. Sin toques. | «Uno de cada dos artistas en España ingresa menos del salario mínimo (encuesta Nebrija/UGR), y más de la mitad de las pymes no pide ayudas por no conocerlas (MuyPymes, 2025). Las ayudas existen. Falta quien haga el papeleo contigo.» | Si `/` no carga: recargar una vez. Si sigue sin cargar: los datos en la diapositiva de [`PITCH.md`](../fleet/pitch/PITCH.md) y pasar a la versión corta con la cuenta de reserva. · «La wifi compite con cien portátiles; un segundo.» |
-| 2a | **0:10–0:40** Voz *(punto 1)* | «Empezar» → «Soy creador/a» (ya marcado) → **«Hablando»** (el micro se abre solo) → la artista contesta (5 s cada una) → «Siguiente» ×4 → «Terminar». Debajo de cada pregunta van saliendo los chips «Detectado: …». | «[Nombre], cuéntale a Mecena qué haces.» Y **se calla**. Al salir los chips: «Fijaos: va rellenando el perfil mientras habla.» | **El micro no transcribe en 5 s:** «Atrás» hasta «¿Cómo prefieres contárnoslo?» → **«Escribiendo»** y pegar sus respuestas. Si se pierden > 15 s: pestaña 2 → **«Artista de ejemplo»** → «Abre el dossier». · «Con este eco, os enseño a Antía, una ilustradora de A Coruña, hecha con la misma app.» **«Analizando respuesta…» > 8 s:** interruptor **«IA simulada para esta cuenta»** y seguir. · «Seguimos; Mecena va anotando.» |
+| 2a | **0:10–0:40** Voz *(punto 1)* | «Empezar» → «Soy creador/a» (ya marcado) → **«Hablando»** (el micro se abre solo) → la artista contesta (5 s cada una) → «Siguiente» ×5 → «Terminar». Debajo de cada pregunta van saliendo los chips «Detectado: …». | «[Nombre], cuéntale a Mecena qué haces.» Y **se calla**. Al salir los chips: «Fijaos: va rellenando el perfil mientras habla.» | **El micro no transcribe en 5 s:** «Atrás» hasta «¿Cómo prefieres contárnoslo?» → **«Escribiendo»** y pegar sus respuestas. Si se pierden > 15 s: pestaña 2 → **«Artista de ejemplo»** → «Abre el dossier». · «Con este eco, os enseño a Antía, una ilustradora de A Coruña, hecha con la misma app.» **«Analizando respuesta…» > 8 s:** interruptor **«IA simulada para esta cuenta»** y seguir. · «Seguimos; Mecena va anotando.» |
 | 2b | **0:40–0:55** Fotos *(punto 1)* | «Fotografiar mi obra» → «📷 Hacer foto» → foto de frente → «🎙 Dictar» (título, año, técnica, medidas) → «■ Parar» → «Crear ficha». **Una obra**; la segunda solo si vamos sobrados. | «Solo endereza y recorta la foto. La obra no se toca, no entrenamos con ella y la última palabra es suya.» | **Cámara falla:** «Elegir de la galería» (fotos hechas por la mañana). **«Escribiendo la ficha…» > 8 s:** **«IA simulada para esta cuenta»**. · «Mientras escribe la ficha: nunca generamos ni modificamos obra.» |
 | 3 | **0:55–1:05** Dossier y PDF *(punto 1)* | «Ver mi dossier →» → `/dossier`: bajar despacio **5 s** → «Descargar PDF» (se abre en otra pestaña) → enseñar 2 s → **volver a la pestaña de Mecena**. | «Un minuto hablando y una foto: declaración, biografía, serie y ficha técnica, con sus palabras, no con las nuestras. Y esto es un dossier en PDF, listo para enviar. Gratis.» | Dossier vacío o pobre: pestaña 2 → **«Artista de ejemplo»** → «Abre el dossier». · «Este es el de Antía, con la entrevista completa.» PDF no abre: enseñar `/dossier` («es la misma maqueta») o el PDF de reserva ya descargado. |
 | 4 | **1:05–1:20** Convocatorias y ganadores *(puntos 3 y 6)* | «Buscar convocatorias» → `/convocatorias`: tarjeta con importe, plazo, **Por qué encajas** / **Qué te falta** (**7 s**) → abrir la primera → `/convocatorias/<id>` → bajar hasta **«Ganadores parecidos a ti»** (**8 s**). | «Convocatorias reales y abiertas, con enlace a las bases: no solo te dice que encajas, te dice por qué y qué te falta. Y quién ha ganado antes algo parecido, con importes reales: orientativo, nunca una probabilidad.» | Feed vacío o lento: **«IA simulada para esta cuenta»** y recargar. Si sigue vacío: **«Artista de ejemplo»** → «Convocatorias». · «Os la enseño con un perfil completo.» Sin ganadores en esa convocatoria: probar la siguiente tarjeta; si tampoco, decir la frase y seguir (la sección sale solo con concesiones reales). |
@@ -74,7 +74,7 @@ Para un turno corto o un directo torcido. Cuenta de escenario hasta la oferta; c
 ---
 
 ## Briefing de la artista voluntaria (pásaselo 15 min antes)
-Mecena hace **5 preguntas, una por pantalla**. Contesta cada una en **unos 5 segundos** (una o dos frases), con tus palabras, sin leer. El operador pasa de pregunta.
+Mecena hace **6 preguntas, una por pantalla**. Contesta cada una en **unos 5 segundos** (una o dos frases), con tus palabras, sin leer. El operador pasa de pregunta.
 
 | Pregunta en pantalla | Qué decir (ejemplo) |
 |---|---|
@@ -83,9 +83,10 @@ Mecena hace **5 preguntas, una por pantalla**. Contesta cada una en **unos 5 seg
 | Háblanos de una serie o un proyecto reciente. | «Mi última serie se llama [serie] y va de [idea].» **Di aquí una frase con personalidad: es la que veremos citada en la memoria.** |
 | ¿Exposiciones, premios o formación que quieras contar? | «He expuesto en [sitio] / quedé [premio] / estudié en [escuela].» |
 | ¿Qué buscas ahora? | «Busco [una beca de producción / una residencia / un premio] para [proyecto].» |
+| ¿Cómo te imaginas tu dossier? | «Sobrio, en blanco y negro, con mucha imagen» / «colorido, como un fanzine». **De aquí salen las 2 maquetaciones libres que Mecena compone sola al terminar (tardan 1-2 min).** |
 
 **Obras (1; una segunda solo si vamos sobrados):** piezas planas o fotos/impresiones de obra (no esculturas grandes), de frente, con buena luz y sin reflejos. Elige las de la serie que nombras. Por cada una, al pulsar «Dictar»: «Esta es [título], de [año], [técnica], [ancho] por [alto] centímetros.»
-**Por la mañana:** fotos de esas 1–3 obras en la galería del móvil de demo, y sus 5 respuestas escritas en el portapapeles/notas (plan B «Escribiendo»).
+**Por la mañana:** fotos de esas 1–3 obras en la galería del móvil de demo, y sus 6 respuestas escritas en el portapapeles/notas (plan B «Escribiendo»).
 **Confianza:** su obra no se modifica ni se usa para entrenar; puede pedir que se borre todo al acabar («Empezar de cero»).
 
 ---

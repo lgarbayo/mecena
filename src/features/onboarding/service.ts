@@ -10,7 +10,9 @@ import { appendSegment, getDossier, getProfile, getTranscript, listWorks, mergeP
 import { forgetDesigns, requestDesign } from "@/features/dossier/designs";
 import { warmOnboardingAi } from "./ai";
 import { sectionTitles } from "./copy";
+import { ensureLayoutEntry, saveLayoutWish } from "@/features/dossier/layout/service";
 import { dossierLookRequests } from "./interview";
+import { DOSSIER_LOOK_STEP } from "./steps";
 
 /** A retry of the same chunk within this window reuses the last segment. */
 const RETRY_WINDOW_MS = 5 * 60_000;
@@ -65,6 +67,9 @@ async function resetProfile(profile: Profile): Promise<Profile> {
 export async function processTurn(input: { profileId: string; text: string; source: "voice" | "text"; stepKey?: string; reset?: boolean }): Promise<OnboardingTurnResponse> {
   let profile = getProfile(input.profileId);
   if (input.reset) profile = await resetProfile(profile);
+  // A new artist's first design is the free layout: its entry exists before any template design is saved.
+  ensureLayoutEntry(profile.id);
+  if (input.stepKey === DOSSIER_LOOK_STEP) saveLayoutWish({ profileId: profile.id, text: input.text });
   // If a business profile is still holding the untouched fixtureBusiness seed ("Cerámica Mareira") with zero transcript
   // segments, clear the pre-seeded fields before the user's first onboarding turn so their company starts fresh.
   if (
@@ -138,7 +143,7 @@ export async function processTurn(input: { profileId: string; text: string; sour
     variant: latest?.variant,
     generatedAt: nowIso(),
   });
-  redesignFromInterview(profile.id, segment);
+  redesignFromInterview(profile.id, segment, input.stepKey === DOSSIER_LOOK_STEP);
   return {
     profile: nextProfile,
     sections: nextSections,
@@ -157,8 +162,8 @@ export const pendingDesigns = new Set<Promise<unknown>>();
  * right away, on top of the current design, instead of staying a line in the transcript. In the background:
  * the interview never waits for the designer.
  */
-function redesignFromInterview(profileId: string, segment: TranscriptSegment) {
-  const asked = dossierLookRequests(getTranscript(profileId)).some((s) => s.id === segment.id);
+function redesignFromInterview(profileId: string, segment: TranscriptSegment, lookStep = false) {
+  const asked = lookStep || dossierLookRequests(getTranscript(profileId)).some((s) => s.id === segment.id);
   if (!asked) return;
   const job = requestDesign({ profileId, request: segment.text, segmentId: segment.id })
     .catch((e: unknown) => console.error("[onboarding] could not apply the dossier look the artist asked for", e))

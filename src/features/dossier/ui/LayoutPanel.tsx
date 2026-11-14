@@ -1,6 +1,7 @@
 "use client";
 /**
- * "Maquetación libre": the model composes the dossier page by page (no templates). The artist gets a batch of
+ * "Maquetación libre": the model composes the dossier page by page (no templates). It is the first design: the first
+ * batch starts by itself (end of the interview or opening the dossier, from how the artist imagines it). The artist gets a batch of
  * proposals, each with its own art direction, picks one, and keeps asking for changes in plain language
  * (history and undo). Generating takes a minute or two: the server runs it in the background and this panel polls.
  */
@@ -140,7 +141,7 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
 
       {generating ? (
         <p className="layout-busy" role="status" data-testid="layout-generating">
-          Estoy componiendo {count} maquetaciones distintas a partir de tu obra. Tarda uno o dos minutos; no hace falta que te quedes mirando.
+          Estoy componiendo {count} maquetaciones distintas a partir de tu obra{state.wish ? " y de cómo te imaginas tu dossier" : ""}. Tarda uno o dos minutos; no hace falta que te quedes mirando.
         </p>
       ) : null}
       {changing ? (
@@ -162,7 +163,7 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
       {!chosen && !generating ? (
         <p className="design-panel__why">
           {proposals.length
-            ? "Estas son las propuestas. Cada una sigue una dirección de arte distinta: elige la que más te guste y luego te dejo cambiarle lo que quieras."
+            ? `Estas son las propuestas${state.wish ? ", a partir de cómo te imaginas tu dossier" : ""}. Cada una sigue una dirección de arte distinta: elige la que más te guste y luego te dejo cambiarle lo que quieras.`
             : `Pulsa y te propongo ${count} maquetaciones muy distintas de tu dossier. Hasta que elijas una, ves el diseño de plantilla de siempre.`}
         </p>
       ) : null}

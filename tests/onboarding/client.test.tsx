@@ -26,7 +26,8 @@ vi.mock("@/lib/api-client", async () => {
       if (u.pathname === "/api/works") return { works: [] };
       return svc.getOnboardingState(u.searchParams.get("profileId") ?? "demo-creator");
     },
-    apiSend: async (_url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) => {
+    apiSend: async (url: string, body: { text: string; source: "voice" | "text"; profileId?: string }) => {
+      if (url === "/api/dossier/layout") return { busy: false, count: 2 };
       const h = hold;
       if (h) {
         hold = null;
@@ -141,7 +142,7 @@ describe("/onboarding (creator)", () => {
     act(() => onFinal!("Pinto con acuarela y tinta."));
     fireEvent.click(screen.getByTestId("prefer-text"));
     expect(speech.stop).toHaveBeenCalled();
-    expect(screen.getByText("Paso 2 de 5")).toBeTruthy();
+    expect(screen.getByText("Paso 2 de 6")).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /Qué haces/ })).toBeTruthy();
     expect(screen.getByTestId("transcript").textContent).toContain("Pinto con acuarela y tinta.");
     fireEvent.click(screen.getByTestId("prefer-voice"));
@@ -157,7 +158,7 @@ describe("/onboarding (creator)", () => {
     expect(screen.getByRole("textbox")).toBeTruthy();
     expect(screen.queryByTestId("orb")).toBeNull();
     expect(screen.queryByTestId("prefer-voice")).toBeNull(); // voice cannot work here
-    expect(screen.getByText("Paso 1 de 5")).toBeTruthy();
+    expect(screen.getByText("Paso 1 de 6")).toBeTruthy();
   });
 
   it("a photographed work appears in the live dossier with its sheet, without leaving the conversation", () => {
@@ -172,7 +173,7 @@ describe("/onboarding (creator)", () => {
     expect(screen.queryByTestId("photo-sheet")).toBeNull();
     expect(speech.start).toHaveBeenCalledTimes(2); // it was listening: carries on
     expect(screen.getByTestId("live-works").textContent).toContain("Rederas · 2024 · acuarela · 30 × 40 cm");
-    expect(screen.getByText("Paso 1 de 5")).toBeTruthy();
+    expect(screen.getByText("Paso 1 de 6")).toBeTruthy();
   });
 
   it("a follow-up question from an earlier step never shows on the next one", async () => {
@@ -195,7 +196,7 @@ describe("/onboarding (creator)", () => {
     fireEvent.click(screen.getByTestId("choose-voice"));
     const h = holdNext();
     act(() => onFinal!("Me llamo Antía Varela y soy ilustradora de A Coruña."));
-    for (let i = 1; i <= 5; i++) fireEvent.click(screen.getByTestId("next"));
+    for (let i = 1; i <= 6; i++) fireEvent.click(screen.getByTestId("next"));
     fireEvent.click(screen.getByTestId("finish-cta"));
     expect(screen.getByTestId("leaving").textContent).toContain(STEPS_COPY.saving);
     expect(push).not.toHaveBeenCalled();
@@ -209,7 +210,7 @@ describe("/onboarding (creator)", () => {
   it("with nothing pending the finish CTA is a plain link to the works", async () => {
     render(<StepOnboarding />);
     fireEvent.click(screen.getByTestId("choose-text"));
-    for (let i = 0; i < 5; i++) fireEvent.click(screen.getByTestId("next"));
+    for (let i = 0; i < 6; i++) fireEvent.click(screen.getByTestId("next"));
     const cta = screen.getByTestId("finish-cta");
     expect(cta.getAttribute("href")).toBe("/obras");
     expect(cta.textContent).toBe("Fotografiar mi obra");
@@ -221,7 +222,7 @@ describe("/onboarding (creator)", () => {
     render(<StepOnboarding />);
     fireEvent.click(screen.getByTestId("choose-text"));
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "Me llamo Iria Souto, soy violinista y compositora de Vigo." } });
-    for (let i = 0; i < 5; i++) fireEvent.click(screen.getByTestId("next"));
+    for (let i = 0; i < 6; i++) fireEvent.click(screen.getByTestId("next"));
     const cta = screen.getByTestId("finish-cta");
     await waitFor(() => expect(cta.textContent).toBe("Subir fotos y enlaces"), { timeout: 5000 });
     expect(cta.getAttribute("href")).toBe("/obras");

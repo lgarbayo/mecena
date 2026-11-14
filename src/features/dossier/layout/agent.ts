@@ -19,6 +19,7 @@ export interface Direction {
 }
 export interface LayoutAgentInput {
   request: string; // "" = propose from scratch
+  wish?: string; // how the artist imagines their dossier (onboarding answer): every proposal starts from it
   current?: FreeLayout; // the layout in force: requests modify it
   catalog: Catalog;
   history: string[];
@@ -37,10 +38,10 @@ export const layoutModel = () => process.env.MECENA_MODEL_LAYOUT || LAYOUT_MODEL
 export const LAYOUT_MAX_TOKENS = 20000; // per layout, reasoning included (cost cap)
 export const DIRECTOR_MAX_TOKENS = 6000;
 
-/** Proposals per batch: MECENA_LAYOUT_COUNT, default 3, never more than 4 (cost cap). */
+/** Proposals per batch: MECENA_LAYOUT_COUNT, default 2, never more than 4 (cost cap). */
 export function layoutCount(): number {
   const n = Number(process.env.MECENA_LAYOUT_COUNT);
-  return Number.isFinite(n) && n >= 1 ? Math.min(4, Math.floor(n)) : 3;
+  return Number.isFinite(n) && n >= 1 ? Math.min(4, Math.floor(n)) : 2;
 }
 
 const RULES = `Cómo funciona:
@@ -69,17 +70,19 @@ const SYSTEM = `Eres la maquetadora de Mecena, una diseñadora editorial con cri
 
 ${RULES}
 
+- Si hay "deseoDelArtista", es cómo se imagina su dossier, con sus palabras: respétalo (si pide sobrio, no lo llenes de color; si pide mucha imagen, la imagen manda) y llévalo a tu dirección de arte.
 - Si hay "direccion", esa es la dirección de arte de ESTA propuesta: llévala hasta el final (retícula, escala, ritmo, tipografía, color). Otras propuestas siguen otras direcciones ("otras"): no te parezcas a ellas ni en la retícula, ni en la escala, ni en las fuentes, ni en los colores.
 - Si hay "maquetacionActual", la petición la MODIFICA: cambia solo lo que pide ("más aire", "pon la obra 2 a toda página") y conserva el resto, incluidas todas las demás páginas. Empieza de cero solo si lo pide.
 - Si hay "problemaDelIntentoAnterior", corrígelo.`;
 
-const DIRECTOR_SYSTEM = `Eres la directora de arte de Mecena. Un artista va a recibir varias maquetaciones distintas de su dossier. A partir de su obra (las miniaturas), de lo que ha contado y de su disciplina, propones direcciones de arte RADICALMENTE distintas entre sí, pensadas para ESTE artista (no fórmulas): qué paleta, qué tipografía y tono, cómo se trata la fotografía (a sangre, con aire, en rejilla, pequeña), qué ritmo tienen las páginas. Sé concreta y atrevida; cada dirección debe producir un dossier que no se confunda con otro. No repitas las ya mostradas ("yaMostradas"). Devuelves exactamente N direcciones: name (2-4 palabras) y brief (2-3 frases en español de España: cómo es y por qué encaja con su obra y su voz).`;
+const DIRECTOR_SYSTEM = `Eres la directora de arte de Mecena. Un artista va a recibir varias maquetaciones distintas de su dossier. A partir de su obra (las miniaturas), de lo que ha contado y de su disciplina, propones direcciones de arte RADICALMENTE distintas entre sí, pensadas para ESTE artista (no fórmulas): qué paleta, qué tipografía y tono, cómo se trata la fotografía (a sangre, con aire, en rejilla, pequeña), qué ritmo tienen las páginas. Sé concreta y atrevida; cada dirección debe producir un dossier que no se confunda con otro. Si hay "deseoDelArtista" (cómo se imagina su dossier, con sus palabras), TODAS las direcciones lo cumplen: son interpretaciones distintas de ese deseo, no alternativas que lo ignoren. No repitas las ya mostradas ("yaMostradas"). Devuelves exactamente N direcciones: name (2-4 palabras) y brief (2-3 frases en español de España: cómo es y por qué encaja con su obra y su voz).`;
 
 export const DirectionsSchema = z.object({ directions: z.array(z.object({ name: z.string().min(1).max(60), brief: z.string().min(1).max(600) })).min(1).max(4) });
 
 export function brief(input: LayoutAgentInput) {
   return {
     peticion: input.request,
+    ...(input.wish ? { deseoDelArtista: input.wish } : {}),
     peticionesAnteriores: input.history.slice(-4),
     maquetacionActual: input.current ?? null,
     ...(input.direction ? { direccion: input.direction } : {}),
@@ -115,7 +118,7 @@ export async function planDirections(input: LayoutAgentInput & { count: number }
     timeoutMs: 60_000,
     maxRetries: 1,
     deadlineMs: 75_000,
-    user: userContent(input, { N: input.count, yaMostradas: input.avoid ?? [], catalogo: catalogForAgent(input.catalog), semilla: input.seed }),
+    user: userContent(input, { N: input.count, ...(input.wish ? { deseoDelArtista: input.wish } : {}), yaMostradas: input.avoid ?? [], catalogo: catalogForAgent(input.catalog), semilla: input.seed }),
   });
   return res.directions.slice(0, input.count);
 }
