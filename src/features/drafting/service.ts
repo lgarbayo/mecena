@@ -2,31 +2,50 @@
 import type { Application, ToolContext, TranscriptSegment } from "@/contracts";
 import { getAi } from "@/server/ai";
 import { findApplication, getCall, getDossier, getProfile, getTranscript, listWorks, newId, nowIso, saveApplication } from "@/server/store";
-import { consumeDraftCredit, requireDraftEntitlement } from "@/features/purchases/server";
+import { reserveDraftCredit } from "@/features/purchases/server";
+
+/** Drafts in progress per `${profileId}|${callId}`: a double tap waits for the same draft instead of paying twice. */
+const inflight = new Map<string, Promise<Application>>();
 
 /**
  * Returns the existing draft for this call if there is one (no new credit is used, nothing is re-drafted);
- * otherwise checks the entitlement (402 without Pro / Solicitud premium), drafts, saves and consumes a credit.
+ * otherwise reserves the entitlement BEFORE the AI (402 without Pro / Solicitud premium; the credit is taken
+ * atomically), drafts and saves, and gives the credit back if drafting fails.
  */
 export async function draftApplication(input: { callId: string; profileId: string }, ctx: Pick<ToolContext, "appUserId"> & Partial<Pick<ToolContext, "caller">>): Promise<Application> {
   const profile = getProfile(input.profileId);
   const call = getCall(input.callId);
   const existing = findApplication(profile.id, call.id);
   if (existing) return existing;
+  const key = `${profile.id}|${call.id}`;
+  const running = inflight.get(key);
+  if (running) return running;
 
-  await requireDraftEntitlement(ctx.appUserId);
-  const content = await getAi().draftApplication({
-    profile,
-    call,
-    transcript: getTranscript(profile.id),
-    dossier: getDossier(profile.id),
-    works: listWorks(profile.id),
-  });
-  const now = nowIso();
-  const app: Application = { id: newId("app"), profileId: profile.id, callId: call.id, version: 1, status: "draft", ...content, createdAt: now, updatedAt: now };
-  await saveApplication(app);
-  await consumeDraftCredit(ctx.appUserId);
-  return app;
+  const job = (async (): Promise<Application> => {
+    const credit = await reserveDraftCredit(ctx.appUserId);
+    try {
+      const content = await getAi().draftApplication({
+        profile,
+        call,
+        transcript: getTranscript(profile.id),
+        dossier: getDossier(profile.id),
+        works: listWorks(profile.id),
+      });
+      const now = nowIso();
+      const app: Application = { id: newId("app"), profileId: profile.id, callId: call.id, version: 1, status: "draft", ...content, createdAt: now, updatedAt: now };
+      await saveApplication(app);
+      return app;
+    } catch (e) {
+      await credit.refund();
+      throw e;
+    }
+  })();
+  inflight.set(key, job);
+  try {
+    return await job;
+  } finally {
+    inflight.delete(key);
+  }
 }
 
 /** The draft for a call, if any (page load: show it instead of offering to draft again). */
