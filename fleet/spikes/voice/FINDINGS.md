@@ -272,12 +272,36 @@ Test once with airplane mode to see the error message. Test with the projector's
 
 ## 8. Prompt changes after the live run
 
-Applied in `src/prompts.js` after the measurements above (the numbers in §3/§4 are from the prompts before these edits;
-not re-measured):
+Applied in `src/prompts.js` after the measurements above (the numbers in §3/§4 are from the prompts before these edits):
 
 1. Corrections: the new value is only the corrected fact (Haiku had written "4 personas, luego 5 desde septiembre").
 2. Dates inside a description are not the item's date (both models dated *Terra queimada* 2017, the year of the fires).
 3. Business `activity` in the company's voice, not "Somos Marta Castro y mi hermana…".
+
+### 8.1 Re-measured with the new prompts (live, 14/11/2026)
+
+Same replay (`npm start`, x1, 3 scenarios), both configurations run at the same time.
+
+| extract model | n | p50 ms | p95 ms | ttft p50 | lag p50 | lag p95 | dossier p50 / p95 | final pass p50 | ready after stop | rejected ops |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `claude-haiku-5-5` | 33 | **1794** | **2881** | 818 | 1795 | 2889 | 3086 / 5555 | 7991 | 11.1-14.2 s | 1 (empty value) |
+| `claude-sonnet-5-5` | 33 | 2410 | 3445 | 1104 | 2411 | 3446 | 3142 / 4785 | 8445 | 10.2-14.0 s | 1 (wrong key) |
+
+- Both now meet the lag target (p50 ≤ 2.5 s, p95 ≤ 4 s). Haiku is still the faster one. The final dossier after "Terminar"
+  has not changed (10-14 s); the parallel per-section final pass (§6.4) is still to do.
+- **Fix 2 works:** neither model dates *Terra queimada* 2017 any more ("14 cuadros sobre los incendios de 2017", exhibited 2023).
+- **Fix 3 works:** the final activity text is "En Conservas da Ría somos una conservera artesanal en Boiro…" on both models.
+  Sonnet still wrote "Marta Castro y su hermana" in its first draft (dossier #2); it was gone from the next rewrite.
+- **Fix 1 mostly works:** the scalar is clean on both (`Plantilla = 5 personas`, `antes: 4 personas`). Leftovers in
+  list `detail` and in the dossier text: Haiku "…; corrige que fue en 2023", "6 álbumes publicados; 7 si se cuenta el que sale
+  en marzo"; Sonnet's team section "Somos 5 personas, 5 desde septiembre, cuando entró…".
+- **New (and already present on 13/11, not noted then): Sonnet writes mojibake in `ask_next`.** 6 of 32 questions in this
+  run (4 in `live-sonnet-run.txt`), e.g. `ÂżDĂłnde vives y trabajas?`, `ÂżEn quĂŠ aĂąo fue esa colectiva en la Fundaciأłn…`.
+  Mixed code pages (cp1250 and cp1256) in one string, while every other field is clean and Haiku shows none, so it comes
+  from the model output, not from our decoding. A question that cannot be read is worse than no question: validate it.
+- Sonnet once used a misspelled key (`novela-graphica-padre`) in an `update`; the op was rejected and the title
+  "La otra orilla" was lost for that turn. Fuzzy-match the key against existing keys before rejecting.
+- Logs of this run were not committed (raw JSON in `results/live-x1-2026-11-13T23-47-*.json`, gitignored).
 
 ## 9. Call-specific dossier variant (layer 2)
 
