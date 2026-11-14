@@ -117,7 +117,8 @@ async function runScenario(id) {
   });
   s.on("dossier", ({ call, sections }) => {
     clearInterim();
-    console.log(`${ts()} ${cyan(`📄 ${call.type} #${call.n}`)} [${sections.map((x) => x.id).join(", ")}] ${dim(`${call.latencyMs} ms`)}`);
+    const stale = call.discarded ? yellow(`  descartado por antiguo: ${call.discarded.join(", ")}`) : "";
+    console.log(`${ts()} ${cyan(`📄 ${call.type} #${call.n}`)} [${sections.map((x) => x.id).join(", ")}] ${dim(`${call.latencyMs} ms`)}${stale}`);
     for (const sec of sections) {
       const first = (sec.body || "(vacío)").split("\n")[0];
       console.log(dim(`   ${sec.id}: ${first.slice(0, 120)}${first.length > 120 ? "…" : ""}`));

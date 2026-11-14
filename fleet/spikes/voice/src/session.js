@@ -9,7 +9,11 @@
 //     coalesced into the next call, which starts as soon as the current one returns;
 //   - the dossier runs on its own single-flight loop, only for sections whose facts changed,
 //     at most once every dossierGapMs;
-//   - stop(): flush pending words, then one consistency pass over every section.
+//   - stop(): flush pending words, then a consistency pass with one dossier call per section, all
+//     in parallel; each section is applied as soon as its call returns (the live text stays meanwhile).
+//   - ordering: every dossier call gets a sequence number at launch and a section is only replaced by
+//     a call launched after the one that wrote it, so a live call still in flight at stop() can never
+//     overwrite the newer final text.
 
 import { EventEmitter } from "node:events";
 import { emptyProfile, validateOp, validateAskNext, applyOps, normalize } from "./profile.js";
@@ -30,6 +34,8 @@ export class Session extends EventEmitter {
     this.dossiering = null;
     this.dirty = new Set();
     this.lastDossierStart = 0;
+    this.dossierSeq = 0; // launch order of dossier calls
+    this.sectionSeq = {}; // section id -> seq of the call that wrote its current text
     this.timers = {};
     this.calls = [];
     this.rejected = [];
@@ -149,20 +155,40 @@ export class Session extends EventEmitter {
     this.#dossier(ready);
   }
 
-  #dossier(sections, { final = false } = {}) {
+  /** One dossier call. Applies only the requested sections, and only where no newer call already wrote them. */
+  async #writeSections(sections, type) {
+    const seq = ++this.dossierSeq;
+    try {
+      const res = await this.llm.dossier({ mode: this.mode, state: this.state, sections, previous: this.dossier });
+      const applied = [];
+      const discarded = [];
+      for (const s of res.sections) {
+        if (!sections.includes(s.id)) continue; // the model wrote a section it was not asked for
+        if ((this.sectionSeq[s.id] ?? 0) > seq) {
+          discarded.push(s.id); // stale: a later call (e.g. the final pass) already wrote this section
+          continue;
+        }
+        this.sectionSeq[s.id] = seq;
+        this.dossier[s.id] = { ...s, at: Date.now() };
+        applied.push(s);
+      }
+      const call = { type, n: this.calls.length + 1, sections, latencyMs: res.latencyMs, ttftMs: res.ttftMs ?? null, usage: res.usage };
+      if (discarded.length) call.discarded = discarded;
+      this.calls.push(call);
+      this.emit("dossier", { call, sections: applied });
+      return true;
+    } catch (err) {
+      this.emit("error", err);
+      return false;
+    }
+  }
+
+  #dossier(sections) {
     sections.forEach((s) => this.dirty.delete(s));
     this.lastDossierStart = performance.now();
-    const n = this.calls.length + 1;
     this.dossiering = (async () => {
       try {
-        const res = await this.llm.dossier({ mode: this.mode, state: this.state, sections, previous: this.dossier });
-        for (const s of res.sections) this.dossier[s.id] = { ...s, at: Date.now() };
-        const call = { type: final ? "dossier-final" : "dossier", n, sections, latencyMs: res.latencyMs, ttftMs: res.ttftMs ?? null, usage: res.usage };
-        this.calls.push(call);
-        this.emit("dossier", { call, sections: res.sections });
-      } catch (err) {
-        sections.forEach((s) => this.dirty.add(s));
-        this.emit("error", err);
+        if (!(await this.#writeSections(sections, "dossier"))) sections.forEach((s) => this.dirty.add(s));
       } finally {
         this.dossiering = null;
       }
@@ -171,16 +197,23 @@ export class Session extends EventEmitter {
     return this.dossiering;
   }
 
-  /** End of speech: flush everything, then one consistency pass over all sections with content. */
+  /**
+   * End of speech: flush everything, then the consistency pass, one call per section with content, all at
+   * once. It does not wait for a live dossier call still in flight: that one is older, so whatever it
+   * returns is applied only to sections the final pass has not written yet (and then overwritten).
+   */
   async stop() {
+    this.stopped = true; // no new live dossier calls: the final pass covers every section
     clearTimeout(this.timers.idle);
     clearTimeout(this.timers.dossier);
-    await this.extracting;
-    await this.#extract();
-    this.stopped = true;
-    await this.dossiering;
+    // Flush. A final can still arrive meanwhile (the browser delivers the last one after "Terminar") and
+    // nothing schedules it once stopped, so repeat while words are pending; bounded in case the API fails.
+    for (let i = 0; i < 3 && (this.extracting || this.#pendingWords() > 0); i++) {
+      await this.extracting;
+      await this.#extract();
+    }
     const all = Object.keys(DOSSIER_SECTIONS[this.mode]).filter((s) => this.#factsIn(s) > 0);
-    if (all.length) await this.#dossier(all, { final: true });
+    await Promise.all(all.map((s) => this.#writeSections([s], "dossier-final")));
     this.emit("stopped", { state: this.state, dossier: this.dossier });
     return { state: this.state, dossier: this.dossier, calls: this.calls, rejected: this.rejected, keyFixes: this.keyFixes, rejectedAsks: this.rejectedAsks };
   }
