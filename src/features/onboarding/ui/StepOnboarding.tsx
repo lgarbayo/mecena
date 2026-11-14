@@ -240,10 +240,16 @@ export function StepOnboarding() {
   };
 
   const toText = () => {
-    speech.stop(); // a pending final still arrives and is queued: nothing said is lost
+    speech.flush(); // what is still being said is queued now: stop() would drop the interim text
+    speech.stop();
     setMode("text");
   };
   const toVoice = () => {
+    // The textarea unmounts with the switch: what was typed is queued as an answer, not left behind unseen.
+    if (draft.trim() && phase.at === "step") {
+      queue.enqueue(draft.trim(), "text", phase.i);
+      setDraft("");
+    }
     setMicNotice(null);
     setMode("voice");
     speech.start();
