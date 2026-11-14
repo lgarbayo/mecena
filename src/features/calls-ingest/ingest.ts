@@ -153,6 +153,16 @@ export function createBdnsClient(opts: BdnsClientOptions = {}) {
       await sleep(delay);
       return (page.content ?? []).map((it) => String(it.numeroConvocatoria));
     },
+    /** One page of a search with titles (the national sweep filters on them before paying for the full record). */
+    async searchPage(q: BdnsQuery, since: string, page: number, pageSize: number): Promise<{ hits: { code: string; title: string; organ: string }[]; last: boolean }> {
+      const params = new URLSearchParams({ vpd: "GE", page: String(page), pageSize: String(pageSize), fechaDesde: since, ...q });
+      const res = await getJson<{ content?: { numeroConvocatoria: string | number; descripcion?: string | null; nivel3?: string | null; nivel2?: string | null }[]; last?: boolean }>(
+        `${api}/convocatorias/busqueda?${params}`,
+      );
+      await sleep(delay);
+      const hits = (res.content ?? []).map((it) => ({ code: String(it.numeroConvocatoria), title: it.descripcion ?? "", organ: it.nivel3 ?? it.nivel2 ?? "" }));
+      return { hits, last: res.last === true || hits.length < pageSize };
+    },
     /** Full record, from the raw cache when present. */
     async detail(code: string): Promise<BdnsDetail> {
       const rawFile = opts.rawDir ? path.join(opts.rawDir, `${code}.json`) : undefined;

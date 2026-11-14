@@ -22,7 +22,7 @@ import { bdnsToCallPatch, ccaaOf, disciplineLabel, isDisciplineId, normalizeDisc
 import { isMockAi } from "@/server/ai/llm";
 import { dataDir, getProfile, liveCallsFile, listCalls } from "@/server/store";
 import regionesJson from "../../../data/taxonomy/bdns/regiones.json";
-import { createBdnsClient, DEFAULT_QUERIES, detailToCall, isApplicable, isOpenish, isRelevantRegion, type BdnsQuery } from "./ingest";
+import { createBdnsClient, DEFAULT_QUERIES, detailToCall, isApplicable, isOpenish, isRelevantRegion, type BdnsDetail, type BdnsQuery } from "./ingest";
 
 // ---------- config ----------
 
@@ -202,6 +202,12 @@ export function profileQueries(profile: Profile): ProfileQueries {
 
 export interface CatalogIngestOptions {
   queries: { query: BdnsQuery; regions: string[] }[];
+  /** BDNS codes already chosen by the caller (the national sweep filtered them by title): no search is run for these. */
+  candidates?: { code: string; regions: string[] }[];
+  /** Free check on the full record before Claude: a string is the reason to skip it. */
+  accept?: (d: BdnsDetail) => string | null;
+  /** Do everything except ask Claude and write the catalogue: reports what would be structured. */
+  dryRun?: boolean;
   ai: Pick<AiService, "structureCall">;
   maxNew: number;
   fetchImpl?: typeof fetch;
@@ -219,6 +225,8 @@ export interface CatalogIngestResult {
   found: string[];
   /** How many calls Claude structured in this run (the AI spend). */
   structured: number;
+  /** Dry run only: the BDNS codes that passed every free filter and would be sent to Claude. */
+  wouldStructure?: string[];
   skipped: { bdnsId: string; reason: string }[];
   error?: string;
 }
@@ -241,6 +249,7 @@ export async function ingestIntoCatalog(opts: CatalogIngestOptions): Promise<Cat
   const found = new Set<string>();
   const skipped: CatalogIngestResult["skipped"] = [];
   let structured = 0;
+  const wouldStructure: string[] = [];
 
   try {
     // code → the regions that made it relevant (a code found by several queries is relevant if any of them says so)
@@ -266,6 +275,11 @@ export async function ingestIntoCatalog(opts: CatalogIngestOptions): Promise<Cat
       }
     }
     if (opts.queries.length && failures === opts.queries.length) throw lastError;
+    for (const { code, regions } of opts.candidates ?? []) {
+      const set = hits.get(code) ?? new Set<string>();
+      regions.forEach((r) => set.add(r));
+      hits.set(code, set);
+    }
 
     // Everything already structured, by BDNS code: curated seed first (it wins), then the CLI cache and the live catalogue.
     const known = new Map<string, Call>();
@@ -313,6 +327,15 @@ export async function ingestIntoCatalog(opts: CatalogIngestOptions): Promise<Cat
         skipped.push({ bdnsId: code, reason: "cerrada (plazo estimado vencido)" });
         continue;
       }
+      const refused = opts.accept?.(d);
+      if (refused) {
+        skipped.push({ bdnsId: code, reason: refused });
+        continue;
+      }
+      if (opts.dryRun) {
+        wouldStructure.push(code);
+        continue;
+      }
       if (structured >= opts.maxNew && !inflight.has(code)) {
         skipped.push({ bdnsId: code, reason: "tope de estructuración de esta búsqueda" });
         continue;
@@ -348,12 +371,12 @@ export async function ingestIntoCatalog(opts: CatalogIngestOptions): Promise<Cat
       const call = await job;
       if (call) found.add(call.id);
     }
-    log(`found ${found.size} calls, structured ${structured} new, skipped ${skipped.length}`);
-    return { ok: true, found: [...found], structured, skipped };
+    log(`found ${found.size} calls, structured ${structured} new, skipped ${skipped.length}${opts.dryRun ? `, would structure ${wouldStructure.length}` : ""}`);
+    return { ok: true, found: [...found], structured, wouldStructure, skipped };
   } catch (e) {
     const error = e instanceof Error ? e.message : String(e);
     log(`BDNS search failed, catalogue untouched: ${error}`);
-    return { ok: false, found: [...found], structured, skipped, error };
+    return { ok: false, found: [...found], structured, wouldStructure, skipped, error };
   }
 }
 
