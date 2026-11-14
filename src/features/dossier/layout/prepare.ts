@@ -17,6 +17,7 @@ import { hexToRgb, rgbToHex } from "../style";
 import { isVerbatim, type Catalog } from "./catalog";
 import { PARA_GAP_EM, resolveRender, textHeight, textWidth, wrapParagraph, type TextStyleForMeasure } from "./measure";
 import { snapFace } from "./fonts";
+import { NOTE_QUOTE_LOST, NOTE_TEXT_MISSING, NOTE_TEXT_OVERFLOW, NOTE_TEXT_SHRUNK } from "./notes";
 import {
   FreeLayout,
   MAX_ELEMENTS,
@@ -203,9 +204,9 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
     if (el.ref) paragraphs = catalog.texts[el.ref]?.paragraphs;
     if (!paragraphs && el.quote) {
       if (isVerbatim(el.quote, catalog)) paragraphs = [el.quote.replace(/\s+/g, " ").trim()];
-      else note("He quitado una cita porque ya no aparece tal cual en tus textos (solo uso tus palabras). Si los has editado, pídeme que ajuste la maquetación.");
+      else note(NOTE_QUOTE_LOST);
     } else if (!paragraphs && el.ref) {
-      note("He quitado un texto que no existe en tu dossier.");
+      note(NOTE_TEXT_MISSING);
     }
     if (!paragraphs?.length) {
       textsDropped++;
@@ -358,7 +359,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
         const t = it.el;
         const cont: PreparedText = { ...t, paragraphs: rest, x: t.x, y: SAFE_Y, w: t.w, h: 100 - 2 * SAFE_Y, valign: "top" };
         pages.splice(pi + 1, 0, { background: page.background, items: [{ z: 0, seq: seq++, el: cont }] });
-        note("Un texto era demasiado largo y sigue en la página siguiente.");
+        note(NOTE_TEXT_OVERFLOW);
       }
     }
     // C: overlaps
@@ -387,7 +388,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
     if (widest > usableWidth(t)) {
       const k = (usableWidth(t) / widest) * 0.98;
       t.size = r2(Math.max(6, t.size * k));
-      note("He reducido el tamaño de algún texto para que cupiera entero.");
+      note(NOTE_TEXT_SHRUNK);
     }
     const boxH = hPt(t.h);
     if (needHeight(t, t.paragraphs, t.size) <= boxH) return undefined;
@@ -412,7 +413,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
     if (needHeight(t, t.paragraphs, s) > hPt(t.h) && !long) s = shrinkTo(hardFloor);
     if (needHeight(t, t.paragraphs, s) <= hPt(t.h)) {
       t.size = r2(s);
-      if (t.size < original - 0.05) note("He reducido el tamaño de algún texto para que cupiera entero.");
+      if (t.size < original - 0.05) note(NOTE_TEXT_SHRUNK);
       return undefined;
     }
     if (!long) throw new LayoutError("Un texto no cabe ni en su tamaño mínimo.");
