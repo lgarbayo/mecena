@@ -16,6 +16,8 @@ import {
   PastAward,
   type Application,
   type Dossier,
+  type Invoice,
+  type JustificationMemoria,
   type EntitlementState,
   type JuryScore,
   type Profile,
@@ -386,6 +388,42 @@ export function saveJuryScore(s: JuryScore): Promise<JuryScore> {
 
 export function latestJuryScore(applicationId: string): JuryScore | undefined {
   return listJuryScores(applicationId).at(-1);
+}
+
+// ---------- justification (invoices + final memoria) ----------
+export function listInvoices(applicationId: string): Invoice[] {
+  return readDb()
+    .invoices.filter((i) => i.applicationId === applicationId)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
+export function getInvoice(id: string): Invoice {
+  const i = readDb().invoices.find((x) => x.id === id);
+  if (!i) throw new NotFoundError("invoice");
+  return i;
+}
+export function saveInvoice(i: Invoice): Promise<Invoice> {
+  return updateDb((db) => {
+    const k = db.invoices.findIndex((x) => x.id === i.id);
+    if (k < 0) db.invoices.push(i);
+    else db.invoices[k] = i;
+    return i;
+  });
+}
+export function deleteInvoice(id: string): Promise<void> {
+  return updateDb((db) => {
+    db.invoices = db.invoices.filter((x) => x.id !== id);
+  });
+}
+export function getJustification(applicationId: string): JustificationMemoria | undefined {
+  return readDb().justifications.find((j) => j.applicationId === applicationId);
+}
+export function saveJustification(j: JustificationMemoria): Promise<JustificationMemoria> {
+  return updateDb((db) => {
+    const k = db.justifications.findIndex((x) => x.applicationId === j.applicationId);
+    if (k < 0) db.justifications.push(j);
+    else db.justifications[k] = j;
+    return j;
+  });
 }
 
 // ---------- entitlements ----------

@@ -337,6 +337,45 @@ export const Application = z.object({
 });
 export type Application = z.infer<typeof Application>;
 
+/**
+ * Justification (IDEA #7): an invoice the user photographed to justify a grant. The photo is stored untouched; the
+ * fields are what vision read (or what the user typed) and are always editable. `lineConcept` is the BudgetLine of the
+ * application it counts against (matched by concept), unset while unassigned.
+ */
+export const Invoice = z.object({
+  id: z.string(),
+  applicationId: z.string(),
+  profileId: z.string(),
+  imageUrl: z.string(), // /api/justification/invoices/<id>/image
+  supplier: z.string().default(""),
+  taxId: z.string().optional(), // NIF/CIF of the issuer
+  number: z.string().optional(),
+  date: z.string().optional(), // YYYY-MM-DD
+  concept: z.string().default(""),
+  baseEur: z.number().optional(),
+  vatEur: z.number().optional(),
+  totalEur: z.number().default(0),
+  expenseType: z.string().optional(), // one of Call.allowedExpenses when known
+  lineConcept: z.string().optional(),
+  assignedBy: z.enum(["ai", "user"]).optional(),
+  confidence: z.number().min(0).max(1).default(0),
+  // vision = Claude read the photo; mock = deterministic stand-in (no key); manual = nothing could be read
+  extractedBy: z.enum(["vision", "mock", "manual"]),
+  createdAt: z.string(),
+});
+export type Invoice = z.infer<typeof Invoice>;
+
+/** The final justification memoria of one application: Mecena drafts it, the user edits and submits it. */
+export const JustificationMemoria = z.object({
+  applicationId: z.string(),
+  sections: z.array(ApplicationSection),
+  signature: z.string(), // fingerprint of the invoices + budget it was written from (changes => "desactualizada")
+  generatedBy: z.enum(["ai", "mock"]),
+  generatedAt: z.string(),
+  updatedAt: z.string(),
+});
+export type JustificationMemoria = z.infer<typeof JustificationMemoria>;
+
 export const JudgePersona = z.object({
   id: z.string(),
   name: z.string(), // "Técnica de la administración", "Comisaria de arte", "Gestor cultural"
@@ -458,6 +497,9 @@ export const Db = z.object({
   dossiers: z.array(Dossier),
   applications: z.array(Application),
   juryScores: z.array(JuryScore),
+  // Justification (IDEA #7); default [] so a db.json written before it still parses.
+  invoices: z.array(Invoice).default([]),
+  justifications: z.array(JustificationMemoria).default([]),
   entitlements: z.array(EntitlementState),
   usage: z.array(Usage),
   matchCache: z.array(MatchResult.extend({ cacheKey: z.string() })),

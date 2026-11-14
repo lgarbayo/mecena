@@ -126,7 +126,7 @@ export class PaymentRequiredError extends Error {
 }
 
 /** What a 404 is about. Each has its own user-facing message (right gender, never the internal id). */
-export type NotFoundKind = "profile" | "work" | "image" | "call" | "application" | "user" | "research";
+export type NotFoundKind = "profile" | "work" | "image" | "call" | "application" | "user" | "research" | "invoice";
 
 const NOT_FOUND_MESSAGES: Record<NotFoundKind, string> = {
   profile: "No encontramos este perfil.",
@@ -136,6 +136,7 @@ const NOT_FOUND_MESSAGES: Record<NotFoundKind, string> = {
   application: "No encontramos esta solicitud.",
   user: "No encontramos tu cuenta.",
   research: "No encontramos esta búsqueda ampliada.",
+  invoice: "No encontramos esta factura.",
 };
 
 /** Older call sites pass a label such as `Convocatoria ${id}`: map its first word to a kind (the id is dropped). */
@@ -147,6 +148,7 @@ const LEGACY_LABELS: [RegExp, NotFoundKind][] = [
   [/^solicitud\b/i, "application"],
   [/^usuario\b/i, "user"],
   [/^b[uú]squeda\b/i, "research"],
+  [/^factura\b/i, "invoice"],
 ];
 
 /** 404. The message is safe to show: per-kind Spanish text, without ids. */

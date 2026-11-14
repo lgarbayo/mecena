@@ -13,6 +13,7 @@ import { forgetDeepResearch, forgetDeepResearchUsage } from "@/features/deep-res
 export interface RemovedData {
   profileIds: string[];
   workIds: string[];
+  invoiceIds: string[];
   appUserIds: string[];
 }
 
@@ -24,6 +25,7 @@ export function removeOwnedData(db: Db, user: Pick<User, "id" | "appUserId">): R
   const profileIds = new Set(db.profiles.filter((p) => p.ownerId === user.id).map((p) => p.id));
   const workIds = db.works.filter((w) => profileIds.has(w.profileId)).map((w) => w.id);
   const appIds = new Set(db.applications.filter((a) => profileIds.has(a.profileId)).map((a) => a.id));
+  const invoiceIds = db.invoices.filter((i) => appIds.has(i.applicationId)).map((i) => i.id);
   const appUserIds = [user.appUserId];
 
   db.profiles = db.profiles.filter((p) => !profileIds.has(p.id));
@@ -32,18 +34,20 @@ export function removeOwnedData(db: Db, user: Pick<User, "id" | "appUserId">): R
   db.dossiers = db.dossiers.filter((d) => !profileIds.has(d.profileId));
   db.applications = db.applications.filter((a) => !appIds.has(a.id));
   db.juryScores = db.juryScores.filter((s) => !appIds.has(s.applicationId));
+  db.invoices = db.invoices.filter((i) => !appIds.has(i.applicationId));
+  db.justifications = db.justifications.filter((j) => !appIds.has(j.applicationId));
   db.usage = db.usage.filter((x) => !appUserIds.includes(x.appUserId));
   db.entitlements = db.entitlements.filter((e) => !appUserIds.includes(e.appUserId));
   db.matchCache = db.matchCache.filter((m) => !profileIds.has(m.profileId) && ![...profileIds].some((id) => m.cacheKey.startsWith(`${id}|`)));
   db.variantCache = db.variantCache.filter((v) => !v.profileId || !profileIds.has(v.profileId));
-  return { profileIds: [...profileIds], workIds, appUserIds };
+  return { profileIds: [...profileIds], workIds, invoiceIds, appUserIds };
 }
 
 /** Files of removed profiles: work photos, imported dossiers, PDF exports, designs, BDNS and deep-research state. */
 export async function forgetOwnedFiles(removed: RemovedData, opts: { userId?: string } = {}): Promise<void> {
   forgetDesigns(removed.profileIds);
   await Promise.all([forgetProfileSearches(removed.profileIds), forgetDeepResearch(removed.profileIds)]);
-  removeFiles(uploadsDir(), (f) => removed.workIds.some((id) => f.startsWith(`${id}.`)) || removed.profileIds.some((id) => f.startsWith(`dossier-import-${id}.`)));
+  removeFiles(uploadsDir(), (f) => removed.workIds.some((id) => f.startsWith(`${id}.`)) || removed.invoiceIds.some((id) => f.startsWith(`${id}.`)) || removed.profileIds.some((id) => f.startsWith(`dossier-import-${id}.`)));
   removeFiles(exportsDir(), (f) => removed.profileIds.some((id) => f === `dossier-${id}.pdf` || f.startsWith(`dossier-${id}-`)));
   if (opts.userId) await forgetDeepResearchUsage({ userId: opts.userId, profileIds: removed.profileIds, appUserIds: removed.appUserIds });
 }

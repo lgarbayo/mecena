@@ -8,7 +8,7 @@
  * - appUserId (RevenueCat) is always the user's own; anything the client sends is ignored.
  * - Resources by id (works, applications, scores) are reachable only through one of the user's profiles.
  */
-import { NotFoundError, UnauthorizedError, type Application, type Profile, type ToolContext, type User, type Work } from "@/contracts";
+import { NotFoundError, UnauthorizedError, type Application, type Invoice, type Profile, type ToolContext, type User, type Work } from "@/contracts";
 import { readDb } from "@/server/store";
 import { bindAiAccount } from "@/features/demo/ai-mode";
 import { readSessionToken } from "./cookie";
@@ -57,6 +57,13 @@ export function ownedApplication(userId: string, applicationId: string): Applica
   const a = readDb().applications.find((x) => x.id === applicationId);
   if (!a || !ownsProfileId(userId, a.profileId)) throw new NotFoundError("application");
   return a;
+}
+
+/** An invoice of one of the user's applications (404 otherwise). */
+export function ownedInvoice(userId: string, invoiceId: string): Invoice {
+  const i = readDb().invoices.find((x) => x.id === invoiceId);
+  if (!i || !ownsProfileId(userId, i.profileId)) throw new NotFoundError("invoice");
+  return i;
 }
 
 /** What the shared tools run as: this user, their active profile and their RevenueCat id. */
