@@ -12,6 +12,7 @@ import { buildDossier, dossierUrl, exportDossierPdf } from "@/features/dossier/s
 import { explainCall, searchCalls } from "@/features/matching/service";
 import { draftApplication } from "@/features/drafting/service";
 import { scoreApplication } from "@/features/jury/service";
+import { withJuryRun } from "@/features/purchases/server";
 
 const base = () => serverEnv().publicUrl;
 
@@ -38,7 +39,7 @@ export const handlers: ToolHandlers = {
   },
   score_application: async ({ applicationId }, ctx) => {
     ownedApplication(ctx.userId, applicationId);
-    const score = await scoreApplication(applicationId);
+    const score = await withJuryRun(ctx.appUserId, applicationId, () => scoreApplication(applicationId));
     return { score, url: `${base()}/tribunal/${encodeURIComponent(applicationId)}` };
   },
 };
