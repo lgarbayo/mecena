@@ -5,6 +5,7 @@ import { draftSources } from "@/features/drafting/service";
 import { validateBudget } from "@/features/drafting/rules";
 import { ownedApplication, requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 import { getCall, nowIso, saveApplication } from "@/server/store";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export const GET = route(async (req: Request, { params }: Ctx) => {
  * total above the maximum is a 400 with the reason (the page keeps what they typed). The version (which invalidates the
  * jury score) only changes when the text or the budget changes, not when a document is ticked.
  */
-export const PATCH = route(async (req: Request, { params }: Ctx) => {
+export const PATCH = route(idempotent(async (req: Request, { params }: Ctx) => {
   const app = ownedApplication(requireUser(req).id, (await params).id);
   const patch = await body(req, UpdateApplicationRequest);
   let budget = app.budget;
@@ -39,4 +40,4 @@ export const PATCH = route(async (req: Request, { params }: Ctx) => {
   const next: Application = { ...app, sections, budget, checklist, version: contentChanged ? app.version + 1 : app.version, updatedAt: nowIso() };
   const application = await saveApplication(next);
   return json({ application, sources: draftSources(application) });
-});
+}));

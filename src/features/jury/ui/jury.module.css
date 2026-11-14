@@ -1,51 +1,58 @@
-/* WP-08 simulated jury page — Dark Immersive Glassmorphism (Stage) + Mobile-First + Zero-Italics */
+/* Simulated jury page — light, monochrome, generous whitespace (contract tokens from globals.css). */
 .scoreBox {
   text-align: center;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--g-line);
-  border-radius: 26px;
-  padding: 28px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+  padding: 32px 20px 28px;
   margin: 12px 0 20px;
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .score {
-  font-family: var(--serif);
-  font-size: clamp(4.2rem, 16vw, 5.8rem);
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: clamp(4rem, 16vw, 5.5rem);
+  font-weight: 300;
+  letter-spacing: -0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   margin: 0;
-  background: linear-gradient(95deg, #fffaf3 15%, #ffb38a 55%, #7ee7dc 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text-1);
 }
 
 .score small {
-  font-size: 1.6rem;
-  color: var(--g-ink-2);
-  -webkit-text-fill-color: var(--g-ink-2);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--text-3);
+  margin-left: 2px;
 }
 
 .delta {
-  display: inline-block;
-  margin-top: 8px;
-  background: rgba(79, 209, 197, 0.18);
-  border: 1px solid rgba(79, 209, 197, 0.48);
-  color: #7ee7dc;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-top: 12px;
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+  padding: 2px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
+.deltaFlat {
+  background: var(--surface-3);
+  color: var(--gray-700);
+}
+
 .summary {
-  color: var(--g-ink-2);
-  margin: 10px auto 0;
-  max-width: 38ch;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 14px auto 0;
+  max-width: 40ch;
 }
 
 .judges {
@@ -53,88 +60,133 @@
   flex-wrap: wrap;
   gap: 6px;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .crit {
-  margin: 16px 0;
+  margin: 20px 0;
+}
+
+.crit + .crit {
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
 }
 
 .critHead {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  font-weight: 700;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.critHead span:last-child {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .track {
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.09);
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
   overflow: hidden;
-  margin: 8px 0;
+  margin: 10px 0;
 }
 
 .fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--g-accent), var(--g-accent-2), var(--g-accent-3));
-  border-radius: 999px;
-  transition: width 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  background: var(--gray-950);
+  border-radius: var(--radius-pill);
+  transition: width 900ms var(--ease-out);
 }
 
 .comments {
   list-style: none;
   padding: 0;
-  margin: 6px 0 0;
-  font-size: 0.88rem;
-  color: var(--g-ink-2);
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
 }
 
 .comments li {
-  margin: 4px 0;
+  margin: 6px 0;
 }
 
 .comments b {
-  color: var(--g-ink);
-  font-weight: 600;
+  color: var(--text-1);
+  font-weight: 500;
 }
 
 .fix {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--g-line);
+  padding: 14px 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-1);
+  cursor: pointer;
 }
 
-.fix:last-child {
-  border-bottom: 0;
+.fix small {
+  color: var(--text-3);
+  font-size: 13px;
 }
 
 .fix input {
-  width: 22px;
-  height: 22px;
-  margin-top: 2px;
-  accent-color: var(--g-accent);
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  accent-color: var(--gray-950);
   flex: none;
 }
 
 .changed {
   white-space: pre-wrap;
-  background: rgba(79, 209, 197, 0.12);
-  border-left: 3px solid var(--g-accent-3);
-  color: var(--g-ink);
-  padding: 10px 14px;
-  border-radius: 10px;
+  background: var(--ok-bg);
+  color: var(--text-1);
+  padding: 12px 14px;
+  border-radius: var(--radius-card-sm);
   margin: 8px 0;
-  font-size: 0.92rem;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.removed {
+  white-space: pre-wrap;
+  text-decoration: line-through;
+  text-decoration-color: var(--gray-400);
+  color: var(--text-3);
+  background: var(--surface-2);
+  border-radius: var(--radius-card-sm);
+  padding: 12px 14px;
+  margin: 8px 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.change {
+  margin: 16px 0;
+}
+
+.changeHead {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.01em;
 }
 
 .disclaimer {
-  color: var(--g-ink-2);
-  font-size: 0.82rem;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.5;
   text-align: center;
-  margin: 16px 0 8px;
+  margin: 20px auto 12px;
+  max-width: 48ch;
 }
 
 .actions {
@@ -145,19 +197,17 @@
   flex-wrap: wrap;
   gap: 8px;
   padding: 8px;
-  border-radius: 30px;
-  background: rgba(13, 11, 16, 0.82);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid var(--g-line);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
 .actions > * {
   flex: 1 1 auto;
-  min-height: 46px;
+  min-height: 44px;
   padding: 10px 16px;
-  font-size: 0.9rem;
+  font-size: 14px;
   white-space: nowrap;
 }
 
@@ -166,143 +216,132 @@
 }
 
 .error {
-  color: var(--g-accent);
+  color: var(--err-fg);
+  background: var(--err-bg);
+  border-radius: var(--radius-card-sm);
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .fill { transition: none; }
-}
-
-/* F: progress by phase and by judge, signed delta, written-only criteria, full diff, optional facts per fix */
+/* Progress by phase and by judge */
 .progress {
   list-style: none;
   margin: 0 0 16px;
   display: grid;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--g-line);
-  border-radius: 20px;
-  padding: 16px 18px;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+  font-size: 15px;
 }
 
 .progress li {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  color: var(--g-ink-2);
+  color: var(--text-3);
+  transition: color 200ms var(--ease-out);
 }
 
 .progress li.done {
-  color: var(--g-ink);
+  color: var(--text-2);
 }
 
 .progress li.active {
-  color: var(--g-accent);
-  font-weight: 700;
+  color: var(--text-1);
+  font-weight: 500;
 }
 
 .judgeLine {
   padding-left: 20px;
-  font-size: 0.92rem;
+  font-size: 14px;
 }
 
 .judgeLine b {
   margin-left: auto;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: var(--g-line);
+  background: var(--gray-300);
   flex: none;
 }
 
 .done .dot {
-  background: var(--g-accent-3);
+  background: var(--gray-950);
 }
 
 .active .dot {
-  background: var(--g-accent);
+  background: var(--focus);
   animation: pulse 900ms ease-in-out infinite alternate;
 }
 
 @keyframes pulse {
-  from { opacity: 0.35; }
+  from { opacity: 0.3; }
   to { opacity: 1; }
-}
-
-.deltaFlat {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--g-line);
-  color: var(--g-ink);
 }
 
 .written {
   margin: 4px 0 0;
-  font-size: 0.8rem;
-  color: var(--g-ink-2);
+  font-size: 13px;
+  color: var(--text-3);
 }
 
 .note {
-  color: var(--g-ink-2);
-  font-size: 0.88rem;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.6;
   margin: 4px 0 8px;
 }
 
-.change {
-  margin: 12px 0;
-}
-
-.changeHead {
-  margin: 0;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--g-ink-2);
-}
-
-.removed {
-  white-space: pre-wrap;
-  text-decoration: line-through;
-  text-decoration-color: rgba(255, 255, 255, 0.35);
-  color: var(--g-ink-2);
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
-  padding: 8px 14px;
-  margin: 6px 0;
-  font-size: 0.9rem;
-}
-
 .fixRow {
-  border-bottom: 1px solid var(--g-line);
-  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
 }
 
 .fixRow:last-child {
   border-bottom: 0;
 }
 
-.fixRow .fix {
-  border-bottom: 0;
-}
-
 .fact {
   width: 100%;
+  min-height: 44px;
   margin: 0 0 4px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--g-line);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--g-ink);
+  padding: 10px 14px;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-1);
   font: inherit;
-  font-size: 0.92rem;
+  font-size: 16px;
+  transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+}
+
+.fact::placeholder {
+  color: var(--gray-400);
 }
 
 .fact:focus {
-  outline: 2px solid var(--g-accent);
-  outline-offset: 1px;
+  outline: none;
+  border-color: var(--gray-950);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 22%, transparent);
+}
+
+/* Skeleton shapes for the score while the jury loads */
+.skelScore {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .fill { transition: none; }
   .active .dot { animation: none; }
 }

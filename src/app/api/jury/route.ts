@@ -7,6 +7,7 @@ import { juryStream, wantsStream } from "@/features/jury/stream";
 import { withJuryRun } from "@/features/purchases/server";
 import { ownedApplication, requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 import { getApplication, latestJuryScore } from "@/server/store";
 import { limitAi } from "@/server/ai-limits";
 
@@ -18,7 +19,7 @@ export const GET = route(async (req: Request) => {
   return json({ score: latestJuryScore(id) ?? null, application });
 });
 
-export const POST = route(async (req: Request) => {
+export const POST = route(idempotent(async (req: Request) => {
   const user = requireUser(req);
   limitAi(user, "jury");
   const { applicationId, force } = await body(req, JuryRequest);
@@ -41,4 +42,4 @@ export const POST = route(async (req: Request) => {
     });
   const { score } = await run();
   return json({ score, application: getApplication(applicationId) });
-});
+}, { stream: true }));
