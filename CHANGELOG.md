@@ -44,7 +44,8 @@ The app's interface is in Spanish, so entries quote screen labels as the user se
   `SECURITY.md` (report vulnerabilities privately by email to both maintainers, never in a public
   issue), a `CODE_OF_CONDUCT.md`, and issue and pull request templates under `.github/`. The
   new open-source sections were merged into the existing README, which keeps its deploy and
-  demo-day notes.
+  demo-day notes, and now opens with screenshots of the app on a phone and on desktop
+  (`docs/images/`), so visitors see what Mecena does before reading how it works.
 - This changelog, rebuilt from the git history and the merged pull requests of the hackathon, so
   the story of the project can be read without going through almost 300 commits.
 - `docs/ARCHITECTURE_DECISIONS.md`, which records the main technical decisions taken at the
@@ -60,6 +61,11 @@ The app's interface is in Spanish, so entries quote screen labels as the user se
   flooding the pull request list.
 - A "Project conventions" section in `AGENTS.md`, so AI coding agents also update this changelog,
   write Conventional Commits and run `npm run check` before calling a change finished.
+
+### Fixed
+
+- `.env.example` said `MECENA_LAYOUT_COUNT` defaults to 3 free-layout proposals; the code has
+  used 2 since #66, so anyone tuning AI cost from the example file got the wrong number.
 
 ### Changed
 

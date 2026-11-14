@@ -21,6 +21,19 @@ Markdown that the site shows on the project page (it contains the project number
 
 Built for **1hack-2026** (2026-11-13 / 2026-11-14) by a two-person team. The product UI is in Spanish (Spain); code, commits and docs are in English.
 
+<p align="center">
+  <img src="docs/images/mecena-mobile.png" alt="Mecena on a phone, four screens: the home page («Las ayudas existen. Enterarse a tiempo y prepararlas es otro trabajo.»), the calls feed (37 analysed, 15 that fit, each with a fit score), the artist's dossier generated from the interview, and the simulated jury scoring the application 61/100 against the call's criteria" width="100%">
+</p>
+
+<details>
+<summary>Desktop view</summary>
+
+<img src="docs/images/mecena-home-desktop.png" alt="Mecena home page on a desktop browser: headline, three cited statistics on artists' income and SMEs not applying for grants, and the Empezar button">
+
+</details>
+
+<sub>Screenshots of the local app with the demo scenario (`npm run demo:reset -- --email … --scenario pro`) and AI mocks on; the artist «Antía Varela» and her works are example data.</sub>
+
 ## Contents
 
 - [Live app](#live-app)
