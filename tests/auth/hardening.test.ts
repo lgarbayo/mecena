@@ -1,6 +1,9 @@
 /** Hardening of the sign-in flow: ?next open redirects, parallel login guesses, cross-site (CSRF) login/sign-up. */
 import { describe, expect, it } from "vitest";
+import { POST as login } from "@/app/api/auth/login/route";
 import { loginUrl, safeNext } from "@/contracts";
+import { RATE_LIMIT } from "@/server/auth/rate-limit";
+import { createUser, req, TEST_PASSWORD } from "../helpers";
 
 describe("safeNext (?next after signing in)", () => {
   it("keeps same-site paths, normalised", () => {
@@ -46,5 +49,25 @@ describe("safeNext (?next after signing in)", () => {
     expect(safeNext("/./entrar")).toBe("/");
     expect(loginUrl("/\t/evil.com")).toBe("/entrar");
     expect(loginUrl("/obras")).toBe("/entrar?next=%2Fobras");
+  });
+});
+
+describe("login rate limit under parallel requests", () => {
+  it(`a burst of parallel wrong guesses gets at most ${RATE_LIMIT.attempts} tries, the rest 429`, async () => {
+    await createUser("burst@example.com");
+    const n = RATE_LIMIT.attempts * 3;
+    const results = await Promise.all(
+      Array.from({ length: n }, (_, i) => login(req("/api/auth/login", { body: { email: "burst@example.com", password: `mal-${i}-xxxx` }, cookie: null }))),
+    );
+    const statuses = results.map((r) => r.status);
+    expect(statuses.filter((s) => s === 401)).toHaveLength(RATE_LIMIT.attempts);
+    expect(statuses.filter((s) => s === 429)).toHaveLength(n - RATE_LIMIT.attempts);
+  });
+
+  it("successful logins do not use up the window", async () => {
+    await createUser("often@example.com");
+    for (let i = 0; i < RATE_LIMIT.attempts + 2; i++) {
+      expect((await login(req("/api/auth/login", { body: { email: "often@example.com", password: TEST_PASSWORD }, cookie: null }))).status).toBe(200);
+    }
   });
 });

@@ -15,13 +15,27 @@ function recent(key: string, now: number): number[] {
   return list;
 }
 
-/** Throws TooManyRequestsError when any key already used up its attempts in the window. */
-export function assertNotLimited(keys: string[], now = Date.now()): void {
+/**
+ * Check and count one attempt in a single synchronous step: throws TooManyRequestsError when any key already used up
+ * its attempts in the window, otherwise records the attempt on every key straight away. Call it before any await, so
+ * a burst of parallel requests cannot all pass the check before the first one is counted. Returns the timestamp
+ * recorded, for refundAttempt.
+ */
+export function consumeAttempt(keys: string[], now = Date.now()): number {
   if (keys.some((k) => recent(k, now).length >= RATE_LIMIT.attempts)) throw new TooManyRequestsError();
+  for (const k of keys) hits.set(k, [...recent(k, now), now]);
+  return now;
 }
 
-export function recordAttempt(keys: string[], now = Date.now()): void {
-  for (const k of keys) hits.set(k, [...recent(k, now), now]);
+/** Gives back an attempt consumeAttempt counted (a successful login does not use up the window). */
+export function refundAttempt(keys: string[], at: number): void {
+  for (const k of keys) {
+    const list = hits.get(k);
+    const i = list?.lastIndexOf(at) ?? -1;
+    if (!list || i < 0) continue;
+    list.splice(i, 1);
+    if (!list.length) hits.delete(k);
+  }
 }
 
 /** Tests only. */
