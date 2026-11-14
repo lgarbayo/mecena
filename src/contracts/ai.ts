@@ -23,6 +23,7 @@ import {
   ProfilePatch,
   TechnicalSheet,
   TranscriptSegment,
+  UserFact,
   VariantFormatCheck,
   Work,
 } from "./domain";
@@ -157,6 +158,9 @@ export interface ReviseApplicationInput {
   application: Application;
   transcript: TranscriptSegment[];
   fixes: string[]; // from the jury, accepted by the user
+  facts?: UserFact[]; // data the user typed for some fixes: their own words, never invented
+  weakest?: { name: string; points: number; maxPoints: number; comments: string[] }[]; // lowest-scored criteria first
+  works?: Work[];
 }
 
 // ---- Jury (WP-09) ----
@@ -164,6 +168,7 @@ export interface JudgeApplicationInput {
   call: Call;
   application: Application;
   judge: JudgePersona;
+  works?: Work[]; // technical sheets of the user's works (the judges see no images)
 }
 export const JudgeVerdict = z.object({
   judgeId: z.string(),

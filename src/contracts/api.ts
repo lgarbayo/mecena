@@ -193,8 +193,16 @@ export const UpdateApplicationRequest = capped(
 );
 
 // /api/jury
-export const JuryRequest = z.object({ applicationId: ID });
-export const JuryImproveRequest = z.object({ applicationId: ID, scoreId: ID, fixes: z.array(userText(1000)).max(30).optional() });
+// force: score again even if the current version already has a score (default: reuse it, or join the one in flight)
+export const JuryRequest = z.object({ applicationId: ID, force: z.boolean().optional() });
+export const JuryImproveRequest = z.object({
+  applicationId: ID,
+  scoreId: ID,
+  fixes: z.array(userText(1000)).max(30).optional(), // must be fixes of that score (filtered server-side); omitted = all
+  facts: z.array(z.object({ fix: userText(1000), text: z.string().trim().min(1).max(300) })).max(15).optional(), // data the user typed per fix
+  stage: z.enum(["revise", "full"]).optional(), // "revise" = only apply the fixes (the client re-scores with progress); default "full"
+});
+export const JuryUndoRequest = z.object({ applicationId: ID });
 // GET /api/jury?applicationId -> latest score (or null)
 export const JuryLatestResponse = z.object({ score: JuryScore.nullable(), application: Application });
 export const JuryResponse = z.object({ score: JuryScore, previous: JuryScore.optional(), application: Application });

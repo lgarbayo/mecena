@@ -295,6 +295,30 @@ export type BudgetLine = z.infer<typeof BudgetLine>;
 export const ChecklistItem = z.object({ item: z.string(), done: z.boolean().default(false), hint: z.string().optional() });
 export type ChecklistItem = z.infer<typeof ChecklistItem>;
 
+/** A fact the user typed for one jury fix (a date, a figure, a name): the revision may use it as their own words. */
+export const UserFact = z.object({ fix: z.string(), text: z.string() });
+export type UserFact = z.infer<typeof UserFact>;
+
+export const ApplicationRevision = z.object({
+  fromScoreId: z.string(), // the jury score whose fixes were applied
+  version: z.number().int(), // the application version the revision produced
+  fixes: z.array(z.string()), // accepted fixes (validated against that score)
+  proposed: z.number().int(), // how many fixes that score proposed
+  baseTotal: z.number(), // that score's total
+  facts: z.array(UserFact).default([]),
+});
+export type ApplicationRevision = z.infer<typeof ApplicationRevision>;
+
+export const ApplicationSnapshot = z.object({
+  version: z.number().int(),
+  status: z.enum(["draft", "reviewed", "ready"]),
+  sections: z.array(ApplicationSection),
+  budget: z.array(BudgetLine),
+  checklist: z.array(ChecklistItem),
+  revision: ApplicationRevision.optional(),
+});
+export type ApplicationSnapshot = z.infer<typeof ApplicationSnapshot>;
+
 export const Application = z.object({
   id: z.string(),
   profileId: z.string(),
@@ -304,6 +328,10 @@ export const Application = z.object({
   budget: z.array(BudgetLine),
   checklist: z.array(ChecklistItem),
   status: z.enum(["draft", "reviewed", "ready"]),
+  // F: the last "Aplicar mejoras" (makes it idempotent: a retry after a failed re-score only re-scores this version).
+  revision: ApplicationRevision.optional(),
+  // F: the draft as it was before the last "Aplicar mejoras", so the user can undo it (they have the last word).
+  previous: ApplicationSnapshot.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -323,6 +351,8 @@ export const CriterionScore = z.object({
   byJudge: z.array(z.object({ judgeId: z.string(), points: z.number(), comment: z.string() })),
   points: z.number(), // average across judges
   fixes: z.array(z.string()), // concrete, actionable improvements
+  // F: visual criterion (artistic quality, originality…) judged from the written application only (judges see no images)
+  writtenOnly: z.boolean().optional(),
 });
 export type CriterionScore = z.infer<typeof CriterionScore>;
 
@@ -335,6 +365,7 @@ export const JuryScore = z.object({
   total: z.number().min(0).max(100), // normalised to 100
   summary: z.string(),
   disclaimer: z.string(), // "Simulación orientativa; no predice la resolución real."
+  estimated: z.boolean().optional(), // F: the criteria are estimated (the bases publish no scores)
   createdAt: z.string(),
 });
 export type JuryScore = z.infer<typeof JuryScore>;
