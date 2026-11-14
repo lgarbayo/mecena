@@ -60,7 +60,7 @@
 .dossier-wall figure { margin: 0; padding: 0; }
 .dossier-wall ol,
 .dossier-wall ul { list-style: none; }
-.dossier-wall cite { font-style: italic; }
+.dossier-wall cite { font-style: normal; }
 .dossier-wall a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
 .dossier-wall a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .dossier-wall .dossier {
@@ -167,7 +167,7 @@
 .dossier-wall .cover__line {
   font-size: var(--fs-lead);
   line-height: 1.3;
-  font-style: italic;
+  font-style: normal;
   text-wrap: pretty;
 }
 .dossier-wall .prose { max-width: 36em; }
@@ -341,7 +341,7 @@
 .dossier-wall .hint {
   display: none;
   font-family: var(--serif);
-  font-style: italic;
+  font-style: normal;
   color: var(--granite);
   margin-top: 1.75rem;
   padding-top: 0.75rem;

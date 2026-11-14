@@ -52,7 +52,7 @@ function designProps(design?: DossierDesign): { wall?: Vars; sheet?: Vars; attrs
     "--display-weight": String(display.weight),
     "--display-tracking": `${display.tracking}em`,
     "--display-case": display.uppercase ? "uppercase" : "none",
-    "--display-style": display.italic ? "italic" : "normal",
+    "--display-style": "normal",
     "--body-scale": String(body.scale),
     "--name-scale": String(design.cover.nameScale),
     "--radius": `${design.rhythm.corners}px`,
