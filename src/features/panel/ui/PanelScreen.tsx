@@ -9,6 +9,7 @@ import Link from "next/link";
 import { API, ROUTES } from "@/contracts";
 import { Button, Card, Tag } from "@/components/ui";
 import { apiSend, ApiClientError } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import type { MyInvitations, Panel, PanelCall } from "../service";
 import styles from "./panel.module.css";
 
@@ -28,40 +29,44 @@ function Deadline({ c }: { c: PanelCall }) {
 
 export function PanelScreen({ panel, mine }: { panel: Panel & { hasOrg: boolean }; mine: MyInvitations }) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
   const [name, setName] = useState("");
   const [kind, setKind] = useState<"school" | "association">("school");
   const [email, setEmail] = useState("");
 
-  const run = async (fn: () => Promise<unknown>) => {
-    setBusy(true);
-    setError(null);
+  // Each mutation carries an Idempotency-Key, reused on a retry: a double tap never creates two organisations or invitations.
+  const createOrg = useAction((idempotencyKey: string, orgName: string, orgKind: "school" | "association") =>
+    apiSend(API.panel, { name: orgName, kind: orgKind }, "POST", undefined, { idempotencyKey }),
+  );
+  const inviteOne = useAction((idempotencyKey: string, to: string) => apiSend(API.panelInvitations, { email: to }, "POST", undefined, { idempotencyKey }));
+  const accept = useAction((idempotencyKey: string, id: string) => apiSend(API.panelMembership(id), {}, "PATCH", undefined, { idempotencyKey }));
+  const endOne = useAction((idempotencyKey: string, id: string) => apiSend(API.panelMembership(id), {}, "DELETE", undefined, { idempotencyKey }));
+  const all = [createOrg, inviteOne, accept, endOne];
+  const busy = all.some((a) => a.pending);
+  const failure = all.find((a) => a.error)?.error;
+  const error = failure === undefined ? null : failure instanceof ApiClientError ? failure.message : "No he podido hacerlo. Inténtalo de nuevo.";
+
+  /** Runs one action (clearing the others' errors), refreshes the server-rendered panel on success. */
+  const fire = async <A extends unknown[]>(a: { run: (...args: A) => Promise<unknown> }, ...args: A): Promise<boolean> => {
+    for (const other of all) if ((other as unknown) !== a) other.reset();
+    let ok = false;
     try {
-      await fn();
-      router.refresh();
-    } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : "No he podido hacerlo. Inténtalo de nuevo.");
-    } finally {
-      setBusy(false);
+      ok = (await a.run(...args)) !== undefined;
+    } catch {
+      ok = false;
     }
+    if (ok) router.refresh();
+    return ok;
   };
   const create = (e: FormEvent) => {
     e.preventDefault();
-    void run(async () => {
-      await apiSend(API.panel, { name, kind });
-      setName("");
-    });
+    void fire(createOrg, name, kind).then((ok) => ok && setName(""));
   };
   const invite = (e: FormEvent) => {
     e.preventDefault();
-    void run(async () => {
-      await apiSend(API.panelInvitations, { email });
-      setEmail("");
-    });
+    void fire(inviteOne, email).then((ok) => ok && setEmail(""));
   };
   const end = (id: string, ask: string) => {
-    if (window.confirm(ask)) void run(() => apiSend(API.panelMembership(id), {}, "DELETE"));
+    if (window.confirm(ask)) void fire(endOne, id);
   };
 
   const { summary: s } = panel;
@@ -228,7 +233,7 @@ export function PanelScreen({ panel, mine }: { panel: Panel & { hasOrg: boolean 
                   <p className={styles.sub}>Si aceptas, verán el nombre, la disciplina y las convocatorias de tu perfil activo. Nada más.</p>
                 </div>
                 <span className={styles.actions}>
-                  <Button disabled={busy} onClick={() => void run(() => apiSend(API.panelMembership(i.id), {}, "PATCH"))}>
+                  <Button disabled={busy} onClick={() => void fire(accept, i.id)}>
                     Aceptar
                   </Button>
                   <Button variant="quiet" disabled={busy} onClick={() => end(i.id, `¿Rechazar la invitación de ${i.orgName}?`)}>
