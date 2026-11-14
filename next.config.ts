@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Allow phones on the LAN / tunnel to load dev assets.
-  allowedDevOrigins: ["*.trycloudflare.com", "*.ngrok-free.app", "*.ngrok.app", "192.168.*.*", "10.*.*.*"],
+  allowedDevOrigins: ["*.trycloudflare.com", "*.ngrok-free.app", "*.ngrok.app", "*.lhr.life", "*.app.lhr.life", "192.168.*.*", "10.*.*.*"],
   serverExternalPackages: ["@react-pdf/renderer"],
   experimental: { serverActions: { bodySizeLimit: "12mb" } },
 };
