@@ -36,6 +36,11 @@ export const STEPS_COPY = {
   text: { label: "Escribiendo", hint: "Una pregunta por pantalla, a tu ritmo" },
   kind: { creator: "Soy creador/a", business: "Tengo una pyme o soy autónomo/a" },
   importLink: "Ya tengo dossier: subirlo",
+  /** Coming back with a profile already filled: answers add to it unless the person asks to start over. */
+  resumeNote: "Seguimos con lo que ya nos contaste: lo nuevo se suma a tu perfil.",
+  restart: "Prefiero empezar de cero",
+  restartWarning: "Al responder la primera pregunta borraremos lo que nos contaste: tu perfil, la conversación y el texto del dossier. Tus obras se quedan.",
+  keepProfile: "No, seguir con mi perfil",
   step: (i: number, n: number) => `Paso ${i} de ${n}`,
   next: "Siguiente",
   back: "Atrás",
