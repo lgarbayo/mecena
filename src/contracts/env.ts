@@ -47,7 +47,7 @@ export function publicEnv() {
   const apiKey = process.env.NEXT_PUBLIC_REVENUECAT_API_KEY || "";
   return {
     revenueCatApiKey: apiKey || undefined,
-    entitlementId: process.env.NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID || "pro",
+    entitlementId: process.env.NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID || "mecena_pro", // the identifier in our RevenueCat dashboard
     offeringId: process.env.NEXT_PUBLIC_REVENUECAT_OFFERING_ID || "default",
     purchasesMock: process.env.NEXT_PUBLIC_PURCHASES_MOCK === "1" || !apiKey,
   };

@@ -337,8 +337,13 @@ export const EntitlementState = z.object({
   appUserId: z.string(),
   pro: z.boolean(),
   premiumCredits: z.number().int().min(0), // one-off "Solicitud premium" purchases not yet used
-  activeProductId: z.string().optional(),
-  expiresAt: z.string().optional(),
+  // Credits spent on drafts. With RevenueCat: premiumCredits = unique one-off transactions - premiumUsed.
+  premiumUsed: z.number().int().min(0).optional(),
+  activeProductId: z.string().optional(), // "demo" = granted by the server-side demo scenario (never re-verified)
+  expiresAt: z.string().optional(), // Pro ends here (re-synced lazily with RevenueCat when it passes)
+  // Simulated-jury runs per application without Pro (each application includes JURY_RUNS_PER_APPLICATION).
+  juryRuns: z.record(z.string(), z.number().int().min(0)).optional(),
+  verifiedAt: z.string().optional(), // last successful RevenueCat REST verification
   source: z.enum(["revenuecat", "mock"]),
   updatedAt: z.string(),
 });

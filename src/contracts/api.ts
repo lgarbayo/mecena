@@ -17,6 +17,7 @@ import {
   TechnicalSheet,
   Work,
 } from "./domain";
+import { PRODUCTS } from "./purchases";
 
 export const ApiError = z.object({
   error: z.enum(["bad_request", "unauthorized", "forbidden", "not_found", "conflict", "payment_required", "too_many_requests", "ai_failed", "internal"]),
@@ -181,11 +182,10 @@ export const JuryResponse = z.object({ score: JuryScore, previous: JuryScore.opt
 export const EntitlementResponse = z.object({ entitlement: EntitlementState });
 export const EntitlementSyncRequest = z.object({
   appUserId: z.string().optional(), // ignored: the server syncs the signed-in user's app user id
-
-  // mock mode: what was bought; revenuecat mode: server re-verifies via REST when a secret key exists
-  purchasedProductId: z.string().optional(),
-  pro: z.boolean().optional(),
-  premiumCredits: z.number().int().optional(),
+  // What was just bought. Only the explicit mock mode (dev/tests) grants from it; with the RevenueCat secret key the
+  // server re-reads the customer over REST. Any `pro` / `premiumCredits` a client sends is dropped by the schema.
+  purchasedProductId: z.enum([PRODUCTS.proMonthly, PRODUCTS.proAnnual, PRODUCTS.solicitudPremium]).optional(),
+  refresh: z.boolean().optional(), // "Restaurar compras": re-read the customer from RevenueCat
 });
 
 // /api/demo/reset

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { API, ROUTES, type Application, type JuryScore } from "@/contracts";
 import { Button, Card, PageTitle, Spinner, Tag } from "@/components/ui";
 import { ApiClientError, apiGet, apiSend } from "@/lib/api-client";
+import { Paywall } from "@/features/purchases/ui/Paywall";
 import s from "./jury.module.css";
 
 /** Animated count-up between two totals (instant when the user prefers reduced motion). */
@@ -49,6 +50,8 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<"scoring" | "improving" | null>("scoring");
   const [error, setError] = useState<string | null>(null);
+  // 402: the runs included with a Solicitud premium are used up (the jury is Pro)
+  const [paywall, setPaywall] = useState(false);
   const started = useRef(false);
 
   const run = useCallback(async () => {
@@ -61,6 +64,7 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
       setApp(r.application);
       setAccepted(new Set(r.score!.criteria.flatMap((c) => c.fixes)));
     } catch (e) {
+      if (e instanceof ApiClientError && e.paymentRequired) setPaywall(true);
       setError(e instanceof ApiClientError && e.status === 502 ? "El tribunal no ha podido puntuar ahora mismo." : e instanceof Error ? e.message : "Error");
     } finally {
       setBusy(null);
@@ -84,6 +88,7 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
       setApp(r.application);
       setAccepted(new Set(r.score.criteria.flatMap((c) => c.fixes)));
     } catch (e) {
+      if (e instanceof ApiClientError && e.paymentRequired) setPaywall(true);
       setError(e instanceof Error ? e.message : "No se pudieron aplicar las mejoras");
     } finally {
       setBusy(null);
@@ -91,6 +96,18 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
   };
 
   const shown = useCountUp(score?.total ?? 0, previous?.score.total ?? 0);
+  const paywallSheet = (
+    <Paywall
+      open={paywall}
+      trigger="jury"
+      onClose={() => setPaywall(false)}
+      onPurchased={() => {
+        setPaywall(false);
+        setError(null);
+        if (!score) run();
+      }}
+    />
+  );
 
   if (!score || !app)
     return (
@@ -105,6 +122,7 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
             </Button>
           </p>
         )}
+        {paywallSheet}
       </>
     );
 
@@ -206,6 +224,7 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
           Ver la solicitud
         </Link>
       </div>
+      {paywallSheet}
     </>
   );
 }

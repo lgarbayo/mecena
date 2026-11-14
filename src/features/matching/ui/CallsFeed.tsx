@@ -7,6 +7,7 @@ import type { CallsDiagnostics, CallsResponse } from "@/contracts/api";
 import { useApp } from "@/components/shell/AppProvider";
 import { Button, Spinner } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
+import { DeadlineAlert } from "@/features/purchases/ui/DeadlineAlert";
 import { DeepResearchPanel } from "@/features/deep-research/ui/DeepResearchPanel";
 import { apiGet } from "@/lib/api-client";
 import { SCORE_MAX, daysLeft, fitLabel } from "../labels";
@@ -335,6 +336,7 @@ export function CallsFeed() {
         </div>
       </section>
 
+      <DeadlineAlert pro={Boolean(data.pro)} results={data.results} />
       {searching && <p className={s.liveLine}>Buscando en la BDNS convocatorias públicas para tu perfil…</p>}
       {filteredResults.length === 0 && data.lockedCount === 0 && (
         <p className={s.empty}>

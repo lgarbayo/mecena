@@ -5,12 +5,13 @@
  */
 import type { EntitlementState } from "./domain";
 
-export const ENTITLEMENT_PRO = "pro";
+/** The Pro entitlement identifier in our RevenueCat dashboard (NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID overrides it). */
+export const ENTITLEMENT_PRO = "mecena_pro";
 
 /** Product identifiers to create in RevenueCat (Web Billing products) and attach to the default offering. */
 export const PRODUCTS = {
-  proMonthly: "mecena_pro_monthly", // 9 EUR / month, entitlement "pro"
-  proAnnual: "mecena_pro_annual", // 79 EUR / year, entitlement "pro"
+  proMonthly: "mecena_pro_monthly", // 9 EUR / month, grants the Pro entitlement
+  proAnnual: "mecena_pro_annual", // 79 EUR / year, grants the Pro entitlement
   solicitudPremium: "mecena_solicitud_premium", // 15 EUR one-off (consumable): +1 premium credit
 } as const;
 
@@ -44,12 +45,17 @@ export interface PurchasesAdapter {
   getPlans(): Promise<Plan[]>;
   purchase(planId: PlanId, opts?: { htmlTarget?: HTMLElement; email?: string }): Promise<PurchaseOutcome>;
   getEntitlement(): Promise<EntitlementState>;
+  /** "Restaurar compras": the server re-reads the customer from RevenueCat and returns the fresh entitlement. */
+  restore(): Promise<EntitlementState>;
 }
 
 /** Where the paywall was triggered from, for copy and analytics. */
 export type PaywallTrigger = "draft_application" | "match_limit" | "jury" | "dossier_variant" | "pricing_page";
 
 export const FREE_MATCHES_PER_MONTH = 3;
+
+/** Without Pro, each application (unlocked with a Solicitud premium credit) includes this many simulated-jury runs. */
+export const JURY_RUNS_PER_APPLICATION = 5;
 
 export function canDraft(e: Pick<EntitlementState, "pro" | "premiumCredits">): boolean {
   return e.pro || e.premiumCredits > 0;
