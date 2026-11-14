@@ -1,7 +1,7 @@
 "use client";
 /** /entrar: email + password, "Entrar" or "Crear cuenta". After success, back to ?next (or home) with a full reload. */
 import { useState, type FormEvent } from "react";
-import { API } from "@/contracts";
+import { API, safeNext } from "@/contracts";
 import type { MeResponse } from "@/contracts/api";
 import { Button, Card, PageTitle } from "@/components/ui";
 import { ApiClientError, apiSend } from "@/lib/api-client";
@@ -26,7 +26,7 @@ export function LoginScreen({ next, signupCodeRequired, initialMode = "login" }:
     try {
       const body = signup ? { email, password, ...(signupCodeRequired ? { code } : {}) } : { email, password };
       await apiSend<MeResponse>(signup ? API.authSignup : API.authLogin, body);
-      window.location.assign(next);
+      window.location.assign(safeNext(next)); // checked again here: never leave the site after signing in
     } catch (err) {
       setError(err instanceof ApiClientError ? friendly(err) : "No hemos podido conectar. Revisa tu conexión y prueba otra vez.");
       setBusy(false);

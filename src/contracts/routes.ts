@@ -17,11 +17,27 @@ export const ROUTES = {
   schools: "/escuelas",
 } as const;
 
-/** A same-site path to go back to after signing in; anything else (absolute URLs, //host, /entrar itself) is "/". */
+const NEXT_BASE = "http://mecena.invalid";
+
+/**
+ * A same-site path to go back to after signing in; anything else (absolute URLs, //host, /entrar itself) is "/".
+ * Browsers drop tab/CR/LF inside URLs and read "\\" as "/", so "/\t/evil.com" or "/\\evil.com" would turn into
+ * "//evil.com" (another host): any control character or backslash is refused outright, and what is left must
+ * still resolve to this origin. Returns the parsed (normalised) path, never the raw input.
+ */
 export function safeNext(next: string | null | undefined): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return "/";
-  if (next === ROUTES.login || next.startsWith(`${ROUTES.login}?`) || next.startsWith(`${ROUTES.login}/`)) return "/";
-  return next;
+  if (!next || !next.startsWith("/") || /[\u0000-\u001f\u007f\\]/.test(next)) return "/";
+  let url: URL;
+  try {
+    url = new URL(next, NEXT_BASE);
+  } catch {
+    return "/";
+  }
+  if (url.origin !== NEXT_BASE) return "/";
+  const path = url.pathname + url.search + url.hash;
+  if (!path.startsWith("/") || path.startsWith("//")) return "/";
+  if (url.pathname === ROUTES.login || url.pathname.startsWith(`${ROUTES.login}/`)) return "/";
+  return path;
 }
 
 /** The sign-in page, coming back to `next` afterwards. */
