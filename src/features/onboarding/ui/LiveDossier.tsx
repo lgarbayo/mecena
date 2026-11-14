@@ -5,12 +5,13 @@
  * chips that flash when they change, and the section that just changed sliding in. "Ver entero" opens a sheet with
  * the full profile, every section and the photographed works with their sheets.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { DossierSection, Profile, ProfileKind, Work } from "@/contracts";
 import { WorkPhoto } from "@/features/works/WorkPhoto";
 import { ONBOARDING, sectionTitles } from "../copy";
 import { STEPS_COPY as C } from "../steps";
 import { DossierPanel } from "./DossierPanel";
+import { flyChips } from "./flyIn";
 import { filledRows } from "./format";
 import { ProfilePanel } from "./ProfilePanel";
 import s from "./live.module.css";
@@ -57,6 +58,21 @@ export function LiveDossier({ kind, profile, sections, changedSections, changedF
   const chips = rows.flatMap((r) => r.values.map((v) => ({ field: r.field, label: r.label, value: v }))).slice(0, MAX_CHIPS);
   const empty = byKey.size === 0 && chips.length === 0 && works.length === 0;
 
+  // New profile values fly in from the words that produced them (flyIn.ts). Only values that were not on screen
+  // before: when a list field grows, the values it already had stay put.
+  const chipsRef = useRef<HTMLUListElement>(null);
+  const shown = useRef<Set<string> | null>(null);
+  useLayoutEffect(() => {
+    const now = new Set(chips.map((c) => `${c.field}|${c.value}`));
+    const before = shown.current;
+    shown.current = now;
+    if (!before || !chipsRef.current) return; // first render: nothing "arrives"
+    const fresh = [...chipsRef.current.querySelectorAll<HTMLElement>("[data-chip]")].filter((el) => !before.has(el.dataset.chip ?? ""));
+    const host = chipsRef.current.closest<HTMLElement>("[data-stage]");
+    flyChips(fresh, host, host?.querySelector<HTMLElement>('[data-testid="transcript"]') ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per turn result
+  }, [version]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -101,11 +117,11 @@ export function LiveDossier({ kind, profile, sections, changedSections, changedF
         {empty && <p className={s.liveEmpty}>{C.liveEmpty[kind]}</p>}
 
         {chips.length > 0 && (
-          <ul className={s.chips} aria-label={ONBOARDING.profilePanel[kind]}>
+          <ul ref={chipsRef} className={s.chips} aria-label={ONBOARDING.profilePanel[kind]}>
             {chips.map((c) => {
               const isNew = changedFields.has(c.field);
               return (
-                <li key={`${c.field}-${c.value}-${isNew ? version : 0}`} className={`${s.chip} ${isNew ? s.chipNew : ""}`} title={c.label} data-field={c.field}>
+                <li key={`${c.field}-${c.value}-${isNew ? version : 0}`} className={`${s.chip} ${isNew ? s.chipNew : ""}`} title={c.label} data-field={c.field} data-chip={`${c.field}|${c.value}`}>
                   {c.value}
                 </li>
               );

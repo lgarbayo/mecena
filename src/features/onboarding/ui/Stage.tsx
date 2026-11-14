@@ -4,7 +4,7 @@ import s from "./immersive.module.css";
 
 export function Stage({ children, label }: { children: ReactNode; label?: string }) {
   return (
-    <div className={s.stage} aria-label={label}>
+    <div className={s.stage} aria-label={label} data-stage>
       <div className={s.blobs} aria-hidden>
         <span className={s.blob} />
         <span className={s.blob} />

@@ -1,8 +1,9 @@
 "use client";
 /**
  * Voice-reactive orb: while `active`, reads the microphone through Web Audio (AnalyserNode) and morphs an organic
- * shape by frequency band; volume drives size, glow and hue. Without mic access it falls back to `pulse`
- * (bumped whenever the dictation produces text). Idle: slow breathing. Reduced motion: static gradient.
+ * shape by frequency band; volume drives size, glow and hue. Without mic access it follows `pulse` (bumped whenever
+ * the dictation produces text): while words keep arriving the orb "talks" at a syllable-like rate, each new word
+ * adds a kick, and it settles shortly after the last one. Idle: slow breathing. Reduced motion: static gradient.
  * Phones and tablets never get that second microphone stream: there it competes with the dictation itself
  * (SpeechRecognition stops hearing the person once the orb holds the mic), so the orb uses the pulse instead.
  */
@@ -24,6 +25,8 @@ export function VoiceOrb({ active, pulse = 0, size = 280 }: { active: boolean; p
   const canvas = useRef<HTMLCanvasElement>(null);
   const analyser = useRef<AnalyserNode | null>(null);
   const fallback = useRef(0);
+  /** When the dictation last produced text (performance.now()). */
+  const lastWords = useRef(-Infinity);
 
   // mic stream only while active
   useEffect(() => {
@@ -55,7 +58,9 @@ export function VoiceOrb({ active, pulse = 0, size = 280 }: { active: boolean; p
   }, [active]);
 
   useEffect(() => {
-    fallback.current = Math.min(1, fallback.current + 0.55);
+    if (!pulse) return;
+    fallback.current = Math.min(1, fallback.current + 0.45);
+    lastWords.current = performance.now();
   }, [pulse]);
 
   useEffect(() => {
@@ -90,9 +95,13 @@ export function VoiceOrb({ active, pulse = 0, size = 280 }: { active: boolean; p
           bands[i] = bins[Math.floor((k / (POINTS / 2)) * (usable - 1))] / 255;
         }
       } else if (active) {
-        fallback.current *= 0.94;
-        target = fallback.current * 0.8;
-        for (let i = 0; i < POINTS; i++) bands[i] = target * (0.5 + 0.5 * Math.sin(i * 0.45 + t * 4));
+        // No second microphone here: the dictation's words are the signal. "talking" fades out ~0.7 s after the
+        // last word; two out-of-phase sines give an irregular, syllable-rate envelope instead of a steady throb.
+        const talking = Math.max(0, 1 - (now - lastWords.current) / 700);
+        const syllables = Math.abs(Math.sin(t * 9.5) * Math.sin(t * 3.7 + 1.3));
+        fallback.current *= 0.9;
+        target = Math.min(1, talking * (0.22 + 0.5 * syllables) + fallback.current * 0.5);
+        for (let i = 0; i < POINTS; i++) bands[i] = target * (0.4 + 0.6 * Math.abs(Math.sin(i * 0.31 + t * 5) * Math.sin(i * 0.17 - t * 3.1)));
       }
       // smooth neighbouring bands so the outline stays organic instead of jagged
       const smooth = bands.map((_, i) => (bands[(i - 2 + POINTS) % POINTS] + 2 * bands[(i - 1 + POINTS) % POINTS] + 3 * bands[i] + 2 * bands[(i + 1) % POINTS] + bands[(i + 2) % POINTS]) / 9);

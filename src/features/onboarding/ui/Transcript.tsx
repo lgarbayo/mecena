@@ -29,7 +29,9 @@ export function Transcript({ lines, interim, onRetry }: { lines: TranscriptLine[
       <ol ref={box} className={s.lines} data-testid="transcript" aria-live="polite">
         {lines.map((l) => (
           <li key={l.id} className={s.line} data-status={l.status}>
-            <span className={s.lineText}>{l.text}</span>
+            <span className={s.lineText} data-line-text>
+              {l.text}
+            </span>
             {l.status === "failed" ? (
               <span className={s.lineFailed} role="alert">
                 {C.turnStatus.failed}
@@ -44,7 +46,14 @@ export function Transcript({ lines, interim, onRetry }: { lines: TranscriptLine[
         ))}
         {interim && (
           <li className={`${s.line} ${s.interim}`} data-status="interim">
-            <span className={s.lineText}>{interim}</span>
+            <span className={s.lineText}>
+              {/* word by word as the dictation hears them: a new word fades in, the ones before stay still */}
+              {interim.split(/(\s+)/).map((w, i) => (
+                <span key={i} className={s.word}>
+                  {w}
+                </span>
+              ))}
+            </span>
           </li>
         )}
       </ol>

@@ -578,8 +578,9 @@ export function StepOnboarding() {
           ) : null}
         </footer>
 
+        {/* what was noted, for screen readers: on screen the values fly into the live dossier instead (flyIn.ts) */}
         {noted && (
-          <p key={noted.key} className={`${g.glass} ${s.toast}`} role="status">
+          <p key={noted.key} className={s.srOnly} role="status">
             {noted.text}
           </p>
         )}
