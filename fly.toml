@@ -1,0 +1,28 @@
+# Mecena on Fly.io. Single machine on purpose: db.json writes are serialised in-process and the
+# volume mounts on one machine only. Deploy with: fly deploy --ha=false
+app = "mecena"
+primary_region = "cdg"
+
+[build]
+
+[env]
+  NODE_ENV = "production"
+  MECENA_DATA_DIR = "/data"
+  MECENA_PUBLIC_URL = "https://mecena.fly.dev"
+
+[[mounts]]
+  source = "mecena_data"
+  destination = "/data"
+  initial_size = "1gb"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
