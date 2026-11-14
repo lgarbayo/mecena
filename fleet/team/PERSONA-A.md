@@ -29,7 +29,7 @@ Que un artista hable 60 segundos, fotografíe su obra y **vea crecer su perfil y
 ## 3. No-código que te toca
 | # | Tarea | Cuándo |
 |---|---|---|
-| A10 | **Guion de la demo** (≤ 3 min) siguiendo IDEA.md: datos → artista habla y fotografía → dossier y PDF → convocatorias + cambio a pyme → paywall → borrador → tribunal 61 → 84 → (MCP) → cierre con encuesta y LOIs | Sábado antes de las 13:00 |
+| A10 | **Guion de la demo** (≤ 3 min) siguiendo IDEA.md: datos → artista habla y fotografía → dossier y PDF → convocatorias + cambio a pyme → paywall → borrador → tribunal 61 → 84 → (MCP) → cierre con lo que ya funciona (sin encuesta ni LOIs) | Sábado antes de las 13:00 |
 | A11 | **Artista voluntario** para la demo (alguien de la sala o del equipo), con 2–3 obras físicas o en pantalla | Sábado por la mañana |
 | A12 | **Pitch**: problema con datos reales, visión del CEO (artistas → creadores → autónomos y pymes), foso de datos (convocatorias + concesiones), **diapositiva del panel B2B** para escuelas y asociaciones, nicho de entrada (artistas visuales en Galicia) | Sábado 13:00–15:00 |
 | A13 | **Ensayo** completo dos veces con el móvil real y el proyector | Sábado 17:00–18:30 |
