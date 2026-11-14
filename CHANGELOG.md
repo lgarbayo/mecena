@@ -62,16 +62,26 @@ The app's interface is in Spanish, so entries quote screen labels as the user se
 - A "Project conventions" section in `AGENTS.md`, so AI coding agents also update this changelog,
   write Conventional Commits and run `npm run check` before calling a change finished.
 
-### Fixed
-
-- `.env.example` said `MECENA_LAYOUT_COUNT` defaults to 3 free-layout proposals; the code has
-  used 2 since #66, so anyone tuning AI cost from the example file got the wrong number.
-
 ### Changed
 
+- Dependabot no longer proposes major bumps of Node: neither the Docker base image nor
+  `@types/node`. Its first run offered Node 25, which is not an LTS release and which CI (on
+  Node 22) never tests, and `@types/node` 26, which lets TypeScript accept APIs that Node 22
+  does not have. Node moves to the next LTS by hand, all three places at once. (#78, #79 closed)
+- TypeScript 7 for type checking, proposed by Dependabot. It only runs at development and build
+  time, so the JavaScript that reaches users does not change; typecheck, tests and build all
+  pass with it. (#80)
 - Conventional Commits are now the documented commit convention (see `CONTRIBUTING.md`). Most of
   the hackathon history already used them (`feat(onboarding): …`, `fix(voice): …`); writing the
   rule down makes it the same for every new contributor and keeps the history easy to scan.
+
+### Fixed
+
+- A business with an empty profile no longer sees «Ver ayudas para mi empresa» on the home page.
+  The button led to an empty feed; it now appears once the profile has a sector and a city, the
+  same bar the onboarding matches panel already used. (#76)
+- `.env.example` said `MECENA_LAYOUT_COUNT` defaults to 3 free-layout proposals; the code has
+  used 2 since #66, so anyone tuning AI cost from the example file got the wrong number.
 
 ## [0.1.0] - 2026-11-14
 
