@@ -45,8 +45,18 @@ export function isProActive(e: Pick<EntitlementState, "pro" | "expiresAt">, now 
 
 const isDemoGrant = (e: EntitlementState | undefined) => e?.activeProductId === DEMO_PRODUCT_ID;
 
-/** The stored state as callers should see it (expired Pro reads as not Pro). */
+/**
+ * Whether a stored state may grant anything: verified with RevenueCat, granted by the server-side demo scenario, or
+ * any state in the explicit mock mode. A record written from a client claim before server verification existed is
+ * worth nothing until RevenueCat confirms it.
+ */
+function trusted(e: EntitlementState): boolean {
+  return !!e.verifiedAt || isDemoGrant(e) || verificationMode() === "mock";
+}
+
+/** The stored state as callers and gates must see it: untrusted grants dropped, an expired Pro is not Pro. */
 function view(e: EntitlementState): EntitlementState {
+  if (!trusted(e)) return { ...e, pro: false, premiumCredits: 0 };
   return isProActive(e) ? e : { ...e, pro: false };
 }
 
@@ -58,11 +68,28 @@ function upsert(db: Db, e: EntitlementState): EntitlementState {
   return e;
 }
 
+/** After the subscription period ends, keep asking RevenueCat (at most once a minute) for this long: renewal lag. */
+const RENEWAL_GRACE_MS = 24 * 3600e3;
+const RECHECK_MS = 60e3;
+/** After a failed RevenueCat call, lazy re-syncs pause this long so gated requests do not each wait for a timeout. */
+const FAILURE_PAUSE_MS = 30e3;
+const lastFailure = new Map<string, number>();
+/** Tests: forget in-memory RevenueCat failures. */
+export function resetPurchaseSyncState() {
+  lastFailure.clear();
+}
+const paused = (appUserId: string) => Date.now() - (lastFailure.get(appUserId) ?? -Infinity) < FAILURE_PAUSE_MS;
+
 /** Whether the stored state should be re-read from RevenueCat before trusting it. */
-function needsResync(e: EntitlementState | undefined): boolean {
+function needsResync(e: EntitlementState | undefined, now = Date.now()): boolean {
   if (!e || isDemoGrant(e)) return false;
-  if (!e.verifiedAt) return true; // written before server verification existed (a client claim): verify once
-  return e.pro && !isProActive(e); // the subscription period ended: renewed or not?
+  if (!e.verifiedAt) return e.pro || e.premiumCredits > 0; // a client claim from before verification: verify once
+  if (!e.expiresAt) return false;
+  const expires = Date.parse(e.expiresAt);
+  if (expires > now) return false;
+  const verified = Date.parse(e.verifiedAt);
+  if (verified < expires) return true; // the period ended since we last looked: renewed or not?
+  return now - expires < RENEWAL_GRACE_MS && now - verified > RECHECK_MS; // a renewal may still be on its way
 }
 
 /**
@@ -72,7 +99,12 @@ function needsResync(e: EntitlementState | undefined): boolean {
  */
 export async function resolveEntitlement(appUserId: string, opts: { refresh?: boolean } = {}): Promise<EntitlementState> {
   const stored = findIn(readDb(), appUserId);
-  if (verificationMode() === "revenuecat" && (opts.refresh || needsResync(stored))) {
+  const mode = verificationMode();
+  if (opts.refresh && mode === "disabled") {
+    console.error("[purchases] Cannot restore purchases: REVENUECAT_SECRET_API_KEY is not set (see docs/revenuecat.md).");
+    throw new PurchaseVerificationError();
+  }
+  if (mode === "revenuecat" && (opts.refresh || (needsResync(stored) && !paused(appUserId)))) {
     try {
       return view(await syncFromRevenueCat(appUserId));
     } catch (e) {
@@ -80,6 +112,7 @@ export async function resolveEntitlement(appUserId: string, opts: { refresh?: bo
       console.error(`[purchases] lazy RevenueCat re-sync failed for ${appUserId}:`, e);
     }
   }
+  // a failed re-sync falls back to the stored state, minus anything never verified (see view)
   return view(stored ?? blank(appUserId));
 }
 
@@ -105,11 +138,12 @@ export interface DraftReservation {
  */
 export async function reserveDraftCredit(appUserId: string): Promise<DraftReservation> {
   const e = await resolveEntitlement(appUserId);
-  if (!canDraft(e) && verificationMode() === "revenuecat") await syncFromRevenueCat(appUserId).catch(() => undefined);
+  if (!canDraft(e) && verificationMode() === "revenuecat" && !paused(appUserId)) await syncFromRevenueCat(appUserId).catch(() => undefined);
   const usedCredit = await updateDb((db) => {
     const cur = findIn(db, appUserId);
-    if (cur && isProActive(cur)) return false;
-    if (!cur || cur.premiumCredits <= 0) throw new PaymentRequiredError();
+    const now = cur && view(cur);
+    if (now?.pro) return false;
+    if (!cur || !now || now.premiumCredits <= 0) throw new PaymentRequiredError(); // never spends an unverified credit
     upsert(db, { ...cur, premiumCredits: cur.premiumCredits - 1, premiumUsed: (cur.premiumUsed ?? 0) + 1, updatedAt: nowIso() });
     return true;
   });
@@ -129,7 +163,7 @@ export async function reserveDraftCredit(appUserId: string): Promise<DraftReserv
 
 /** Jury runs left for this application without Pro (Infinity with Pro). */
 export function juryRunsLeft(e: EntitlementState, applicationId: string): number {
-  if (isProActive(e)) return Infinity;
+  if (view(e).pro) return Infinity;
   return Math.max(0, JURY_RUNS_PER_APPLICATION - (e.juryRuns?.[applicationId] ?? 0));
 }
 
@@ -142,11 +176,12 @@ export async function withJuryRun<T>(appUserId: string, applicationId: string, f
   await resolveEntitlement(appUserId); // lazy expiry / re-sync
   const counted = await updateDb((db) => {
     const cur = findIn(db, appUserId) ?? blank(appUserId);
-    if (isProActive(cur)) return false;
+    if (view(cur).pro) return false;
     const runs = cur.juryRuns?.[applicationId] ?? 0;
     if (runs >= JURY_RUNS_PER_APPLICATION)
       throw new PaymentRequiredError(`Tu solicitud premium incluye ${JURY_RUNS_PER_APPLICATION} pasadas por el tribunal y ya las has usado. Con Mecena Pro, sin límite.`);
-    upsert(db, { ...cur, juryRuns: { ...cur.juryRuns, [applicationId]: runs + 1 }, updatedAt: nowIso() });
+    // updatedAt is left alone: legacy credit accounting (legacyUsed) depends on it
+    upsert(db, { ...cur, juryRuns: { ...cur.juryRuns, [applicationId]: runs + 1 } });
     return true;
   });
   try {
@@ -181,8 +216,8 @@ export async function fetchSubscriber(appUserId: string, secretKey: string, fetc
  * Credits already spent by a state written before `premiumUsed` existed: under the old "count purchases since the
  * last sync" scheme, credits = purchases known at that sync - used. A claimed (never paid) credit cannot survive this.
  */
-function legacyUsed(previous: EntitlementState, txs: { purchase_date: string }[]): number {
-  const known = txs.filter((t) => Date.parse(t.purchase_date) <= Date.parse(previous.updatedAt)).length;
+function legacyUsed(previous: EntitlementState, txs: { id: string; purchase_date: string }[]): number {
+  const known = new Set(txs.filter((t) => Date.parse(t.purchase_date) <= Date.parse(previous.updatedAt)).map((t) => t.id)).size;
   return Math.max(0, known - previous.premiumCredits);
 }
 
@@ -205,7 +240,8 @@ export function entitlementFromSubscriber(appUserId: string, sub: Subscriber, pr
     premiumCredits: Math.max(0, purchased - used),
     premiumUsed: used,
     ...(demo ? { activeProductId: DEMO_PRODUCT_ID } : active ? { activeProductId: pro.product_identifier } : {}),
-    ...(!demo && active && pro.expires_date ? { expiresAt: pro.expires_date } : {}),
+    // kept after it lapses too, so reads keep asking for a renewal for a while (needsResync)
+    ...(!demo && pro?.expires_date ? { expiresAt: pro.expires_date } : {}),
     ...(previous?.juryRuns ? { juryRuns: previous.juryRuns } : {}),
     verifiedAt: now.toISOString(),
     source: "revenuecat",
@@ -222,7 +258,11 @@ export async function syncFromRevenueCat(appUserId: string, fetchImpl: typeof fe
   const running = syncing.get(appUserId);
   if (running) return running;
   const job = (async () => {
-    const sub = await fetchSubscriber(appUserId, secret, fetchImpl);
+    const sub = await fetchSubscriber(appUserId, secret, fetchImpl).catch((e: unknown) => {
+      lastFailure.set(appUserId, Date.now());
+      throw e;
+    });
+    lastFailure.delete(appUserId);
     // derive inside updateDb so a credit reserved meanwhile (premiumUsed) is never lost
     return updateDb((db) => upsert(db, entitlementFromSubscriber(appUserId, sub, findIn(db, appUserId))));
   })();
@@ -263,7 +303,7 @@ export async function syncEntitlement(
       );
       throw new PurchaseVerificationError();
     }
-    return resolveEntitlement(input.appUserId);
+    return resolveEntitlement(input.appUserId, { refresh: input.refresh }); // a refresh cannot verify: 503
   }
 
   // explicit mock mode: the simulated purchase of a known product, never an arbitrary pro / credits claim

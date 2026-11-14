@@ -5,6 +5,7 @@ import {
   entitlementFromSubscriber,
   PurchaseVerificationError,
   reserveDraftCredit,
+  resetPurchaseSyncState,
   resolveEntitlement,
   syncEntitlement,
   type Subscriber,
@@ -16,6 +17,7 @@ import { loginDemo, req } from "../helpers";
 const USER = "mecena-demo-rc";
 const future = new Date(Date.now() + 30 * 864e5).toISOString();
 const past = new Date(Date.now() - 864e5).toISOString();
+const longAgo = new Date(Date.now() - 2 * 864e5).toISOString(); // last verified before the period ended
 const tx = (id: string, ago = 60_000) => ({ id, purchase_date: new Date(Date.now() - ago).toISOString() });
 // keyed by our dashboard identifier (default "mecena_pro")
 const proEnt = (expires: string | null) => ({ mecena_pro: { expires_date: expires, product_identifier: "mecena_pro_monthly", purchase_date: past } });
@@ -32,6 +34,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  resetPurchaseSyncState();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -98,7 +101,7 @@ describe("syncEntitlement with REVENUECAT_SECRET_API_KEY (REST re-verification)"
 
 describe("lazy re-sync on read", () => {
   it("an expired Pro is re-read from RevenueCat (renewed → still Pro, with the new expiry)", async () => {
-    await saveEntitlement({ appUserId: USER, pro: true, premiumCredits: 0, expiresAt: past, verifiedAt: past, source: "revenuecat", updatedAt: past });
+    await saveEntitlement({ appUserId: USER, pro: true, premiumCredits: 0, expiresAt: past, verifiedAt: longAgo, source: "revenuecat", updatedAt: longAgo });
     const seen: string[] = [];
     vi.stubGlobal("fetch", stub({ entitlements: proEnt(future) }, seen));
     expect(await resolveEntitlement(USER)).toMatchObject({ pro: true, expiresAt: future });
@@ -108,7 +111,7 @@ describe("lazy re-sync on read", () => {
   });
 
   it("an expired Pro that was not renewed ends, and stays ended without asking again", async () => {
-    await saveEntitlement({ appUserId: USER, pro: true, premiumCredits: 0, expiresAt: past, verifiedAt: past, source: "revenuecat", updatedAt: past });
+    await saveEntitlement({ appUserId: USER, pro: true, premiumCredits: 0, expiresAt: past, verifiedAt: longAgo, source: "revenuecat", updatedAt: longAgo });
     const seen: string[] = [];
     vi.stubGlobal("fetch", stub({ entitlements: proEnt(past) }, seen));
     expect((await resolveEntitlement(USER)).pro).toBe(false);
@@ -118,7 +121,7 @@ describe("lazy re-sync on read", () => {
 
   it("RevenueCat down: an expired Pro reads as not Pro", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
-    await saveEntitlement({ appUserId: USER, pro: true, premiumCredits: 0, expiresAt: past, verifiedAt: past, source: "revenuecat", updatedAt: past });
+    await saveEntitlement({ appUserId: USER, pro: true, premiumCredits: 0, expiresAt: past, verifiedAt: longAgo, source: "revenuecat", updatedAt: longAgo });
     vi.stubGlobal("fetch", async () => new Response("down", { status: 500 }));
     expect((await resolveEntitlement(USER)).pro).toBe(false);
   });
@@ -133,6 +136,56 @@ describe("lazy re-sync on read", () => {
     vi.stubGlobal("fetch", stub({ non_subscriptions: { mecena_solicitud_premium: [tx("t1")] } }));
     expect((await reserveDraftCredit(USER)).usedCredit).toBe(true);
     expect(getEntitlement(USER)).toMatchObject({ premiumCredits: 0, premiumUsed: 1 });
+  });
+});
+
+describe("review fixes", () => {
+  it("a lapsed Pro keeps asking RevenueCat (at most once a minute) while a renewal may be on its way", async () => {
+    const justExpired = new Date(Date.now() - 5 * 60e3).toISOString();
+    await saveEntitlement({ appUserId: USER, pro: false, premiumCredits: 0, premiumUsed: 0, expiresAt: justExpired, verifiedAt: new Date(Date.now() - 2 * 60e3).toISOString(), source: "revenuecat", updatedAt: nowIso() });
+    const seen: string[] = [];
+    vi.stubGlobal("fetch", stub({ entitlements: proEnt(future) }, seen));
+    expect((await resolveEntitlement(USER)).pro).toBe(true); // the renewal landed
+    expect(seen).toHaveLength(1);
+  });
+
+  it("after a RevenueCat failure, lazy re-syncs pause instead of waiting on every request", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    await saveEntitlement({ appUserId: USER, pro: true, premiumCredits: 0, expiresAt: past, verifiedAt: longAgo, source: "revenuecat", updatedAt: longAgo });
+    let calls = 0;
+    vi.stubGlobal("fetch", async () => {
+      calls++;
+      return new Response("down", { status: 500 });
+    });
+    await resolveEntitlement(USER);
+    await resolveEntitlement(USER);
+    expect(calls).toBe(1);
+  });
+
+  it("an unverified legacy claim grants nothing while RevenueCat is down, and its credit cannot be spent", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    await saveEntitlement({ appUserId: USER, pro: true, premiumCredits: 999, source: "revenuecat", updatedAt: nowIso() });
+    vi.stubGlobal("fetch", async () => new Response("down", { status: 503 }));
+    expect(await resolveEntitlement(USER)).toMatchObject({ pro: false, premiumCredits: 0 });
+    resetPurchaseSyncState();
+    await expect(reserveDraftCredit(USER)).rejects.toThrow();
+    expect(getEntitlement(USER)).toMatchObject({ premiumCredits: 999 }); // untouched: premiumUsed not invented
+    expect(getEntitlement(USER).premiumUsed).toBeUndefined();
+  });
+
+  it("without the secret key (production) an unverified claim grants nothing, but a demo grant still does", async () => {
+    vi.stubEnv("REVENUECAT_SECRET_API_KEY", "");
+    vi.stubEnv("NODE_ENV", "production");
+    await saveEntitlement({ appUserId: USER, pro: true, premiumCredits: 5, source: "revenuecat", updatedAt: nowIso() });
+    expect(await resolveEntitlement(USER)).toMatchObject({ pro: false, premiumCredits: 0 });
+    await saveEntitlement({ appUserId: "demo-user", pro: true, premiumCredits: 0, activeProductId: DEMO_PRODUCT_ID, source: "mock", updatedAt: nowIso() });
+    expect((await resolveEntitlement("demo-user")).pro).toBe(true);
+  });
+
+  it("legacy credit accounting dedupes transactions by id", () => {
+    const t1 = tx("t1");
+    const prev = { appUserId: USER, pro: false, premiumCredits: 0, source: "revenuecat" as const, updatedAt: nowIso() };
+    expect(entitlementFromSubscriber(USER, { non_subscriptions: { mecena_solicitud_premium: [t1, t1, tx("t2")] } }, prev)).toMatchObject({ premiumUsed: 2, premiumCredits: 0 });
   });
 });
 

@@ -165,6 +165,14 @@ describe("/api/entitlements", () => {
     expect(getEntitlement(DEMO_APP_USER_ID)).toMatchObject({ pro: false, premiumCredits: 0 });
   });
 
+  it("production without the secret key: 'Restaurar compras' answers 503 instead of 'no purchases'", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    expect((await POST(req("/api/entitlements", { body: { refresh: true } }))).status).toBe(503);
+    expect((await GET(req("/api/entitlements?refresh=1"))).status).toBe(503);
+    expect((await GET(req("/api/entitlements"))).status).toBe(200);
+  });
+
   it("a non-mock build without the secret key refuses too", async () => {
     vi.stubEnv("NEXT_PUBLIC_PURCHASES_MOCK", "0");
     vi.spyOn(console, "error").mockImplementation(() => undefined);
