@@ -389,6 +389,12 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
 
       {errorBox}
       <p className={s.disclaimer}>{score.disclaimer}</p>
+      {/* Phones: "Ver la solicitud" leaves the sticky bar (hidden at >=640px, where it stays in the bar). */}
+      <div className={s.mobileLinks}>
+        <Link href={ROUTES.application(app.callId)} className="btn btn-quiet">
+          Ver la solicitud
+        </Link>
+      </div>
       <div className={s.actions}>
         {fixes.length > 0 && (
           <Button onClick={improve} disabled={busy || accepted.size === 0}>
@@ -400,7 +406,7 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
             {phase === "undoing" ? "Deshaciendo…" : "Deshacer mejoras"}
           </Button>
         )}
-        <Link href={ROUTES.application(app.callId)} className="btn btn-quiet">
+        <Link href={ROUTES.application(app.callId)} className={`btn btn-quiet ${s.deskOnly}`}>
           Ver la solicitud
         </Link>
       </div>

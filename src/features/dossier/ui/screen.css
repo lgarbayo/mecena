@@ -267,3 +267,49 @@
 .dossier-skel__bar { display: flex; flex-direction: column; gap: 10px; padding: 8px 0 4px; }
 .dossier-skel__pages { display: grid; gap: 20px; grid-template-columns: 1fr; max-width: 720px; width: 100%; margin: 0 auto; }
 @media (min-width: 720px) { .dossier-skel__pages { grid-template-columns: 1fr 1fr; } }
+
+/* ---- Mobile (<640px) ---- */
+@media (max-width: 639px) {
+  .dossier-screen { gap: 16px; }
+  .dossier-bar { padding-top: 4px; gap: 14px; }
+  .dossier-bar h1 { font-size: 2.125rem; overflow-wrap: anywhere; text-wrap: balance; }
+  /* Both actions share one row while they fit; each grows to fill it. */
+  .dossier-bar__actions > * { flex: 1 1 auto; padding-inline: 16px; }
+
+  /* Cards at phone scale. */
+  .design-panel,
+  .dossier-variant,
+  .dossier-loose { padding: 16px; }
+  .design-panel { gap: 14px; }
+  .design-panel__head h2 { overflow-wrap: anywhere; }
+  .dossier-variant__call,
+  .dossier-loose .dossier-loose__title { overflow-wrap: anywhere; }
+  .dossier-loose .btn { align-self: stretch; }
+  .dossier-loose__list a { display: inline-block; padding: 8px 0; overflow-wrap: anywhere; }
+  .dossier-variant details summary { display: flex; align-items: center; min-height: 44px; padding: 0; }
+
+  /* The textarea label: a taller hit area without moving anything. */
+  .design-panel__ask .design-panel__label { padding-block: 11px; margin-block: -11px; }
+
+  /* Ideas scroll sideways from card edge to card edge; a soft fade at the edge says there is more. */
+  .design-panel__ideas {
+    margin: 0 -16px;
+    padding: 0 16px 2px;
+    scroll-padding-inline: 16px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+  /* The three base styles are few and short: they wrap, so the suggested one is never cut off. */
+  .design-panel__start .design-panel__ideas {
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .design-chip { min-height: 44px; padding: 8px 16px; }
+
+  .layout-proposals { gap: 14px; }
+  .layout-proposal .btn { width: 100%; }
+}

@@ -234,3 +234,30 @@
 .skeletonFields { display: grid; grid-template-columns: 1fr; gap: 12px; }
 @media (min-width: 520px) { .skeletonFields { grid-template-columns: 1fr 1fr; } }
 .readingSkeleton { display: flex; flex-direction: column; gap: 10px; }
+
+/* ---- Mobile (<640px) ---- */
+@media (max-width: 639px) {
+  /* Short fields (year, measures, duration) pair up two by two; long ones keep the full row. */
+  .fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 12px; }
+  .fields > label.field:last-of-type { grid-column: 1 / -1; }
+  .field > span { overflow-wrap: anywhere; }
+
+  /* Thumb tap targets: reorder arrows, photo links, link chips. */
+  .iconBtn { width: 44px; height: 44px; }
+  .photoActions { gap: 4px 16px; }
+  .linkBtn { min-height: 44px; display: inline-flex; align-items: center; }
+  .error .linkBtn { min-height: 0; display: inline; }
+  .links li { min-height: 44px; padding: 0 4px 0 14px; max-width: 100%; }
+  .links li a { min-width: 0; overflow-wrap: anywhere; }
+  .links li .linkBtn { flex: none; padding: 0 10px; }
+
+  /* Fresh photo: a smaller thumb leaves the note room to breathe. */
+  .captureRow { grid-template-columns: 96px minmax(0, 1fr); gap: 12px; }
+  .uploadChip { left: 4px; right: 4px; bottom: 4px; padding: 5px 4px; line-height: 1.15; }
+  .voice textarea { min-height: 112px; }
+
+  .sheetHead { row-gap: 6px; }
+  .reorder { gap: 8px; }
+  .listHead { margin-top: 28px; }
+  .footerCta { margin-top: 24px; }
+}

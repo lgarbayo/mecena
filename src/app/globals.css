@@ -751,3 +751,158 @@ textarea.input {
   .account-initial { display: none; }
   .account-email { display: inline; }
 }
+
+/* ---- Mobile (<640px) ---- */
+/* Phone-only refinements. Everything here sits behind max-width: 639px so tablet and desktop stay unchanged. */
+@media (max-width: 639px) {
+  /* Page frame: less air above the title; the last content clears the bottom nav (~66px) and, where it shows,
+     the agent button (56px, 80px above the bottom edge). */
+  main.app-main {
+    padding-top: 16px;
+    padding-left: max(var(--gutter), env(safe-area-inset-left));
+    padding-right: max(var(--gutter), env(safe-area-inset-right));
+  }
+  body:has(button[aria-haspopup="dialog"][aria-label="Pregúntale a Mecena"]) main.app-main {
+    padding-bottom: calc(152px + env(safe-area-inset-bottom));
+  }
+
+  /* Headings at phone scale: the page title never takes half the first screen. */
+  h1 {
+    font-size: clamp(1.875rem, 8.4vw, 2.25rem);
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 6.4vw, 1.75rem);
+  }
+
+  h1, h2, h3 {
+    overflow-wrap: break-word;
+  }
+
+  .page-title {
+    margin: 4px 0 20px;
+  }
+
+  .kicker {
+    margin-bottom: 6px;
+  }
+
+  .card {
+    padding: 16px;
+    margin: 12px 0;
+  }
+
+  /* Header: brand, mode switch, account initial and "Salir" fit at 320px with 44px tap targets. */
+  /* Right padding is 8px short of the gutter: "Salir" carries 8px of inner padding, so its label still lines up with
+     the page edge while the whole 44px tap area stays inside the header (no overflow). */
+  .app-header {
+    gap: 8px;
+    padding: calc(6px + env(safe-area-inset-top)) max(calc(var(--gutter) - 8px), env(safe-area-inset-right)) 6px max(var(--gutter), env(safe-area-inset-left));
+  }
+
+  .app-header .brand {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    min-height: 44px;
+    font-size: 1.25rem;
+  }
+
+  .header-end {
+    flex: none;
+    gap: 6px;
+  }
+
+  .mode-switch {
+    gap: 0;
+    padding: 2px;
+  }
+
+  .mode-switch button {
+    min-height: 40px;
+    padding: 0 10px;
+  }
+
+  .account {
+    flex: none;
+    gap: 0;
+  }
+
+  .account-link {
+    flex: none;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  /* "Salir" (and "Entrar" when signed out) is a quiet text button with a 44px tap area. */
+  .account-out {
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 8px;
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .account-out:hover,
+  .account-out:active {
+    background: var(--surface-3);
+  }
+
+  /* Bottom navigation: readable labels, safe-area aware on the sides too. */
+  .bottom-nav {
+    padding-left: max(4px, env(safe-area-inset-left));
+    padding-right: max(4px, env(safe-area-inset-right));
+  }
+
+  .bottom-nav a {
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+
+  /* Controls: 44px targets and 16px text in fields (no iOS zoom on focus). */
+  .btn-sm {
+    min-height: 44px;
+  }
+
+  .btn-icon {
+    width: 44px;
+    min-height: 44px;
+  }
+
+  .btn {
+    max-width: 100%;
+  }
+
+  .input,
+  :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]), select, textarea):where(:not([class])) {
+    font-size: 16px;
+  }
+
+  /* Bottom sheet: respects the side safe areas. */
+  .sheet {
+    padding-left: max(var(--gutter), env(safe-area-inset-left));
+    padding-right: max(var(--gutter), env(safe-area-inset-right));
+  }
+}
+
+/* Narrowest phones (320–359px): a tighter header so everything stays on one row. */
+@media (max-width: 359px) {
+  .app-header {
+    gap: 6px;
+  }
+
+  .app-header .brand {
+    font-size: 1.0625rem;
+  }
+
+  .header-end {
+    gap: 4px;
+  }
+
+  .mode-switch button {
+    padding: 0 8px;
+  }
+}

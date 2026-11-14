@@ -592,3 +592,22 @@ html, body { background: #fff; }
 .dossier-wall .cover--text { align-content: center; }
 .dossier-wall .cover--text .cover__name { font-size: clamp(3rem, 11vw, 7.5rem); line-height: 0.98; }
 .dossier-wall .cover--text .cover__line { font-size: clamp(1.1rem, 2.4vw, 1.5rem); }
+
+/* ---- Mobile (<640px), screen only: never reaches the PDF (print). ---- */
+@media screen and (max-width: 639px) {
+  /* One side margin for every density, so bleeds (call band, full-bleed cover) match the sheet padding. */
+  .dossier-wall,
+  .dossier-wall[data-density] { --pad: 16px; }
+  /* Pages read as one scroll: a thin wall band between them, whatever the rhythm. */
+  .dossier-wall .dossier,
+  .dossier-wall[data-density] .dossier { gap: 12px; }
+  .dossier-wall .cover__head { flex-wrap: wrap; gap: 0.25rem 1rem; }
+  .dossier-wall .label__title,
+  .dossier-wall .cv__list li,
+  .dossier-wall .person__name,
+  .dossier-wall .contact__name,
+  .dossier-wall .section-title { overflow-wrap: anywhere; }
+  .dossier-wall .facts { grid-template-columns: minmax(5.5em, 7em) minmax(0, 1fr); column-gap: 0.75rem; }
+  .dossier-wall .facts dd { min-width: 0; overflow-wrap: anywhere; }
+  .dossier-wall .label__links a { display: inline-block; padding: 0.35rem 0; overflow-wrap: anywhere; }
+}

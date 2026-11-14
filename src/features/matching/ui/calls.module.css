@@ -829,3 +829,119 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
+
+/* ---- Mobile (<640px) ---- */
+@media (max-width: 639px) {
+  /* Feed card header: the score pill goes on its own line above the title, so the title and the organizer
+     get the whole card width instead of a narrow column (no more mid-word breaks). */
+  .card {
+    padding: 16px;
+  }
+
+  .card .top {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .card .top > div {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Long amount / deadline tags wrap to several lines: a rounded box reads better than a stretched pill
+     (12px on a 24px-tall tag is still a full pill). */
+  .facts > span {
+    border-radius: 12px;
+    padding: 3px 10px;
+    line-height: 1.4;
+  }
+
+  /* Feed header panel */
+  .fitPanel {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  /* Stat tiles: every label fits ("Descartadas" no longer truncates) */
+  .funnel {
+    grid-template-columns: repeat(3, minmax(min-content, 1fr));
+    gap: 6px;
+  }
+
+  .funnel > div {
+    padding: 10px;
+  }
+
+  .funnel dt {
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .funnel dd {
+    font-size: 26px;
+  }
+
+  /* Quick filters: 44px tap targets; the row scrolls edge to edge of the panel with soft fades as the cue */
+  .quickPills {
+    margin: 0 -14px;
+    padding: 0 14px 2px;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+  }
+
+  .quickPill {
+    min-height: 44px;
+    padding: 8px 16px;
+  }
+
+  /* Bigger hit area without growing the panel */
+  .editProfileLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin: -10px 0 -8px;
+  }
+
+  .incompleteCta {
+    min-height: 44px;
+    padding: 8px 14px;
+  }
+
+  /* ---- Call detail ---- */
+  .hero :global(h1) {
+    font-size: clamp(1.75rem, 7.6vw, 2rem);
+    line-height: 1.12;
+    overflow-wrap: break-word;
+  }
+
+  /* Labels are short ("Importe", "Plazo", "Bases"): give the values the width */
+  .kv {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px 14px;
+    padding: 16px;
+  }
+
+  .kv dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Sticky CTA bar: a little wider than the text column so the primary label never touches its edges */
+  .actions {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+    padding: 5px;
+    margin-inline: -8px;
+  }
+
+  .actions a {
+    padding: 10px 14px;
+  }
+
+  @media (max-width: 359px) {
+    .funnel dt {
+      font-size: 12px;
+    }
+  }
+}
