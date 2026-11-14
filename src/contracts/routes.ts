@@ -13,6 +13,7 @@ export const ROUTES = {
   demo: "/demo",
   login: "/entrar", // sign in / create account (?next=<path>)
   // Not built (IDEA extras #7 justification and #8 B2B panel are pitch-only): no routes here, so nothing links to a 404.
+  account: "/cuenta", // account: "Conectar con Claude" (personal MCP tokens)
 } as const;
 
 /**
@@ -79,5 +80,8 @@ export const API = {
   agent: "/api/agent", // POST { message, history }
   demoReset: "/api/demo/reset", // POST { scenario }: resets the signed-in user's own data only (and loads a scenario)
   demoSettings: "/api/demo/settings", // GET status + scenario checks; POST { deterministicJury?, aiMock? } (own account)
+  mcp: "/api/mcp", // remote MCP server (Streamable HTTP). Auth: Authorization: Bearer <personal token>, no cookie
+  mcpTokens: "/api/mcp-tokens", // GET the user's tokens; POST { label? } -> the new token, shown once
+  mcpToken: (id: string) => `/api/mcp-tokens/${encodeURIComponent(id)}`, // DELETE: revoke
   health: "/api/health", // GET -> { ok: true }, public (Fly health check)
 } as const;

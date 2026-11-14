@@ -230,6 +230,16 @@ export const DemoResetResponse = z.object({
 // /api/demo/settings: the signed-in account's plan-B switches
 export const DemoSettingsRequest = z.object({ deterministicJury: z.boolean().optional(), aiMock: z.boolean().optional() });
 
+// /api/mcp-tokens (personal tokens for the remote MCP endpoint; only their hash is stored)
+export const McpTokenInfo = z.object({ id: z.string(), label: z.string(), prefix: z.string(), createdAt: z.string(), lastUsedAt: z.string().optional() });
+export type McpTokenInfo = z.infer<typeof McpTokenInfo>;
+export const McpTokensResponse = z.object({ tokens: z.array(McpTokenInfo), endpoint: z.string() });
+export type McpTokensResponse = z.infer<typeof McpTokensResponse>;
+export const McpTokenCreateRequest = z.object({ label: z.string().trim().max(60).optional() });
+/** `token` is returned only here, once: the server keeps its sha256. */
+export const McpTokenCreated = z.object({ token: z.string(), info: McpTokenInfo, endpoint: z.string() });
+export type McpTokenCreated = z.infer<typeof McpTokenCreated>;
+
 // /api/agent
 export const AgentRequest = z.object({
   message: userText().min(1),

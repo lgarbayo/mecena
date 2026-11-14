@@ -6,6 +6,8 @@
  *    Public: /entrar, the opening screen (/) and /confianza (PUBLIC_PAGES), /api/auth/*, /api/health, Next build
  *    assets and static files. This is only an optimistic check of the cookie's presence; every route handler and page
  *    validates the session itself (src/server/auth) before touching data.
+ * The remote MCP endpoint (/api/mcp) skips both: it has its own `Authorization: Bearer <personal token>` (which Basic
+ * auth would also claim) and its handler rejects any request without a valid token (src/mcp/http.ts).
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { API, PUBLIC_PAGES } from "@/contracts/routes";
@@ -45,6 +47,9 @@ function basicAuth(request: NextRequest): NextResponse | undefined {
   });
 }
 
+const MCP = "/api/mcp";
+const isMcpPath = (pathname: string) => pathname === MCP || pathname === `${MCP}/`;
+
 /** Paths that work without an account. */
 function isPublicPath(pathname: string): boolean {
   if (pathname === LOGIN || pathname.startsWith(`${LOGIN}/`)) return true;
@@ -58,6 +63,7 @@ function isPublicPath(pathname: string): boolean {
 
 export function proxy(request: NextRequest) {
   if (request.nextUrl.pathname === API.health) return NextResponse.next(); // Fly's health check: no credentials
+  if (isMcpPath(request.nextUrl.pathname)) return NextResponse.next(); // token auth in the route handler
   const denied = basicAuth(request);
   if (denied) return denied;
 

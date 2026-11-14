@@ -16,6 +16,7 @@ import { activeProfile, ownedProfile, userForToken } from "./users";
 
 export { SESSION_COOKIE, readSessionToken, setSessionCookie, clearSessionCookie } from "./cookie";
 export * from "./users";
+export { bearerToken, createMcpToken, listMcpTokens, publicMcpToken, revokeMcpToken, userForMcpToken, MAX_MCP_TOKENS } from "./mcp-tokens";
 
 /** The signed-in user for this request, or undefined. Reads the cookie header, so it works with plain Requests. */
 export function getSessionUser(req: Request): User | undefined {
