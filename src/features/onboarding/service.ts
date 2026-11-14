@@ -7,8 +7,10 @@ import { OnboardingTurnResult, type DossierSection, type OnboardingTurnInput, ty
 import type { OnboardingTurnResponse } from "@/contracts/api";
 import { getAi, mockAi } from "@/server/ai";
 import { appendSegment, getDossier, getProfile, getTranscript, listWorks, mergeProfile, nowIso, saveDossier, saveProfile, updateDb } from "@/server/store";
+import { forgetDesigns, requestDesign } from "@/features/dossier/designs";
 import { warmOnboardingAi } from "./ai";
 import { sectionTitles } from "./copy";
+import { dossierLookRequests } from "./interview";
 
 /** A retry of the same chunk within this window reuses the last segment. */
 const RETRY_WINDOW_MS = 5 * 60_000;
@@ -41,6 +43,7 @@ async function resetProfile(profile: Profile): Promise<Profile> {
     const d = db.dossiers.find((x) => x.profileId === profile.id);
     if (d) d.sections = [];
   });
+  forgetDesigns([profile.id]); // the look came from the old interview too
   return saveProfile({
     id: profile.id,
     ownerId: profile.ownerId,
@@ -135,6 +138,7 @@ export async function processTurn(input: { profileId: string; text: string; sour
     variant: latest?.variant,
     generatedAt: nowIso(),
   });
+  redesignFromInterview(profile.id, segment);
   return {
     profile: nextProfile,
     sections: nextSections,
@@ -143,6 +147,23 @@ export async function processTurn(input: { profileId: string; text: string; sour
     followUpQuestion: result.followUpQuestion,
     segmentId: segment.id,
   };
+}
+
+/** Design requests started by the interview and not finished yet (tests await them). */
+export const pendingDesigns = new Set<Promise<unknown>>();
+
+/**
+ * When the artist says how their dossier should look ("fondo negro, sobrio"), that goes to the design agent
+ * right away, on top of the current design, instead of staying a line in the transcript. In the background:
+ * the interview never waits for the designer.
+ */
+function redesignFromInterview(profileId: string, segment: TranscriptSegment) {
+  const asked = dossierLookRequests(getTranscript(profileId)).some((s) => s.id === segment.id);
+  if (!asked) return;
+  const job = requestDesign({ profileId, request: segment.text, segmentId: segment.id })
+    .catch((e: unknown) => console.error("[onboarding] could not apply the dossier look the artist asked for", e))
+    .finally(() => pendingDesigns.delete(job));
+  pendingDesigns.add(job);
 }
 
 /** Current onboarding state for this profile: lets /onboarding resume after a reload. */
