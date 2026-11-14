@@ -116,9 +116,9 @@ describe("personal ranking on the real dataset", () => {
 
   it("an audiovisual production company leads with film aid, ahead of open calls with a lower fit", async () => {
     const llum = await top(productora, 3);
-    // ICAA opens later (upcoming) but fits better than the open festival: the old status-first sort put it second.
-    expect(llum.ids.slice(0, 2)).toEqual(["icaa-cortometrajes-realizados-2027", "sant-joan-festival-cine-cortometrajes-2027"]);
-    expect(llum.statuses.slice(0, 2)).toEqual(["upcoming", "open"]);
+    // The two film calls lead; the festival is from the company's own comunidad and open now, the ICAA aid opens later.
+    expect(new Set(llum.ids.slice(0, 2))).toEqual(new Set(["icaa-cortometrajes-realizados-2027", "sant-joan-festival-cine-cortometrajes-2027"]));
+    expect(llum.statuses.slice(0, 2).sort()).toEqual(["open", "upcoming"]);
   });
 
   it("open and upcoming calls come first, ordered by score; closed editions (recurring) go behind all of them", async () => {

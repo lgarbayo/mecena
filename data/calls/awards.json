@@ -2455,7 +2455,7 @@
     "year": 2025,
     "beneficiary": "ASOCIACIÓN PALIMOCO TEATRO",
     "beneficiaryKind": "business",
-    "discipline": "artes-visuales",
+    "discipline": "artes-escenicas",
     "amountEur": 2000,
     "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/853424"
   },
@@ -2467,7 +2467,6 @@
     "year": 2025,
     "beneficiary": "VÓRTICE S. COOP. GALEGA",
     "beneficiaryKind": "business",
-    "discipline": "artes-visuales",
     "amountEur": 1500,
     "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/853424"
   },
@@ -2479,7 +2478,6 @@
     "year": 2025,
     "beneficiary": "ASOCIACIÓN LABARATA",
     "beneficiaryKind": "business",
-    "discipline": "artes-visuales",
     "amountEur": 1500,
     "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/853424"
   },
@@ -2491,7 +2489,7 @@
     "year": 2025,
     "beneficiary": "ASOCIACIÓN PALIMOCO TEATRO",
     "beneficiaryKind": "business",
-    "discipline": "artes-visuales",
+    "discipline": "artes-escenicas",
     "amountEur": 600,
     "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/853424"
   },
@@ -2503,7 +2501,7 @@
     "year": 2025,
     "beneficiary": "ASOC CULTURAL TEATRO DO AR - A.C.T.A",
     "beneficiaryKind": "business",
-    "discipline": "artes-visuales",
+    "discipline": "artes-escenicas",
     "amountEur": 600,
     "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/853424"
   },
@@ -2515,7 +2513,6 @@
     "year": 2025,
     "beneficiary": "VÓRTICE S. COOP. GALEGA",
     "beneficiaryKind": "business",
-    "discipline": "artes-visuales",
     "amountEur": 600,
     "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/853424"
   },
@@ -2527,7 +2524,6 @@
     "year": 2025,
     "beneficiary": "ASOCIACIÓN LABARATA",
     "beneficiaryKind": "business",
-    "discipline": "artes-visuales",
     "amountEur": 600,
     "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/853424"
   },
@@ -2539,7 +2535,6 @@
     "year": 2025,
     "beneficiary": "ASOCIACIÓN CULTURAL ESTETA",
     "beneficiaryKind": "business",
-    "discipline": "artes-visuales",
     "amountEur": 600,
     "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/817323"
   },
@@ -2551,7 +2546,6 @@
     "year": 2024,
     "beneficiary": "ASOCIACIÓN CULTURAL ESTETA",
     "beneficiaryKind": "business",
-    "discipline": "artes-visuales",
     "amountEur": 1000,
     "sourceUrl": "https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/817323"
   }

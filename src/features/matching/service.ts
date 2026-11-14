@@ -189,6 +189,37 @@ export function similarAwards(call: Call, max = 3, kind?: ProfileKind): PastAwar
   return [...same, ...related].slice(0, max);
 }
 
+/**
+ * Winners shown to a business: one row per beneficiary and year (BDNS repeats a beneficiary per instalment/top-up),
+ * amounts summed, so a company is never listed twice for the same edition.
+ */
+export function aggregateAwards(awards: PastAward[]): PastAward[] {
+  const by = new Map<string, PastAward>();
+  for (const a of awards) {
+    const key = `${a.beneficiary.trim().toLowerCase()}|${a.year}`;
+    const prev = by.get(key);
+    if (!prev) by.set(key, { ...a });
+    else if (a.amountEur !== undefined) prev.amountEur = (prev.amountEur ?? 0) + a.amountEur;
+  }
+  return [...by.values()];
+}
+
+/**
+ * "Ganadores parecidos a ti" for a creator: BDNS lists winners as people, so instead of naming anyone we show an
+ * anonymous aggregate from the call's history (how many were awarded in the latest edition and the amounts).
+ */
+export function anonymousWinners(history: ReturnType<typeof getCallHistory> | undefined | null): { text: string } | null {
+  const ed = history?.editions.filter((e) => e.awards > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (!ed) return null;
+  const year = ed.date.slice(0, 4);
+  const people = ed.awards === 1 ? "1 persona premiada" : `${ed.awards} personas premiadas`;
+  const lo = ed.amountMinEur;
+  const hi = ed.amountMaxEur;
+  const money = lo !== undefined && hi !== undefined ? (lo === hi ? `, importe ${formatEur(lo)}` : `, importes de ${formatEur(lo)} a ${formatEur(hi)}`) : "";
+  return { text: `${people} en ${year}${money}. Orientativo, no es una probabilidad.` };
+}
+const formatEur = (n: number) => `${Math.round(n).toLocaleString("es-ES")} €`;
+
 /** Detail for GET /api/calls/[id]: explanation + visible score breakdown + checklist with what the user already has. */
 export async function callDetail(input: { callId: string; profileId: string; appUserId: string; now?: Date }) {
   const profile = getProfile(input.profileId);
@@ -209,6 +240,7 @@ export async function callDetail(input: { callId: string; profileId: string; app
       similarAwards: [] as PastAward[],
       history: null as ReturnType<typeof getCallHistory> | null,
       winnerShare: null as ReturnType<typeof winnerShareFor> | null,
+      anonymousWinners: null as { text: string } | null,
       locked: true as const,
       paywall: "match_limit" as const,
     };
@@ -222,7 +254,9 @@ export async function callDetail(input: { callId: string; profileId: string; app
     ...base,
     breakdown,
     checklistItems: checklistFor(profile, base.call, ctx),
-    similarAwards: similarAwards(base.call, 3, profile.kind),
+    similarAwards: profile.kind === "business" ? aggregateAwards(similarAwards(base.call, 12, profile.kind)).slice(0, 3) : similarAwards(base.call, 3, profile.kind),
+    // A creator never sees named winners (BDNS awards are companies): an anonymous aggregate instead.
+    anonymousWinners: profile.kind === "creator" && history ? anonymousWinners(history) : null,
     history, // B3: past editions, success rate and cutoff when published
     winnerShare: history ? (winnerShareFor(history, types) ?? null) : null, // share of past winners of the profile's type
     locked: false as const,

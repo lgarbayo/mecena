@@ -67,6 +67,6 @@ describe("ranking signals", () => {
     expect(score(near)).toBeGreaterThan(score(fee));
   });
   it("a closed edition scores below the same call open", () => {
-    expect(score(near)).toBeGreaterThan(score({ ...near, status: "recurring", deadline: undefined }));
+    expect(score(near)).toBeGreaterThan(score({ ...near, status: "recurring" as const, deadline: undefined as unknown as string }));
   });
 });
