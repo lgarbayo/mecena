@@ -45,7 +45,7 @@ export const STEPS_COPY = {
   /** Coming back with a profile already filled: answers add to it unless the person asks to start over. */
   resumeNote: "Lo nuevo se suma a tu perfil.",
   restart: "Empezar de cero",
-  restartWarning: "Borraremos tu perfil, la conversación y el dossier al responder. Tus obras se quedan.",
+  restartWarning: "Borraremos ya tu perfil, la conversación y el dossier. Tus obras se quedan.",
   keepProfile: "Mejor no",
   step: (i: number, n: number) => `Paso ${i} de ${n}`,
   next: "Siguiente",

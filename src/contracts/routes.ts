@@ -63,6 +63,7 @@ export const API = {
   profile: "/api/profile", // GET active profile; PATCH patch
   profileMode: "/api/profile/mode", // POST { kind } switch to (or create) the user's creator/business profile
   onboardingTurn: "/api/onboarding/turn",
+  onboardingReset: "/api/onboarding/reset", // POST { profileId? } -> starts the onboarding from scratch (keeps works)
   onboardingImport: "/api/onboarding/import", // POST { fileDataUrl? | text? } -> profile + dossier from the user's own dossier
   works: "/api/works", // GET ?profileId, POST create
   work: (id: string) => `/api/works/${encodeURIComponent(id)}`,

@@ -16,9 +16,9 @@ export const GET = route(async (req: Request) => {
 export const PATCH = route(
   idempotent(async (req: Request) => {
     const user = requireUser(req);
-    const { profileId, patch } = await body(req, ProfilePatchRequest);
+    const { profileId, patch, replace } = await body(req, ProfilePatchRequest);
     const profile = await resolveProfile(user, profileId);
-    const next = await patchProfile(profile.id, patch);
+    const next = await patchProfile(profile.id, patch, { replace });
     scheduleProfileSearch({ profileId: next.id, appUserId: user.appUserId }); // background BDNS search for the updated profile
     return json({ profile: next, appUserId: user.appUserId });
   }),

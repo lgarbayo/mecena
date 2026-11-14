@@ -105,6 +105,16 @@
 .row dd { margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-flex; align-items: center; min-height: 24px; max-width: 100%; box-sizing: border-box; font-size: 13px; font-weight: 500; padding: 2px 10px; border-radius: var(--radius-pill); background: var(--surface-3); color: var(--gray-700); }
 .chipEmpty { color: var(--text-3); }
+.rowEdit { margin-left: auto; appearance: none; background: none; border: 0; padding: 4px 2px; font: 500 13px var(--font-sans); color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; touch-action: manipulation; user-select: none; }
+.rowEditing dd { display: block; }
+.rowForm { display: grid; gap: 8px; }
+.rowForm input, .rowForm textarea, .rowForm select { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; color: var(--text-1); background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-input); padding: 8px 10px; }
+.rowHint { color: var(--text-3); font-size: 13px; }
+.rowError { color: var(--accent); font-size: 13px; }
+.rowActions { display: flex; justify-content: flex-end; gap: 8px; }
+.rowBtn { appearance: none; font: 500 14px var(--font-sans); min-height: 36px; padding: 0 16px; border-radius: var(--radius-pill); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-1); cursor: pointer; touch-action: manipulation; user-select: none; transition: transform 120ms ease-out; }
+.rowBtn:active { transform: scale(0.97); }
+.rowBtnMain { background: var(--gray-950); color: var(--surface); border-color: transparent; }
 .flash { animation: flash 2.4s ease-out; }
 @keyframes flash {
   0% { background: var(--gray-950); color: #fff; transform: scale(1.04); }

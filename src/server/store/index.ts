@@ -209,11 +209,30 @@ export function withCanonicalFields(p: Profile): Profile {
   return next;
 }
 
-export function patchProfile(id: string, patch: ProfilePatch): Promise<Profile> {
+/** The person's own edit: the fields sent replace what is there, and "" or [] clears a field. */
+export function replaceProfileFields(p: Profile, patch: ProfilePatch): Profile {
+  const next: Record<string, unknown> = { ...p };
+  if (patch.city !== undefined && patch.city !== p.city) {
+    if (patch.province === undefined) delete next.province;
+    if (patch.region === undefined) delete next.region;
+  }
+  if (patch.sector !== undefined && patch.sector !== p.sector && patch.cnae === undefined) delete next.cnae;
+  for (const [k, v] of Object.entries(patch)) {
+    if (k === "id" || k === "ownerId" || k === "kind" || v === undefined) continue;
+    if ((ARRAY_FIELDS as readonly string[]).includes(k)) next[k] = Array.isArray(v) ? v.map((x) => String(x).trim()).filter(Boolean) : [];
+    else if (v === null || (typeof v === "string" && !v.trim())) delete next[k];
+    else next[k] = typeof v === "string" ? v.trim() : v;
+  }
+  if (next.displayName === undefined) next.displayName = "";
+  next.updatedAt = nowIso();
+  return withCanonicalFields(next as Profile);
+}
+
+export function patchProfile(id: string, patch: ProfilePatch, opts: { replace?: boolean } = {}): Promise<Profile> {
   return updateDb((db) => {
     const i = db.profiles.findIndex((x) => x.id === id);
     if (i < 0) throw new NotFoundError("profile");
-    db.profiles[i] = mergeProfile(db.profiles[i], patch);
+    db.profiles[i] = opts.replace ? replaceProfileFields(db.profiles[i], patch) : mergeProfile(db.profiles[i], patch);
     return db.profiles[i];
   });
 }
