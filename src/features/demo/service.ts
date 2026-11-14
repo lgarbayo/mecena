@@ -6,7 +6,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { ForbiddenError, publicEnv, serverEnv, type Application, type Call, type Db, type Dossier, type Invoice, type OrgMembership, type Profile, type User, type Work } from "@/contracts";
 import { blankProfileFor, newAppUserId } from "@/server/auth";
-import { exportsDir, initialDb, listCalls, nowIso, resetDb, updateDb, uploadsDir, withCanonicalFields } from "@/server/store";
+import { exportsDir, initialDb, listCalls, nowIso, readDb, resetDb, updateDb, uploadsDir, withCanonicalFields } from "@/server/store";
 import { forgetDesigns } from "@/features/dossier/designs";
 import { forgetProfileSearches } from "@/features/calls-ingest/live";
 import { forgetDeepResearch } from "@/features/deep-research/service";
@@ -267,6 +267,7 @@ function removeFiles(dir: string, match: (file: string) => boolean) {
 
 /** Admin CLI only: back to the initial database (every account and session is gone). */
 export async function resetAllDemo(): Promise<void> {
-  await resetDb(initialDb());
+  const inviteCodes = readDb().inviteCodes; // invite codes are admin configuration, not account data: they survive
+  await resetDb({ ...initialDb(), inviteCodes });
   await Promise.all([forgetProfileSearches(), forgetDeepResearch()]);
 }

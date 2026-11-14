@@ -1,7 +1,8 @@
 // Sign in / create an account. Already signed in (valid session) -> straight to ?next.
 import { redirect } from "next/navigation";
-import { safeNext, serverEnv } from "@/contracts";
+import { safeNext } from "@/contracts";
 import { LoginScreen } from "@/features/auth/LoginScreen";
+import { signupCodeRequired } from "@/server/auth";
 import { currentUser } from "@/server/auth/page";
 
 export const metadata = { title: "Entrar · Mecena" };
@@ -11,5 +12,5 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
   const sp = await searchParams;
   const next = safeNext(Array.isArray(sp.next) ? sp.next[0] : sp.next);
   if (await currentUser()) redirect(next);
-  return <LoginScreen next={next} signupCodeRequired={Boolean(serverEnv().signupCode)} initialMode={sp.cuenta === "nueva" ? "signup" : "login"} />;
+  return <LoginScreen next={next} signupCodeRequired={signupCodeRequired()} initialMode={sp.cuenta === "nueva" ? "signup" : "login"} />;
 }

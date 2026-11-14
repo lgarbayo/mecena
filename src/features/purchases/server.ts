@@ -54,9 +54,12 @@ function trusted(e: EntitlementState): boolean {
   return !!e.verifiedAt || isDemoGrant(e) || verificationMode() === "mock";
 }
 
+/** Credits the server gifted (invite codes) and the account has not spent: valid without any RevenueCat check. */
+const giftedLeft = (e: Pick<EntitlementState, "grantedCredits" | "premiumUsed">) => Math.max(0, (e.grantedCredits ?? 0) - (e.premiumUsed ?? 0));
+
 /** The stored state as callers and gates must see it: untrusted grants dropped, an expired Pro is not Pro. */
 function view(e: EntitlementState): EntitlementState {
-  if (!trusted(e)) return { ...e, pro: false, premiumCredits: 0 };
+  if (!trusted(e)) return { ...e, pro: false, premiumCredits: giftedLeft(e) }; // only what the server itself gifted counts
   return isProActive(e) ? e : { ...e, pro: false };
 }
 
@@ -83,7 +86,7 @@ const paused = (appUserId: string) => Date.now() - (lastFailure.get(appUserId) ?
 /** Whether the stored state should be re-read from RevenueCat before trusting it. */
 function needsResync(e: EntitlementState | undefined, now = Date.now()): boolean {
   if (!e || isDemoGrant(e)) return false;
-  if (!e.verifiedAt) return e.pro || e.premiumCredits > 0; // a client claim from before verification: verify once
+  if (!e.verifiedAt) return e.pro || e.premiumCredits > giftedLeft(e); // a client claim from before verification: verify once
   if (!e.expiresAt) return false;
   const expires = Date.parse(e.expiresAt);
   if (expires > now) return false;
@@ -223,7 +226,7 @@ function legacyUsed(previous: EntitlementState, txs: { id: string; purchase_date
 
 /**
  * Derive the entitlement from the RevenueCat customer. Premium credits = the customer's unique
- * `mecena_solicitud_premium` transactions minus the ones already spent on drafts (`premiumUsed`, kept in our db).
+ * `mecena_solicitud_premium` transactions plus the credits gifted by invite codes, minus the ones already spent on drafts (`premiumUsed`, kept in our db).
  * A demo grant (server-side demo scenario) keeps its Pro; only its credits follow RevenueCat.
  */
 export function entitlementFromSubscriber(appUserId: string, sub: Subscriber, previous: EntitlementState | undefined, now = new Date(), entitlementId = publicEnv().entitlementId): EntitlementState {
@@ -233,12 +236,14 @@ export function entitlementFromSubscriber(appUserId: string, sub: Subscriber, pr
   const txs = sub.non_subscriptions?.[PRODUCTS.solicitudPremium] ?? [];
   const purchased = new Set(txs.map((t) => t.id)).size;
   const used = previous ? (previous.premiumUsed ?? legacyUsed(previous, txs)) : 0;
+  const granted = previous?.grantedCredits ?? 0; // gifted by an invite code: not in RevenueCat, so carried over
   const demo = isDemoGrant(previous);
   return {
     appUserId,
     pro: active || demo,
-    premiumCredits: Math.max(0, purchased - used),
+    premiumCredits: Math.max(0, purchased + granted - used),
     premiumUsed: used,
+    ...(granted ? { grantedCredits: granted } : {}),
     ...(demo ? { activeProductId: DEMO_PRODUCT_ID } : active ? { activeProductId: pro.product_identifier } : {}),
     // kept after it lapses too, so reads keep asking for a renewal for a while (needsResync)
     ...(!demo && pro?.expires_date ? { expiresAt: pro.expires_date } : {}),

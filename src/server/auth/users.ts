@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { ConflictError, NotFoundError, type Profile, type ProfileKind, type User } from "@/contracts";
 import { blankBusiness, blankCreator } from "@/fixtures";
 import { nowIso, readDb, updateDb, withCanonicalFields } from "@/server/store";
+import { redeemInvite, type Redemption } from "./invites";
 import { hashToken, newSessionToken, SESSION_MAX_AGE_S } from "./cookie";
 import { dummyHash, hashPassword, verifyPassword } from "./password";
 
@@ -29,15 +30,21 @@ export function findUserByEmail(email: string): User | undefined {
   return readDb().users.find((u) => u.email === e);
 }
 
-/** Creates the account and its first (blank creator) profile. 409 when the email is taken. */
-export async function createUser(input: { email: string; password: string }): Promise<User> {
+/**
+ * Creates the account and its first (blank creator) profile. 409 when the email is taken (the invite is then not
+ * consumed). With an invite, its use is consumed in the same write; its cohort is kept on the account and its gift
+ * of premium credits becomes the account's first entitlement.
+ */
+export async function createUser(input: { email: string; password: string; invite?: Redemption }): Promise<User> {
   const email = normalizeEmail(input.email);
   const passwordHash = await hashPassword(input.password);
   return updateDb((db) => {
     if (db.users.some((u) => u.email === email)) throw new ConflictError("Ya existe una cuenta con ese email. Entra con tu contraseña.");
+    const { cohort, credits } = redeemInvite(db, input.invite);
     const id = `user-${randomUUID()}`;
     const profile = blankProfileFor(id, "creator");
-    const user: User = { id, email, passwordHash, createdAt: nowIso(), activeProfileId: profile.id, appUserId: newAppUserId() };
+    const user: User = { id, email, passwordHash, createdAt: nowIso(), activeProfileId: profile.id, appUserId: newAppUserId(), ...(cohort ? { signupCohort: cohort } : {}) };
+    if (credits > 0) db.entitlements.push({ appUserId: user.appUserId, pro: false, premiumCredits: credits, premiumUsed: 0, grantedCredits: credits, source: "mock", updatedAt: nowIso() });
     db.profiles.push(profile);
     db.users.push(user);
     return user;

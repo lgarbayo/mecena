@@ -8,7 +8,13 @@ Built for 1hack-2026.
 
 **Accounts.** Everyone signs in at `/entrar` with an email and a password ("Crear cuenta" the first time). Each account has its own profiles (creator and pyme), transcripts, works and photos, dossiers and PDFs, applications, jury scores, usage and Mecena Pro / credits (its own RevenueCat app user id): nobody sees anyone else's data. Sessions are an httpOnly cookie (30 days); passwords are hashed with scrypt; the JSON store keeps only a hash of each session token. "Salir" in the header signs out.
 
-**Invite code.** Every AI call spends the owner's Anthropic key, so sign-up is invite-only in production: the Fly secret `MECENA_SIGNUP_CODE` holds the code, and only people with it can create an account (existing accounts keep signing in normally). Ask the team for the code; change it with `fly secrets set MECENA_SIGNUP_CODE=... -a mecena`. Unset = open sign-up.
+**Invite codes.** Every AI call spends the owner's Anthropic key, so sign-up is invite-only in production: only people with a valid code can create an account (existing accounts keep signing in normally). Two kinds, usable together:
+- `MECENA_SIGNUP_CODE` (Fly secret): one plain code, no cap, no gift; its accounts get the cohort `default`. Change it with `fly secrets set MECENA_SIGNUP_CODE=... -a mecena`.
+- Codes in the database, managed with `npm run invite` (on Fly: `fly ssh console -C "sh -c 'cd /app && npx tsx scripts/invite.ts <command>'"`). Each one can cap how many accounts use it, expire, tag its accounts with a cohort (`signupCohort`, for attribution) and **gift Solicitud premium credits** to every new account:
+  `npm run invite -- create 1HACK --label 1hack-2026 --uses 50 --credits 1 --expires 2026-12-31` · `npm run invite -- list` · `npm run invite -- delete 1HACK`.
+  Codes are case-insensitive. The gift is kept apart from purchases (`grantedCredits`), so a RevenueCat sync never wipes it; a wrong, expired or used-up code gets its own message at sign-up.
+
+Neither set = open sign-up. Invite codes survive `npm run demo:reset`.
 
 **AI spending limits.** Every route that calls Claude has a per-user rate limit (`src/server/ai-limits.ts`: e.g. 90 onboarding turns per 15 min, 20 jury runs per hour, 600 AI requests per user per day) and answers 429 with a Spanish message past it. A real session or a rehearsal never gets near them. On top, a global ceiling of Claude requests per day for everyone together (`MECENA_AI_DAILY_CAP`, default 1500; `src/server/ai/budget.ts`, persisted in `/data/ai-usage.json`). Request bodies are capped too (1 MB by default; texts at 4,000 characters, agent history at 20 turns).
 
@@ -35,7 +41,7 @@ The token expires in a year (Nov 2027). To renew it: `fly tokens create deploy -
 - Secrets (runtime, `fly secrets list -a mecena`):
   - `ANTHROPIC_API_KEY`: without it the app silently falls back to AI mocks.
   - `REVENUECAT_SECRET_API_KEY`: the RevenueCat **secret** key (`sk_…`) of the same sandbox project as the public `rcb_sb_…` key. With it, the server re-reads the customer from RevenueCat REST and ignores what the client claims; without it, production refuses every purchase (see `docs/revenuecat.md`). Set it with `fly secrets set REVENUECAT_SECRET_API_KEY=sk_... -a mecena --stage`.
-  - `MECENA_SIGNUP_CODE`: invite code for sign-up (see above).
+  - `MECENA_SIGNUP_CODE`: default invite code for sign-up (more codes, with caps and gifts: `npm run invite`, see above).
   - Optional: `BASIC_AUTH_USER` / `BASIC_AUTH_PASSWORD` (password gate), `MECENA_AI_DAILY_CAP` (global AI requests per day).
   - `fly secrets set ... --stage` stores a secret without restarting the machine; it takes effect on the next deploy.
 - Health check: `fly.toml` checks `GET /api/health` (public, no data) every 15 s. `fly checks list -a mecena` shows its state.
