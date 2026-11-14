@@ -149,6 +149,13 @@ describe("pyme navigation", () => {
     expect(screen.getByTestId("home-calls").getAttribute("href")).toBe("/convocatorias");
     expect(screen.queryByTestId("home-import")).toBeNull();
   });
+
+  it("a pyme that has not told us anything yet gets no aid button on the home", () => {
+    app.profile = { ...blankBusiness };
+    render(<HomeActions />);
+    expect(screen.getByTestId("home-cta").getAttribute("href")).toBe("/onboarding");
+    expect(screen.queryByTestId("home-calls")).toBeNull();
+  });
 });
 
 describe("pyme feed keeps artist-tagged calls that admit companies", () => {
