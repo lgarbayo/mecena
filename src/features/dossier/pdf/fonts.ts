@@ -20,7 +20,7 @@ async function fetchText(url: string): Promise<string> {
   return res.text();
 }
 
-async function ttfFor(family: string, weight: number, italic: boolean): Promise<string | undefined> {
+export async function ttfFor(family: string, weight: number, italic: boolean): Promise<string | undefined> {
   const dir = path.join(dataDir(), "fonts");
   const file = path.join(dir, `${slugify(family)}-${weight}${italic ? "-italic" : ""}.ttf`);
   if (fs.existsSync(file)) return file;
@@ -46,7 +46,7 @@ async function ttfFor(family: string, weight: number, italic: boolean): Promise<
 }
 
 /** Registers one face under a private family name. Returns that name, or undefined to use the fallback. */
-async function ensureFace(family: string, weight: number, italic: boolean): Promise<string | undefined> {
+export async function ensureFace(family: string, weight: number, italic: boolean): Promise<string | undefined> {
   if (BUNDLED_FAMILIES.has(family)) return undefined;
   if (process.env.VITEST || process.env.MECENA_OFFLINE_FONTS === "1") return undefined;
   const name = `D-${slugify(family)}-${weight}${italic ? "i" : ""}`;
