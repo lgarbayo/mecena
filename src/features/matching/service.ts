@@ -33,7 +33,14 @@ type Ranked = { call: Call; match: MatchResult; breakdown: ScoreBreakdown };
 /** Ranks the calls for a profile and reports the funnel (evaluated → discarded → matched). */
 export function rankCalls(input: { profileId: string; query?: string; kind?: ProfileKind; limit?: number; now?: Date }): { results: Ranked[]; stats: FeedStats } {
   const profile = getProfile(input.profileId);
-  const ctx: MatchContext = { ...contextFor(profile), ...(input.now ? { now: input.now } : {}) };
+  return rankCallsFor(profile, { ...contextFor(profile), ...(input.now ? { now: input.now } : {}) }, input);
+}
+
+/**
+ * rankCalls for a profile the caller already holds, with its own context. The B2B panel uses it for the demo
+ * members, who are scenario files and not stored profiles.
+ */
+export function rankCallsFor(profile: Profile, ctx: MatchContext, input: { query?: string; kind?: ProfileKind; limit?: number } = {}): { results: Ranked[]; stats: FeedStats } {
   const q = input.query?.trim();
   // A pyme only sees aid open to businesses: artist becas/premios are for someone else. Creators keep business-tagged
   // calls (an autónomo artist can apply for autónomo aid). An explicit `kind` (agent/MCP) still wins.
@@ -88,7 +95,7 @@ export async function searchCallsForUser(input: Parameters<typeof searchCalls>[0
 
 const openIds = (ranked: readonly Ranked[]) => ranked.filter((r) => r.call.status !== "recurring").map((r) => r.call.id);
 
-function profileSummary(profile: Profile): CallsDiagnostics["profileSummary"] {
+export function profileSummary(profile: Profile): CallsDiagnostics["profileSummary"] {
   const location = [...new Set([profile.city, profile.province, profile.region].filter((v): v is string => Boolean(v)))].join(", ");
   const disciplines = profile.disciplines.map((d) => (isDisciplineId(d) ? disciplineLabel(d).toLowerCase() : d));
   const what = profile.kind === "creator" ? disciplines.length > 0 : Boolean(profile.sector || profile.cnae);

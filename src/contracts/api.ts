@@ -260,3 +260,11 @@ export const AgentResponse = z.object({
   reply: z.string(),
   toolCalls: z.array(z.object({ name: z.string(), input: z.unknown(), ok: z.boolean() })),
 });
+
+// /api/panel (B2B panel for schools and associations)
+export const OrgCreateRequest = z.object({
+  name: z.string().trim().min(2).max(80),
+  kind: z.enum(["school", "association"]).default("school"),
+});
+export const OrgInviteRequest = z.object({ email: z.string().trim().toLowerCase().email().max(200) });
+export const OrgAcceptRequest = z.object({ profileId: z.string().optional() }); // default: the account's active profile
