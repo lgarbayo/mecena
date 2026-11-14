@@ -61,13 +61,15 @@ describe("MCP server tools", () => {
     expect(out.results.every((r: { call: { beneficiaryKinds: string[] } }) => r.call.beneficiaryKinds.includes("creator"))).toBe(true);
   });
 
-  it("build_dossier with a fixture callId returns a call variant and a public link", async () => {
+  it("build_dossier with a fixture callId returns a call variant and a public link (Pro)", async () => {
     await seedOnboardedCreator();
+    await grantPro();
     const c = await connect();
     const { isError, blocks } = await call(c, "build_dossier", { callId: CALL_ID });
     expect(isError).toBe(false);
     const out = json(blocks);
     expect(out.dossier.variant.callId).toBe(CALL_ID);
+    expect(out.adapted).toBe(true);
     expect(out.url.startsWith("http://localhost:3000/dossier?")).toBe(true);
     expect(blocks[0].text).toContain("Adaptado a la convocatoria");
     expect(blocks[0].text).toContain(out.url);

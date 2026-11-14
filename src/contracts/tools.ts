@@ -1,7 +1,8 @@
 /**
  * The 8 Mecena tools. ONE definition, two front doors:
  *  - the in-app agent (/api/agent) passes these to Claude as tools,
- *  - the MCP server (src/mcp/server.ts) registers them for Claude Desktop / Claude Code.
+ *  - the MCP server registers them for Claude Desktop / Claude Code: remote over Streamable HTTP (POST /api/mcp,
+ *    personal token) or local over stdio (src/mcp/server.ts).
  * Handlers live in src/tools/registry.ts and delegate to feature services.
  */
 import { z } from "zod";
@@ -35,29 +36,48 @@ export const toolSchemas = {
   },
   build_dossier: {
     description:
-      "Build the user's dossier (artistic portfolio for creators, capability memoria for businesses). With callId, adapt it to that call's requirements (image limits, ordering).",
+      "Build the user's dossier (artistic portfolio for creators, capability memoria for businesses). With callId, adapt it to that call's requirements (image limits, ordering, texts for its criteria): the adaptation is a Mecena Pro feature; without Pro the general dossier is returned with the call's notes as a preview.",
     input: z.object({ profileId: profileIdIn, callId: z.string().optional() }),
-    output: z.object({ dossier: Dossier, url: z.string() }),
+    // adapted: the dossier (and the page at url) really is the call variant (callId given and the user is Pro).
+    output: z.object({ dossier: Dossier, url: z.string(), adapted: z.boolean() }),
   },
   export_dossier_pdf: {
-    description: "Export the dossier as a PDF and return its download URL and local file path.",
+    description:
+      "Export the dossier as a PDF and return its download URL (it opens with the user's Mecena session). With callId and Mecena Pro, the PDF is the version adapted to that call; without Pro, the general dossier.",
     input: z.object({ profileId: profileIdIn, callId: z.string().optional() }),
     // sizeMb/note: the real file size and, for a call with a size limit, whether it fits (and if photos were reduced).
-    output: z.object({ url: z.string(), filePath: z.string(), pages: z.number().int().optional(), sizeMb: z.number().optional(), note: z.string().optional() }),
+    // adapted: the PDF at url is the call version; callId: the call it was asked for (adapted or not).
+    output: z.object({
+      url: z.string(),
+      pages: z.number().int().optional(),
+      sizeMb: z.number().optional(),
+      note: z.string().optional(),
+      adapted: z.boolean(),
+      callId: z.string().optional(),
+    }),
   },
   search_calls: {
     description:
-      "Find open calls (convocatorias, becas, premios, residencias, subvenciones) the user fits, ranked, with why they fit and what they are missing.",
+      "Find open or upcoming calls (convocatorias, becas, premios, residencias, subvenciones) the user fits, ranked, with why they fit and what they are missing. The free plan sees its top 3 matches; lockedCount says how many more Mecena Pro unlocks.",
     input: z.object({
       profileId: profileIdIn,
       query: z.string().optional().describe("Free text filter, e.g. 'residencia', 'digitalización'"),
       kind: ProfileKind.optional(),
       limit: z.number().int().min(1).max(25).optional(),
+      includeClosed: z.boolean().optional().describe("Also return recurring calls whose current edition already closed (default false: only open and upcoming)."),
     }),
-    output: z.object({ results: z.array(z.object({ call: Call, match: MatchResult })) }),
+    output: z.object({
+      results: z.array(z.object({ call: Call, match: MatchResult })),
+      /** Further matches the free plan does not show (0 with Pro). */
+      lockedCount: z.number().int().min(0),
+      pro: z.boolean(),
+      /** Recurring/closed matches left out because includeClosed was not set. */
+      closedCount: z.number().int().min(0),
+    }),
   },
   explain_call: {
-    description: "Explain a call's bases in plain Spanish: who can apply, amount, deadline, documents, scoring criteria, and the user's fit.",
+    description:
+      "Explain a call's bases in plain Spanish: who can apply, amount, deadline, documents, scoring criteria, and the user's fit. On the free plan, only for the user's top 3 matches (the ones search_calls shows).",
     input: z.object({ callId: z.string(), profileId: profileIdIn }),
     output: z.object({ call: Call, match: MatchResult, checklist: z.array(z.string()) }),
   },
@@ -79,12 +99,14 @@ export type ToolInput<N extends ToolName> = z.infer<(typeof toolSchemas)[N]["inp
 export type ToolOutput<N extends ToolName> = z.infer<(typeof toolSchemas)[N]["output"]>;
 
 /**
- * Who is calling a tool, resolved on the server (session cookie for the app, MECENA_USER_EMAIL for MCP).
+ * Who is calling a tool, resolved on the server: the session cookie for the app, the personal MCP token for the
+ * remote MCP endpoint, MECENA_USER_EMAIL for the local stdio server.
  * Tools only touch this user's data: a profileId in the input must be one of theirs, and entitlements always
  * come from `appUserId` (never from the model or the client).
  */
 export interface ToolContext {
-  caller: "app" | "mcp";
+  /** app: in-app agent; mcp: local stdio server (its own data dir); mcp-remote: /api/mcp on the deployed app. */
+  caller: "app" | "mcp" | "mcp-remote";
   userId: string;
   /** The user's active profile: used when a tool input omits profileId. */
   profileId: string;

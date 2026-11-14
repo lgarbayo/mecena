@@ -1,74 +1,23 @@
 /**
- * Mecena MCP server (stdio) for Claude Desktop / Claude Code. Owned by WP-04.
- * Run: MECENA_USER_EMAIL=you@example.com npm run mcp   (setup: docs/mcp.md)
- * It acts as ONE Mecena account (MECENA_USER_EMAIL): that user's active profile and RevenueCat app user id.
- * IMPORTANT: stdout is the MCP channel. Log to stderr only.
+ * Mecena MCP server for Claude Desktop / Claude Code. Owned by WP-04. Two transports, one server definition:
+ * - remote: POST /api/mcp on the deployed app (Streamable HTTP, personal token; see ./http.ts). Uses the app's data.
+ * - local stdio (this file's main): `MECENA_USER_EMAIL=you@example.com npm run mcp`. Acts as ONE account of the
+ *   local data dir (MECENA_USER_EMAIL): that user's active profile and RevenueCat app user id.
+ * Setup: docs/mcp.md. IMPORTANT (stdio): stdout is the MCP channel. Log to stderr only.
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { serverEnv, toolSchemas, TOOL_NAMES, UnauthorizedError, type ToolContext, type ToolName } from "@/contracts";
-import { findUserByEmail, toolContextFor } from "@/server/auth";
-import { runTool } from "@/tools/registry";
-import { summarizeToolResult, toolErrorMessage } from "@/tools/present";
+import { serverEnv } from "@/contracts";
+import { findUserByEmail } from "@/server/auth";
+import { createMcpServer } from "./core";
+
+export { MCP_INSTRUCTIONS, callToolForMcp, createMcpServer, mcpToolContext, type McpServerOptions } from "./core";
 
 // No background BDNS searches from this process: the app server owns the shared catalogue's writes (its file locks
 // are in-process). A profile updated here is searched the next time the app loads its feed.
 process.env.MECENA_CALLS_LIVE ??= "0";
-
-export const MCP_INSTRUCTIONS = [
-  "Mecena ayuda a artistas, ilustradores, fotógrafos, pymes y autónomos con el papeleo de convocatorias, becas, premios y subvenciones.",
-  "Mecena prepara; la persona usuaria revisa y presenta. Nunca inventes datos del perfil que no haya dicho.",
-  "Flujo típico: search_calls → explain_call → build_dossier (con callId) → export_dossier_pdf → draft_application → score_application.",
-  "Cada herramienta devuelve un resumen en español y después el JSON completo. Comparte siempre los enlaces (url) con la persona usuaria.",
-].join(" ");
-
-type RunFn = (name: ToolName, input: unknown, ctx: ToolContext) => Promise<unknown>;
-
-export interface McpServerOptions {
-  /** Tool runner; tests can inject a fake. Defaults to the shared registry. */
-  run?: RunFn;
-  /** Account email the tools act as. Defaults to MECENA_USER_EMAIL. */
-  userEmail?: string;
-}
-
-/**
- * The tool context for the configured account, read fresh on every call (so a mode switch in the web app, or a
- * purchase, is seen by the next MCP call).
- */
-export async function mcpToolContext(email = serverEnv().mcpUserEmail): Promise<ToolContext> {
-  if (!email) throw new UnauthorizedError("Configura MECENA_USER_EMAIL con el email de tu cuenta de Mecena (ver docs/mcp.md).");
-  const user = findUserByEmail(email);
-  if (!user) throw new UnauthorizedError(`No hay ninguna cuenta de Mecena con el email ${email}. Crea la cuenta en la web primero.`);
-  return toolContextFor(user, "mcp");
-}
-
-/** Text content blocks returned for a tool call: [human summary, JSON]. */
-export async function callToolForMcp(name: ToolName, args: unknown, run: RunFn = runTool, userEmail?: string) {
-  try {
-    const out = await run(name, args, await mcpToolContext(userEmail));
-    return {
-      content: [
-        { type: "text" as const, text: summarizeToolResult(name, out as never) },
-        { type: "text" as const, text: JSON.stringify(out, null, 2) },
-      ],
-    };
-  } catch (e) {
-    console.error(`[mecena-mcp] ${name} failed: ${e instanceof Error ? `${e.name}: ${e.message}` : String(e)}`);
-    return { isError: true, content: [{ type: "text" as const, text: toolErrorMessage(e) }] };
-  }
-}
-
-export function createMcpServer(opts: McpServerOptions = {}): McpServer {
-  const server = new McpServer({ name: "mecena", version: "0.1.0" }, { instructions: MCP_INSTRUCTIONS });
-  for (const name of TOOL_NAMES) {
-    const def = toolSchemas[name];
-    server.registerTool(name, { description: def.description, inputSchema: def.input.shape }, async (args: unknown) => callToolForMcp(name, args, opts.run, opts.userEmail));
-  }
-  return server;
-}
 
 /** Repo root, independent of the cwd Claude Desktop launches us with. */
 export const repoRoot = () => path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
