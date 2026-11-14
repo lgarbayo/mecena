@@ -17,7 +17,7 @@
 - [ ] El certificado es válido (sin aviso de seguridad), condición para micro y cámara.
 - [ ] `ANTHROPIC_API_KEY` y clave de RevenueCat cargadas en el entorno que sirve la app (no en mocks por error).
 - [ ] Reset completo en < 10 s y la app vuelve a la pantalla A1 («Empezar de cero» en `/demo`, con confirmación).
-- [ ] `npm run demo:preflight` en verde contra la URL desplegada (login, config, entitlements, convocatorias open, PDF válido, escenario, sin 500; no gasta IA).
+- [ ] `npm run demo:preflight` en verde contra la URL desplegada (login, config, entitlements, convocatorias open, PDF válido, escenario, panel B2B con 3 miembros, sin 500; no gasta IA). En la reserva, con `--load pro`: además las 3 facturas asignadas con aviso, la foto de ejemplo leída con la IA simulada (se borra sola) y `/justificacion/<id>` y `/panel` sin 500.
 - [ ] `flyctl status` correcto y `DEMO_EMAILS` con el email de la cuenta de demo (sin él, «Artista Pro con solicitud» sale desactivado).
 
 ## 3. Recorrido de la demo, paso a paso
@@ -50,6 +50,7 @@
 - [ ] Salen 4–6 convocatorias reales con importe, plazo y enlace a las bases.
 - [ ] Cada tarjeta tiene «Por qué encajas» y «Qué te falta» coherentes con lo que dijo el artista.
 - [ ] Ningún plazo aparece ya vencido el 14/11/2026.
+- [ ] En una convocatoria con concesiones, **«Ganadores parecidos a ti»** sale con importes reales y la nota «Orientativo, no es una probabilidad» (sin porcentajes). Comprobar cuál es la primera tarjeta que lo tiene.
 - [ ] Cambio creador ↔ pyme en un toque: cambian perfil y convocatorias; volver deja todo como estaba.
 
 **Paywall + RevenueCat**
@@ -67,8 +68,19 @@
 - [ ] «Aplicar mejoras» sube a ~84. Tiempo total del paso < 20 s.
 - [ ] Aviso «Mecena prepara; tú presentas» visible.
 
+**Justificación** *(cuenta de reserva con «Artista Pro con solicitud»)*
+- [ ] `/justificacion/<id>` abre con 3 facturas ya asignadas, **al menos una partida pasada de presupuesto** con aviso rojo y **sin memoria**.
+- [ ] «Fotografiar una factura» abre la cámara; con la factura impresa, la factura sale **asignada a una partida** y aparece un aviso nuevo en < 8 s (con la IA simulada, siempre: Imprenta Ártabra, 1.450,00 €, «Edición del catálogo»).
+- [ ] «Preparar la memoria» devuelve las secciones y la «Cuenta justificativa» con las cifras en < 8 s.
+- [ ] Tras el ensayo, **volver a cargar «Artista Pro con solicitud»** en la reserva (3 facturas, sin memoria).
+
+**Panel B2B** *(cualquier cuenta cargada con un escenario)*
+- [ ] `/panel` muestra «Escuela de Artes Atlántico (ejemplo)» con **3 miembros que ya aceptaron**, cada uno con sus convocatorias abiertas que encajan, y los próximos plazos; sin la etiqueta «Datos de demostración».
+- [ ] No aparece ningún dossier, obra ni borrador de los miembros (solo nombre, disciplina, lugar, convocatorias y plazos).
+- [ ] Recargar un escenario no duplica la escuela ni los miembros.
+
 **MCP (opcional)**
-- [ ] Claude Desktop lista las 8 tools de Mecena.
+- [ ] Claude Desktop lista las 8 tools de Mecena (se enseña en la demo, ≈ 15 s; plan B: solo la frase).
 - [ ] «Hazme el dossier para la convocatoria [X]» llama a las tools y devuelve el PDF en < 15 s.
 
 ## 4. Textos
@@ -79,7 +91,7 @@
 - [ ] La app no nombra competidores (solo el pitch, y siempre «según su web»).
 
 ## 5. Planes B listos
-- [ ] Panel `/demo` probado: «Artista de ejemplo», «Artista Pro con solicitud» (tribunal 61 → 84) y «Pyme de ejemplo» cargan en la cuenta con sesión, sin tocar otras.
+- [ ] Panel `/demo` probado: «Artista de ejemplo», «Artista Pro con solicitud» (tribunal 61 → 84, 3 facturas, escuela con 3 miembros) y «Pyme de ejemplo» cargan en la cuenta con sesión, sin tocar otras; todos dejan la escuela de ejemplo en `/panel`.
 - [ ] Interruptores «Tribunal determinista (plan B)» e «IA simulada para esta cuenta» probados y vueltos a apagar antes de la demo si hay clave real.
 - [ ] Cuentas de reserva creadas antes de subir (el límite por IP del recinto puede bloquear altas).
 - [ ] Guion con plan B por paso: [`docs/demo-script.md`](../../docs/demo-script.md).
@@ -91,5 +103,6 @@
 - [ ] Pasada 1: ____ min ____ s · fallos: __________
 - [ ] Pasada 2: ____ min ____ s · fallos: __________
 - [ ] Versión corta de 90 s ensayada una vez.
-- [ ] Cierre ensayado en ≤ 10 s (desde 2:50) con las cifras reales: 37 convocatorias, 213 concesiones. Sin encuesta ni LOIs.
+- [ ] Puntos de control del reloj (0:40 · 1:05 · 1:42 · 2:07 · 2:32 · 2:47) cumplidos en las dos pasadas; el cambio de navegador a la reserva (justificación) en ≤ 3 s.
+- [ ] Cierre ensayado en ≤ 13 s (desde 2:47) con las cifras reales: 37 convocatorias, 213 concesiones. Sin encuesta ni LOIs.
 - [ ] Reset final hecho y móvil en la pantalla A1 justo antes de subir.

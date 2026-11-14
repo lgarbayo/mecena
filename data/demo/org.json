@@ -1,0 +1,72 @@
+{
+  "_comment": "B2B panel demo (IDEA #8): a school with three members who already accepted its invitation. Fictional people; their profiles are owned by synthetic ids (never a real account) and only the panel projection is ever shown.",
+  "org": { "name": "Escuela de Artes Atlántico (ejemplo)", "kind": "school" },
+  "members": [
+    {
+      "email": "marta.lema@example.org",
+      "profile": {
+        "kind": "creator",
+        "displayName": "Marta Lema",
+        "city": "Vigo",
+        "province": "Pontevedra",
+        "region": "Galicia",
+        "disciplines": ["fotografía"],
+        "bio": "Fotógrafa documental de Vigo. Retrata el trabajo en la ría: estibadores, conserveras y mariscadoras.",
+        "statement": "Fotografío los oficios de la ría antes de que desaparezcan.",
+        "achievements": ["Exposición colectiva en el Marco de Vigo (2025)"],
+        "education": ["Ciclo superior de Fotografía, Escola de Arte e Superior de Deseño Antonio Failde"],
+        "links": [],
+        "fundingNeeds": ["producción de una serie documental", "edición de un fotolibro"],
+        "projectIdea": "Una serie documental sobre las últimas conserveras de la ría de Vigo.",
+        "languages": ["gallego", "castellano"]
+      },
+      "dossier": [{ "key": "statement", "title": "Declaración artística", "body": "Fotografío los oficios de la ría antes de que desaparezcan.", "sourceSegmentIds": [], "status": "confirmed" }]
+    },
+    {
+      "email": "iago.casal@example.org",
+      "profile": {
+        "kind": "creator",
+        "displayName": "Iago Casal",
+        "city": "Santiago de Compostela",
+        "province": "A Coruña",
+        "region": "Galicia",
+        "disciplines": ["escultura", "cerámica"],
+        "bio": "Escultor y ceramista de Santiago. Trabaja el gres y la piedra con piezas de pequeño formato sobre el paisaje.",
+        "statement": "Modelo el paisaje a la escala de la mano.",
+        "achievements": ["Premio Jóvenes Artistas del Concello de Santiago (2024)"],
+        "education": ["Grado en Bellas Artes, Universidade de Vigo"],
+        "links": [],
+        "fundingNeeds": ["residencia artística", "producción de piezas en gres"],
+        "projectIdea": "Una serie de veinte piezas en gres inspiradas en los petroglifos del Barbanza.",
+        "languages": ["gallego", "castellano"]
+      },
+      "dossier": [{ "key": "statement", "title": "Declaración artística", "body": "Modelo el paisaje a la escala de la mano.", "sourceSegmentIds": [], "status": "confirmed" }]
+    },
+    {
+      "email": "estudio.sarela@example.org",
+      "profile": {
+        "kind": "business",
+        "displayName": "Estudio Sarela",
+        "city": "Santiago de Compostela",
+        "province": "A Coruña",
+        "region": "Galicia",
+        "legalForm": "autonomo",
+        "cnae": "7410",
+        "sector": "diseño gráfico e ilustración",
+        "employees": 2,
+        "foundedYear": 2022,
+        "annualRevenueEur": 64000,
+        "disciplines": [],
+        "bio": "Estudio de diseño gráfico e ilustración de Santiago, con dos personas. Trabaja identidades y cartelería para festivales y comercio local.",
+        "statement": "Diseño cercano para cultura y comercio de proximidad.",
+        "achievements": ["Cartelería de tres festivales gallegos (2024-2025)"],
+        "education": [],
+        "links": [],
+        "fundingNeeds": ["web nueva con tienda de láminas", "contratar a una persona en prácticas"],
+        "projectIdea": "Lanzar una tienda online de láminas ilustradas y digitalizar la gestión del estudio.",
+        "languages": ["gallego", "castellano"]
+      },
+      "dossier": [{ "key": "activity", "title": "Actividad", "body": "Diseño gráfico e ilustración para cultura y comercio local.", "sourceSegmentIds": [], "status": "confirmed" }]
+    }
+  ]
+}

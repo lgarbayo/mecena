@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { ForbiddenError, publicEnv, serverEnv, type Application, type Call, type Db, type Dossier, type Profile, type User, type Work } from "@/contracts";
+import { ForbiddenError, publicEnv, serverEnv, type Application, type Call, type Db, type Dossier, type Invoice, type OrgMembership, type Profile, type User, type Work } from "@/contracts";
 import { blankProfileFor, newAppUserId } from "@/server/auth";
 import { exportsDir, initialDb, listCalls, nowIso, resetDb, updateDb, uploadsDir, withCanonicalFields } from "@/server/store";
 import { forgetDesigns } from "@/features/dossier/designs";
@@ -12,8 +12,9 @@ import { forgetProfileSearches } from "@/features/calls-ingest/live";
 import { forgetDeepResearch } from "@/features/deep-research/service";
 import { buildChecklist } from "@/features/drafting/rules";
 import { scoreApplication } from "@/features/jury/service";
+import { demoMemberOwner, removePanelData } from "@/features/panel/service";
 import { runWithAiSwitches } from "./ai-mode";
-import { loadArtist, loadBusiness, loadPro, pickProCall, workImagePath, type DemoScenarioId, type PersonaFile } from "./scenarios";
+import { invoiceImagePath, loadArtist, loadBusiness, loadJustification, loadOrg, loadPro, pickProCall, workImagePath, type DemoScenarioId, type JustificationFile, type OrgFile, type PersonaFile } from "./scenarios";
 import { isDemoEmail, setDemoSettings } from "./settings";
 
 export interface DemoResetResult {
@@ -24,6 +25,10 @@ export interface DemoResetResult {
   pro: boolean;
   applicationId?: string;
   callId?: string;
+  /** pro: invoices already assigned on that application (see /justificacion/<applicationId>). */
+  invoices?: number;
+  /** Members of the demo organisation who already accepted (see /panel). */
+  panelMembers?: number;
 }
 
 /** Marks the Pro granted by the demo scenario (B's entitlement code leaves it alone, see docs/demo-script.md). */
@@ -80,12 +85,75 @@ function materialise(db: Db, userId: string, persona: PersonaFile): Materialised
   return { profile, segmentIds, works, copies };
 }
 
+/** The justification and panel files are an extra: if one is broken the scenario still loads (/demo reports it). */
+function tryLoad<T>(what: string, load: () => T): T | undefined {
+  try {
+    return load();
+  } catch (e) {
+    console.warn(`[demo] ${what} not loaded:`, e instanceof Error ? e.message : e);
+    return undefined;
+  }
+}
+
+/** The demo organisation: fictional members who already accepted, each with a complete profile and a dossier (the panel only shows complete ones). */
+function seedOrganization(db: Db, user: User, file: OrgFile): number {
+  const now = nowIso();
+  const org = { id: `org-${short()}`, name: file.org.name, kind: file.org.kind, ownerId: user.id, createdAt: now };
+  db.organizations.push(org);
+  file.members.forEach((m, i) => {
+    const ownerId = demoMemberOwner(user.id, i);
+    const profile = withCanonicalFields({ ...structuredClone(m.profile), id: `profile-${randomUUID()}`, ownerId, beneficiaryTypes: [], updatedAt: now });
+    db.profiles.push(profile);
+    db.dossiers.push({ profileId: profile.id, kind: profile.kind, sections: m.dossier.map((s) => ({ ...s, updatedAt: now })), workIds: [], generatedAt: now });
+    const membership: OrgMembership = { id: `mem-${short()}`, orgId: org.id, email: m.email, status: "accepted", invitedAt: now, userId: ownerId, profileId: profile.id, acceptedAt: now };
+    db.memberships.push(membership);
+  });
+  return file.members.length;
+}
+
+/** Invoices already assigned to the Pro application's budget lines: one line ends up overspent so /justificacion shows an alert. */
+function seedInvoices(db: Db, app: Application, file: JustificationFile, copies: { from: string; to: string }[]): number {
+  const now = nowIso();
+  let n = 0;
+  for (const i of file.invoices) {
+    const line = app.budget.find((l) => l.concept === i.lineConcept);
+    if (!line) continue; // the call lists no expense types and the file budget changed: nothing to assign to
+    const id = `inv-${short()}`;
+    copies.push({ from: invoiceImagePath(i.image), to: path.join(uploadsDir(), `${id}.png`) });
+    const invoice: Invoice = {
+      id,
+      applicationId: app.id,
+      profileId: app.profileId,
+      imageUrl: `/api/justification/invoices/${id}/image`,
+      supplier: i.supplier,
+      taxId: i.taxId,
+      number: i.number,
+      date: i.date,
+      concept: i.concept,
+      baseEur: i.baseEur,
+      vatEur: i.vatEur,
+      totalEur: i.totalEur,
+      expenseType: line.expenseType,
+      lineConcept: line.concept,
+      assignedBy: "ai",
+      confidence: 0.95,
+      extractedBy: "vision",
+      createdAt: now,
+    };
+    db.invoices.push(invoice);
+    n++;
+  }
+  return n;
+}
+
 /**
  * Deletes everything the user owns (profiles, transcripts, works and their photos, dossiers, designs, PDF exports,
  * applications, jury scores, usage, match and dossier-variant caches) and loads the scenario into the same account. Other users are never
  * touched. The RevenueCat app user id always rotates (fresh sandbox customer):
  * - blank / onboarded / business: no entitlement on the new id, so the paywall shows again;
- * - pro: the new id gets a demo Pro grant (DEMO_EMAILS only in production) and an application scored 61 → 84.
+ * - pro: the new id gets a demo Pro grant (DEMO_EMAILS only in production) and an application scored 61 → 84, with
+ *   3 invoices already assigned and one budget line overspent (/justificacion, IDEA #7).
+ * Every scenario also leaves the demo organisation with 3 members who already accepted (/panel, IDEA #8).
  */
 export async function resetUserDemo(user: User, input: { scenario?: DemoScenarioId; withBusiness?: boolean } = {}): Promise<DemoResetResult> {
   const scenario = input.scenario ?? "blank";
@@ -98,6 +166,9 @@ export async function resetUserDemo(user: User, input: { scenario?: DemoScenario
   const proFile = scenario === "pro" ? loadPro() : undefined;
   const call: Call | undefined = proFile ? pickProCall(proFile, listCalls()) : undefined;
   if (proFile && !call) throw new Error("No hay ninguna convocatoria abierta para preparar la solicitud de ejemplo");
+
+  const justification = proFile ? tryLoad("justification.json", loadJustification) : undefined;
+  const orgFile = tryLoad("org.json", loadOrg);
 
   const done = await updateDb((db) => {
     const u = db.users.find((x) => x.id === user.id);
@@ -120,6 +191,7 @@ export async function resetUserDemo(user: User, input: { scenario?: DemoScenario
     db.entitlements = db.entitlements.filter((e) => e.appUserId !== oldAppUserId);
     db.matchCache = db.matchCache.filter((m) => !profileIds.has(m.profileId) && ![...profileIds].some((id) => m.cacheKey.startsWith(`${id}|`)));
     db.variantCache = db.variantCache.filter((v) => !v.profileId || !profileIds.has(v.profileId));
+    removePanelData(db, u); // the organisation they run and the fictional members a previous scenario seeded
 
     u.appUserId = newAppUserId();
     const copies: Materialised["copies"] = [];
@@ -135,6 +207,7 @@ export async function resetUserDemo(user: User, input: { scenario?: DemoScenario
     if (biz) copies.push(...biz.copies);
 
     let applicationId: string | undefined;
+    let invoices = 0;
     if (proFile && call && creator) {
       const now = nowIso();
       db.entitlements.push({ appUserId: u.appUserId, pro: true, premiumCredits: 0, activeProductId: DEMO_PRODUCT_ID, source: "mock", updatedAt: now });
@@ -146,21 +219,24 @@ export async function resetUserDemo(user: User, input: { scenario?: DemoScenario
         version: 1,
         status: "draft",
         sections: proFile.application.sections.map((s) => ({ ...s, sourceSegmentIds: s.sourceSegmentIds.map((id) => ids.get(id)).filter((x): x is string => Boolean(x)) })),
-        // the example lines use the fixture's expense types: map them onto whatever the picked call allows
+        // the example lines use the fixture's expense types: map them onto whatever the picked call allows (a call that
+        // lists none keeps the example lines, so the justification demo always has a budget)
         budget: call.allowedExpenses.length
           ? proFile.application.budget.map((l) => ({ ...l, expenseType: call.allowedExpenses.includes(l.expenseType) ? l.expenseType : call.allowedExpenses[0] }))
-          : [],
+          : structuredClone(proFile.application.budget),
         checklist: buildChecklist(call),
         createdAt: now,
         updatedAt: now,
       };
       db.applications.push(app);
       applicationId = app.id;
+      if (justification) invoices = seedInvoices(db, app, justification, copies);
     }
+    const panelMembers = orgFile ? seedOrganization(db, u, orgFile) : 0;
 
     const creatorId = db.profiles.find((p) => p.ownerId === user.id && p.kind === "creator")!.id;
     u.activeProfileId = scenario === "business" && biz ? biz.profile.id : creatorId;
-    return { profileIds: [...profileIds], workIds, invoiceIds, appUserId: u.appUserId, activeProfileId: u.activeProfileId, applicationId, copies };
+    return { profileIds: [...profileIds], workIds, invoiceIds, appUserId: u.appUserId, activeProfileId: u.activeProfileId, applicationId, copies, invoices, panelMembers };
   });
 
   forgetDesigns(done.profileIds);
@@ -180,7 +256,8 @@ export async function resetUserDemo(user: User, input: { scenario?: DemoScenario
     appUserId: done.appUserId,
     activeProfileId: done.activeProfileId,
     pro: Boolean(done.applicationId),
-    ...(done.applicationId ? { applicationId: done.applicationId, callId: call?.id } : {}),
+    ...(done.applicationId ? { applicationId: done.applicationId, callId: call?.id, invoices: done.invoices } : {}),
+    ...(done.panelMembers ? { panelMembers: done.panelMembers } : {}),
   };
 }
 

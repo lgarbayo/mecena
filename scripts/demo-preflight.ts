@@ -8,7 +8,9 @@
 // Harmless by default: GETs, one login, and the account's own «IA simulada» switch turned on while it reads the feed
 // and back to how it was at the end (so no Anthropic spend). It never changes data unless you pass --load <scenario>
 // (blank | onboarded | pro | business), which wipes THAT account and loads the scenario (then checks it: Pro, the
-// application and its 61 jury score, the tribunal page). Use it on the stage account before going on stage.
+// application and its 61 jury score, the tribunal page, the 3 assigned invoices with their deviation alert and the
+// simulated reading of the example invoice, which it deletes again; the memoria is not drafted). Use it on the stage account before going on stage.
+// Every run also checks /panel: the demo school with its 3 accepted members (read only).
 
 type Status = "ok" | "fail" | "warn" | "info";
 interface Line {
@@ -89,6 +91,20 @@ interface DemoStatus {
   proIsDemoGrant: boolean;
   openCalls: { creator: number; business: number };
   scenarios: { scenario: string; ok: boolean; problems: string[]; callId?: string }[];
+  extras?: { id: string; ok: boolean; problems: string[] }[];
+}
+
+interface JustificationState {
+  invoices: { id: string; number?: string; lineConcept?: string; totalEur: number }[];
+  summary: { unassignedEur: number; alerts: { kind: string; severity: string }[] };
+  memoria: unknown;
+  mode: string;
+}
+interface PanelState {
+  demo: boolean;
+  org: { name: string };
+  members: { displayName: string; matches: unknown[] }[];
+  summary: { members: number; incompleteMembers: number; upcomingDeadlines: unknown[] };
 }
 
 async function main() {
@@ -139,6 +155,7 @@ async function main() {
     report(status.purchasesMode === "revenuecat" ? "ok" : "warn", "Pagos", status.purchasesMode === "revenuecat" ? "RevenueCat sandbox" : "modo prueba (sin clave pública de RevenueCat)");
     report(status.revenueCatVerified ? "ok" : "warn", "Verificación de compras", status.revenueCatVerified ? "REST con REVENUECAT_SECRET_API_KEY" : "sin clave secreta: el servidor confía en el cliente");
     report(status.canLoadPro ? "ok" : "warn", "Escenario Pro disponible", status.demoAccount ? "cuenta en DEMO_EMAILS" : status.canLoadPro ? "pagos simulados" : "esta cuenta no está en DEMO_EMAILS: el plan B Pro no cargará");
+    for (const x of status.extras ?? []) report(x.ok ? "ok" : "fail", x.id === "justification" ? "Datos de la justificación listos" : "Datos del panel B2B listos", x.problems.join(" · "));
     for (const s of status.scenarios) report(s.ok ? "ok" : "fail", `Escenario «${s.scenario}» listo`, s.ok ? (s.callId ? `solicitud para ${s.callId}` : "") : s.problems.join(" · "));
     report("info", "Interruptores de la cuenta", `tribunal ${status.settings.deterministicJury ? "determinista" : "según la IA"} · «IA simulada para esta cuenta» ${status.settings.aiMock ? "activada" : "desactivada"} · ${status.pro ? (status.proIsDemoGrant ? "Pro (demo)" : "Pro") : "gratis"} · modo ${status.activeProfileKind ?? "?"}`);
   });
@@ -174,9 +191,19 @@ async function main() {
           report(j?.score?.total === 61 ? "ok" : "fail", "Tribunal de la solicitud de ejemplo", `nota ${j?.score?.total ?? "—"} (esperado 61; «Aplicar mejoras» → 84)`);
           const ent = await jsonOf<{ entitlement: { pro: boolean } }>((await http("/api/entitlements")).res);
           report(ent?.entitlement.pro ? "ok" : "fail", "Pro de demo activo", ent?.entitlement.pro ? "sí" : "no");
+          await checkJustification(applicationId, !ALLOW_AI && (status?.aiMode === "mock" || mockOn === true || status?.settings.aiMock === true));
         }
       });
     }
+
+    await check("Panel B2B (/api/panel)", async () => {
+      const { res, ms } = await http("/api/panel");
+      const p = await jsonOf<PanelState>(res);
+      if (res.status !== 200 || !p) throw new Error(`HTTP ${res.status}`);
+      if (p.demo || p.members.length < 2) throw new Error(`${p.demo ? "no hay organización de ejemplo cargada (sale la de demostración sin guardar)" : `solo ${p.members.length} miembro(s) visibles`}: carga cualquier escenario en /demo`);
+      const withMatches = p.members.filter((m) => m.matches.length > 0).length;
+      report(p.members.length >= 3 && withMatches === p.members.length && p.summary.incompleteMembers === 0 ? "ok" : "warn", "Panel B2B (/api/panel)", `${p.org.name} · ${p.members.length} miembros que ya aceptaron (${withMatches} con convocatorias abiertas) · ${p.summary.upcomingDeadlines.length} plazos próximos · ${ms} ms`);
+    });
 
     let firstOpenId: string | undefined;
     await check("Convocatorias (/api/calls)", async () => {
@@ -205,7 +232,8 @@ async function main() {
 
     const pages = ["/", "/onboarding", "/obras", "/dossier", "/convocatorias", "/pro", "/confianza", "/demo", "/entrar"];
     if (firstOpenId) pages.push(`/convocatorias/${encodeURIComponent(firstOpenId)}`);
-    if (applicationId) pages.push(`/tribunal/${encodeURIComponent(applicationId)}`);
+    if (applicationId) pages.push(`/tribunal/${encodeURIComponent(applicationId)}`, `/justificacion/${encodeURIComponent(applicationId)}`);
+    pages.push("/panel", "/demo/factura-ejemplo.png");
     const bad: string[] = [];
     const slow: string[] = [];
     for (const p of pages) {
@@ -226,6 +254,32 @@ async function main() {
       report(res.status === 200 ? "info" : "warn", "IA simulada temporal", res.status === 200 ? "restaurada como estaba" : `no se pudo restaurar (HTTP ${res.status}): revísalo en /demo`);
     }
   }
+}
+
+/**
+ * The justification demo on the just-loaded Pro application: 3 invoices assigned, an overspent line, the example
+ * photo read the same way every time (simulated AI only). Leaves the application as it found it.
+ */
+async function checkJustification(applicationId: string, mockAi: boolean) {
+  const url = `/api/justification?applicationId=${encodeURIComponent(applicationId)}`;
+  const st = await jsonOf<JustificationState>((await http(url)).res);
+  if (!st) return report("fail", "Justificación de la solicitud de ejemplo", "no responde");
+  const over = st.summary.alerts.filter((a) => a.kind === "line_over").length;
+  const ok = st.invoices.length === 3 && st.invoices.every((i) => i.lineConcept) && over >= 1 && !st.memoria;
+  report(ok ? "ok" : "fail", "Justificación de la solicitud de ejemplo", `${st.invoices.length} facturas asignadas, ${over} partida(s) pasada(s) de presupuesto, sin memoria todavía (esperado: 3, ≥ 1, sin memoria)`);
+  if (!mockAi) return report("info", "Foto de factura en directo", "no se prueba con IA real (leería la foto y gastaría clave): ensáyala a mano");
+  const { res: photoRes, ms } = await http("/demo/factura-ejemplo.png");
+  if (photoRes.status !== 200) return report("fail", "Foto de factura de ejemplo", `HTTP ${photoRes.status}`);
+  const dataUrl = `data:image/png;base64,${Buffer.from(await photoRes.arrayBuffer()).toString("base64")}`;
+  const added = await http("/api/justification/invoices", { body: { applicationId, imageDataUrl: dataUrl } });
+  const after = await jsonOf<JustificationState>(added.res);
+  const mine = after?.invoices.find((i) => i.number === "F-0087");
+  const overAfter = after?.summary.alerts.filter((a) => a.kind === "line_over").length ?? 0;
+  report(mine?.lineConcept && mine.totalEur === 1450 && overAfter === over + 1 ? "ok" : "fail", "Foto de factura en directo (IA simulada)", mine ? `asignada a «${mine.lineConcept}», ${mine.totalEur} €, alertas de partida ${over} → ${overAfter} · ${added.ms} ms` : `HTTP ${added.res.status}: no se ha leído la factura de ejemplo`);
+  // Leave it as found: the invoice and the memoria are the live step (the memoria is not drafted here, it cannot be undone).
+  if (mine) await http(`/api/justification/invoices/${encodeURIComponent(mine.id)}`, { method: "DELETE" });
+  const back = await jsonOf<JustificationState>((await http(url)).res);
+  report(back?.invoices.length === 3 && !back.memoria ? "ok" : "warn", "Justificación restaurada", `${back?.invoices.length ?? "?"} facturas, ${back?.memoria ? "con memoria (recarga el escenario Pro)" : "sin memoria"} · foto ${ms} ms`);
 }
 
 main()

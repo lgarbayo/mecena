@@ -10,6 +10,7 @@ import { z } from "zod";
 import { InvoiceExtraction, JustificationNarrative, type AiSlice, type ExtractInvoiceInput, type WriteJustificationInput } from "@/contracts";
 import { imageBlock, structured } from "@/server/ai/llm";
 import { polishProse, WORDING_RULE } from "@/server/ai/wording";
+import { loadJustification } from "@/features/demo/scenarios";
 import { cleanDate, euros, fold, round2, suggestLine } from "./rules";
 
 export const EXTRACT_INVOICE_SYSTEM = [
@@ -80,12 +81,43 @@ export function amountIn(note: string): number | undefined {
 }
 
 /**
+ * The demo's simulated AI (data/demo/justification.json): on the Pro example application, the first photo without a
+ * note is read as the example invoice (public/demo/factura-ejemplo.png), always the same way, so the live step
+ * "photo → assigned → alert" does not depend on a real reading. The mock cannot compare pixels (the browser re-encodes
+ * the photo before sending it), so it keys on the application: its budget has the demo's line and the invoice is not there yet.
+ */
+function demoSampleReading(budget: ExtractInvoiceInput["budget"], invoiceNumbers: string[]): InvoiceExtraction | undefined {
+  try {
+    const { sample } = loadJustification();
+    const line = budget.find((l) => l.concept === sample.lineConcept);
+    if (!line || invoiceNumbers.includes(sample.number)) return undefined;
+    return InvoiceExtraction.parse({
+      supplier: sample.supplier,
+      taxId: sample.taxId,
+      number: sample.number,
+      date: sample.date,
+      concept: sample.concept,
+      baseEur: sample.baseEur,
+      vatEur: sample.vatEur,
+      totalEur: sample.totalEur,
+      expenseType: line.expenseType,
+      lineConcept: line.concept,
+      confidence: 0.95,
+    });
+  } catch {
+    return undefined; // no demo data (other deployments, tests): the generic mock below
+  }
+}
+
+/**
  * No key, no reading: the mock cannot see the photo. It takes what the user wrote about it ("Papelería Sol, papel de
  * acuarela, 84,50 €") and otherwise picks a budget line and an amount from the image bytes (stable for the same photo).
  * It never makes up a NIF, number or date: those stay empty and the alerts ask for them.
  */
-function mockExtract({ imageBase64, budget, allowedExpenses, hint }: ExtractInvoiceInput): InvoiceExtraction {
+function mockExtract({ imageBase64, budget, allowedExpenses, hint, invoiceNumbers }: ExtractInvoiceInput): InvoiceExtraction {
   const note = hint?.trim() ?? "";
+  const demo = !note ? demoSampleReading(budget, invoiceNumbers ?? []) : undefined;
+  if (demo) return demo;
   const h = createHash("sha256").update(imageBase64).digest();
   const fromNote = note ? suggestLine(budget, { concept: note }) : undefined;
   const line = fromNote ?? (budget.length ? budget[h[0] % budget.length] : undefined);

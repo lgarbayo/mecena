@@ -7,6 +7,7 @@ import path from "node:path";
 import { z } from "zod";
 import { ApplicationSection, BudgetLine, Call, DossierSection, Profile, TechnicalSheet, TranscriptSegment } from "@/contracts";
 import { DemoScenario } from "@/contracts/api";
+import { SAMPLE_INVOICE_URL } from "./sample-invoice";
 
 export { DemoScenario };
 export type DemoScenarioId = z.infer<typeof DemoScenario>;
@@ -36,7 +37,35 @@ export const ProFile = z.object({
 });
 export type ProFile = z.infer<typeof ProFile>;
 
-export const SCENARIO_FILES = { artist: "artist.json", pro: "artist-pro.json", business: "business.json" } as const;
+/** The invoices of the justification demo (IDEA #7): `invoices` are already on the Pro application, `sample` is the one photographed live. */
+const InvoiceReading = z.object({
+  supplier: z.string(),
+  taxId: z.string(),
+  number: z.string(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  concept: z.string(),
+  baseEur: z.number(),
+  vatEur: z.number(),
+  totalEur: z.number(),
+  lineConcept: z.string(), // a BudgetLine.concept of artist-pro.json
+});
+export const JustificationFile = z.object({
+  invoices: z.array(InvoiceReading.extend({ image: z.string().regex(/^[\w.-]+\.png$/) })).min(1),
+  sample: InvoiceReading.extend({ image: z.string().regex(/^[\w.-]+\.png$/) }),
+});
+export type JustificationFile = z.infer<typeof JustificationFile>;
+
+/** The B2B panel demo (IDEA #8): an organisation whose members already accepted. Their profiles are fictional and owned by synthetic ids. */
+export const OrgFile = z.object({
+  org: z.object({ name: z.string(), kind: z.enum(["school", "association"]) }),
+  members: z
+    .array(z.object({ email: z.string().email(), profile: ScenarioProfile, dossier: z.array(ScenarioSection).min(1) }))
+    .min(2)
+    .max(4),
+});
+export type OrgFile = z.infer<typeof OrgFile>;
+
+export const SCENARIO_FILES = { artist: "artist.json", pro: "artist-pro.json", business: "business.json", justification: "justification.json", org: "org.json" } as const;
 
 function readJsonFile(file: string): unknown {
   return JSON.parse(fs.readFileSync(path.join(demoDataDir(), file), "utf8"));
@@ -52,8 +81,22 @@ export function loadPro(): ProFile {
   return ProFile.parse(readJsonFile(SCENARIO_FILES.pro));
 }
 
+export function loadJustification(): JustificationFile {
+  return JustificationFile.parse(readJsonFile(SCENARIO_FILES.justification));
+}
+export function loadOrg(): OrgFile {
+  return OrgFile.parse(readJsonFile(SCENARIO_FILES.org));
+}
+
 export function workImagePath(image: string): string {
   return path.join(demoDataDir(), "works", image);
+}
+export function invoiceImagePath(image: string): string {
+  return path.join(demoDataDir(), "invoices", image);
+}
+/** The invoice photo the presenter takes live: served statically so the phone can save it (see ./sample-invoice). */
+export function sampleInvoicePath(): string {
+  return path.resolve(process.cwd(), "public", SAMPLE_INVOICE_URL.slice(1));
 }
 
 /** The call the Pro application is for: the first listed one that exists and is open (fixtures in tests). */
@@ -65,6 +108,36 @@ export function pickProCall(pro: ProFile, calls: readonly Call[]): Call | undefi
   }
   // The curated catalogue changed under us: any open creator call with published criteria, else any open creator call.
   return calls.find((c) => open(c) && c.criteriaSource === "bases" && c.criteria.length > 0) ?? calls.find(open);
+}
+
+/** The two end-to-end extras the Pro/blank scenarios leave ready: invoices for /justificacion and the organisation for /panel. */
+export interface ExtraCheck {
+  id: "justification" | "panel";
+  ok: boolean;
+  problems: string[];
+}
+
+export function checkExtras(): ExtraCheck[] {
+  const run = (id: ExtraCheck["id"], fn: () => string[]): ExtraCheck => {
+    try {
+      const problems = fn();
+      return { id, ok: problems.length === 0, problems };
+    } catch (e) {
+      return { id, ok: false, problems: [e instanceof Error ? e.message.slice(0, 300) : String(e)] };
+    }
+  };
+  return [
+    run("justification", () => {
+      const j = loadJustification();
+      const lines = new Set(loadPro().application.budget.map((l) => l.concept));
+      return [
+        ...[...j.invoices, j.sample].filter((i) => !lines.has(i.lineConcept)).map((i) => `La factura ${i.number} apunta a una partida que no existe: ${i.lineConcept}`),
+        ...j.invoices.filter((i) => !fs.existsSync(invoiceImagePath(i.image))).map((i) => `Falta la imagen ${i.image}`),
+        ...(fs.existsSync(sampleInvoicePath()) ? [] : [`Falta la foto de ejemplo ${SAMPLE_INVOICE_URL}`]),
+      ];
+    }),
+    run("panel", () => (loadOrg().members.length >= 2 ? [] : ["La organización de ejemplo necesita al menos 2 miembros"])),
+  ];
 }
 
 export interface ScenarioCheck {

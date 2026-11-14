@@ -2,55 +2,69 @@
 
 > 1hack 2026 · FIC A Coruña · sábado 14/11, demos entre 19:00 y 21:00 · voluntaria, en directo, sin vídeo ni diapositivas obligatorias.
 > Móvil duplicado en el proyector. Castellano de España (tú/vosotros).
-> **Posicionamiento: Mecena es para artistas.** El modo pyme es la expansión: un único toque corto (paso 6), nunca el titular.
-> Fuente de verdad: [`fleet/IDEA.md`](../IDEA.md). Textos de pantalla: [`COPY.md`](COPY.md). Comprobaciones: [`QA_CHECKLIST.md`](QA_CHECKLIST.md).
+> **Posicionamiento: Mecena es para artistas.** El modo pyme es la expansión: se cuenta en el cierre («mañana, cualquier pyme»), ya no ocupa un paso del guion.
+> **Los 8 puntos de [`fleet/IDEA.md`](../IDEA.md) salen en directo**, porque el producto los hace de principio a fin: voz + fotos + dossier + PDF, MCP, feed de convocatorias, paywall + borrador, tribunal 61 → 84, «ganadores parecidos», justificación y panel B2B.
+> Fuente de verdad: [`fleet/IDEA.md`](../IDEA.md). Textos de pantalla: [`COPY.md`](COPY.md). Comprobaciones: [`QA_CHECKLIST.md`](QA_CHECKLIST.md). **Toques exactos, planes B por botón de `/demo` y checklists: [`docs/demo-script.md`](../../docs/demo-script.md)** (este guion es la versión de escenario; si difieren, manda aquel).
 
 ## Reparto en el escenario
 | Rol | Quién | Qué hace |
 |---|---|---|
 | **Presentador/a** | Persona A | Habla, marca el ritmo, mira el reloj |
 | **Operador/a** | Persona B | Lleva el móvil (duplicado), toca los botones, ejecuta los planes B |
-| **Artista** | [Nombre del artista voluntario] | Habla 60 s al móvil y enseña 2–3 obras |
+| **Artista** | [Nombre del artista voluntario] | Contesta 5 preguntas (≈ 5 s cada una) al móvil y enseña 1 obra |
 
 Regla de oro: **el presentador nunca toca el móvil y el operador nunca habla**. Si algo tarda, el presentador rellena con la frase de la columna «Si tarda».
 
+**Dispositivos:** móvil de escenario (cuenta de escenario; pestañas `/` y `/demo`) · **segundo navegador o móvil con la cuenta de reserva**, cargada con «Artista Pro con solicitud» y con `/justificacion/<id>` y `/panel` abiertas (justificación y panel) · portátil con Claude Desktop (MCP). Una **copia impresa de la factura de ejemplo** (`/demo/factura-ejemplo.png`) para la foto en directo.
+
 ## Puntos de control del reloj
-- **1:20** — debemos estar en el PDF. Si vamos por encima de **1:35**: saltamos el cambio a pyme (paso 5).
-- **2:30** — debemos tener el tribunal en 84. Si vamos por encima de **2:35**: saltamos el MCP (paso 9).
-- **2:50** — empieza el cierre (10 s), pase lo que pase.
+| Reloj | Debemos estar en… | Si vamos tarde |
+|---|---|---|
+| **0:40** | Entrevista terminada | > 0:50: saltar las fotos |
+| **1:05** | PDF abierto | > 1:15: saltar «Ganadores parecidos a ti» |
+| **1:42** | Compra pagada, borrador empezando | > 1:50 sin pagar: cuenta ya Pro |
+| **2:07** | Tribunal en 84 | > 2:15: saltar el panel |
+| **2:32** | Panel visto | > 2:40: MCP a una sola frase |
+| **2:47** | Cierre | Cierre pase lo que pase |
+
+Orden de recortes: scroll del dossier → «Ganadores parecidos» → segunda obra → panel → MCP a una frase.
 
 ---
 
 ## Versión completa (3:00)
 
-| # | Tiempo | En pantalla (móvil) | Se dice (presentador salvo que se indique) | Si tarda / plan B |
+| # | Tiempo | En pantalla | Se dice | Si tarda / plan B |
 |---|---|---|---|---|
-| 1 | **0:00–0:15** · Gancho | Pantalla de arranque A1: 3 datos con fuente | «La mitad de los artistas en España gana menos del salario mínimo, y menos del 15 % vive solo del arte. Un 34 % de quienes trabajan en cultura son autónomos, el doble que en el resto de la economía: sin gestoría, sin nadie que les busque ayudas. Las ayudas existen. Lo que falta es alguien que haga el dossier, las encuentre y las prepare contigo.» | Si la app no carga: los 3 datos están en la diapositiva 2 de [`PITCH.md`](PITCH.md) |
-| 2 | **0:15–0:20** · Confianza | Pantalla A2 «El arte es tuyo; nosotros hacemos el papeleo» → operador toca **Soy artista, empezamos** | «Antes de nada: Mecena no genera ni toca tu obra. Solo endereza y recorta las fotos, no entrena con lo tuyo y la última palabra es siempre tuya.» | — |
-| 3 | **0:20–1:20** · Voz + fotos (estrella) | Transcripción en directo a la izquierda/arriba; **perfil** rellenándose y **dossier** creciendo sección a sección. A mitad, operador abre la cámara y fotografía 2–3 obras; cada foto aparece enderezada con su ficha técnica | Presentador: «[Nombre], cuéntale a Mecena qué haces.» y **se calla**. **Artista** (≈ 60 s, guion orientativo abajo): quién es, dónde vive, técnica, una serie, una exposición o premio. Al enseñar cada obra: título, año, técnica, medidas | Si el micro no reconoce: operador toca **Escribir en vez de hablar** y pega la transcripción preparada (portapapeles). Presentador: «La sala tiene más eco que un estudio; os lo enseño con su texto.» |
-| 4 | **1:20–1:30** · PDF | Operador toca **Descargar PDF** → se abre el dossier maquetado | «Sesenta segundos hablando y tres fotos. Esto es un dossier profesional en PDF, y es gratis.» | Si el PDF no se genera: enseñar la página del dossier en la app («es la misma maqueta») |
-| 5 | **1:30–1:47** · Convocatorias | Feed de ayudas públicas españolas y convocatorias reales: tarjeta con importe, plazo, **Por qué encajas** / **Qué te falta**. Operador abre una | «Ayudas públicas españolas reales y vigentes —BDNS, DOG, diputaciones—, con la fuente. Y no solo te dice que encajas: te dice por qué, y qué te falta. Aquí: [qué te falta en la tarjeta].» | Si no carga el feed: el usuario de demo precargado ya tiene el feed (ver «Precargado») |
-| 6 | **1:47–1:55** · Expansión pyme (8 s) | Operador toca **Creador/a ↔ Pyme/autónomo**: cambian perfil y convocatorias. Vuelve a creador **inmediatamente** | «Empezamos por los artistas porque nadie les hace esto. Pero el motor es el mismo para una pyme o un autónomo: un toque.» | **Recortable** si a 1:35 no estamos en el paso 5. No explicar convocatorias de pyme: solo enseñar que cambian |
-| 7 | **1:55–2:15** · Paywall + compra | En la convocatoria: **Prepárame la solicitud** → paywall RevenueCat (Pro mensual, Pro anual, Solicitud premium) → operador elige **Solicitud premium** o **Pro mensual** → checkout sandbox → desbloqueado | «El dossier es gratis. Preparar la solicitud es lo que vale dinero: una consultora se lleva entre un 10 y un 15 % de tu beca. Nosotros, 9 euros al mes, con garantía: si en 90 días no has presentado 3 solicitudes, te lo devolvemos. Esto es RevenueCat en modo sandbox, compra real de pruebas.» | Si el checkout falla o tarda > 10 s: operador cambia al **usuario de demo ya Pro** (compra hecha antes). Presentador: «Esta compra la hicimos hace una hora con el mismo flujo; os la enseño hecha.» |
-| 8 | **2:15–2:35** · Borrador + tribunal | Borrador de la memoria **con frases literales del artista** resaltadas → **Pasar por el tribunal** → **61/100** con comentarios por criterio → **Aplicar mejoras** → **84/100** | «La memoria está escrita con sus palabras; fijaos, esta frase la ha dicho hace un minuto. Ahora la pasamos por un tribunal simulado con los criterios y los pesos oficiales de las bases: 61. Aplicamos lo que pide… 84. Antes de presentarla.» | Si el borrador o el tribunal tardan > 8 s: abrir la solicitud ya puntuada del usuario de demo precargado |
-| 9 | **2:35–2:50** · MCP *(opcional)* | Cambio al portátil: Claude Desktop, prompt «Hazme el dossier para la convocatoria [X]» → llamadas a `get_profile`, `build_dossier`, `export_dossier_pdf` | «Y todo esto también es un servidor MCP: desde Claude, una frase y tienes el dossier adaptado a esa convocatoria.» | **Recortable** si a 2:35 no hemos llegado. Nunca se improvisa sin haberlo ensayado |
-| 10 | **2:50–3:00** · Cierre | Volver a la pantalla A1 o a la diapositiva 8 («Visión y petición») | «Mecena prepara; tú presentas. Lo que habéis visto funciona de principio a fin: 37 convocatorias reales, 213 concesiones pasadas y RevenueCat de verdad. Hoy, artistas; mañana, cualquier pyme. Tú creas; Mecena se encarga del papeleo. Gracias.» | Si hemos saltado el MCP, añadir antes de «Hoy»: «Y Claude puede manejarla por MCP». Solo estas cifras; nada de «millones sin reclamar para artistas» |
+| 1 | **0:00–0:10** · Gancho | Pantalla de arranque A1: 3 datos con fuente | «Uno de cada dos artistas en España gana menos del salario mínimo, y más de la mitad de las pymes no pide ayudas por no conocerlas. Las ayudas existen. Falta quien haga el papeleo contigo.» | Si la app no carga: los datos están en la diapositiva 1 de [`PITCH.md`](PITCH.md) |
+| 2 | **0:10–0:40** · Voz *(punto 1)* | «Empezar» → «Hablando»; el **perfil** se rellena y el **dossier** crece sección a sección mientras la artista contesta 5 preguntas cortas | «[Nombre], cuéntale a Mecena qué haces.» y **se calla**. Al salir los chips: «Fijaos: va rellenando el perfil mientras habla.» | Micro sin respuesta en 5 s: **Escribiendo** + pegar la transcripción. Presentador: «Con este eco, mejor con su texto.» IA lenta > 8 s: «IA simulada para esta cuenta» |
+| 3 | **0:40–0:55** · Fotos *(punto 1)* | Cámara → una obra → dictar título, año, técnica, medidas → ficha técnica | «Solo endereza y recorta la foto. La obra no se toca, no entrenamos con ella y la última palabra es suya.» | Cámara falla: galería (fotos de la mañana) |
+| 4 | **0:55–1:05** · Dossier y PDF *(punto 1)* | `/dossier` 5 s → **Descargar PDF** → se abre | «Un minuto hablando y una foto: declaración, biografía, serie y ficha. Y esto es un dossier en PDF, listo para enviar. Gratis.» | PDF no se genera: enseñar la página del dossier («es la misma maqueta») o el PDF ya descargado |
+| 5 | **1:05–1:20** · Convocatorias y ganadores *(puntos 3 y 6)* | Tarjeta con importe, plazo, **Por qué encajas** / **Qué te falta** → abrir una → **Ganadores parecidos a ti** | «Convocatorias reales y abiertas, con la fuente: no solo te dice que encajas, te dice por qué y qué te falta. Y quién ha ganado antes algo parecido, con importes reales: orientativo, nunca una probabilidad.» | Feed vacío: cuenta precargada. Sin ganadores en esa convocatoria: la siguiente tarjeta o solo la frase |
+| 6 | **1:20–1:42** · Paywall + compra *(punto 4)* | **Prepárame la solicitud** → paywall RevenueCat (Pro mensual, Pro anual, Solicitud premium) → **Pro mensual** → checkout sandbox → desbloqueado | «El dossier es gratis. Preparar la solicitud es lo que vale dinero: una consultora se lleva entre un 10 y un 15 % de tu beca. Nosotros, 9 euros al mes, con garantía de 90 días. Esto es RevenueCat en sandbox, compra de pruebas real.» | Checkout falla o > 10 s: cuenta **ya Pro**. «Esta compra la hicimos hace una hora; os enseño la cuenta ya Pro.» |
+| 7 | **1:42–1:52** · Borrador *(punto 4)* | Borrador de la memoria con **frases literales de la artista** resaltadas | «La memoria está escrita con sus palabras; fijaos, esta frase la ha dicho hace un minuto. Lo que falta lo marca, no lo inventa.» | > 8 s: abrir la solicitud ya redactada de la cuenta precargada |
+| 8 | **1:52–2:07** · Tribunal *(punto 5)* | **Pasar el tribunal simulado** → **61/100** con comentarios por criterio → **Aplicar mejoras** → **84/100** | «Un tribunal simulado con los criterios y los pesos oficiales de las bases: 61. Aplicamos lo que pide… 84. Antes de presentarla.» | > 8 s: solicitud ya puntuada de la cuenta precargada |
+| 9 | **2:07–2:22** · Justificación *(punto 7)* | **2.º navegador** (cuenta de reserva): `/justificacion/<id>` con 3 facturas asignadas y un aviso en una partida pasada de presupuesto → **Fotografiar una factura** (papel impreso) → asignada a su partida + nuevo aviso → **Preparar la memoria** | «Y cuando te dan la ayuda, hay que justificarla: foto de la factura, la asigna a su partida, avisa de las desviaciones y prepara la memoria final con tus palabras. Mecena prepara; tú presentas.» Si va con IA simulada: «Este paso va con lectura de ensayo; en producción la lee Claude con visión.» | La foto falla o tarda > 8 s: no repetir; enseñar las 3 facturas ya asignadas y **Preparar la memoria**. Lectura rara: «IA simulada para esta cuenta» en la reserva |
+| 10 | **2:22–2:32** · Panel B2B *(punto 8)* | Pestaña 2 del 2.º navegador: `/panel`, escuela de ejemplo con 3 miembros que ya aceptaron, sus convocatorias que encajan y plazos | «Para escuelas y asociaciones: las personas que han aceptado su invitación y, de cada una, las convocatorias abiertas que le encajan y sus plazos. Solo ven lo que cada persona comparte.» | Vacío: recargar «Artista Pro con solicitud» en la reserva, o `/panel?demo=1` |
+| 11 | **2:32–2:47** · MCP *(punto 2)* | Portátil: Claude Desktop, prompt «Hazme el dossier para la convocatoria [X]» → `search_calls`, `build_dossier`, `export_dossier_pdf` | «Y todo esto también es un servidor MCP remoto: desde Claude, una frase y tienes el dossier para esa convocatoria.» | No responde o > 2:40: solo la frase. Nunca se improvisa sin haberlo ensayado |
+| 12 | **2:47–3:00** · Cierre | Volver a la pantalla A1 o a la diapositiva 8 («Visión y petición») | «Mecena prepara; tú presentas. Lo que habéis visto funciona de principio a fin: 37 convocatorias reales, 213 concesiones pasadas y RevenueCat de verdad, del dossier a la justificación. Hoy, artistas; mañana, cualquier pyme. Tú creas; Mecena se encarga del papeleo. Gracias.» | Si hemos saltado el MCP, añadir antes de «Hoy»: «Y Claude puede manejarla por MCP». Solo estas cifras; nada de «millones sin reclamar para artistas» |
 
-### Guion orientativo del artista (≈ 60 s, que lo diga con sus palabras)
-Pásaselo por la mañana (bloque A11) y ensayadlo una vez. No tiene que leerlo.
+Suma: 10 + 30 + 15 + 10 + 15 + 22 + 10 + 15 + 15 + 10 + 15 + 13 = 180 s (la compra y el borrador suman 32 s; los cambios de navegador y portátil salen de los segundos de cada fila).
+
+### Guion orientativo del artista (≈ 25 s, frases cortas, que lo diga con sus palabras)
+Pásaselo por la mañana (bloque A11; frases cortas: son ≈ 5 s por pregunta) y ensayadlo una vez. No tiene que leerlo.
 1. «Me llamo [nombre], soy [pintora / ilustrador / fotógrafa] y vivo en [ciudad].»
 2. «Trabajo sobre todo con [técnica] y me interesa [tema].»
 3. «Mi serie más reciente se llama [serie], va de [concepto].»
 4. «He expuesto en [sitio] / he ganado [premio] / estudié en [escuela].»
-5. Con cada obra delante de la cámara: «Esta es [título], de [año], [técnica], [medidas aprox.].»
+5. Con la obra delante de la cámara: «Esta es [título], de [año], [técnica], [medidas aprox.].»
 6. «Lo que busco ahora es [una residencia / ayuda a la producción / una beca].»
 
-Que el punto 3 contenga una frase con personalidad: es la que luego enseñaremos citada en la memoria (paso 8).
+Que el punto 3 contenga una frase con personalidad: es la que luego enseñaremos citada en la memoria (fila 7).
 
 ---
 
 ## Versión corta (90 s)
-Para cuando el turno sea corto o el directo se tuerza. Usa el **usuario de demo precargado** salvo en la voz.
+Para cuando el turno sea corto o el directo se tuerza. Usa el **usuario de demo precargado** salvo en la voz. No cubre los 8 puntos: si sobran 10 s, enseñar el panel o la justificación ya hecha de la cuenta de reserva.
 
 | Tiempo | Pantalla | Se dice |
 |---|---|---|
@@ -83,8 +97,10 @@ Según las webs de cada producto (no verificado; decidlo así).
 | **La compra falla** (checkout no carga, tarjeta rechazada) | Error o > 10 s | Cerrar el checkout y cambiar al **usuario de demo ya Pro** | «Esta compra la hicimos hace una hora; os enseño cómo queda desbloqueado.» |
 | **El PDF no se genera** | Error o pantalla en blanco | Enseñar la página del dossier en la app; tener el PDF ya descargado en el móvil | «Es la misma maqueta que el PDF.» |
 | **Duplicación de pantalla cae** | Proyector en negro | Reconectar el **cable USB** (no inalámbrico). Si no vuelve en 15 s: seguir con el portátil + vídeo | «Un segundo, que el proyector también quiere su beca.» |
-| **MCP no responde** | Claude Desktop no lista las tools | Saltar el paso 9 sin comentarlo | — |
-| **Nos pasamos de tiempo** | Ver puntos de control | Saltar paso 6, luego paso 9 | Ir directo al cierre |
+| **MCP no responde** | Claude Desktop no lista las tools | Saltar la fila 11 sin comentarlo (solo la frase) | — |
+| **La factura no se lee / la cámara falla** | Error o > 8 s en la justificación | Enseñar las 3 facturas ya asignadas y **Preparar la memoria**; si la lectura es rara, «IA simulada para esta cuenta» en la reserva | «Os enseño la que ya tenía hecha.» |
+| **Justificación o panel vacíos** | Sin facturas o «Datos de demostración» | «Artista Pro con solicitud» en la cuenta de reserva; sin tiempo, `/panel?demo=1` | — |
+| **Nos pasamos de tiempo** | Ver puntos de control | Recortar en este orden: ganadores parecidos → segunda obra → panel → MCP a una frase | Ir directo al cierre |
 
 ## Qué tiene que estar precargado antes de subir
 **Dispositivos**
@@ -98,6 +114,8 @@ Según las webs de cada producto (no verificado; decidlo así).
 - [ ] Permisos de **micrófono y cámara** ya concedidos a la URL (que no salga el diálogo en escena).
 - [ ] App **reseteada** justo antes de salir (script de reset, < 10 s), en la pantalla A1.
 - [ ] **Usuario de demo precargado** (perfil, dossier, PDF, feed, solicitud con tribunal 61 y 84) y **usuario de demo ya Pro**, accesibles en un toque.
+- [ ] **Cuenta de reserva** con «Artista Pro con solicitud» (3 facturas asignadas con una partida pasada de presupuesto, escuela de ejemplo con 3 miembros que ya aceptaron), sin memoria preparada, con `/justificacion/<id>` y `/panel` abiertas en un segundo navegador. Interruptor «IA simulada para esta cuenta» según el ensayo.
+- [ ] **Factura de ejemplo impresa** (A5) de `/demo/factura-ejemplo.png`, para fotografiarla en escena.
 - [ ] Ofertas de RevenueCat cargando con precios en EUR; datos de la tarjeta de pruebas sandbox a mano.
 - [ ] Transcripción de respaldo del artista en el **portapapeles** del móvil.
 - [ ] 3 fotos de las obras del artista en la **galería** del móvil.

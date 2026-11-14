@@ -235,6 +235,8 @@ export const DemoResetResponse = z.object({
   pro: z.boolean(),
   applicationId: z.string().optional(), // pro: the drafted application (open it at /tribunal/<id>)
   callId: z.string().optional(),
+  invoices: z.number().int().optional(), // pro: invoices already assigned on the application (open /justificacion/<applicationId>)
+  panelMembers: z.number().int().optional(), // members of the demo organisation who already accepted (open /panel)
 });
 
 // /api/demo/settings: the signed-in account's plan-B switches

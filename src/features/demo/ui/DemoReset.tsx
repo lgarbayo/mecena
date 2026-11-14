@@ -11,6 +11,7 @@ import type { DemoResetResponse } from "@/contracts/api";
 import { Button, Card, Tag } from "@/components/ui";
 import { useApp } from "@/components/shell/AppProvider";
 import { apiGet, apiSend, ApiClientError } from "@/lib/api-client";
+import { SAMPLE_INVOICE_URL } from "../sample-invoice";
 import type { DemoStatus } from "../status";
 
 type Scenario = "blank" | "onboarded" | "pro" | "business";
@@ -20,8 +21,8 @@ export const SCENARIOS: { id: Scenario; title: string; what: string; when: strin
   {
     id: "blank",
     title: "Empezar de cero",
-    what: "Borra tu perfil, tus obras, tu dossier y tus solicitudes. Te deja una creadora en blanco y vuelve a salir la oferta de Mecena Pro.",
-    when: "Antes de salir al escenario, para hacer la entrevista en directo.",
+    what: "Borra tu perfil, tus obras, tu dossier y tus solicitudes. Te deja una creadora en blanco y vuelve a salir la oferta de Mecena Pro. Deja montado el panel de la escuela de ejemplo (3 miembros que ya aceptaron).",
+    when: "Antes de salir al escenario, para hacer la entrevista en directo. El panel B2B queda listo en /panel.",
     confirm: "Se borrarán tu perfil, tus obras, tu dossier y tus solicitudes. ¿Empezar de cero?",
   },
   {
@@ -34,8 +35,8 @@ export const SCENARIOS: { id: Scenario; title: string; what: string; when: strin
   {
     id: "pro",
     title: "Artista Pro con solicitud",
-    what: "La artista de ejemplo con Mecena Pro de demo y una solicitud ya redactada para una convocatoria abierta, puntuada 61 por el tribunal. «Aplicar mejoras» la sube a 84. Activa también el tribunal determinista.",
-    when: "Si la compra de RevenueCat falla o tarda, o si el borrador o el tribunal tardan más de 8 segundos.",
+    what: "La artista de ejemplo con Mecena Pro de demo y una solicitud ya redactada para una convocatoria abierta, puntuada 61 por el tribunal. «Aplicar mejoras» la sube a 84. Trae 3 facturas ya asignadas, con una partida pasada de presupuesto, para enseñar en la justificación, y la escuela de ejemplo con 3 miembros en el panel. Activa también el tribunal determinista.",
+    when: "Si la compra de RevenueCat falla o tarda, o si el borrador o el tribunal tardan más de 8 segundos. Es también la cuenta que enseña la justificación (foto de factura en directo) y el panel.",
     confirm: "Se borrarán tus datos y se cargará la artista Pro con su solicitud. ¿Seguimos?",
   },
   {
@@ -161,6 +162,8 @@ export function DemoReset({ email }: { email: string }) {
             {done.scenario === "pro" && done.applicationId && (
               <>
                 <Link href={ROUTES.jury(done.applicationId)}>Abre el tribunal (61)</Link>
+                {" · "}
+                <Link href={ROUTES.justification(done.applicationId)}>Abre la justificación</Link>
                 {done.callId && (
                   <>
                     {" · "}
@@ -169,9 +172,34 @@ export function DemoReset({ email }: { email: string }) {
                 )}
               </>
             )}
+            {done.panelMembers ? (
+              <>
+                {" · "}
+                <Link href={ROUTES.panel}>Abre el panel ({done.panelMembers} miembros)</Link>
+              </>
+            ) : null}
           </p>
         )}
         {error && <p role="alert">{error}</p>}
+        {status?.extras?.filter((x) => !x.ok).map((x) => (
+          <p key={x.id} role="alert" style={{ fontSize: "0.85rem" }}>
+            {x.id === "justification" ? "Justificación" : "Panel"} de ejemplo sin cargar: {x.problems.join(" · ")}
+          </p>
+        ))}
+      </Card>
+
+      <Card>
+        <h2 style={{ marginTop: 0 }}>Foto de factura para la justificación</h2>
+        <p style={{ color: "var(--g-ink-2)" }}>
+          La factura que se fotografía en directo (ficticia, CC0). «Fotografiar una factura» abre la cámara, no la galería: lo más fiable es llevarla impresa en papel (A5) y hacerle la foto
+          en escena, o apuntar la cámara a otra pantalla. Con la IA simulada, la primera foto sin nota (sea cual sea) se lee siempre igual: Imprenta Ártabra, 1.450,00 €, partida «Edición»,
+          y se pasa de presupuesto.
+        </p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={SAMPLE_INVOICE_URL} alt="Factura de ejemplo de la Imprenta Ártabra, 1.450,00 euros" style={{ maxWidth: "220px", width: "100%", border: "1px solid var(--g-line, #ddd)" }} />
+        <p style={{ marginBottom: 0 }}>
+          <a href={SAMPLE_INVOICE_URL} download="factura-ejemplo.png">Descargar la foto</a>
+        </p>
       </Card>
 
       <Card>
