@@ -14,8 +14,8 @@ Mecena expone sus **8 herramientas** como servidor MCP. Son exactamente las mism
 | `update_profile` | Actualiza campos del perfil (sin inventar nada). |
 | `build_dossier` | Monta el dossier. Con `callId`, lo adapta a esa convocatoria (orden, límite de imágenes, textos según sus criterios): **la adaptación es de Mecena Pro**; sin Pro devuelve el dossier general con las notas de la convocatoria como vista previa, y lo dice. |
 | `export_dossier_pdf` | Exporta el dossier a PDF y devuelve el enlace de descarga (se abre con tu sesión de Mecena). Con `callId` y Pro, el PDF adaptado; sin Pro, el general. |
-| `search_calls` | Busca convocatorias **abiertas o próximas** que encajan contigo, con su estado en cada línea. Las recurrentes cuya edición ya cerró solo salen con `includeClosed`. **Sin Pro ves tus 3 destacadas** (las mismas que en `/convocatorias`) y el resumen añade «Tienes N más con Mecena Pro: …/pro». |
-| `explain_call` | Explica unas bases en lenguaje claro: requisitos, cuantía, plazo, documentación, criterios. Sin Pro, solo para tus 3 destacadas. |
+| `search_calls` | Busca convocatorias **abiertas o próximas** que encajan contigo, con su estado en cada línea. Las recurrentes cuya edición ya cerró solo salen con `includeClosed`. **Sin Pro ves 3 convocatorias al mes** (el mismo cupo que en `/convocatorias`) y el resumen añade «Tienes N más con Mecena Pro: …/pro». |
+| `explain_call` | Explica unas bases en lenguaje claro: requisitos, cuantía, plazo, documentación, criterios. Sin Pro, solo para las 3 que ya tienes desbloqueadas este mes. |
 | `draft_application` | Redacta la solicitud con tus propias palabras. **Requiere Mecena Pro o una Solicitud premium.** |
 | `score_application` | Pasa la solicitud por el tribunal simulado (orientativo) con los criterios oficiales. |
 
@@ -96,7 +96,7 @@ Sin token, o con uno revocado, responde `401` con el motivo en castellano. `GET`
 - **App y MCP remoto** leen la misma cuenta en el mismo servidor: una compra hecha en el móvil (RevenueCat) desbloquea Pro también en Claude, en la siguiente llamada. El mensaje de pago lo dice así.
 - **MCP local (stdio)** lee los datos de tu ordenador: la compra solo cuenta si la haces en la web que usa ese mismo `MECENA_DATA_DIR` (tu `npm run dev` o su túnel). Una compra en mecena.fly.dev **no** llega al MCP local; para eso, usa el MCP remoto. El mensaje de pago del MCP local lo avisa.
 
-Sin Pro, las herramientas aplican los mismos muros que la app: 3 convocatorias destacadas (`search_calls`, `explain_call`), dossier general en vez del adaptado (`build_dossier`, `export_dossier_pdf`) y `draft_application` bloqueada. Ninguna consulta sirve para rodearlos.
+Sin Pro, las herramientas aplican los mismos muros que la app: 3 convocatorias al mes (`search_calls`, `explain_call`), dossier general en vez del adaptado (`build_dossier`, `export_dossier_pdf`) y `draft_application` bloqueada. Ninguna consulta sirve para rodearlos.
 
 ## 3. Guion de la demo (paso 6)
 
