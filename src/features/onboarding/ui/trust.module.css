@@ -1,35 +1,36 @@
-/* /confianza — Dark Immersive Glassmorphic trust screen */
+/* /confianza: the trust promise as a quiet, light reading page. */
 .home {
   max-width: 44rem;
   margin: 0 auto;
-  padding: 1rem 0 3rem;
+  padding: 24px 0 48px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 32px;
 }
 
 .head {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 12px;
 }
 
 .title {
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: clamp(1.85rem, 6vw, 2.75rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: clamp(2.25rem, 6vw, 3rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
   margin: 0;
+  color: var(--text-1);
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
 
 .lede {
   margin: 0;
-  color: var(--g-ink-2);
-  font-size: 1.05rem;
-  line-height: 1.5;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .data, .rules {
@@ -37,112 +38,111 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .point {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.06));
-  border: 1px solid var(--g-line);
-  border-radius: 22px;
-  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  gap: 8px;
   animation: rise 0.5s var(--ease-out) both;
 }
 
 .figure {
-  font-size: clamp(2.2rem, 10vw, 3.4rem);
-  font-weight: 700;
+  font-size: clamp(2.25rem, 10vw, 3rem);
+  font-weight: 300;
   line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--g-accent);
+  letter-spacing: -0.04em;
+  color: var(--text-1);
   font-variant-numeric: tabular-nums;
 }
 
 .text {
   margin: 0;
-  font-size: 1.02rem;
-  color: var(--g-ink-2);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
 }
 
 .source {
-  font-size: 0.8rem;
-  color: var(--g-ink-3);
+  font-size: 13px;
+  color: var(--text-3);
   overflow-wrap: anywhere;
 }
 
 .closing {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 16px;
+  color: var(--text-2);
 }
 
 .slogan {
   margin: 0;
-  font-size: 1.3rem;
-  font-weight: 700;
+  font-size: 1.375rem;
+  font-weight: 400;
+  letter-spacing: -0.015em;
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
+  gap: 8px;
 }
 
 .rule {
   display: flex;
-  gap: 1rem;
+  gap: 16px;
   align-items: flex-start;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.06));
-  border: 1px solid var(--g-line);
-  border-radius: 22px;
-  padding: 18px 20px;
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
   animation: rise 0.45s var(--ease-out) both;
 }
 
 .rule h2 {
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: 1.18rem;
-  margin: 0 0 0.3rem;
-  color: var(--g-ink);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 2px 0 6px;
+  color: var(--text-1);
 }
 
 .rule p {
   margin: 0;
-  color: var(--g-ink-2);
-  font-size: 0.96rem;
-  line-height: 1.5;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .ruleIcon {
   flex: none;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: rgba(255, 138, 92, 0.14);
-  border: 1.5px solid rgba(255, 138, 92, 0.45);
-  color: var(--g-accent);
-  box-shadow: 0 6px 18px rgba(255, 138, 92, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background: var(--surface-3);
+  color: var(--text-1);
 }
 
 @media (min-width: 720px) {
-  .data {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  .home { padding-top: 48px; gap: 40px; }
+  .title { font-size: 3rem; }
+  .data { grid-template-columns: repeat(3, 1fr); }
+  .rule { padding: 24px; }
 }
 
 @keyframes rise {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
 }
 

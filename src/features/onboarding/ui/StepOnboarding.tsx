@@ -31,11 +31,18 @@ import { VoiceOrb } from "./VoiceOrb";
 import l from "./live.module.css";
 import s from "./steps.module.css";
 import { Icon } from "@/components/ui/icons";
+import { LoadingRegion, SkeletonText } from "@/components/ui";
 
 /** GET current onboarding state (profile, dossier sections, transcript), owned by WP-01. */
 export const ONBOARDING_STATE_API = "/api/onboarding";
 /** How long a changed section / profile chip stays highlighted. */
 const FLASH_MS = 2600;
+
+/** One random prefix per mounted onboarding: a turn's idempotency key is `${prefix}:${turn.id}` (local ids restart at 1). */
+function sessionPrefix(): string {
+  const c = typeof crypto !== "undefined" ? crypto : undefined;
+  return c?.randomUUID ? c.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
 
 type Mode = "voice" | "text";
 type Phase = { at: "choose" } | { at: "step"; i: number } | { at: "done" };
@@ -97,6 +104,11 @@ export function StepOnboarding() {
   const [leaving, setLeaving] = useState<string | null>(null);
   /** The person asked to start over: the next onboarding's first turn wipes the earlier one (server-side reset). */
   const [restart, setRestart] = useState(false);
+  /** The saved onboarding state has arrived (the done summary shows a skeleton until then). */
+  const [loaded, setLoaded] = useState(false);
+  /** A retried turn reuses its key, so the server never applies the same answer twice. */
+  const keyPrefix = useRef<string | null>(null);
+  keyPrefix.current ??= sessionPrefix();
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const resumeAfterPhoto = useRef(false);
   /** Turns of the queue that belong to an earlier profile (before a creator <-> pyme switch) are not shown. */
@@ -131,8 +143,9 @@ export function StepOnboarding() {
         setProfile(untouchedSeed ? { ...st.profile, displayName: "", city: undefined, province: undefined, region: undefined, territory: undefined, legalForm: undefined, cnae: undefined, sector: undefined, employees: undefined, foundedYear: undefined, annualRevenueEur: undefined, bio: "", statement: "", achievements: [], education: [], links: [], fundingNeeds: [], projectIdea: undefined } : st.profile);
         setSections(st.sections ?? []);
         setHistory(st.transcript ?? []);
+        setLoaded(true);
       })
-      .catch(() => undefined);
+      .catch(() => pidRef.current === id && setLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -178,12 +191,17 @@ export function StepOnboarding() {
           freshRef.current = false;
           const step = t.step === undefined ? undefined : stepsRef.current[t.step];
           const stepKey = t.step === undefined ? undefined : (step?.key ?? step?.fields[0] ?? `step-${t.step + 1}`);
-          return apiSend<OnboardingTurnResponse>(API.onboardingTurn, { text: t.text, source: t.source, profileId: pidRef.current, stepKey, reset }, "POST", signal);
+          // The turn on its way is the queue's "sending" item: its id keys the request, so a retry reuses the key.
+          const sending = queueRef.current?.snapshot.find((x) => x.status === "sending");
+          const idempotencyKey = sending ? `${keyPrefix.current}:${sending.id}` : undefined;
+          return apiSend<OnboardingTurnResponse>(API.onboardingTurn, { text: t.text, source: t.source, profileId: pidRef.current, stepKey, reset }, "POST", signal, { idempotencyKey });
         },
         { change: setTurns, result: onResult },
       ),
     [onResult],
   );
+  const queueRef = useRef<TurnQueue | null>(null);
+  queueRef.current = queue;
 
   const speech = useSpeechRecognition({
     onFinal: (text) => {
@@ -457,10 +475,9 @@ export function StepOnboarding() {
                 {followUp}
               </h1>
             ) : busy && phase.i > 0 ? (
-              <div className={s.questionSkeleton} aria-busy="true" aria-label="Cargando pregunta…">
-                <div className={s.skeletonLine} style={{ width: "85%" }} />
-                <div className={s.skeletonLine} style={{ width: "60%" }} />
-              </div>
+              <LoadingRegion label="Cargando pregunta…" className={s.questionSkeleton}>
+                <SkeletonText lines={2} />
+              </LoadingRegion>
             ) : (
               <h1 className={`${s.question} ${s.questionStep}`}>{steps[phase.i].question}</h1>
             )}
@@ -476,7 +493,8 @@ export function StepOnboarding() {
                   aria-label={speech.listening ? C.tapToPause : speech.tapToResume ? C.tapToResume : C.tapToTalk}
                   data-testid="orb"
                 >
-                  <VoiceOrb active={speech.listening} pulse={pulse} size={132} />
+                  <span className={`orb ${s.orbGlow}`} aria-hidden />
+                  <VoiceOrb active={speech.listening} pulse={pulse} size={184} />
                 </button>
                 <span className={s.orbLabel}>{speech.listening ? C.listening : speech.tapToResume ? C.tapToResume : C.tapToTalk}</span>
                 {quietError && <p className={s.micError}>{quietError}</p>}
@@ -532,13 +550,21 @@ export function StepOnboarding() {
               <p className={s.example}>{busy ? (slow ? ONBOARDING.slow : ONBOARDING.sending) : C.doneLede}</p>
             )}
             <dl className={`${g.glass} ${s.summary}`} data-testid="summary">
-              {rows.map((r) => (
-                <div key={r.field} className={s.row}>
-                  <dt>{r.label}</dt>
-                  <dd>{r.values.join(", ")}</dd>
-                </div>
-              ))}
-              {rows.length === 0 && <p className={s.example}>{C.doneEmpty}</p>}
+              {!loaded && profileId && rows.length === 0 ? (
+                <LoadingRegion label="Cargando tu ficha…">
+                  <SkeletonText lines={4} />
+                </LoadingRegion>
+              ) : (
+                <>
+                  {rows.map((r) => (
+                    <div key={r.field} className={s.row}>
+                      <dt>{r.label}</dt>
+                      <dd>{r.values.join(", ")}</dd>
+                    </div>
+                  ))}
+                  {rows.length === 0 && <p className={s.example}>{C.doneEmpty}</p>}
+                </>
+              )}
             </dl>
             {composing ? (
               <p className={s.example} role="status" data-testid="layout-composing">
@@ -582,7 +608,7 @@ export function StepOnboarding() {
                 </>
               ) : (
                 <>
-                  <span className={s.spinner} aria-hidden /> {C.saving}
+                  <span className={s.savingDot} aria-hidden /> {C.saving}
                 </>
               )}
             </div>

@@ -17,10 +17,12 @@ export function micSharingUnsafe(nav?: Pick<Navigator, "userAgent" | "maxTouchPo
   return /Android|iPhone|iPad|iPod|Macintosh|Mac OS X/i.test(n.userAgent);
 }
 
+/** Soft pastels for a light page: blue, cyan, violet, peach. */
 const PALETTE: [number, number, number][] = [
-  [255, 122, 69], // terracotta
-  [179, 140, 255], // violet
-  [79, 209, 197], // teal
+  [120, 170, 255], // blue
+  [125, 220, 240], // cyan
+  [176, 150, 250], // violet
+  [255, 190, 160], // peach
 ];
 
 export function VoiceOrb({ active, pulse = 0, size = 280 }: { active: boolean; pulse?: number; size?: number }) {
@@ -125,8 +127,8 @@ export function VoiceOrb({ active, pulse = 0, size = 280 }: { active: boolean; p
       const [r1, g1, b1] = mix(0);
       const [r2, g2, b2] = mix(0.5);
       const halo = g.createRadialGradient(c, c, base * 0.4, c, c, size * 0.5);
-      halo.addColorStop(0, `rgba(${r1},${g1},${b1},${0.22 + level * 0.35})`);
-      halo.addColorStop(1, "rgba(0,0,0,0)");
+      halo.addColorStop(0, `rgba(${r1},${g1},${b1},${0.18 + level * 0.3})`);
+      halo.addColorStop(1, `rgba(${r1},${g1},${b1},0)`); // fade to the same hue: no gray fringe on a light page
       g.fillStyle = halo;
       g.fillRect(0, 0, size, size);
 
@@ -146,9 +148,9 @@ export function VoiceOrb({ active, pulse = 0, size = 280 }: { active: boolean; p
         }
         g.closePath();
         const fill = g.createRadialGradient(c - base * 0.3, c - base * 0.35, 0, c, c, base * 1.3);
-        fill.addColorStop(0, `rgba(255,255,255,${layer === 2 ? 0.35 : 0.08})`);
-        fill.addColorStop(0.28, `rgba(${r},${gg},${b},${0.95 - layer * 0.15})`);
-        fill.addColorStop(1, `rgba(${r2},${g2},${b2},${0.7 - layer * 0.15})`);
+        fill.addColorStop(0, `rgba(255,255,255,${layer === 2 ? 0.7 : 0.3})`);
+        fill.addColorStop(0.32, `rgba(${r},${gg},${b},${0.85 - layer * 0.15})`);
+        fill.addColorStop(1, `rgba(${r2},${g2},${b2},${0.65 - layer * 0.15})`);
         g.fillStyle = fill;
         g.globalCompositeOperation = "source-over";
         g.fill();
