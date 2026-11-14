@@ -20,6 +20,7 @@
     "demo:preflight": "tsx scripts/demo-preflight.ts",
     "demo:images": "tsx scripts/demo-images.ts",
     "calls:ingest": "tsx scripts/ingest-bdns.ts",
+    "calls:sweep": "tsx scripts/sweep-bdns.ts",
     "calls:history": "tsx scripts/ingest-history.ts"
   },
   "dependencies": {
