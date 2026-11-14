@@ -11,8 +11,8 @@ Mecena is a web app / PWA, so it sells through **RevenueCat Web Billing** (Strip
 
    | Identifier | Name | Product type | Duration | Price |
    |---|---|---|---|---|
-   | `mecena_pro_monthly` | Mecena Pro mensual | Auto-renewing subscription | 1 month | 9,00 EUR |
-   | `mecena_pro_annual` | Mecena Pro anual | Auto-renewing subscription | 1 year | 79,00 EUR |
+   | `mecena_pro_monthly` | Mecena Pro mensual | Auto-renewing subscription | 1 month | 3,99 EUR |
+   | `mecena_pro_annual` | Mecena Pro anual | Auto-renewing subscription | 1 year | 35,88 EUR |
    | `mecena_solicitud_premium` | Solicitud premium | **Consumable** | — | 15,00 EUR |
 
 4. **Entitlement**: *Product catalog → Entitlements* → **+ New** → identifier **`mecena_pro`** (the value of `NEXT_PUBLIC_REVENUECAT_ENTITLEMENT_ID`, also the code default). Attach **both subscriptions** (not the one-off).

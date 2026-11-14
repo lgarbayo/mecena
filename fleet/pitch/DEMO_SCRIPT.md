@@ -84,7 +84,7 @@ Según las webs de cada producto (no verificado; decidlo así).
 | «¿Esto no existe ya?» | «Para pymes, sí: SUBAI, BuscoAyudas… Las pymes ya tienen herramientas; los artistas no tienen a nadie que les haga el dossier y les prepare las ayudas públicas españolas.» |
 | «¿Y Sketchar o OpenCall?» | «Según sus webs, van a *open calls* internacionales y en inglés. Nosotros, ayudas públicas españolas, dossier por voz y tribunal con los criterios oficiales.» |
 | «¿Por qué no empezáis por pymes, que pagan más?» | «Porque ese mercado está lleno y el de artistas, vacío. El motor ya sirve para pymes: lo habéis visto con un toque.» |
-| «¿9 € no es poco?» | «BuscoAyudas cobra 19 € al mes a pymes, según su web; un artista no factura como una pyme. Y una consultora se lleva un 10–15 % de la ayuda.» |
+| «¿3,99 € no es poco?» | «BuscoAyudas cobra 19 € al mes a pymes, según su web; un artista no factura como una pyme. Y una consultora se lleva un 10–15 % de la ayuda.» |
 | «¿La IA toca mi obra?» | «Nunca. Solo endereza y recorta la foto. No entrenamos con tu obra y presentas tú.» |
 
 ## Planes B por paso de riesgo

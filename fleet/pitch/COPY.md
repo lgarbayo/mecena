@@ -184,8 +184,8 @@
 **Productos:**
 | Producto | Título | Precio | Línea |
 |---|---|---|---|
-| Pro anual | Pro anual | 79 €/año | Ahorras 29 € frente al mensual · Recomendado |
-| Pro mensual | Pro mensual | 9 €/mes | Cancela cuando quieras |
+| Pro anual | Pro anual | 35,88 €/año | Ahorras 12 € frente al mensual (2,99 €/mes) · Recomendado |
+| Pro mensual | Pro mensual | 3,99 €/mes | Cancela cuando quieras |
 | Solicitud premium | Solo esta solicitud | 15 € | Pago único, sin suscripción |
 
 **Ancla:** Una consultora se lleva entre un 10 y un 15 % de tu ayuda. Con Mecena, menos que un café a la semana.
