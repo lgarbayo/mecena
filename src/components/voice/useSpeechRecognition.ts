@@ -114,6 +114,8 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
   const stopped = useRef(true);
   /** Mirrors errorCode for the event handlers. */
   const code = useRef<string | null>(null);
+  /** Counts consecutive error-triggered restarts without any speech result to prevent infinite restart loops. */
+  const errorStreak = useRef(0);
   const onFinal = useRef(opts.onFinal);
   onFinal.current = opts.onFinal;
   const lang = opts.lang ?? "es-ES";
@@ -141,15 +143,15 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
       // while WebKit/desktop may reuse index 0 after internal compaction or emit empty final tokens).
       const emittedAt = new Map<number, string>();
       r.onresult = (e) => {
-        if (e.results.length < emittedAt.size) {
-          for (const k of [...emittedAt.keys()]) {
-            if (k >= e.results.length) emittedAt.delete(k);
-          }
+        errorStreak.current = 0;
+        for (const k of [...emittedAt.keys()]) {
+          if (k >= e.results.length) emittedAt.delete(k);
         }
         let partial = "";
         for (let i = e.resultIndex; i < e.results.length; i++) {
           const res = e.results[i];
           if (!res.isFinal) {
+            emittedAt.delete(i);
             partial += res[0].transcript;
           } else {
             const raw = res[0].transcript.trim();
@@ -172,7 +174,9 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
       };
       r.onerror = (e) => {
         if (rec.current !== r) return; // a replaced session's late error is not the live one's
+        if (e.error === "aborted" && resumeOnEnd.current) return; // old session aborted while a new tap is already queued
         if (FATAL.has(e.error)) wanted.current = false;
+        else errorStreak.current += 1;
         setFailure(e.error, speechErrorText(e.error));
       };
       r.onend = () => {
@@ -181,7 +185,11 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
         const pending = interimRef.current.trim();
         interimRef.current = "";
         setInterim("");
-        if (pending && wanted.current) onFinal.current(pending);
+        if (pending && wanted.current) {
+          lastFinal.current = pending;
+          flushed.current = pending;
+          onFinal.current(pending);
+        }
         if (onIOS) {
           // No restart outside a user gesture on iOS: stop and ask for a tap (unless start() was already tapped).
           if (wanted.current && resumeOnEnd.current) {
@@ -195,9 +203,12 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
           setListening(false);
           return;
         }
-        // Chrome stops after silence: a fresh session while the user still wants to talk.
-        if (wanted.current) open(Ctor);
-        else setListening(false);
+        // Chrome stops after silence: a fresh session while the user still wants to talk (capped on repeated errors).
+        if (wanted.current && errorStreak.current < 5) open(Ctor);
+        else {
+          wanted.current = false;
+          setListening(false);
+        }
       };
       rec.current = r;
       try {
@@ -228,6 +239,7 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
     if (!Ctor) return setFailure(null, UNSUPPORTED);
     if (stopped.current) lastFinal.current = flushed.current = ""; // a fresh conversation after an explicit stop
     stopped.current = false;
+    errorStreak.current = 0;
     if (rec.current && !wanted.current) resumeOnEnd.current = true; // tapped again while the old session stops
     wanted.current = true;
     setFailure(null, null);

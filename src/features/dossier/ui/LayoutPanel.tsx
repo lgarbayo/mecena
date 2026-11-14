@@ -69,9 +69,12 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
       setBusy(null);
     }
   }
+  const fullRequest = speech.listening && speech.interim ? `${request} ${speech.interim}`.trim() : request;
+
   const submit = () => {
+    const text = fullRequest.trim();
     if (speech.listening) speech.stop();
-    if (request.trim() && !working) send({ request: request.trim() }, "ask");
+    if (text && !working) send({ request: text }, "ask");
   };
 
   if (!state) return null; // not read yet: no flash of the wrong panel
@@ -202,7 +205,8 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
           <textarea
             id="layout-request"
             rows={2}
-            value={speech.listening && speech.interim ? `${request} ${speech.interim}`.trim() : request}
+            value={fullRequest}
+            readOnly={speech.listening}
             onChange={(e) => setRequest(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -214,12 +218,12 @@ export function LayoutPanel(props: { profileId: string; callId?: string; state: 
             disabled={working}
           />
           <div className="design-panel__actions">
-            <Button type="submit" disabled={working || !request.trim()}>
+            <Button type="submit" disabled={working || !fullRequest.trim()}>
               {busy === "ask" || changing ? "Maquetando…" : "Cambiar"}
             </Button>
             {speech.supported ? (
               <Button type="button" variant="ghost" onClick={() => (speech.listening ? speech.stop() : speech.start())} aria-pressed={speech.listening} disabled={working}>
-                {speech.listening ? "Parar de dictar" : "Dictar"}
+                {speech.listening ? "Parar de dictar" : speech.tapToResume ? "Seguir dictando" : "Dictar"}
               </Button>
             ) : null}
             <Button type="button" variant="ghost" disabled={working || !state.canUndo} onClick={() => send({ undo: true }, "undo")}>

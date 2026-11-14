@@ -149,6 +149,7 @@ export function CaptureWork({ copy, profileId, onCreated }: { copy: ArtCopy; pro
               </Button>
             )}
             {speech.listening && <span className={s.live}>Te escucho…</span>}
+            {!speech.listening && speech.tapToResume && !speech.error && <span className={s.hint}>Toca Dictar para seguir hablando</span>}
           </div>
           {speech.error && <p className={s.hint}>{speech.error}</p>}
         </div>

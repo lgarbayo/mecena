@@ -112,9 +112,11 @@ export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }
     [busy, turns, stopVoice],
   );
 
+  const fullInput = voice.listening && voice.interim ? `${input} ${voice.interim}`.trim() : input;
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    void send(input);
+    void send(fullInput);
   };
 
   if (!open) return null;
@@ -182,12 +184,13 @@ export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }
             rows={1}
             maxLength={2000}
             placeholder={voice.listening ? "Te escucho…" : "Escribe o dicta tu pregunta"}
-            value={voice.listening && voice.interim ? `${input} ${voice.interim}`.trim() : input}
+            value={fullInput}
+            readOnly={voice.listening}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                void send(input);
+                void send(fullInput);
               }
             }}
           />
@@ -197,16 +200,18 @@ export function AgentSheet({ open, onClose }: { open: boolean; onClose(): void }
               className={`${styles.iconBtn} ${voice.listening ? styles.listening : ""}`}
               onClick={() => (voice.listening ? voice.stop() : voice.start())}
               aria-pressed={voice.listening}
-              aria-label={voice.listening ? "Parar el dictado" : "Dictar"}
+              aria-label={voice.listening ? "Parar el dictado" : voice.tapToResume ? "Toca para seguir dictando" : "Dictar"}
             >
               <Icon name={voice.listening ? "stop" : "mic"} />
             </button>
           )}
-          <button type="submit" className={styles.send} disabled={busy || !input.trim()}>
+          <button type="submit" className={styles.send} disabled={busy || !fullInput.trim()}>
             Enviar
           </button>
         </form>
-        {voice.error && <p className={styles.voiceError}>{voice.error}</p>}
+        {(voice.error || (voice.tapToResume && "Toca el micrófono para seguir dictando.")) && (
+          <p className={styles.voiceError}>{voice.error ?? "Toca el micrófono para seguir dictando."}</p>
+        )}
       </section>
     </>
   );

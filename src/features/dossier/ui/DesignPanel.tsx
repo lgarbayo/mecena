@@ -62,9 +62,11 @@ export function DesignPanel(props: {
     }
   }
 
+  const fullRequest = speech.listening && speech.interim ? `${request} ${speech.interim}`.trim() : request;
+
   const submit = () => {
+    const text = fullRequest.trim();
     if (speech.listening) speech.stop();
-    const text = request.trim();
     if (text) send({ request: text }, "agent");
   };
 
@@ -108,7 +110,8 @@ export function DesignPanel(props: {
         <textarea
           id="design-request"
           rows={2}
-          value={speech.listening && speech.interim ? `${request} ${speech.interim}`.trim() : request}
+          value={fullRequest}
+          readOnly={speech.listening}
           onChange={(e) => setRequest(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -124,7 +127,7 @@ export function DesignPanel(props: {
           disabled={!!busy || props.autoDesigning}
         />
         <div className="design-panel__actions">
-          <Button type="submit" disabled={!!busy || !request.trim()}>
+          <Button type="submit" disabled={!!busy || !fullRequest.trim()}>
             {busy === "agent" ? "Diseñando…" : "Rediseñar"}
           </Button>
           {speech.supported ? (
@@ -134,8 +137,8 @@ export function DesignPanel(props: {
               className="design-panel__icon"
               onClick={() => (speech.listening ? speech.stop() : speech.start())}
               aria-pressed={speech.listening}
-              aria-label={speech.listening ? "Parar de dictar" : "Dictar"}
-              title={speech.listening ? "Parar de dictar" : "Dictar"}
+              aria-label={speech.listening ? "Parar de dictar" : speech.tapToResume ? "Toca para seguir dictando" : "Dictar"}
+              title={speech.listening ? "Parar de dictar" : speech.tapToResume ? "Toca para seguir dictando" : "Dictar"}
               disabled={!!busy}
             >
               <Icon name={speech.listening ? "stop" : "mic"} />
@@ -160,6 +163,10 @@ export function DesignPanel(props: {
         {error || speech.error ? (
           <p className="design-panel__error" role="alert">
             {error ?? speech.error}
+          </p>
+        ) : speech.tapToResume ? (
+          <p className="design-panel__why" role="status">
+            Toca el micrófono para seguir dictando.
           </p>
         ) : null}
       </form>

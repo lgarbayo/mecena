@@ -10,9 +10,11 @@
 import { useEffect, useRef } from "react";
 
 const POINTS = 120;
-/** Android, iOS/iPadOS and macOS: one capture at a time, and the dictation must win. */
-export function micSharingUnsafe(nav: Pick<Navigator, "userAgent" | "maxTouchPoints"> = navigator): boolean {
-  return /Android|iPhone|iPad|iPod|Macintosh|Mac OS X/i.test(nav.userAgent);
+/** Android, iOS/iPadOS and macOS: one capture at a time, and the dictation must win. SSR-safe. */
+export function micSharingUnsafe(nav?: Pick<Navigator, "userAgent" | "maxTouchPoints">): boolean {
+  const n = nav ?? (typeof navigator !== "undefined" ? navigator : undefined);
+  if (!n) return false;
+  return /Android|iPhone|iPad|iPod|Macintosh|Mac OS X/i.test(n.userAgent);
 }
 
 const PALETTE: [number, number, number][] = [
@@ -152,7 +154,7 @@ export function VoiceOrb({ active, pulse = 0, size = 280 }: { active: boolean; p
         g.fill();
       }
       g.globalCompositeOperation = "source-over";
-      if (!reduced || active) raf = requestAnimationFrame(frame);
+      if (!reduced) raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);

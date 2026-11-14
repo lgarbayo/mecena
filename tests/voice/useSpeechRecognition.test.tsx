@@ -152,4 +152,51 @@ describe("useSpeechRecognition", () => {
     act(() => FakeRecognition.latest.final("Busco una residencia."));
     expect(t.finals).toEqual(["hago cerámica en lugo", "Busco una residencia."]);
   });
+
+  it("pending interim emitted on onend is not duplicated if the restarted session re-sends it as final", () => {
+    const t = setup();
+    act(() => t.speech.start());
+    act(() => FakeRecognition.latest.interim("soy escultora en bilbao"));
+    act(() => FakeRecognition.latest.end());
+    act(() => FakeRecognition.latest.final("Soy escultora en Bilbao"));
+    expect(t.finals).toEqual(["soy escultora en bilbao"]);
+  });
+
+  it("does not drop a legitimate repeated word when index 0 is reused via a fresh interim", () => {
+    const t = setup();
+    act(() => t.speech.start());
+    act(() => {
+      FakeRecognition.latest.onresult?.({
+        resultIndex: 0,
+        results: [{ isFinal: true, 0: { transcript: "sí" }, length: 1 }],
+      });
+    });
+    // Compaction / new utterance starts at index 0 as interim, then finalizes the same word
+    act(() => {
+      FakeRecognition.latest.onresult?.({
+        resultIndex: 0,
+        results: [{ isFinal: false, 0: { transcript: "sí" }, length: 1 }],
+      });
+    });
+    act(() => {
+      FakeRecognition.latest.onresult?.({
+        resultIndex: 0,
+        results: [{ isFinal: true, 0: { transcript: "sí" }, length: 1 }],
+      });
+    });
+    expect(t.finals).toEqual(["sí", "sí"]);
+  });
+
+  it("stops restarting after 5 consecutive non-fatal errors without speech", () => {
+    const t = setup();
+    act(() => t.speech.start());
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        FakeRecognition.latest.error("no-speech");
+        FakeRecognition.latest.end();
+      });
+    }
+    expect(t.speech.listening).toBe(false);
+    expect(FakeRecognition.running).toHaveLength(0);
+  });
 });
