@@ -61,7 +61,7 @@ body::before {
   content: "";
   position: fixed;
   inset: -12%;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background:
     radial-gradient(42vw 42vw at 12% 8%, rgba(255, 122, 69, 0.28), transparent 68%),
@@ -75,7 +75,7 @@ body::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background-image: radial-gradient(rgba(255, 255, 255, 0.038) 1px, transparent 1px);
   background-size: 3px 3px;
@@ -120,18 +120,24 @@ a {
 }
 
 main.app-main {
-  position: relative;
-  z-index: 1;
   max-width: var(--maxw);
   margin: 0 auto;
   padding: 20px var(--gutter) calc(112px + env(safe-area-inset-bottom));
+}
+
+/* When full-screen Stage is active (/ and /onboarding), hide outer shell bars so they never overlap Stage controls */
+body:has([aria-label="Cuéntanos"]) .app-header,
+body:has([aria-label="Cuéntanos"]) .bottom-nav,
+body:has([aria-label="Mecena"]) .app-header,
+body:has([aria-label="Mecena"]) .bottom-nav {
+  display: none;
 }
 
 /* ---- Frosted glass header ---- */
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -202,7 +208,7 @@ main.app-main {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 30;
+  z-index: 10;
   display: flex;
   justify-content: space-around;
   align-items: center;
