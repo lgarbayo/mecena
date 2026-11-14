@@ -4,12 +4,12 @@
 import { AgentRequest } from "@/contracts/api";
 import { runAgent } from "@/features/agent/service";
 import { requireUser, toolContextFor } from "@/server/auth";
-import { json, route } from "@/server/http";
+import { body, json, route } from "@/server/http";
 
 export const dynamic = "force-dynamic";
 
 export const POST = route(async (req: Request) => {
   const user = requireUser(req);
-  const { message, history } = AgentRequest.parse(await req.json().catch(() => ({})));
+  const { message, history } = await body(req, AgentRequest);
   return json(await runAgent(message, history, await toolContextFor(user, "app")));
 });

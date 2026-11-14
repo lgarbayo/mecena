@@ -29,8 +29,30 @@ export function route<A extends unknown[]>(fn: (...args: A) => Promise<Response>
   };
 }
 
+const isJson = (contentType: string | null) => /^application\/([\w.+-]*\+)?json\s*(;|$)/i.test(contentType?.trim() ?? "");
+
+/**
+ * The JSON body of an API request, or {} when it has none / is not valid JSON.
+ *
+ * CSRF guard for every JSON route (login and sign-up need no cookie, so SameSite cannot protect them): a cross-site
+ * page can only POST without a CORS preflight as a form (urlencoded, multipart, text/plain), never as
+ * application/json, and browsers mark such requests Sec-Fetch-Site: cross-site. So a non-empty body must be sent as
+ * application/json, and a browser request from another site is refused (403) before anything is read.
+ */
+export async function readJson(req: Request): Promise<unknown> {
+  if (req.headers.get("sec-fetch-site") === "cross-site") throw new ForbiddenError("Petición desde otro sitio no permitida.");
+  const text = await req.text().catch(() => "");
+  if (!text.trim()) return {};
+  if (!isJson(req.headers.get("content-type"))) throw new ForbiddenError("El cuerpo de la petición debe enviarse como application/json.");
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {};
+  }
+}
+
 export async function body<S extends z.ZodType>(req: Request, schema: S): Promise<z.infer<S>> {
-  return schema.parse(await req.json().catch(() => ({})));
+  return schema.parse(await readJson(req));
 }
 
 export const json = <T>(data: T, init?: ResponseInit) => NextResponse.json(data, init);
