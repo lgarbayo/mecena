@@ -8,6 +8,8 @@ import path from "node:path";
 import { beforeEach } from "vitest";
 import { fixtureCalls } from "@/fixtures";
 
+// Opt-in live tests (MECENA_LIVE_TESTS=1) keep the real key aside; everything else stays on mocks.
+if (process.env.MECENA_LIVE_TESTS === "1" && process.env.ANTHROPIC_API_KEY) process.env.MECENA_LIVE_ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 process.env.MECENA_AI_MOCK = "1";
 process.env.NEXT_PUBLIC_PURCHASES_MOCK = "1";
 process.env.ANTHROPIC_API_KEY = "";

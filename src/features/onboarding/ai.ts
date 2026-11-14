@@ -4,11 +4,12 @@
  */
 import type { AiSlice, DossierSection, OnboardingTurnInput, OnboardingTurnResult, ProfilePatch } from "@/contracts";
 import { AiError, isMockAi, structured } from "@/server/ai/llm";
+import { looksGarbled } from "@/server/ai/wording";
 import type { ProfileKind } from "@/contracts";
 import { sectionTitles } from "./copy";
 import { dossierLookQuestion } from "./interview";
-import { extractProfilePatch, mockOnboardingTurn } from "./mock";
-import { llmTurnSchema, systemPrompt, userPayload, type LlmTurn } from "./prompt";
+import { extractProfilePatch, followUpFor, mockOnboardingTurn } from "./mock";
+import { cleanProfilePatch, llmTurnSchema, systemPrompt, userPayload, type LlmTurn } from "./prompt";
 
 /** Map Claude's lean output onto the contract: titles, status, timestamps and grounded segment ids. */
 export function toTurnResult(input: OnboardingTurnInput, out: LlmTurn): OnboardingTurnResult {
@@ -25,11 +26,8 @@ export function toTurnResult(input: OnboardingTurnInput, out: LlmTurn): Onboardi
     const ids = [...new Set([...(prev?.sourceSegmentIds ?? []), ...(valid.length ? valid : [input.newSegment.id])])];
     sectionUpdates.push({ key: u.key, title: prev?.title || titles[u.key], body: u.body.trim(), sourceSegmentIds: ids, status: "draft", updatedAt: input.newSegment.at });
   }
-  const profilePatch: ProfilePatch = {};
-  for (const [k, v] of Object.entries(out.profilePatch)) {
-    if (v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0)) continue;
-    (profilePatch as Record<string, unknown>)[k] = v;
-  }
+  // Every field comes back (required schema): drop the "not said" sentinels ("", [], 0, legalForm "").
+  const profilePatch = cleanProfilePatch(out.profilePatch);
   // Backstop: Claude skips "busco/quiero…" needs about half the time (manual run), and matching depends on them.
   // Read the needs from Claude's corrected text (what this turn added to the sections), not from the raw segment, so the
   // person's typos never reach the profile; the raw segment only when Claude wrote nothing (deterministic floor applies).
@@ -51,7 +49,25 @@ export function toTurnResult(input: OnboardingTurnInput, out: LlmTurn): Onboardi
     fundingNeeds: [...before.fundingNeeds, ...(profilePatch.fundingNeeds ?? [])],
   };
   const look = dossierLookQuestion(input.kind, before, after, input.transcript);
-  return { profilePatch, sectionUpdates, followUpQuestion: look ?? (out.followUpQuestion?.trim() || undefined) };
+  return { profilePatch, sectionUpdates, followUpQuestion: look ?? followUp(input, out.followUpQuestion, profilePatch, sectionUpdates) };
+}
+
+/** Claude's question, unless it came back as mojibake ("ÂżDĂłnde…?"): then the deterministic one for the updated profile. */
+function followUp(input: OnboardingTurnInput, asked: string | undefined, profilePatch: ProfilePatch, updates: DossierSection[]): string | undefined {
+  const q = asked?.trim();
+  if (!q) return undefined;
+  if (!looksGarbled(q)) return q;
+  const p = input.profile;
+  const merged = {
+    ...p,
+    ...profilePatch,
+    disciplines: [...p.disciplines, ...(profilePatch.disciplines ?? [])],
+    fundingNeeds: [...p.fundingNeeds, ...(profilePatch.fundingNeeds ?? [])],
+    achievements: [...p.achievements, ...(profilePatch.achievements ?? [])],
+    education: [...p.education, ...(profilePatch.education ?? [])],
+  };
+  const keys = new Set([...input.sections, ...updates].map((s) => s.key));
+  return followUpFor(input.kind, merged, { hasWorks: keys.has("works") || keys.has("series") });
 }
 
 export async function realOnboardingTurn(input: OnboardingTurnInput): Promise<OnboardingTurnResult> {

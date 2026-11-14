@@ -22,6 +22,15 @@ export const WORDING_RULE = [
   "- Lo que diga en gallego se escribe en gallego (sin traducirlo ni mezclar idiomas en la misma frase), corregido según la norma gallega.",
 ].join("\n");
 
+/**
+ * Mojibake / wrong-script output ("ÂżDĂłnde vives?", seen from Sonnet in the voice spike): characters Spanish and
+ * Galician never use (Ã Â Ă Ĺ, Arabic script, U+FFFD). Use it to drop a generated line and fall back to ours.
+ */
+const GARBLED = /[ÃÂĂĹ\u0600-\u06FF\uFFFD]/;
+export function looksGarbled(text: string): boolean {
+  return GARBLED.test(text);
+}
+
 const L = "A-Za-zÁÉÍÓÚÜÑáéíóúüñ";
 const B = `(?<![${L}\\d_])`; // word start (Unicode-aware, unlike \b)
 const E = `(?![${L}\\d_])`; // word end
