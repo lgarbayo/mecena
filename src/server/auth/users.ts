@@ -31,18 +31,18 @@ export function findUserByEmail(email: string): User | undefined {
 }
 
 /**
- * Creates the account and its first (blank creator) profile. 409 when the email is taken (the invite is then not
+ * Creates the account and its first blank profile, of the kind chosen on the first screen (creator by default). 409 when the email is taken (the invite is then not
  * consumed). With an invite, its use is consumed in the same write; its cohort is kept on the account and its gift
  * of premium credits becomes the account's first entitlement.
  */
-export async function createUser(input: { email: string; password: string; invite?: Redemption }): Promise<User> {
+export async function createUser(input: { email: string; password: string; invite?: Redemption; kind?: ProfileKind }): Promise<User> {
   const email = normalizeEmail(input.email);
   const passwordHash = await hashPassword(input.password);
   return updateDb((db) => {
     if (db.users.some((u) => u.email === email)) throw new ConflictError("Ya existe una cuenta con ese email. Entra con tu contraseña.");
     const { cohort, credits } = redeemInvite(db, input.invite);
     const id = `user-${randomUUID()}`;
-    const profile = blankProfileFor(id, "creator");
+    const profile = blankProfileFor(id, input.kind ?? "creator");
     const user: User = { id, email, passwordHash, createdAt: nowIso(), activeProfileId: profile.id, appUserId: newAppUserId(), ...(cohort ? { signupCohort: cohort } : {}) };
     if (credits > 0) db.entitlements.push({ appUserId: user.appUserId, pro: false, premiumCredits: credits, premiumUsed: 0, grantedCredits: credits, source: "mock", updatedAt: nowIso() });
     db.profiles.push(profile);

@@ -3,7 +3,8 @@
  * 1. Optional HTTP Basic auth for the whole site (BASIC_AUTH_PASSWORD; unset = off, local dev and tests run without it).
  *    Only Fly's health check (/api/health) skips it.
  * 2. Accounts: without the session cookie, pages redirect to /entrar?next=<path> and /api/* answers 401 JSON.
- *    Public: /entrar, the opening screen (/) and /confianza (PUBLIC_PAGES), /api/auth/*, /api/health, Next build
+ *    Signed out, the opening screen (/) sends to the first choice (/empezar: creator or pyme, then /entrar).
+ *    Public: /entrar, /empezar, the opening screen (/) and /confianza (PUBLIC_PAGES), /api/auth/*, /api/health, Next build
  *    assets and static files. This is only an optimistic check of the cookie's presence; every route handler and page
  *    validates the session itself (src/server/auth) before touching data.
  * The remote MCP endpoint (/api/mcp) skips both: it has its own `Authorization: Bearer <personal token>` (which Basic
@@ -15,6 +16,7 @@ import { API, PUBLIC_PAGES } from "@/contracts/routes";
 /** Same name as src/server/auth/cookie.ts (not imported: that module pulls node:crypto, the proxy stays light). */
 const SESSION_COOKIE = "mecena_session";
 const LOGIN = "/entrar";
+const START = "/empezar";
 
 function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -68,7 +70,13 @@ export function proxy(request: NextRequest) {
   if (denied) return denied;
 
   const { pathname, search } = request.nextUrl;
-  if (isPublicPath(pathname) || request.cookies.get(SESSION_COOKIE)?.value) return NextResponse.next();
+  const signedIn = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
+  if (pathname === "/" && !signedIn) {
+    const url = request.nextUrl.clone();
+    url.pathname = START; // the app starts by choosing creator or pyme, before signing in
+    return NextResponse.redirect(url);
+  }
+  if (isPublicPath(pathname) || signedIn) return NextResponse.next();
 
   if (pathname === "/api" || pathname.startsWith("/api/")) {
     return NextResponse.json({ error: "unauthorized", message: "Inicia sesión para continuar." }, { status: 401 });

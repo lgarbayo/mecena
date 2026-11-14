@@ -51,9 +51,11 @@ export const SignupRequest = z.object({
   email: AuthEmail,
   password: z.string().min(8, "La contraseña necesita al menos 8 caracteres").max(200),
   code: z.string().trim().max(200).optional(), // invite code: required when sign-up is invite-only, optional (still gifts) with MECENA_SIGNUP_OPEN=1
+  kind: ProfileKind.optional(), // chosen on the first screen: the account's first profile (default creator)
 });
 export type SignupRequest = z.infer<typeof SignupRequest>;
-export const LoginRequest = z.object({ email: z.string().trim().toLowerCase().max(254), password: z.string().max(200) });
+// kind: chosen on the first screen before signing in -> that profile becomes the active one (created blank if new).
+export const LoginRequest = z.object({ email: z.string().trim().toLowerCase().max(254), password: z.string().max(200), kind: ProfileKind.optional() });
 export type LoginRequest = z.infer<typeof LoginRequest>;
 export const AuthUser = z.object({ id: z.string(), email: z.string() });
 export type AuthUser = z.infer<typeof AuthUser>;

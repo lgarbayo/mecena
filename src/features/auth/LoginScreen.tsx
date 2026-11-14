@@ -1,8 +1,12 @@
 "use client";
-/** /entrar: email + password, "Entrar" or "Crear cuenta". After success, back to ?next (or home) with a full reload. */
+/**
+ * /entrar: email + password, "Entrar" or "Crear cuenta". After success, back to ?next (or home) with a full reload.
+ * `kind` is the profile chosen on the first screen (?perfil=creador|pyme): a new account starts with it and a login
+ * switches to it. Sign-up without it (a direct link) asks for it in the form, so every account starts in its own mode.
+ */
 import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { API, ROUTES, safeNext } from "@/contracts";
+import { API, ROUTES, safeNext, type ProfileKind } from "@/contracts";
 import type { MeResponse } from "@/contracts/api";
 import { Button, Card, PageTitle } from "@/components/ui";
 import { ApiClientError, apiSend } from "@/lib/api-client";
@@ -11,21 +15,26 @@ import styles from "./auth.module.css";
 
 type Mode = "login" | "signup";
 
+const KIND_LABEL: Record<ProfileKind, string> = { creator: "Creador/a", business: "Pyme o autónomo/a" };
+
 export function LoginScreen({
   next,
   signupCodeRequired,
   signupCodeAccepted = signupCodeRequired,
   initialMode = "login",
+  kind: chosenKind,
 }: {
   next: string;
   signupCodeRequired: boolean;
   signupCodeAccepted?: boolean; // show the field as optional (open sign-up, but a code can still gift credits)
   initialMode?: Mode;
+  kind?: ProfileKind;
 }) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
+  const [kind, setKind] = useState<ProfileKind | undefined>(chosenKind);
   const [error, setError] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false); // signed in: the button stays locked until the page reloads
   const signup = mode === "signup";
@@ -45,12 +54,16 @@ export function LoginScreen({
     e.preventDefault();
     setError(null);
     if (busy) return;
+    if (signup && !kind) return setError("Elige si eres creador/a o pyme.");
     if (signup && password.length < 8) return setError("La contraseña necesita al menos 8 caracteres.");
     lastError.current = null;
     let ok = false;
     let failure: unknown = null;
     try {
-      const body: Record<string, string> = signup ? { email, password, ...(signupCodeAccepted && code.trim() ? { code } : {}) } : { email, password };
+      // a login only switches profile when one was chosen on the first screen; otherwise it keeps the last one used
+      const body: Record<string, string> = signup
+        ? { email, password, ...(kind ? { kind } : {}), ...(signupCodeAccepted && code.trim() ? { code } : {}) }
+        : { email, password, ...(chosenKind ? { kind: chosenKind } : {}) };
       ok = !!(await send.run(signup ? API.authSignup : API.authLogin, body));
     } catch (err) {
       failure = err;
@@ -72,7 +85,14 @@ export function LoginScreen({
   return (
     <div className={styles.wrap}>
       <PageTitle kicker="Tu cuenta">{signup ? "Crea tu cuenta" : "Entra en Mecena"}</PageTitle>
-      <p className={styles.lead}>{signup ? "Tu perfil, tus obras y tus solicitudes son solo tuyos." : "Sigue donde lo dejaste."}</p>
+      <p className={styles.lead}>
+        {signup ? (kind === "business" ? "Los datos de tu empresa y tus solicitudes son solo tuyos." : "Tu perfil, tus obras y tus solicitudes son solo tuyos.") : "Sigue donde lo dejaste."}
+      </p>
+      {chosenKind && (
+        <p className={styles.chosen} data-testid="chosen-kind">
+          Perfil: <strong>{KIND_LABEL[chosenKind]}</strong> · <Link href={ROUTES.start}>Cambiar</Link>
+        </p>
+      )}
       <Card className={styles.card}>
         <div className={styles.tabs} role="tablist" aria-label="Entrar o crear cuenta">
           <button type="button" role="tab" aria-selected={!signup} onClick={() => choose("login")}>
@@ -100,6 +120,18 @@ export function LoginScreen({
             />
           </label>
           {signup && <p className={styles.hint}>Al menos 8 caracteres.</p>}
+          {signup && !chosenKind && (
+            <div className={styles.field} role="group" aria-label="¿Qué eres?">
+              <span>¿Qué eres?</span>
+              <div className={styles.kinds}>
+                {(["creator", "business"] as const).map((k) => (
+                  <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} data-testid={`signup-kind-${k}`}>
+                    {KIND_LABEL[k]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {signup && signupCodeAccepted && (
             <label className={styles.field}>
               <span>{signupCodeRequired ? "Código de invitación" : "Código de invitación (opcional)"}</span>
@@ -118,7 +150,7 @@ export function LoginScreen({
         </form>
       </Card>
       <p className={styles.foot}>
-        Mecena prepara; tú presentas. <Link href={ROUTES.trust}>Cómo cuidamos tu obra y tus datos</Link>
+        Mecena prepara; tú presentas. <Link href={ROUTES.trust}>{kind === "business" ? "Cómo cuidamos tus datos" : "Cómo cuidamos tu obra y tus datos"}</Link>
       </p>
     </div>
   );

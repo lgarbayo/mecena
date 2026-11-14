@@ -35,11 +35,6 @@
 .choice small { color: var(--text-2); font-size: 14px; line-height: 1.45; font-style: normal; }
 .choice .micNote { margin-top: 6px; font-size: 12px; color: var(--text-3); }
 /* Creador/a | Pyme: a segmented control, not two loose pills */
-.kinds { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 3px; border-radius: var(--radius-pill); background: var(--surface-3); max-width: 22rem; }
-.kind { all: unset; box-sizing: border-box; cursor: pointer; text-align: center; height: 34px; line-height: 34px; padding: 0 12px; border-radius: var(--radius-pill); font-size: 14px; font-weight: 500; color: var(--text-2); font-style: normal; touch-action: manipulation; user-select: none; -webkit-user-select: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background-color 140ms ease, color 140ms ease; }
-.kind[aria-pressed="true"] { background: var(--surface); color: var(--text-1); box-shadow: var(--shadow-sm); }
-.kind:disabled { opacity: 0.55; cursor: default; }
-.kind:focus-visible { outline: 1.5px solid var(--focus); outline-offset: 2px; }
 .link { all: unset; cursor: pointer; color: var(--text-1); font-size: 14px; font-weight: 500; border-bottom: 1px solid var(--border-strong); font-style: normal; touch-action: manipulation; }
 .link:hover { border-bottom-color: var(--text-1); }
 .link:focus-visible { outline: 1.5px solid var(--focus); outline-offset: 2px; border-radius: 2px; }

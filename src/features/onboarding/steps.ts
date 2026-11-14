@@ -68,8 +68,6 @@ export const STEPS_COPY = {
   preferVoice: "Hablar",
   /** iOS ends every dictation session: the next one needs a tap. */
   tapToResume: "Toca para seguir hablando",
-  switching: "Cambiando…",
-  switchFailed: "No hemos podido cambiar de perfil. Inténtalo de nuevo.",
   photoWork: "Foto de una obra",
   photoTitle: "Fotografía una obra",
   photoLede: "Haz la foto y di qué es: título, año, técnica y medidas. Aparecerá en tu dossier con su ficha.",

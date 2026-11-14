@@ -71,6 +71,36 @@ describe("public pages signed out", () => {
     render(<LoginScreen next="/" signupCodeRequired={false} />);
     expect(screen.getByRole("link", { name: /Cómo cuidamos tu obra y tus datos/ }).getAttribute("href")).toBe("/confianza");
   });
+
+  it("/entrar sends the profile chosen on the first screen with the new account", async () => {
+    pathname = "/entrar";
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => json(201, ME));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<LoginScreen next="/onboarding" signupCodeRequired={false} initialMode="signup" kind="business" />);
+    expect(screen.getByTestId("chosen-kind").textContent).toContain("Pyme o autónomo/a");
+    expect(screen.queryByTestId("signup-kind-creator")).toBeNull(); // already chosen: not asked again
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "taller@example.com" } });
+    fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "contraseña-larga" } });
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" })));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith("/onboarding"));
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ email: "taller@example.com", kind: "business" });
+  });
+
+  it("/entrar without a chosen profile asks for it before creating the account", async () => {
+    pathname = "/entrar";
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => json(201, ME));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<LoginScreen next="/" signupCodeRequired={false} initialMode="signup" />);
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ana@example.com" } });
+    fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "contraseña-larga" } });
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" })));
+    expect(screen.getByRole("alert").textContent).toBe("Elige si eres creador/a o pyme.");
+    expect(fetchMock).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId("signup-kind-creator"));
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" })));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ kind: "creator" });
+  });
 });
 
 describe("Borrar mi cuenta", () => {

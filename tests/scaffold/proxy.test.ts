@@ -63,8 +63,15 @@ describe("proxy session gate", () => {
     expect(proxy(req(undefined, "/api/works/w1/image", null)).status).toBe(401);
   });
 
-  it("public paths work without a session: /entrar, the opening screen, /confianza, /api/auth/*, /api/health, build assets and static files", () => {
-    for (const p of ["/entrar", "/entrar?next=%2Fobras", "/", "/confianza", "/api/auth/login", "/api/auth/me", "/api/health", "/_next/static/chunk.js", "/favicon.ico", "/robots.txt", "/demo/obra.jpg"]) {
+  it("signed out, the app starts at the creator/pyme choice; signed in, / is the opening screen", () => {
+    const res = proxy(req(undefined, "/", null));
+    expect(res.status).toBe(307);
+    expect(new URL(res.headers.get("location")!).pathname).toBe("/empezar");
+    expect(proxy(req(undefined, "/")).status).toBe(200);
+  });
+
+  it("public paths work without a session: /entrar, /empezar, /confianza, /api/auth/*, /api/health, build assets and static files", () => {
+    for (const p of ["/entrar", "/entrar?next=%2Fobras", "/empezar", "/confianza", "/api/auth/login", "/api/auth/me", "/api/health", "/_next/static/chunk.js", "/favicon.ico", "/robots.txt", "/demo/obra.jpg"]) {
       expect(proxy(req(undefined, p, null)).status, p).toBe(200);
     }
   });

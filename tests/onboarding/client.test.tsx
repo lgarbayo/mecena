@@ -231,21 +231,10 @@ describe("/onboarding (creator)", () => {
     expect(cta.getAttribute("href")).toBe("/obras");
   });
 
-  it("the creator/pyme switch waits for the change and reports a failure", async () => {
-    let finish!: () => void;
-    setMode.mockImplementation(() => new Promise<undefined>((r) => (finish = () => r(undefined))));
+  it("names the profile chosen on the first screen instead of offering a creator/pyme toggle", () => {
     render(<StepOnboarding />);
-    fireEvent.click(screen.getByTestId("kind-business"));
-    expect(screen.getByTestId("kind-creator").hasAttribute("disabled")).toBe(true);
-    expect((screen.getByTestId("choose-voice") as HTMLButtonElement).disabled).toBe(true);
-    expect((screen.getByTestId("choose-text") as HTMLButtonElement).disabled).toBe(true);
-    await act(async () => finish());
+    expect(screen.getByTestId("onboarding-kind").textContent).toBe(STEPS_COPY.kind.creator);
+    expect(screen.queryByTestId("kind-business")).toBeNull();
     expect((screen.getByTestId("choose-text") as HTMLButtonElement).disabled).toBe(false);
-
-    setMode.mockImplementation(async () => {
-      throw new Error("offline");
-    });
-    fireEvent.click(screen.getByTestId("kind-business"));
-    expect(await screen.findByRole("alert")).toHaveProperty("textContent", STEPS_COPY.switchFailed);
   });
 });
