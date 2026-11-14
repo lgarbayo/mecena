@@ -1,6 +1,7 @@
 /** /confianza: the expanded trust promise. */
 import Link from "next/link";
 import { ROUTES } from "@/contracts";
+import { DeleteAccount } from "@/features/auth/DeleteAccount";
 import { TRUST } from "../copy";
 import { TrustIcon } from "./icons";
 import s from "./trust.module.css";
@@ -31,6 +32,7 @@ export function TrustPage() {
           {TRUST.cta}
         </Link>
       </div>
+      <DeleteAccount />
     </div>
   );
 }

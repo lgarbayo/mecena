@@ -54,7 +54,6 @@ describe("proxy session gate", () => {
     const to = new URL(res.headers.get("location")!);
     expect(to.pathname).toBe("/entrar");
     expect(to.searchParams.get("next")).toBe("/obras?x=1");
-    expect(new URL(proxy(req(undefined, "/", null)).headers.get("location")!).search).toBe("");
   });
 
   it("API calls without the session cookie get 401 JSON", async () => {
@@ -64,13 +63,27 @@ describe("proxy session gate", () => {
     expect(proxy(req(undefined, "/api/works/w1/image", null)).status).toBe(401);
   });
 
-  it("public paths work without a session: /entrar, /api/auth/*, build assets and static files", () => {
-    for (const p of ["/entrar", "/entrar?next=%2Fobras", "/api/auth/login", "/api/auth/me", "/_next/static/chunk.js", "/favicon.ico", "/robots.txt", "/demo/obra.jpg"]) {
+  it("public paths work without a session: /entrar, the opening screen, /confianza, /api/auth/*, /api/health, build assets and static files", () => {
+    for (const p of ["/entrar", "/entrar?next=%2Fobras", "/", "/confianza", "/api/auth/login", "/api/auth/me", "/api/health", "/_next/static/chunk.js", "/favicon.ico", "/robots.txt", "/demo/obra.jpg"]) {
       expect(proxy(req(undefined, p, null)).status, p).toBe(200);
     }
   });
 
-  it("with the cookie, pages and API pass (the session itself is validated by each route)", () => {
+  it("only those: other pages under them still need a session", () => {
+    for (const p of ["/confianza/x", "/convocatorias", "/demo", "/api/healthz", "/api/health/x"]) expect(proxy(req(undefined, p, null)).status, p).not.toBe(200);
+  });
+
+  it("the health check skips the Basic auth gate too (Fly sends no credentials)", () => {
+    process.env.BASIC_AUTH_PASSWORD = PASS;
+    try {
+      expect(proxy(req(undefined, "/api/health", null)).status).toBe(200);
+      expect(proxy(req(undefined, "/", null)).status).toBe(401);
+    } finally {
+      delete process.env.BASIC_AUTH_PASSWORD;
+    }
+  });
+
+    it("with the cookie, pages and API pass (the session itself is validated by each route)", () => {
     expect(proxy(req(undefined, "/obras")).status).toBe(200);
     expect(proxy(req(undefined, "/api/profile")).status).toBe(200);
   });

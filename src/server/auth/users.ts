@@ -92,7 +92,7 @@ export async function deleteSession(token: string | undefined): Promise<void> {
  */
 export function ownedProfile(userId: string, profileId: string): Profile {
   const p = readDb().profiles.find((x) => x.id === profileId);
-  if (!p || p.ownerId !== userId) throw new NotFoundError(`Perfil ${profileId}`);
+  if (!p || p.ownerId !== userId) throw new NotFoundError("profile");
   return p;
 }
 
@@ -104,7 +104,7 @@ export async function activeProfile(user: User): Promise<Profile> {
   if (active) return active;
   return updateDb((d) => {
     const u = d.users.find((x) => x.id === user.id);
-    if (!u) throw new NotFoundError("Usuario");
+    if (!u) throw new NotFoundError("user");
     const p = d.profiles.find((x) => x.ownerId === user.id) ?? blankProfileFor(user.id, "creator");
     if (!d.profiles.some((x) => x.id === p.id)) d.profiles.push(p);
     u.activeProfileId = p.id;
@@ -116,7 +116,7 @@ export async function activeProfile(user: User): Promise<Profile> {
 export function switchMode(userId: string, kind: ProfileKind): Promise<Profile> {
   return updateDb((db) => {
     const user = db.users.find((u) => u.id === userId);
-    if (!user) throw new NotFoundError("Usuario");
+    if (!user) throw new NotFoundError("user");
     const mine = db.profiles.filter((p) => p.ownerId === userId && p.kind === kind);
     let p = mine.find((x) => x.id === user.activeProfileId) ?? mine[0];
     if (!p) {

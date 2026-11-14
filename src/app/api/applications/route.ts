@@ -5,6 +5,7 @@ import { CreateApplicationRequest } from "@/contracts/api";
 import { draftApplication, draftSources, findDraft } from "@/features/drafting/service";
 import { requireProfile, requireUser, resolveProfile } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export const GET = route(async (req: Request) => {
 
 export const POST = route(async (req: Request) => {
   const user = requireUser(req);
+  limitAi(user, "draft");
   const { callId, profileId } = await body(req, CreateApplicationRequest);
   const profile = await resolveProfile(user, profileId);
   const application = await draftApplication({ callId, profileId: profile.id }, { appUserId: user.appUserId });

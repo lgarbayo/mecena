@@ -5,6 +5,7 @@ import { loadDossierData } from "@/features/dossier/service";
 import { resolveEntitlement } from "@/features/purchases/server";
 import { requireProfile } from "@/server/auth";
 import { json, route } from "@/server/http";
+import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export const GET = route(async (req: Request) => {
   const { user, profile } = await requireProfile(req, sp.get("profileId"));
   const callId = sp.get("callId") || undefined;
   const pro = callId ? (await resolveEntitlement(user.appUserId)).pro : false;
+  if (callId && pro) limitAi(user, "dossier-variant"); // the call variant is written by Claude (cached)
   const data = await loadDossierData({ profileId: profile.id, callId, adapt: pro });
   return json({ dossier: data.dossier, profile: data.profile, works: data.works, call: data.call, adapted: !!callId && pro });
 });

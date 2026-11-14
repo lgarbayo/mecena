@@ -4,11 +4,13 @@ import { processTurn } from "@/features/onboarding/service";
 import { scheduleProfileSearch } from "@/features/calls-ingest/live";
 import { requireUser, resolveProfile } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 
 export const POST = route(async (req: Request) => {
   const user = requireUser(req);
+  limitAi(user, "onboarding-turn");
   const input = await body(req, OnboardingTurnRequest);
   const profile = await resolveProfile(user, input.profileId);
   const result = await processTurn({ ...input, profileId: profile.id });

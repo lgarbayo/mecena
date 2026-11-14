@@ -12,10 +12,14 @@ export const ROUTES = {
   trust: "/confianza",
   demo: "/demo",
   login: "/entrar", // sign in / create account (?next=<path>)
-  // stretch
-  justification: "/justificacion",
-  schools: "/escuelas",
+  // Not built (IDEA extras #7 justification and #8 B2B panel are pitch-only): no routes here, so nothing links to a 404.
 } as const;
+
+/**
+ * Pages anyone can open without an account (src/proxy.ts lets them through): the opening data screen (pitch beat 1)
+ * and the trust promise. They read no user data on the server; signed in, they show the personal bits too.
+ */
+export const PUBLIC_PAGES: readonly string[] = [ROUTES.home, ROUTES.trust];
 
 const NEXT_BASE = "http://mecena.invalid";
 
@@ -51,7 +55,7 @@ export const API = {
   authSignup: "/api/auth/signup", // POST { email, password, code? } -> MeResponse + session cookie
   authLogin: "/api/auth/login", // POST { email, password } -> MeResponse + session cookie
   authLogout: "/api/auth/logout", // POST -> clears the session
-  authMe: "/api/auth/me", // GET -> MeResponse or 401
+  authMe: "/api/auth/me", // GET -> MeResponse or 401; DELETE { confirm: true } -> deletes the account and all its data
   authConfig: "/api/auth/config", // GET -> { signupCodeRequired }
   // Everything below needs a session and only ever sees the signed-in user's data.
   profile: "/api/profile", // GET active profile; PATCH patch
@@ -73,4 +77,5 @@ export const API = {
   entitlements: "/api/entitlements", // GET the user's entitlement, POST sync after a purchase
   agent: "/api/agent", // POST { message, history }
   demoReset: "/api/demo/reset", // POST: resets the signed-in user's own data only
+  health: "/api/health", // GET -> { ok: true }, public (Fly health check)
 } as const;

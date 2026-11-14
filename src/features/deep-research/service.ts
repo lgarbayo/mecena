@@ -52,7 +52,9 @@ const DeepResearchState = z.object({
   error: z.string().optional(),
 });
 export type DeepResearchState = z.infer<typeof DeepResearchState>;
-const UsageEntry = z.object({ profileId: z.string(), appUserId: z.string(), at: z.string() });
+// userId: the account. A demo reset gives the account a new profile and a new appUserId, so the per-user cap counts by
+// userId (entries written before it existed fall back to appUserId).
+const UsageEntry = z.object({ profileId: z.string(), appUserId: z.string(), userId: z.string().optional(), at: z.string() });
 type UsageEntry = z.infer<typeof UsageEntry>;
 
 const stateFile = () => path.join(dataDir(), "deep-research.json");
@@ -203,6 +205,11 @@ export function candidatesToCalls(
 export interface ResearchIds {
   profileId: string;
   appUserId: string;
+  /**
+   * The account. The monthly per-user cap counts by it, so "Empezar de cero" (new profile and new appUserId) never
+   * refills it. Routes always pass it; without it (older callers) the cap counts by appUserId.
+   */
+  userId?: string;
 }
 
 export type DeepResearchView = {
@@ -220,7 +227,7 @@ export type DeepResearchView = {
 function runsLeft(usage: UsageEntry[], ids: ResearchIds, now: number): number {
   const month = usage.filter((u) => now - Date.parse(u.at) < MONTH_MS);
   const profile = month.filter((u) => u.profileId === ids.profileId).length;
-  const user = month.filter((u) => u.appUserId === ids.appUserId).length;
+  const user = month.filter((u) => (ids.userId && u.userId ? u.userId === ids.userId : u.appUserId === ids.appUserId)).length;
   const day = usage.filter((u) => now - Date.parse(u.at) < DAY_MS).length;
   return Math.max(
     0,
@@ -238,7 +245,7 @@ function settled(s: DeepResearchState | undefined, now = Date.now()): DeepResear
 /** The caller's own state. Another user's deep research is not found, whether reading or starting one. */
 function ownState(all: Record<string, DeepResearchState>, ids: ResearchIds): DeepResearchState | undefined {
   const s = all[ids.profileId];
-  if (s && s.appUserId !== ids.appUserId) throw new NotFoundError(`Búsqueda ampliada del perfil ${ids.profileId}`);
+  if (s && s.appUserId !== ids.appUserId) throw new NotFoundError("research");
   return settled(s);
 }
 
@@ -256,6 +263,15 @@ export function forgetDeepResearch(profileIds?: readonly string[]): Promise<void
       return;
     }
     writeFile(stateFile(), Object.fromEntries(Object.entries(readAll()).filter(([id]) => !profileIds.includes(id))));
+  });
+}
+
+/** Account deletion only: drop the ledger entries of that account (its user id, profiles or app user ids). */
+export function forgetDeepResearchUsage(owner: { userId: string; profileIds: readonly string[]; appUserIds: readonly string[] }): Promise<void> {
+  return serial(() => {
+    const usage = readUsage();
+    const keep = usage.filter((u) => u.userId !== owner.userId && !owner.profileIds.includes(u.profileId) && !owner.appUserIds.includes(u.appUserId));
+    if (keep.length !== usage.length) writeFile(usageFile(), keep);
   });
 }
 
@@ -332,7 +348,7 @@ export async function startDeepResearch(ids: ResearchIds): Promise<{ view: DeepR
       tokens: 0,
     };
     // keep a year of ledger: enough for the caps, bounded in size
-    writeFile(usageFile(), [...usage.filter((u) => now - Date.parse(u.at) < 365 * DAY_MS), { profileId: ids.profileId, appUserId: ids.appUserId, at: startedAt }]);
+    writeFile(usageFile(), [...usage.filter((u) => now - Date.parse(u.at) < 365 * DAY_MS), { profileId: ids.profileId, appUserId: ids.appUserId, ...(ids.userId ? { userId: ids.userId } : {}), at: startedAt }]);
     writeFile(stateFile(), { ...readAll(), [ids.profileId]: state });
     return { kind: "start", state, epoch: g.epoch };
   });

@@ -6,6 +6,7 @@ import { slug } from "@/features/dossier/model";
 import { resolveEntitlement } from "@/features/purchases/server";
 import { route } from "@/server/http";
 import { requireProfile } from "@/server/auth";
+import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -16,6 +17,7 @@ export const GET = route(async (req: Request) => {
   const { user, profile } = await requireProfile(req, sp.get("profileId"));
   const callId = sp.get("callId") || undefined;
   const pro = callId ? (await resolveEntitlement(user.appUserId).catch(() => undefined))?.pro === true : false;
+  if (callId && pro) limitAi(user, "dossier-variant"); // the call variant is written by Claude (cached)
   // The design comes from the design agent (saved per profile); ?estilo forces a starting point.
   const bytes = await renderDossierPdf({ profileId: profile.id, callId: pro ? callId : undefined, style: sp.get("estilo") });
   const name = `dossier-${slug(profile.displayName || "mecena")}${pro && callId ? `-${slug(callId)}` : ""}.pdf`;

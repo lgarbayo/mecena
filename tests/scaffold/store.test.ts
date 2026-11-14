@@ -27,7 +27,7 @@ describe("store (scaffold)", () => {
   });
 
   it("getProfile needs an explicit id (no global active profile)", () => {
-    expect(() => getProfile("")).toThrow(/no encontrado/);
+    expect(() => getProfile("")).toThrow(/No encontramos este perfil/);
   });
 
   it("reads calls from MECENA_CALLS_DIR", () => {

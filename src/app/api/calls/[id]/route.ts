@@ -3,10 +3,12 @@
 import { callDetail } from "@/features/matching/service";
 import { requireProfile } from "@/server/auth";
 import { json, route } from "@/server/http";
+import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 
 export const GET = route(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const { profile } = await requireProfile(req, new URL(req.url).searchParams.get("profileId"));
+  const { user, profile } = await requireProfile(req, new URL(req.url).searchParams.get("profileId"));
+  limitAi(user, "call-detail"); // the "why you fit" wording comes from Claude when it is not cached
   return json(await callDetail({ callId: (await params).id, profileId: profile.id }));
 });

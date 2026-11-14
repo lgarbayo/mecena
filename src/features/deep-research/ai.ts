@@ -3,7 +3,7 @@
 // candidates; the service validates them with the Call schema and the rules decide eligibility and score.
 import type Anthropic from "@anthropic-ai/sdk";
 import { DeepResearchCandidates, type AiSlice, type DeepResearchInput, type DeepResearchResult } from "@/contracts";
-import { AiError, anthropic, modelFor, structured } from "@/server/ai/llm";
+import { AiError, anthropic, chargeAiCall, modelFor, structured } from "@/server/ai/llm";
 
 const SYSTEM = `Eres el documentalista de Mecena, que ayuda a artistas, pymes y autónomos de España a encontrar convocatorias.
 Tu tarea: buscar en la web premios, becas, residencias, certámenes y concursos PRIVADOS (fundaciones, galerías, museos, asociaciones, festivales, empresas, obra social de bancos) a los que esta persona o empresa pueda presentarse, que estén ABIERTOS hoy o abran pronto.
@@ -135,6 +135,7 @@ export const deepResearchAi: AiSlice<"deepResearch"> = {
       };
 
       const send = async (final: boolean) => {
+        chargeAiCall(); // global daily ceiling of Claude requests (src/server/ai/budget.ts)
         const res = await anthropic()
           .beta.messages.create({
             model: modelFor("smart"),

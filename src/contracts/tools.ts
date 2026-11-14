@@ -102,10 +102,46 @@ export class PaymentRequiredError extends Error {
   }
 }
 
+/** What a 404 is about. Each has its own user-facing message (right gender, never the internal id). */
+export type NotFoundKind = "profile" | "work" | "image" | "call" | "application" | "user" | "research";
+
+const NOT_FOUND_MESSAGES: Record<NotFoundKind, string> = {
+  profile: "No encontramos este perfil.",
+  work: "No encontramos esta obra.",
+  image: "No encontramos esta imagen.",
+  call: "No encontramos esta convocatoria.",
+  application: "No encontramos esta solicitud.",
+  user: "No encontramos tu cuenta.",
+  research: "No encontramos esta búsqueda ampliada.",
+};
+
+/** Older call sites pass a label such as `Convocatoria ${id}`: map its first word to a kind (the id is dropped). */
+const LEGACY_LABELS: [RegExp, NotFoundKind][] = [
+  [/^perfil\b/i, "profile"],
+  [/^obra\b/i, "work"],
+  [/^imagen\b/i, "image"],
+  [/^convocatoria\b/i, "call"],
+  [/^solicitud\b/i, "application"],
+  [/^usuario\b/i, "user"],
+  [/^b[uú]squeda\b/i, "research"],
+];
+
+/** 404. The message is safe to show: per-kind Spanish text, without ids. */
 export class NotFoundError extends Error {
-  constructor(what: string) {
-    super(`${what} no encontrado`);
+  readonly kind: NotFoundKind | undefined;
+  constructor(what: NotFoundKind | string) {
+    const kind = what in NOT_FOUND_MESSAGES ? (what as NotFoundKind) : LEGACY_LABELS.find(([re]) => re.test(what.trim()))?.[1];
+    super(kind ? NOT_FOUND_MESSAGES[kind] : "No encontramos lo que buscas.");
     this.name = "NotFoundError";
+    this.kind = kind;
+  }
+}
+
+/** Invalid request body (too large, truncated, not JSON, or fails its schema). Routes map it to HTTP 400 (413 when too large). */
+export class BadRequestError extends Error {
+  constructor(message = "Revisa los datos e inténtalo de nuevo.", readonly status: 400 | 413 = 400) {
+    super(message);
+    this.name = "BadRequestError";
   }
 }
 

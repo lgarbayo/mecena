@@ -5,6 +5,7 @@ import { withJuryRun } from "@/features/purchases/server";
 import { ownedApplication, requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
 import { getApplication, latestJuryScore } from "@/server/store";
+import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export const GET = route(async (req: Request) => {
 
 export const POST = route(async (req: Request) => {
   const user = requireUser(req);
+  limitAi(user, "jury");
   const { applicationId } = await body(req, JuryRequest);
   ownedApplication(user.id, applicationId);
   // Pro, or the runs included with the application (402 when they are used up)

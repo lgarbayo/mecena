@@ -23,18 +23,19 @@ export class ApiClientError extends Error {
   }
 }
 
-async function handle<T>(res: Response): Promise<T> {
+async function handle<T>(res: Response, opts: { redirectOn401?: boolean } = {}): Promise<T> {
   if (res.ok) return (await res.json()) as T;
   const err = (await res.json().catch(() => null)) as ApiError | null;
-  if (res.status === 401) redirectToLogin();
+  if (res.status === 401 && opts.redirectOn401 !== false) redirectToLogin();
   throw new ApiClientError(res.status, err?.error ?? "internal", err?.message ?? `Error ${res.status}`);
 }
 
-export async function apiGet<T>(url: string): Promise<T> {
-  return handle<T>(await fetch(url, { cache: "no-store" }));
+/** `redirectOn401: false`: a 401 just throws (public pages, which also work signed out). */
+export async function apiGet<T>(url: string, opts: { redirectOn401?: boolean } = {}): Promise<T> {
+  return handle<T>(await fetch(url, { cache: "no-store" }), opts);
 }
 
-export async function apiSend<T>(url: string, body: unknown, method: "POST" | "PATCH" = "POST", signal?: AbortSignal): Promise<T> {
+export async function apiSend<T>(url: string, body: unknown, method: "POST" | "PATCH" | "DELETE" = "POST", signal?: AbortSignal): Promise<T> {
   return handle<T>(await fetch(url, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal }));
 }
 

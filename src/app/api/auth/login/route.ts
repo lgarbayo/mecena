@@ -2,7 +2,7 @@
 import { UnauthorizedError } from "@/contracts";
 import { LoginRequest } from "@/contracts/api";
 import { activeProfile, authenticate, createSession, publicUser, setSessionCookie } from "@/server/auth";
-import { consumeAttempt, limitKeys, refundAttempt } from "@/server/auth/rate-limit";
+import { consumeLimits, limitKeys, refundAttempt } from "@/server/auth/rate-limit";
 import { body, json, route } from "@/server/http";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +12,9 @@ const LOGIN_FAILED = "Email o contraseña incorrectos.";
 export const POST = route(async (req: Request) => {
   const { email, password } = await body(req, LoginRequest);
   const keys = limitKeys("login", req, email);
-  // Counted before the (slow, async) password check: parallel guesses cannot all slip under the limit.
-  const attempt = consumeAttempt(keys);
+  // Counted before the (slow, async) password check: parallel guesses cannot all slip under the limit. Per email from
+  // this IP (wrong guesses elsewhere cannot lock the account) and per IP (high: a venue shares one NAT address).
+  const attempt = consumeLimits(keys);
   const user = await authenticate(email, password);
   if (!user) throw new UnauthorizedError(LOGIN_FAILED);
   refundAttempt(keys, attempt);

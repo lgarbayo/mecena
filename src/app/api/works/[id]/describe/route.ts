@@ -4,13 +4,16 @@ import { z } from "zod";
 import { describeWork } from "@/features/works/service";
 import { ownedWork, requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { limitAi } from "@/server/ai-limits";
 
 export const dynamic = "force-dynamic";
 
 const DescribeRequest = z.object({ voiceDescription: z.string().trim().min(1).max(4000) });
 
 export const POST = route(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const work = ownedWork(requireUser(req).id, (await params).id);
+  const user = requireUser(req);
+  const work = ownedWork(user.id, (await params).id);
+  limitAi(user, "works-describe");
   const { voiceDescription } = await body(req, DescribeRequest);
   return json({ work: await describeWork(work.id, voiceDescription) });
 });

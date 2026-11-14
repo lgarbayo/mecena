@@ -45,14 +45,14 @@ function ownsProfileId(userId: string, profileId: string): boolean {
 /** A work of one of the user's profiles (404 otherwise, same as an unknown id). */
 export function ownedWork(userId: string, workId: string): Work {
   const w = readDb().works.find((x) => x.id === workId);
-  if (!w || !ownsProfileId(userId, w.profileId)) throw new NotFoundError(`Obra ${workId}`);
+  if (!w || !ownsProfileId(userId, w.profileId)) throw new NotFoundError("work");
   return w;
 }
 
 /** An application of one of the user's profiles (404 otherwise). */
 export function ownedApplication(userId: string, applicationId: string): Application {
   const a = readDb().applications.find((x) => x.id === applicationId);
-  if (!a || !ownsProfileId(userId, a.profileId)) throw new NotFoundError(`Solicitud ${applicationId}`);
+  if (!a || !ownsProfileId(userId, a.profileId)) throw new NotFoundError("application");
   return a;
 }
 
