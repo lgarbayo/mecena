@@ -1,7 +1,8 @@
 "use client";
 // WP-07 /pro: the same offer as a page, plus the current status (Pro / premium credits).
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import type { EntitlementState } from "@/contracts";
+import { ROUTES, type EntitlementState } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
 import { Card } from "@/components/ui";
 import { getPurchases } from "../client";
@@ -29,7 +30,11 @@ export function ProPage() {
           {OFFER.isPro}
         </p>
       )}
-      {!ent?.pro && !!ent?.premiumCredits && <p className={s.status}>{OFFER.credits(ent.premiumCredits)}</p>}
+      {!ent?.pro && !!ent?.premiumCredits && (
+        <p className={s.status} data-testid="premium-status">
+          {OFFER.credits(ent.premiumCredits)} {OFFER.premiumReady} <Link href={ROUTES.calls}>{OFFER.premiumReadyLink}</Link>
+        </p>
+      )}
       {!ent?.pro && (
         <Card>
           <Offer trigger="pricing_page" onPurchased={setEnt} />

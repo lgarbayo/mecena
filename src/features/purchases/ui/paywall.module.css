@@ -297,3 +297,36 @@
 @media (prefers-reduced-motion: reduce) {
   .backdrop, .sheet { animation: none; }
 }
+
+/* Pro: in-app deadline alert above the calls feed */
+.alert {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--g-line-strong);
+  border-left: 3px solid var(--g-accent);
+  border-radius: 12px;
+}
+
+.alertTitle {
+  margin: 0 0 6px;
+  font-weight: 700;
+  color: var(--g-ink);
+}
+
+.alertList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+
+.alertList a {
+  color: var(--g-ink-2);
+  text-decoration: none;
+}
+
+.alertList strong {
+  color: var(--g-accent);
+}
