@@ -158,8 +158,8 @@ export async function processTurn(input: { profileId: string; text: string; sour
 
 function lookTurn(profile: Profile, segment: TranscriptSegment, text: string): OnboardingTurnResponse {
   saveLayoutWish({ profileId: profile.id, text, segmentId: segment.id });
-  // a voice fragment ("pues…") is not a direction yet
-  if (text.trim().split(/\s+/).length >= 3) redesignFromInterview(profile.id, segment, true);
+  // a typed answer is always a direction ("Oscuro."); a voice fragment ("pues…") only once it says something
+  if (segment.source === "text" || text.trim().split(/\s+/).length >= 3) redesignFromInterview(profile.id, segment, true);
   return { profile, sections: getDossier(profile.id)?.sections ?? [], changedSectionKeys: [], changedProfileFields: [], segmentId: segment.id };
 }
 

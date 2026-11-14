@@ -35,22 +35,15 @@ export function missingContent(layout: FreeLayout, catalog: Catalog, opts: { req
   return undefined;
 }
 
-/** A photo that fills the page (bleeds): its caption cannot sit on it without hiding the work. */
-const BLEED_W = 90;
-const BLEED_H = 85;
-const CAPTION_REF = /^obra\.(\d+)\.(ficha|titulo)$/;
-
-const overlaps = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) =>
-  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-
 /**
  * Editorial problems of a proposal that a good designer would not leave, but that never make it less of a dossier:
- * a work repeated on several pages (the dossier is a sequence, each work once) and a work's caption laid over its own
- * full-bleed photo (it then needs a band that hides the work). They earn the model a second try; if that try is no
- * better, the first proposal is still kept (the guard keeps it legible). Proposals only: a change may ask for either.
+ * a work repeated on several pages (the dossier is a sequence, each work once) and a work's caption over its own
+ * full-bleed photo, which the guard could only keep legible with a band that hides the work (`captionBands`, from
+ * prepareLayout: what is really painted, after rotation, contain and veils). They earn the model a second try; if that
+ * try is no better, the first proposal is kept. Proposals only: a change may ask for either.
  * Pure. Returns the problem in Spanish, or undefined.
  */
-export function editorialProblems(layout: FreeLayout, catalog: Catalog): string | undefined {
+export function editorialProblems(layout: FreeLayout, catalog: Catalog, captionBands: { page: number; work: number }[] = []): string | undefined {
   const known = new Set(catalog.works.map((w) => w.n));
   const pagesOf = new Map<number, number[]>();
   layout.pages.forEach((p, i) => {
@@ -65,14 +58,8 @@ export function editorialProblems(layout: FreeLayout, catalog: Catalog): string 
     if (repeated)
       return `Repites la obra ${repeated[0]} en las páginas ${repeated[1].join(" y ")}: en un dossier cada obra sale una sola vez (tampoco en la portada y luego otra vez). Si te sobran páginas, haz menos páginas o usa páginas de aire o de texto.`;
   }
-  for (const [i, p] of layout.pages.entries()) {
-    const bleeds = p.elements.filter((e): e is Extract<LayoutElement, { type: "image" }> => e.type === "image" && e.w >= BLEED_W && e.h >= BLEED_H);
-    for (const e of p.elements) {
-      if (e.type !== "text" || !e.ref) continue;
-      const m = CAPTION_REF.exec(e.ref);
-      if (m && bleeds.some((img) => overlaps(e, img)))
-        return `El pie de la obra ${m[1]} va encima de una foto a sangre (página ${i + 1}) y tapa la obra. Ponlo en la página de enfrente (la anterior o la siguiente) o en un margen sin foto, siempre en el mismo sitio en todas las obras.`;
-    }
-  }
+  const band = captionBands[0];
+  if (band)
+    return `El pie de la obra ${band.work} va encima de una foto a sangre (página ${band.page}) y tapa la obra. Ponlo en la página de enfrente (la anterior o la siguiente) o en un margen sin foto, siempre en el mismo sitio en todas las obras.`;
   return undefined;
 }

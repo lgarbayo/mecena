@@ -17,7 +17,7 @@ const Entry = z.object({
   wish: z.string().optional(), // how the artist imagines their dossier (onboarding question), for every batch
   wishSegments: z.array(z.string()).default([]), // transcript segments that are the wish: never quoted as the artist's words
   wishAt: z.string().optional(), // when the wish was last added to (a later answer starts it over)
-  batchId: z.string().optional(), // the batch in flight: a batch whose entry was reset meanwhile keeps nothing
+  batchId: z.string().optional(), // the job in flight (batch or change): a job whose entry was reset meanwhile keeps nothing
   autoKey: z.string().optional(), // content + wish the last automatic batch was made from (never twice for the same)
   batchDay: z.string().default(""),
   batches: z.number().default(0), // proposal batches today (cost cap per profile)

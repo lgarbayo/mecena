@@ -99,7 +99,8 @@ async function loadCatalog(profileId: string, wantThumbs: boolean): Promise<{ ca
   const entry = readAll()[profile.id];
   const transcript = getTranscript(profile.id);
   const look = new Set([...(entry?.wishSegments ?? []), ...dossierLookRequests(transcript).map((s) => s.id)]);
-  const said = transcript.filter((t) => !look.has(t.id)).map((t) => t.text);
+  const wish = entry?.wish ?? "";
+  const said = transcript.filter((t) => !look.has(t.id) && !(t.text.trim() && wish.includes(t.text.trim()))).map((t) => t.text);
   return { catalog: buildCatalog(view, { said, ratios, colors }), thumbs };
 }
 
@@ -255,8 +256,9 @@ export async function setFreeLayout(input: { profileId: string; enabled: boolean
 // ---------------------------------------------------------------- the artist's wish and the automatic first batch
 
 const WISH_MAX = 600;
-/** Answers to the look question closer than this add up (voice comes in chunks); a later one starts the wish over. */
-const WISH_SESSION_MS = 15 * 60_000;
+/** Answers to the look question closer than this add up (voice chunks, going back to add a detail after photographing
+ * the works); a later one, from another session, starts the wish over. */
+const WISH_SESSION_MS = 2 * 60 * 60_000;
 
 /** How the artist imagines their dossier: the answer to the onboarding question, or what they said about it in the interview. */
 export function wishOf(profileId: string, entry: LayoutEntry = loadEntry(profileId)): string | undefined {
@@ -319,6 +321,12 @@ export async function autoProposals(input: { profileId: string; from: "onboardin
     if (!entry.enabled || entry.current) return skip();
     const { key, works, pending, hasContent } = autoKeyOf(input.profileId, entry);
     if (!hasContent || entry.autoKey === key) return skip();
+    // A key saved in the first format (before 2026-11-14 16:00) already proposed from this content: adopt it, no surprise batch.
+    if (entry.autoKey?.startsWith("[[") && entry.proposals.length) {
+      entry.autoKey = key;
+      saveEntry(input.profileId, entry);
+      return skip();
+    }
     // A visual artist without confirmed photos is about to have them: wait (finishing the interview, or photos still to review).
     if (works === 0 && isVisualFamily(onboardingFamily(profile.disciplines)) && (input.from === "onboarding" || pending > 0)) return skip();
     // Proposals asked for by hand before: they stay until the content changes.
@@ -424,14 +432,15 @@ async function composeOne(input: { catalog: Catalog; thumbs: NonNullable<WorkLoo
         continue;
       }
       const made = { layout, adjustments: r.ok.adjustments };
-      const slip = input.request ? undefined : editorialProblems(layout, input.catalog);
+      const slip = input.request ? undefined : editorialProblems(layout, input.catalog, r.ok.captionBands);
       if (slip && attempt === 0) {
         console.info("[dossier] proposal retried for an editorial slip:", slip);
         fallback = made;
         problem = slip;
         continue;
       }
-      return made;
+      // a second try that slips again is no better: the first one stays
+      return slip && fallback ? fallback : made;
     } catch (e) {
       console.error("[dossier] layout agent failed", e instanceof Error ? e.message : e);
       if (e instanceof AiError && (e.reason === "budget" || e.reason === "api" || e.reason === "refusal")) return fallback;
@@ -509,12 +518,13 @@ export async function requestChange(input: { profileId: string; request: string 
   if (!entry.current) return { ...(await layoutState(input)), notice: "Primero elige una de las propuestas y luego dime qué quieres cambiar." };
   chargeDay(entry, "change");
   entry.enabled = true;
+  const jobId = (entry.batchId = id());
   saveEntry(input.profileId, entry);
-  start(input.profileId, "change", () => runChange(input.profileId, input.request));
+  start(input.profileId, "change", () => runChange(input.profileId, input.request, jobId));
   return layoutState(input);
 }
 
-async function runChange(profileId: string, request: string): Promise<LayoutOutcome> {
+async function runChange(profileId: string, request: string, jobId: string): Promise<LayoutOutcome> {
   const t0 = Date.now();
   const usage = new Usage();
   const { catalog, thumbs } = await loadCatalog(profileId, true);
@@ -525,6 +535,11 @@ async function runChange(profileId: string, request: string): Promise<LayoutOutc
   console.info(`[dossier] layout change: ${made ? "ok" : "failed"}, ${usage.calls} calls, ${usage.inputTokens} in / ${usage.outputTokens} out tokens, ${m.ms} ms`);
   if (!made) return { ok: false, notice: "No he podido hacer ese cambio y dejo la maquetación como estaba. Prueba a pedirlo de otra manera.", adjustments: [], metrics: m };
   const latest = loadEntry(profileId);
+  // The artist started over while it ran: the change belongs to the layout that is gone.
+  if (latest.batchId !== jobId) {
+    console.info("[dossier] layout change dropped: the profile's layout was reset while it ran");
+    return { ok: false, adjustments: [], metrics: m };
+  }
   latest.enabled = true;
   latest.current = made.layout;
   latest.history = [...latest.history, { request, layout: made.layout, at: nowIso() }].slice(-HISTORY_LIMIT);

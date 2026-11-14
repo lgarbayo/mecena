@@ -132,6 +132,8 @@ export interface PreparedText {
   uppercase: boolean;
   tracking: number;
   rotate: number;
+  /** The catalog id it shows ("obra.2.ficha"), when it comes from one (not a quote). */
+  ref?: string;
 }
 export interface PreparedImage {
   type: "image";
