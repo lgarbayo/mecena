@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { API, ROUTES, type Call, type MatchResult, type PastAward } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
-import { Card, PageTitle, Spinner, Tag } from "@/components/ui";
+import { Card, PageTitle, Tag } from "@/components/ui";
 import { Icon } from "@/components/ui/icons";
 import { apiGet } from "@/lib/api-client";
 import { wantsLooseImages } from "@/features/dossier/images";
@@ -12,6 +12,7 @@ import { daysLeft, fitLabel, SCORE_MAX } from "../labels";
 import type { CallHistory } from "@/features/history/history";
 import type { ScoreBreakdown } from "../rules";
 import s from "./calls.module.css";
+import { CallDetailSkeleton } from "./skeletons";
 import { FIT_COPY, deadlineLabel, formatDate, isUrgent } from "./format";
 
 interface Detail {
@@ -52,7 +53,7 @@ export function CallDetail({ id }: { id: string }) {
   }, [id, profile]);
 
   if (error) return <p className={s.empty}>{error}</p>;
-  if (!d) return <Spinner />;
+  if (!d) return <CallDetailSkeleton />;
 
   const { call, match, breakdown } = d;
   const days = daysLeft(call);

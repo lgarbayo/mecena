@@ -1,64 +1,119 @@
-/* Pro deep research: kept apart from the feed, and its cards look unverified on purpose (dashed edge, label). */
+/* Pro deep research: kept apart from the feed. An AI/agent moment, so it carries the orb; its cards look
+   unverified on purpose (dashed edge, label). */
 .panel {
-  margin: 32px 0 12px;
-  padding-top: 20px;
-  border-top: 1px solid var(--g-line);
+  margin: 40px 0 12px;
+  padding: clamp(20px, 5vw, 28px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.header > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.orb {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--orb);
+  filter: blur(0.5px);
+  box-shadow: var(--shadow-sm);
+  animation: orbSpin 18s linear infinite;
+}
+
+.orbActive {
+  animation-duration: 6s;
+}
+
+@keyframes orbSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none;
+  }
 }
 
 .heading {
-  font-family: var(--serif);
-  font-size: clamp(1.2rem, 3.4vw, 1.35rem);
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  margin: 0 0 6px;
-  color: var(--g-ink);
+  font-family: var(--font-sans);
+  font-size: clamp(22px, 5vw, 28px);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0 0 8px;
+  color: var(--text-1);
 }
 
 .lead {
-  margin: 0 0 14px;
-  color: var(--g-ink-2);
-  font-size: 0.92rem;
+  margin: 0 0 18px;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .status {
   margin: 12px 0;
-  color: var(--g-ink-2);
-  font-size: 0.9rem;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .note {
-  margin: 10px 0 0;
-  color: var(--g-ink-3);
-  font-size: 0.82rem;
+  margin: 12px 0 0;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .card {
   display: block;
   text-decoration: none;
-  color: var(--g-ink);
-  background: var(--g-glass);
-  border: 1px dashed var(--g-line-strong);
-  border-radius: 24px;
+  color: var(--text-1);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-card);
   padding: clamp(16px, 4vw, 22px);
-  margin: 14px 0;
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  margin: 12px 0;
   touch-action: manipulation;
-  transition: border-color 180ms var(--ease-out);
+  transition:
+    border-color 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out);
 }
 
-.card:hover,
+.card:hover {
+  border-color: var(--gray-400);
+  box-shadow: var(--shadow-sm);
+}
+
 .card:focus-visible {
-  border-color: var(--g-ink-2);
+  outline: 1.5px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .warning {
-  margin: 0 0 10px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--g-accent);
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin: 0 0 12px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .top {
@@ -69,53 +124,73 @@
 }
 
 .title {
-  font-family: var(--serif);
-  font-size: clamp(1.1rem, 3.4vw, 1.25rem);
-  font-weight: 500;
-  line-height: 1.2;
+  font-family: var(--font-sans);
+  font-size: clamp(18px, 4.2vw, 20px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
   margin: 0 0 4px;
   overflow-wrap: anywhere;
 }
 
 .organizer {
   margin: 0;
-  color: var(--g-ink-2);
-  font-size: 0.85rem;
+  color: var(--text-2);
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 
 .fit {
   flex: none;
-  font-size: 0.78rem;
-  color: var(--g-ink-2);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-height: 28px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .fit b {
-  font-family: var(--serif);
-  font-size: 1.15rem;
+  font-size: 15px;
   font-weight: 500;
-  color: var(--g-ink);
+  color: var(--text-1);
 }
 
 .facts {
-  margin: 12px 0 8px;
-  font-size: 0.9rem;
-  color: var(--g-ink-2);
+  margin: 14px 0 10px;
+  font-size: 14px;
+  color: var(--text-2);
 }
 
 .facts strong {
-  color: var(--g-ink);
+  color: var(--text-1);
+  font-weight: 500;
 }
 
 .urgent {
-  color: var(--g-accent);
-  font-weight: 700;
+  color: var(--err-fg);
+  font-weight: 500;
 }
 
 .summary {
   margin: 0;
-  font-size: 0.9rem;
-  color: var(--g-ink-2);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.skelCard {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-card);
+  padding: clamp(16px, 4vw, 22px);
+  margin: 12px 0;
+  display: grid;
+  gap: 12px;
 }
