@@ -155,7 +155,7 @@ async function main() {
     report(status.purchasesMode === "revenuecat" ? "ok" : "warn", "Pagos", status.purchasesMode === "revenuecat" ? "RevenueCat sandbox" : "modo prueba (sin clave pública de RevenueCat)");
     report(status.revenueCatVerified ? "ok" : "warn", "Verificación de compras", status.revenueCatVerified ? "REST con REVENUECAT_SECRET_API_KEY" : "sin clave secreta: el servidor confía en el cliente");
     report(status.canLoadPro ? "ok" : "warn", "Escenario Pro disponible", status.demoAccount ? "cuenta en DEMO_EMAILS" : status.canLoadPro ? "pagos simulados" : "esta cuenta no está en DEMO_EMAILS: el plan B Pro no cargará");
-    for (const x of status.extras ?? []) report(x.ok ? "ok" : "fail", `Datos de ${x.id === "justification" ? "la justificación" : "el panel B2B"} listos`, x.problems.join(" · "));
+    for (const x of status.extras ?? []) report(x.ok ? "ok" : "fail", x.id === "justification" ? "Datos de la justificación listos" : "Datos del panel B2B listos", x.problems.join(" · "));
     for (const s of status.scenarios) report(s.ok ? "ok" : "fail", `Escenario «${s.scenario}» listo`, s.ok ? (s.callId ? `solicitud para ${s.callId}` : "") : s.problems.join(" · "));
     report("info", "Interruptores de la cuenta", `tribunal ${status.settings.deterministicJury ? "determinista" : "según la IA"} · «IA simulada para esta cuenta» ${status.settings.aiMock ? "activada" : "desactivada"} · ${status.pro ? (status.proIsDemoGrant ? "Pro (demo)" : "Pro") : "gratis"} · modo ${status.activeProfileKind ?? "?"}`);
   });
