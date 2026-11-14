@@ -4,7 +4,7 @@
 // - MockPurchases: no keys; the paywall shows a "Modo prueba" confirm step and grants through /api/entitlements
 // Either way the server sync (POST /api/entitlements) is what unlocks drafting.
 import { API, PACKAGES, PRODUCTS, publicEnv, type EntitlementState, type Plan, type PlanId, type PurchaseOutcome, type PurchasesAdapter } from "@/contracts";
-import { PERIOD_SUFFIX, PLANS } from "./offer";
+import { PLANS, plansWithPrices } from "./offer";
 
 async function sync(body: Record<string, unknown>): Promise<EntitlementState> {
   const r = await fetch(API.entitlements, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -63,13 +63,15 @@ export class RevenueCatPurchases implements PurchasesAdapter {
     const offerings = await this.sdk!.Purchases.getSharedInstance().getOfferings();
     const offering = offerings.all[this.offeringId] ?? offerings.current;
     if (!offering) return PLANS;
-    return PLANS.flatMap((plan) => {
+    const prices: Partial<Record<PlanId, { amount: number; currency: string }>> = {};
+    for (const plan of PLANS) {
       const pkg = offering.packagesById[PACKAGES[plan.id]];
-      if (!pkg) return [];
+      if (!pkg) continue;
       this.packages.set(plan.id, pkg);
-      const price = pkg.webBillingProduct.currentPrice?.formattedPrice ?? pkg.webBillingProduct.price.formattedPrice;
-      return [{ ...plan, priceText: `${price}${PERIOD_SUFFIX[plan.id] ?? ""}` }];
-    });
+      const price = pkg.webBillingProduct.currentPrice ?? pkg.webBillingProduct.price;
+      prices[plan.id] = { amount: price.amountMicros / 1e6, currency: price.currency };
+    }
+    return plansWithPrices(prices);
   }
 
   async getEntitlement() {
