@@ -1,7 +1,9 @@
-/* WP-08 draft page — Dark Immersive Glassmorphism (Stage) + Mobile-First + Zero-Italics */
+/* Draft page — light, monochrome, generous whitespace (contract tokens from globals.css). */
 .lead {
-  color: var(--g-ink-2);
-  margin: -6px 0 14px;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: -6px 0 20px;
 }
 
 .progress {
@@ -9,52 +11,50 @@
   margin: 16px 0;
   display: grid;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--g-line);
-  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
   padding: 18px 20px;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  font-size: 15px;
 }
 
 .progress li {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  color: var(--g-ink-2);
+  color: var(--text-3);
   transition: color 200ms var(--ease-out);
 }
 
 .progress li.done {
-  color: var(--g-ink);
+  color: var(--text-2);
 }
 
 .progress li.active {
-  color: var(--g-accent);
-  font-weight: 700;
+  color: var(--text-1);
+  font-weight: 500;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: var(--g-line);
+  background: var(--gray-300);
   flex: none;
 }
 
 .done .dot {
-  background: var(--g-accent-3);
-  box-shadow: 0 0 10px rgba(79, 209, 197, 0.45);
+  background: var(--gray-950);
 }
 
 .active .dot {
-  background: var(--g-accent);
-  box-shadow: 0 0 12px rgba(255, 138, 92, 0.55);
+  background: var(--focus);
   animation: pulse 900ms ease-in-out infinite alternate;
 }
 
 @keyframes pulse {
-  from { opacity: 0.35; }
+  from { opacity: 0.3; }
   to { opacity: 1; }
 }
 
@@ -65,89 +65,96 @@
 .sectionHead {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
 }
 
 .sectionHead h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
 .body {
   white-space: pre-wrap;
-  margin: 10px 0 0;
-  color: var(--g-ink);
+  margin: 12px 0 0;
+  color: var(--text-1);
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .gap {
-  background: rgba(255, 138, 92, 0.22);
-  color: #ffd4bd;
-  border: 1px solid rgba(255, 138, 92, 0.45);
+  background: var(--warn-bg);
+  color: var(--warn-fg);
   border-radius: 6px;
   padding: 1px 6px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .edit {
   width: 100%;
-  min-height: 160px;
+  min-height: 180px;
   font: inherit;
   font-size: 16px;
-  line-height: 1.55;
-  padding: 10px 12px;
-  border: 1px solid var(--g-line);
-  border-radius: 12px;
-  background: rgba(13, 11, 16, 0.58);
-  color: var(--g-ink);
+  line-height: 1.6;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  color: var(--text-1);
   resize: vertical;
-  margin-top: 10px;
+  margin-top: 12px;
+  transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
 }
 
 .edit:focus,
 .budget input:focus,
 .budget select:focus {
   outline: none;
-  border-color: var(--g-accent);
-  box-shadow: 0 0 0 3px rgba(255, 138, 92, 0.18);
+  border-color: var(--gray-950);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 22%, transparent);
 }
 
 .sources {
-  margin-top: 14px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--g-line);
-  font-size: 0.9rem;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-card-sm);
+  background: var(--surface-2);
+  font-size: 14px;
 }
 
 .sources summary {
-  color: var(--g-accent-3);
-  font-weight: 700;
+  color: var(--text-2);
+  font-weight: 500;
   cursor: pointer;
 }
 
 .sources blockquote {
-  margin: 8px 0 0;
-  padding: 8px 12px;
-  border-left: 3px solid var(--g-accent-3);
-  color: var(--g-ink-2);
+  margin: 10px 0 0;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--border-strong);
+  color: var(--text-2);
   font-style: normal;
-  background: rgba(79, 209, 197, 0.06);
-  border-radius: 0 10px 10px 0;
+  line-height: 1.6;
 }
 
 .budget {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 8px;
-  font-size: 0.92rem;
+  margin-top: 12px;
+  font-size: 15px;
 }
 
 .budget td {
-  padding: 6px 4px;
-  border-bottom: 1px solid var(--g-line);
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
   vertical-align: top;
+}
+
+.budget td > * + * {
+  margin-top: 6px;
 }
 
 .budget input,
@@ -156,43 +163,52 @@
   font: inherit;
   font-size: 16px;
   min-height: 44px;
-  padding: 10px 12px;
-  border: 1px solid var(--g-line);
-  border-radius: 12px;
-  background: rgba(13, 11, 16, 0.58);
-  color: var(--g-ink);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  color: var(--text-1);
 }
 
 .amount {
-  width: 104px;
+  width: 112px;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.amount input {
+  text-align: right;
 }
 
 .total {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
-  font-weight: 700;
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .over {
-  color: var(--g-accent);
+  color: var(--err-fg);
 }
 
 .note {
-  color: var(--g-ink-2);
-  font-size: 0.85rem;
-  margin: 6px 0 0;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 8px 0 0;
 }
 
 .check {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--g-line);
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  line-height: 1.5;
+  cursor: pointer;
 }
 
 .check:last-child {
@@ -200,24 +216,24 @@
 }
 
 .check input {
-  width: 22px;
-  height: 22px;
-  margin-top: 2px;
-  accent-color: var(--g-accent-3);
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  accent-color: var(--gray-950);
   flex: none;
 }
 
 .hint {
   display: block;
-  color: var(--g-ink-2);
-  font-size: 0.82rem;
+  color: var(--text-3);
+  font-size: 13px;
 }
 
 .footer {
   text-align: center;
-  color: var(--g-ink-2);
-  font-size: 0.9rem;
-  margin: 20px 0 8px;
+  color: var(--text-3);
+  font-size: 14px;
+  margin: 24px 0 8px;
 }
 
 .actions {
@@ -228,19 +244,17 @@
   flex-wrap: wrap;
   gap: 8px;
   padding: 8px;
-  border-radius: 30px;
-  background: rgba(13, 11, 16, 0.82);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid var(--g-line);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
 .actions > * {
   flex: 1 1 auto;
-  min-height: 46px;
+  min-height: 44px;
   padding: 10px 16px;
-  font-size: 0.9rem;
+  font-size: 14px;
   white-space: nowrap;
 }
 
@@ -249,24 +263,54 @@
 }
 
 .error {
-  color: var(--g-accent);
+  color: var(--err-fg);
+  background: var(--err-bg);
+  border-radius: var(--radius-card-sm);
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .saved {
-  color: var(--g-accent-3);
-  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+  font-size: 12px;
+  font-weight: 500;
 }
 
-/* F: copy per section, closed-edition notice */
+/* Copy per section, closed-edition notice */
 .sectionTools {
   display: inline-flex;
   gap: 4px;
 }
 
 .closed {
-  background: rgba(255, 179, 138, 0.12);
-  border-left: 3px solid var(--g-accent);
-  padding: 10px 14px;
-  border-radius: 10px;
-  margin: 0 0 12px;
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+  padding: 12px 14px;
+  border-radius: var(--radius-card-sm);
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.closed b {
+  font-weight: 500;
+}
+
+/* Skeleton of the draft (sections, budget, documents) */
+.skelHead {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 20px;
+}
+
+.skelSection {
+  display: grid;
+  gap: 14px;
 }

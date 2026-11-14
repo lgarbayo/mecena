@@ -1,6 +1,6 @@
 // Owned by WP-08. Browser helpers for the jury: NDJSON scoring with per-judge progress and Spanish error texts.
 import { API, type Application, type JuryScore } from "@/contracts";
-import { ApiClientError, redirectToLogin } from "@/lib/api-client";
+import { ApiClientError, IDEMPOTENCY_HEADER, newIdempotencyKey, redirectToLogin } from "@/lib/api-client";
 import type { JuryStreamEvent } from "../stream";
 
 /** Spanish text for any failure (never the raw English message of the AI or the server). */
@@ -15,15 +15,21 @@ export function errorText(e: unknown, fallback: string): string {
 
 /**
  * POST /api/jury asking for an NDJSON stream: calls onJudge as each judge finishes and resolves with the full score.
- * Falls back to a plain JSON body when the response is not a stream.
+ * Falls back to a plain JSON body when the response is not a stream. Always sends an Idempotency-Key (pass the same
+ * key to retry the same scoring safely).
  */
 export async function scoreWithProgress(
   body: { applicationId: string; force?: boolean },
   onJudge: (e: { judgeId: string; name: string; total: number }) => void,
+  idempotencyKey: string = newIdempotencyKey(),
 ): Promise<{ score: JuryScore; application: Application }> {
   let res: Response;
   try {
-    res = await fetch(API.jury, { method: "POST", headers: { "content-type": "application/json", accept: "application/x-ndjson" }, body: JSON.stringify(body) });
+    res = await fetch(API.jury, {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/x-ndjson", [IDEMPOTENCY_HEADER]: idempotencyKey },
+      body: JSON.stringify(body),
+    });
   } catch {
     throw new ApiClientError(0, "network", "Sin conexión");
   }

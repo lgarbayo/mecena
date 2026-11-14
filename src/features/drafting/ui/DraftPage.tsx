@@ -11,9 +11,11 @@ import {
   type TranscriptSegment,
 } from "@/contracts";
 import { useApp } from "@/components/shell/AppProvider";
-import { Button, Card, PageTitle, Spinner } from "@/components/ui";
+import { Button, Card, LoadingRegion, PageTitle } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
-import { ApiClientError, apiGet, apiSend } from "@/lib/api-client";
+import { ApiClientError, IDEMPOTENCY_HEADER, apiGet, apiSend, newIdempotencyKey } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
+import { DraftSectionsSkeleton, DraftSkeleton } from "./DraftSkeleton";
 import { closedEdition, draftAsText } from "./export";
 import s from "./draft.module.css";
 import { Icon } from "@/components/ui/icons";
@@ -77,7 +79,7 @@ function Progress() {
     return () => clearInterval(t);
   }, []);
   return (
-    <ul className={s.progress} role="status" aria-live="polite">
+    <ul className={s.progress}>
       {STEPS.map((label, i) => (
         <li
           key={label}
@@ -97,7 +99,6 @@ export function DraftPage({ callId }: { callId: string }) {
   const [app, setApp] = useState<Application | null>(null);
   const [sources, setSources] = useState<Sources>({});
   const [loaded, setLoaded] = useState(false);
-  const [drafting, setDrafting] = useState(false);
   const [paywall, setPaywall] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -129,26 +130,28 @@ export function DraftPage({ callId }: { callId: string }) {
       .finally(() => setLoaded(true));
   }, [callId, profile]);
 
-  const draft = useCallback(async () => {
-    if (!profile) return;
-    setError(null);
-    setDrafting(true);
+  // One Idempotency-Key per drafting attempt: a double tap or a retry after a failure never drafts (or charges) twice.
+  const drafter = useAction(async (idempotencyKey: string, profileId: string) => {
     try {
-      const r = await apiSend<AppRes>(API.applications, {
-        callId,
-        profileId: profile.id,
-        appUserId,
-      });
-      setApp(r.application);
-      serverApp.current = r.application;
-      setSources(r.sources);
+      return await apiSend<AppRes>(API.applications, { callId, profileId, appUserId }, "POST", undefined, { idempotencyKey });
     } catch (e) {
       if (e instanceof ApiClientError && e.paymentRequired) setPaywall(true);
       else setError(errorText(e, "No hemos podido redactar la solicitud ahora mismo. Inténtalo de nuevo."));
-    } finally {
-      setDrafting(false);
+      throw e;
     }
-  }, [callId, profile, appUserId]);
+  });
+  const drafting = drafter.pending;
+  const runDraft = drafter.run;
+
+  const draft = useCallback(async () => {
+    if (!profile) return;
+    setError(null);
+    const r = await runDraft(profile.id).catch(() => undefined);
+    if (!r) return;
+    setApp(r.application);
+    serverApp.current = r.application;
+    setSources(r.sources);
+  }, [profile, runDraft]);
 
   const save = useCallback(
     async (
@@ -184,7 +187,11 @@ export function DraftPage({ callId }: { callId: string }) {
   useEffect(() => {
     if (!app || prewarmed.current === app.id) return;
     prewarmed.current = app.id;
-    fetch(API.jury, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ applicationId: app.id }) }).catch(() => {});
+    fetch(API.jury, {
+      method: "POST",
+      headers: { "content-type": "application/json", [IDEMPOTENCY_HEADER]: newIdempotencyKey() },
+      body: JSON.stringify({ applicationId: app.id }),
+    }).catch(() => {});
   }, [app]);
 
   const copy = async (key: string, text: string) => {
@@ -197,7 +204,7 @@ export function DraftPage({ callId }: { callId: string }) {
     }
   };
 
-  if (!loaded) return <Spinner />;
+  if (!loaded) return <DraftSkeleton />;
   if (!call)
     return <p className={s.error}>{error ?? "No encontramos esta convocatoria."}</p>;
 
@@ -217,7 +224,10 @@ export function DraftPage({ callId }: { callId: string }) {
       <>
         {header}
         {drafting ? (
-          <Progress />
+          <LoadingRegion label="Redactando tu solicitud">
+            <Progress />
+            <DraftSectionsSkeleton />
+          </LoadingRegion>
         ) : (
           <Card>
             {edition && (
@@ -247,6 +257,7 @@ export function DraftPage({ callId }: { callId: string }) {
           onClose={() => setPaywall(false)}
           onPurchased={() => {
             setPaywall(false);
+            drafter.reset();
             draft();
           }}
         />

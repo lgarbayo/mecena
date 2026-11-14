@@ -4,11 +4,13 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { API, ROUTES, type Application, type JuryScore } from "@/contracts";
-import { Button, Card, PageTitle, Tag } from "@/components/ui";
+import { Button, Card, LoadingRegion, PageTitle, Tag } from "@/components/ui";
 import { ApiClientError, apiGet, apiSend } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import { Paywall } from "@/features/purchases/ui/Paywall";
 import { changes, errorText, scoreWithProgress } from "./client";
 import s from "./jury.module.css";
+import { JuryScoreSkeleton } from "./JurySkeleton";
 
 /** Animated count-up between two totals (instant when the user prefers reduced motion). */
 function useCountUp(target: number, from: number) {
@@ -52,6 +54,7 @@ const isEstimated = (score: JuryScore) => score.estimated ?? /estimad/i.test(sco
 
 type Phase = "loading" | "scoring" | "revising" | "rescoring" | "undoing" | null;
 type JudgeProgress = { judgeId: string; name: string; total?: number };
+type ImproveBody = { applicationId: string; scoreId: string; fixes: string[]; facts: { fix: string; text: string }[]; stage: "revise" };
 
 export function JuryPage({ applicationId }: { applicationId: string }) {
   const [score, setScore] = useState<JuryScore | null>(null);
@@ -73,16 +76,33 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
     setFacts({});
   }, []);
 
+  // Every mutation carries an Idempotency-Key: a retry after a failure reuses it (same body), so the server never
+  // scores, revises or undoes twice for one tap.
+  const scorer = useAction((idempotencyKey: string, id: string) =>
+    scoreWithProgress(
+      { applicationId: id },
+      (e) => setJudges((js) => (js.some((j) => j.judgeId === e.judgeId) ? js.map((j) => (j.judgeId === e.judgeId ? { ...j, total: e.total } : j)) : [...js, e])),
+      idempotencyKey,
+    ),
+  );
+  const reviser = useAction((idempotencyKey: string, b: ImproveBody) =>
+    apiSend<{ application: Application }>(API.juryImprove, b, "POST", undefined, { idempotencyKey }),
+  );
+  const undoer = useAction((idempotencyKey: string, id: string) =>
+    apiSend<{ application: Application; score: JuryScore | null }>(API.juryUndo, { applicationId: id }, "POST", undefined, { idempotencyKey }),
+  );
+  const runScore = scorer.run;
+
   /** Score the current version with per-judge progress (reuses a score in flight or already saved). */
   const rescore = useCallback(
     async (next: Phase, judgesOf: JuryScore["judges"] = []) => {
       setPhase(next);
       setJudges(judgesOf.map((j) => ({ judgeId: j.id, name: j.name })));
-      return scoreWithProgress({ applicationId }, (e) =>
-        setJudges((js) => (js.some((j) => j.judgeId === e.judgeId) ? js.map((j) => (j.judgeId === e.judgeId ? { ...j, total: e.total } : j)) : [...js, e])),
-      );
+      const r = await runScore(applicationId);
+      if (!r) throw new ApiClientError(409, "conflict", "El tribunal ya está puntuando esta solicitud.");
+      return r;
     },
-    [applicationId],
+    [applicationId, runScore],
   );
 
   const run = useCallback(async () => {
@@ -118,7 +138,11 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
     try {
       const fixes = [...accepted];
       const typed = fixes.filter((f) => facts[f]?.trim()).map((f) => ({ fix: f, text: facts[f].trim().slice(0, 300) }));
-      const r = await apiSend<{ application: Application }>(API.juryImprove, { applicationId, scoreId: score.id, fixes, facts: typed, stage: "revise" });
+      const r = await reviser.run({ applicationId, scoreId: score.id, fixes, facts: typed, stage: "revise" });
+      if (!r) {
+        setPhase(null);
+        return;
+      }
       revised = r.application;
     } catch (e) {
       if (e instanceof ApiClientError && e.paymentRequired) setPaywall(true);
@@ -150,7 +174,8 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
     setError(null);
     setPhase("undoing");
     try {
-      const r = await apiSend<{ application: Application; score: JuryScore | null }>(API.juryUndo, { applicationId });
+      const r = await undoer.run(applicationId);
+      if (!r) return;
       setPrevious(null);
       if (r.score) show(r.score, r.application);
       else {
@@ -176,14 +201,17 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
       onClose={() => setPaywall(false)}
       onPurchased={() => {
         setPaywall(false);
+        scorer.reset();
+        reviser.reset();
         setError(null);
         if (!score) run();
       }}
     />
   );
 
-  const progress = (phase === "scoring" || phase === "revising" || phase === "rescoring" || phase === "loading") && (
-    <ul className={s.progress} role="status" aria-live="polite">
+  const showProgress = phase === "scoring" || phase === "revising" || phase === "rescoring" || phase === "loading";
+  const progressList = (live: boolean) => (
+    <ul className={s.progress} role={live ? "status" : undefined} aria-live={live ? "polite" : undefined}>
       {(phase === "revising" || phase === "rescoring") && (
         <li className={phase === "revising" ? s.active : s.done}>
           <span className={s.dot} />
@@ -204,6 +232,7 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
         ))}
     </ul>
   );
+  const progress = showProgress && progressList(true);
 
   const errorBox = error && (
     <p className={s.error} role="alert">
@@ -218,7 +247,12 @@ export function JuryPage({ applicationId }: { applicationId: string }) {
     return (
       <>
         <PageTitle kicker="Tribunal simulado">Tu puntuación</PageTitle>
-        {progress}
+        {showProgress && (
+          <LoadingRegion label="Cargando la puntuación">
+            {progressList(false)}
+            <JuryScoreSkeleton />
+          </LoadingRegion>
+        )}
         {errorBox}
         {paywallSheet}
       </>
