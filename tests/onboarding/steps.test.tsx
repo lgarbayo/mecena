@@ -11,7 +11,7 @@ vi.mock("@/lib/api-client", async () => {
       url === "/api/dossier/layout" ? { busy: false, count: 2 } : svc.processTurn({ ...body, profileId: body.profileId ?? "demo-creator" }),
   };
 });
-const speech = { supported: true, listening: false, interim: "", error: null as string | null, start: vi.fn(), stop: vi.fn() };
+const speech = { supported: true, listening: false, interim: "", error: null as string | null, start: vi.fn(), stop: vi.fn(), restart: vi.fn() };
 let onFinal: ((t: string) => void) | undefined;
 vi.mock("@/components/voice/useSpeechRecognition", () => ({
   useSpeechRecognition: (o: { onFinal: (t: string) => void }) => {

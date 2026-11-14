@@ -48,6 +48,7 @@ const speech = {
   start: vi.fn(),
   stop: vi.fn(),
   flush: vi.fn(),
+  restart: vi.fn(),
 };
 let onFinal: ((t: string) => void) | undefined;
 vi.mock("@/components/voice/useSpeechRecognition", async (orig) => ({
@@ -94,6 +95,7 @@ beforeEach(() => {
   Object.assign(speech, { listening: false, interim: "", error: null, errorCode: null, tapToResume: false });
   speech.start.mockClear();
   speech.stop.mockClear();
+  speech.restart.mockClear();
   push.mockClear();
   setMode.mockReset();
   setMode.mockImplementation(async () => undefined);
@@ -146,7 +148,8 @@ describe("/onboarding (creator)", () => {
     expect(screen.getByRole("textbox", { name: /Qué haces/ })).toBeTruthy();
     expect(screen.getByTestId("transcript").textContent).toContain("Pinto con acuarela y tinta.");
     fireEvent.click(screen.getByTestId("prefer-voice"));
-    expect(speech.start).toHaveBeenCalledTimes(3); // choose-voice, "Siguiente" (the mic was closed), prefer-voice
+    expect(speech.restart).toHaveBeenCalledTimes(1); // "Siguiente" opens a fresh session for the next question
+    expect(speech.start).toHaveBeenCalledTimes(2); // choose-voice, prefer-voice
   });
 
   it("without microphone access it moves to typing by itself, with a kind notice", () => {
