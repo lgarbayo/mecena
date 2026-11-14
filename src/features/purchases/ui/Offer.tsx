@@ -7,7 +7,7 @@ import type { EntitlementState, PaywallTrigger, Plan, PlanId } from "@/contracts
 import { useApp } from "@/components/shell/AppProvider";
 import { Button } from "@/components/ui";
 import { getPurchases } from "../client";
-import { OFFER, PLANS, TRIGGER_SUBTITLE } from "../offer";
+import { monthlyPrice, OFFER, PLANS, TRIGGER_SUBTITLE } from "../offer";
 import s from "./paywall.module.css";
 
 export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTrigger; onPurchased(e: EntitlementState): void; headingId?: string }) {
@@ -32,6 +32,7 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
   const buy = async (id: PlanId) => {
     setError(null);
     setBusy(id);
+    if (mode === "revenuecat") setTimeout(() => checkoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 600);
     const out = await getPurchases().purchase(id, { htmlTarget: checkoutRef.current ?? undefined });
     setBusy(null);
     setPendingMock(null);
@@ -54,7 +55,7 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
           <li key={v}>{v}</li>
         ))}
       </ul>
-      <p className={s.anchor}>{OFFER.anchor}</p>
+      <p className={s.anchor}>{OFFER.anchor(monthlyPrice(plans))}</p>
 
       {chosen ? (
         <div className={s.confirm} data-testid="mock-confirm">
@@ -76,7 +77,7 @@ export function Offer({ trigger, onPurchased, headingId }: { trigger: PaywallTri
               {p.highlight && <span className={s.badge}>{OFFER.bestValue}</span>}
               <span className={s.planTitle}>{p.title}</span>
               <span className={s.planPrice}>{busy === p.id ? "…" : p.priceText}</span>
-              <span className={s.planNote}>{p.id === "proAnnual" ? `${OFFER.perMonthAnnual} · ${p.bullets[1]}` : p.bullets.join(" · ")}</span>
+              <span className={s.planNote}>{p.bullets.join(" · ")}</span>
             </button>
           ))}
         </div>
