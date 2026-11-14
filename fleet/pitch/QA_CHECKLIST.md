@@ -91,5 +91,5 @@
 - [ ] Pasada 1: ____ min ____ s · fallos: __________
 - [ ] Pasada 2: ____ min ____ s · fallos: __________
 - [ ] Versión corta de 90 s ensayada una vez.
-- [ ] Cifras de encuesta y LOIs puestas en el cierre: [X %], [N], [N LOIs].
+- [ ] Cierre ensayado en ≤ 10 s (desde 2:50) con las cifras reales: 37 convocatorias, 213 concesiones. Sin encuesta ni LOIs.
 - [ ] Reset final hecho y móvil en la pantalla A1 justo antes de subir.
