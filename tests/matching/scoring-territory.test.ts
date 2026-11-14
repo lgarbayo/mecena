@@ -12,7 +12,7 @@ const beca = () => fixture("fixture-beca-artes-plasticas"); // requires living i
 const premio = () => fixture("fixture-premio-ilustracion"); // private, no area at all
 
 /** A town in another comunidad that says nothing about residence (implicit territory). */
-const benidormLike = (): Call => ({ ...beca(), id: "t-local-cv", scope: "local", region: "Comunitat Valenciana", eligibility: { ...beca().eligibility, residence: [] } });
+const benidormLike = (): Call => ({ ...beca(), id: "t-local-cv", scope: "local", region: "Comunitat Valenciana", eligibility: { ...beca().eligibility, residence: [], other: [] } }); // no other open requirement: the unconfirmed-requirements cap (unconfirmed.test.ts) stays out of the way
 /** The same kind of call, from the creator's own comunidad. */
 const galiciaLike = (): Call => ({ ...benidormLike(), id: "t-local-gal", region: "Galicia" });
 const spainWide = (): Call => ({ ...beca(), id: "t-es", scope: "estatal", region: undefined, eligibility: { ...beca().eligibility, residence: ["España"] } });

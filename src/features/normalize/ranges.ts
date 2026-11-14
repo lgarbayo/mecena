@@ -66,6 +66,22 @@ export function parseMinEmployees(text: string | null | undefined): number | und
   return m ? +m[1] : undefined;
 }
 
+/**
+ * Minimum yearly turnover from the bases: "facturación mínima de 100.000 €", "facturación anual de al menos 12.000 €",
+ * "facturación superior a 50.000 euros". Undefined when the text sets none. A ceiling ("facturación inferior a…") or a
+ * different figure (net income, grant amount) is not a minimum turnover.
+ */
+export function parseMinRevenue(text: string | null | undefined): number | undefined {
+  if (!text) return undefined;
+  const f = fold(text);
+  const amount = String.raw`(\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)?`;
+  const m =
+    f.match(new RegExp(String.raw`factur\w* (?:anual |bruta |neta )?(?:minim[oa] |anual minim[oa] )(?:de |anual de )?${amount}`)) ??
+    f.match(new RegExp(String.raw`factur\w* (?:anual |bruta |neta )?(?:de )?(?:al menos|superior a|igual o superior a|no inferior a|mayor (?:de|que)) ${amount}`)) ??
+    f.match(new RegExp(String.raw`volumen de negocio (?:minim[oa] )?(?:de )?(?:al menos|superior a|minim[oa] de) ${amount}`));
+  return m ? Number(m[1].replace(/\./g, "")) : undefined;
+}
+
 /** Possible ages on `atIso` for someone born in `birthYear` (birthday before or after that date). */
 export function ageRangeAt(birthYear: number, atIso: string): Range {
   const y = parseIso(atIso).getUTCFullYear();

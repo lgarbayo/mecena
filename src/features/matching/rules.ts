@@ -36,6 +36,7 @@ import {
   normalizeTerritory,
   parseAgeRange,
   parseMinEmployees,
+  parseMinRevenue,
   territoryAncestors,
   territoryCheck,
   territoryName,
@@ -111,6 +112,32 @@ export function fitOf(raw: Profile, p: CanonicalProfile, c: CanonicalCall, call?
   return fit;
 }
 
+/** Bases that restrict the applicant to an area smaller than the territory stored for the call. */
+const NARROWER_AREA = /demarcacion de la camara|ambito de la camara/;
+
+// ---------- unconfirmed requirements ----------
+/**
+ * The score measures fit (discipline, own words, zone, money), not that the bases are met: a requirement the engine
+ * cannot check against the profile ("Confírmalo") is still open. So "alto" is only for a call with at most one of them
+ * left: 2 or more cap it at "medio" and 5 or more at "bajo" (fitLabel: alto >= 70, medio >= 55).
+ */
+const CONFIRM_CAPS: readonly (readonly [number, number])[] = [
+  [5, 54],
+  [2, 69],
+];
+/** Takes the excess out of the "requisitos" then the "afinidad" part, so the parts still add up to the score. */
+function capByUnconfirmed(b: ScoreBreakdown, unconfirmed: number) {
+  const cap = CONFIRM_CAPS.find(([n]) => unconfirmed >= n)?.[1];
+  if (cap === undefined) return;
+  let excess = Object.values(b).reduce((s, x) => s + x, 0) - cap;
+  for (const part of ["base", "affinity"] as const) {
+    if (excess <= 0) break;
+    const cut = Math.min(b[part], excess);
+    b[part] -= cut;
+    excess -= cut;
+  }
+}
+
 // ---------- main ----------
 export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): RuleResult {
   const now = ctx.now ?? new Date();
@@ -136,6 +163,18 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
     why.push("Se convoca cada año: puedes prepararla con calma");
   }
 
+  // A rule written in the bases that is narrower than the stored territory ("demarcación de la Cámara de Tui" inside the
+  // province): living in the province is not enough, so neither "cumples" nor "es de tu zona" may be claimed.
+  const narrowerArea = call.eligibility.other.some((o) => NARROWER_AREA.test(norm(o)));
+  // Minimum turnover (a pyme): checked against what the profile says it bills; unknown stays "Confírmalo".
+  const minRevenue = profile.kind === "business" ? call.eligibility.other.map(parseMinRevenue).find((n) => n !== undefined) : undefined;
+  // Only a sentence that is nothing but the turnover rule is consumed: "rendimiento neto … y facturación …" keeps its other half listed.
+  const revenueSentence = (o: string) => minRevenue !== undefined && profile.annualRevenueEur !== undefined && /^factur/.test(norm(o)) && parseMinRevenue(o) === minRevenue;
+  if (minRevenue !== undefined && profile.annualRevenueEur !== undefined) {
+    if (profile.annualRevenueEur >= minRevenue) why.push(`Cumples la facturación mínima (${formatCents(minRevenue * 100)})`);
+    else fail(`Facturación mínima de ${formatCents(minRevenue * 100)}: la tuya es ${formatCents(Math.round(profile.annualRevenueEur) * 100)}`);
+  }
+
   // Phase A on canonical data. Reasons come in Spanish from the standard.
   const checks = evaluateEligibility(p, c, { today }).checks;
   for (const k of checks) {
@@ -146,8 +185,9 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
       } else if (k.result === "unknown" && call.status === "open") miss.push(k.reason);
       continue; // an open deadline is shown as "quedan N días", not as a reason
     }
-    if (k.result === "pass") why.push(k.reason);
-    else if (k.result === "fail") fail(k.reason);
+    if (k.result === "pass") {
+      if (!(k.rule === "territory" && narrowerArea && !c.territories.every((x) => x === "ES" || x === "WORLD"))) why.push(k.reason);
+    } else if (k.result === "fail") fail(k.reason);
     else miss.push(k.reason);
   }
 
@@ -155,9 +195,10 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
   // standard already checked them (its own line says pass, fail or confirm): never the same requirement twice.
   const ruled = new Set(checks.map((k) => k.rule));
   const others = call.eligibility.other.filter(
-    (o) => !(ruled.has("age") && Object.keys(parseAgeRange(o)).length) && !(ruled.has("employees") && parseMinEmployees(o) !== undefined),
+    (o) => !(ruled.has("age") && Object.keys(parseAgeRange(o)).length) && !(ruled.has("employees") && parseMinEmployees(o) !== undefined) && !revenueSentence(o),
   );
-  for (const o of others.slice(0, 2)) miss.push(`Confírmalo: ${o}`);
+  // Every one is listed: any of them can be the requirement that leaves this profile out.
+  for (const o of others) miss.push(`Confírmalo: ${o}`);
 
   const fit = fitOf(profile, p, c, call);
   const breakdown: ScoreBreakdown = { base: 0, affinity: 0, documents: 0, amount: 0, timing: 0 };
@@ -168,8 +209,9 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
     breakdown.affinity = affinity(profile, call, p, c, fit, why, miss);
     breakdown.documents = documents(profile, call, ctx, why, miss);
     breakdown.amount = amount(c, call, why, miss);
-    breakdown.timing = timing(p, c, call, call.deadline ? daysUntil(call.deadline, now) : undefined, why, miss);
+    breakdown.timing = timing(p, c, call, call.deadline ? daysUntil(call.deadline, now) : undefined, why, miss, narrowerArea);
   }
+  if (eligible) capByUnconfirmed(breakdown, miss.filter((m) => m.startsWith("Confírmalo")).length);
   const score = Object.values(breakdown).reduce((s, x) => s + x, 0);
 
   return {
@@ -397,7 +439,7 @@ function callHome(c: CanonicalCall): string[] {
  * requires living there or a town organises it for everyone; local calls have less competition and are the
  * beachhead's (Galicia) real offer.
  */
-function timing(p: CanonicalProfile, c: CanonicalCall, call: Call, daysLeft: number | undefined, why: string[], miss: string[]): number {
+function timing(p: CanonicalProfile, c: CanonicalCall, call: Call, daysLeft: number | undefined, why: string[], miss: string[], narrowerArea = false): number {
   let pts: number;
   if (call.status === "recurring") pts = 0;
   else if (call.status === "upcoming") pts = 3;
@@ -407,7 +449,7 @@ function timing(p: CanonicalProfile, c: CanonicalCall, call: Call, daysLeft: num
     miss.push(daysLeft === 0 ? "Cierra hoy: hay que darse prisa" : `Cierra en ${daysLeft} ${daysLeft === 1 ? "día" : "días"}: hay que darse prisa`);
   } else if (daysLeft <= 60) pts = 6;
   else pts = 5;
-  return Math.min(SCORE_MAX.timing, pts + proximity(p, c, why));
+  return Math.min(SCORE_MAX.timing, pts + (narrowerArea ? 0 : proximity(p, c, why)));
 }
 
 /** Points a call loses when it may require living somewhere and that can't be confirmed for this profile. */

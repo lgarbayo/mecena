@@ -6,6 +6,7 @@ import {
   normalizeCriteria,
   normalizeDocuments,
   parseAgeRange,
+  parseMinRevenue,
   parseYearsActive,
   yearsActiveCheck,
 } from "@/features/normalize";
@@ -123,4 +124,17 @@ describe("criteria", () => {
   it("largestRemainder always sums to the total", () => {
     for (const vals of [[1, 1, 1], [33, 33, 34], [7, 13, 29, 51], [1, 2, 3, 4, 5, 6, 7]]) expect(largestRemainder(vals).reduce((a, b) => a + b, 0)).toBe(100);
   });
+});
+
+describe("parseMinRevenue", () => {
+  it.each([
+    ["Facturación mínima de 100.000 € en la última anualidad", 100000],
+    ["Rendimiento neto reducido (IRPF 2024) inferior a 50.000 € y facturación anual de al menos 12.000 €", 12000],
+    ["Facturación superior a 50.000 euros", 50000],
+    ["volumen de negocio mínimo de 300.000 €", 300000],
+  ])("%s → %s", (text, n) => expect(parseMinRevenue(text)).toBe(n));
+
+  it.each(["Facturación inferior a 2 millones de euros", "Rendimiento neto inferior a 50.000 €", "Ayuda de hasta 12.000 €", ""])("%s → no minimum", (text) =>
+    expect(parseMinRevenue(text)).toBeUndefined(),
+  );
 });

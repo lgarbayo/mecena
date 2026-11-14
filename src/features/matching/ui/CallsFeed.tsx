@@ -40,10 +40,14 @@ export function CallCard({ call, match, breakdown }: Result) {
             {call.source === "bdns" && <span className={s.sourceTag}> · BDNS, sin revisión manual</span>}
           </p>
         </div>
-        <span className={`${s.fitTag} ${s[`fit-${label}`]}`} aria-label={`${FIT_COPY[label]}: ${match.score} de 100`}>
-          <b>{match.score}</b>
-          {label}
-        </span>
+        {call.status === "recurring" ? (
+          <span className={`${s.fitTag} ${s["fit-bajo"]}`}>Edición cerrada</span>
+        ) : (
+          <span className={`${s.fitTag} ${s[`fit-${label}`]}`} aria-label={`${FIT_COPY[label]}: ${match.score} de 100`}>
+            <b>{match.score}</b>
+            {label}
+          </span>
+        )}
       </div>
       <div className={s.facts}>
         <span>
