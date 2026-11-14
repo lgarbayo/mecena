@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, renderHook } from "@testing-library/react";
-import { MIC_BLOCKED, isIOS, newFinalPart, speechErrorText, useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
+import { MIC_BLOCKED, isAndroid, isIOS, newFinalPart, speechErrorText, useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { FakeRecognition, installFakeSpeech } from "./fakeSpeech";
 
 const IPHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
@@ -25,6 +25,10 @@ function asIPhone() {
 }
 
 describe("Android duplicate finals (lastFinalText heuristic)", () => {
+  beforeEach(() => {
+    vi.spyOn(navigator, "userAgent", "get").mockReturnValue(ANDROID);
+  });
+
   it("drops an exact repeat, ignoring case and spacing", () => {
     const t = setup();
     act(() => t.speech.start());
@@ -89,6 +93,11 @@ describe("Android duplicate finals (lastFinalText heuristic)", () => {
     act(() => t.speech.start());
     act(() => FakeRecognition.latest.final("sí."));
     expect(t.finals).toEqual(["Sí."]);
+  });
+
+  it("isAndroid reads the user agent", () => {
+    expect(isAndroid({ userAgent: ANDROID })).toBe(true);
+    expect(isAndroid({ userAgent: IPHONE })).toBe(false);
   });
 
   it("newFinalPart keeps leading inverted punctuation and strips the joining comma", () => {
@@ -295,5 +304,17 @@ describe("iOS Safari", () => {
     act(() => FakeRecognition.latest.end());
     expect(t.speech.start).toBe(start);
     expect(t.speech.stop).toBe(stop);
+  });
+});
+
+describe("repeated answers outside Android", () => {
+  it("the same short answer twice is real speech: both reach onFinal", () => {
+    const t = setup();
+    act(() => t.speech.start());
+    act(() => FakeRecognition.latest.final("Sí."));
+    act(() => FakeRecognition.latest.final("Sí."));
+    act(() => FakeRecognition.latest.end());
+    act(() => FakeRecognition.latest.final("Sí, y también hago escultura."));
+    expect(t.finals).toEqual(["Sí.", "Sí.", "Sí, y también hago escultura."]);
   });
 });

@@ -100,6 +100,8 @@ export function StepOnboarding() {
   const [switching, setSwitching] = useState(false);
   const [switchError, setSwitchError] = useState<string | null>(null);
   const [leaving, setLeaving] = useState<string | null>(null);
+  /** The person asked to start over: the next onboarding's first turn wipes the earlier one (server-side reset). */
+  const [restart, setRestart] = useState(false);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const resumeAfterPhoto = useRef(false);
   /** Turns of the queue that belong to an earlier profile (before a creator <-> pyme switch) are not shown. */
@@ -142,6 +144,7 @@ export function StepOnboarding() {
     if (!profileId) return;
     loadState(profileId);
     setFollowUp(undefined);
+    setRestart(false);
     if (kindRef.current !== "creator") return setWorks([]);
     worksClient
       .list(profileId)
@@ -230,8 +233,11 @@ export function StepOnboarding() {
     setLeaving(href);
   };
 
+  // Something is already on file (an earlier interview, an imported dossier): never wipe it without being asked.
+  const hasPrevious = history.length > 0 || sections.length > 0 || filledRows(kind, profile).length > 0;
   const start = (m: Mode) => {
-    freshRef.current = true;
+    freshRef.current = !hasPrevious || restart;
+    setRestart(false);
     setMode(m);
     setMicNotice(null);
     setPhase({ at: "step", i: 0 });
@@ -360,6 +366,16 @@ export function StepOnboarding() {
             <p className={g.kicker}>{ONBOARDING.kicker[kind]}</p>
             <h1 className={s.question}>{C.chooseTitle}</h1>
             <p className={s.example}>{C.chooseLede}</p>
+            {hasPrevious && (
+              <>
+                <p className={s.example} role={restart ? "alert" : undefined} data-testid="resume-note">
+                  {restart ? C.restartWarning : C.resumeNote}
+                </p>
+                <button type="button" className={s.link} onClick={() => setRestart((r) => !r)} data-testid={restart ? "keep-profile" : "restart"}>
+                  {restart ? C.keepProfile : C.restart}
+                </button>
+              </>
+            )}
             <div className={s.kinds} role="group" aria-label="Perfil" aria-busy={switching}>
               {(["creator", "business"] as const).map((k) => (
                 <button key={k} type="button" className={s.kind} aria-pressed={kind === k} disabled={switching || busy} onClick={() => void switchKind(k)} data-testid={`kind-${k}`}>

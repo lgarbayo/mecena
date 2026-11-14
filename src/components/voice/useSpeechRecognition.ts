@@ -14,7 +14,9 @@
  * for another tap.
  *
  * Android Chrome sometimes re-delivers the previous final verbatim or as the prefix of the next one (also across the
- * automatic restarts): the last emitted final is remembered and only the new part is forwarded.
+ * automatic restarts): there the last emitted final is remembered and only the new part is forwarded. Elsewhere a
+ * repeated answer ("sí" to two questions) is real speech and passes; only the late final of a phrase already handed
+ * out by flush() is trimmed, on every browser.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -60,6 +62,12 @@ export function isIOS(nav?: Pick<Navigator, "userAgent" | "maxTouchPoints">): bo
   return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && (n.maxTouchPoints ?? 0) > 1);
 }
 
+/** Android (Chrome re-sends earlier finals there). SSR-safe. */
+export function isAndroid(nav?: Pick<Navigator, "userAgent">): boolean {
+  const n = nav ?? (typeof navigator !== "undefined" ? navigator : undefined);
+  return /Android/i.test(n?.userAgent ?? "");
+}
+
 const norm = (s: string) => s.trim().replace(/\s+/g, " ").toLowerCase();
 
 /**
@@ -101,6 +109,8 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
   const resumeOnEnd = useRef(false);
   /** Last final handed out, across automatic restarts (Android re-sends it); cleared by start() after stop(). */
   const lastFinal = useRef("");
+  /** Interim text flush() handed out: the engine's late final of that phrase must not be emitted again. */
+  const flushed = useRef("");
   const stopped = useRef(true);
   /** Mirrors errorCode for the event handlers. */
   const code = useRef<string | null>(null);
@@ -122,6 +132,7 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
   const open = useCallback(
     (Ctor: new () => Rec) => {
       const onIOS = isIOS();
+      const onAndroid = isAndroid();
       const r = new Ctor();
       r.lang = lang;
       r.continuous = !onIOS;
@@ -145,8 +156,9 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
             if (!raw) continue;
             if (emittedAt.get(i) === raw) continue; // the same final re-sent at the same index
             emittedAt.set(i, raw);
-            const text = newFinalPart(lastFinal.current, raw);
+            const text = newFinalPart(onAndroid ? lastFinal.current : flushed.current, raw);
             lastFinal.current = raw;
+            flushed.current = "";
             if (!text) continue;
             // Speech is getting through again: a transient complaint (no-speech...) is stale now.
             if (code.current && !FATAL.has(code.current) && rec.current === r) setFailure(null, null);
@@ -205,13 +217,16 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
     if (!pending) return;
     interimRef.current = "";
     setInterim("");
+    // The engine still finalizes this phrase later: remembering it lets that late final be recognised as a repeat.
+    lastFinal.current = pending;
+    flushed.current = pending;
     onFinal.current(pending);
   }, []);
 
   const start = useCallback(() => {
     const Ctor = getCtor();
     if (!Ctor) return setFailure(null, UNSUPPORTED);
-    if (stopped.current) lastFinal.current = ""; // a fresh conversation after an explicit stop
+    if (stopped.current) lastFinal.current = flushed.current = ""; // a fresh conversation after an explicit stop
     stopped.current = false;
     if (rec.current && !wanted.current) resumeOnEnd.current = true; // tapped again while the old session stops
     wanted.current = true;

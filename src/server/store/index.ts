@@ -300,6 +300,12 @@ function readCallsFile(f: string): unknown[] {
     return [];
   }
 }
+/** An "upcoming" call whose opening day (Spain) has come is open: the stored status is only as fresh as its ingest. */
+export function withLiveStatus(call: Call, now: Date = new Date()): Call {
+  if (call.status !== "upcoming" || !call.opensAt) return call;
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now);
+  return call.opensAt.slice(0, 10) <= today ? { ...call, status: "open" } : call;
+}
 export function listCalls(): Call[] {
   const out: Call[] = [];
   const seen = new Set<string>();
@@ -321,7 +327,7 @@ export function listCalls(): Call[] {
       if (seen.has(parsed.data.id) || (parsed.data.bdnsId && seenBdns.has(parsed.data.bdnsId))) continue;
       seen.add(parsed.data.id);
       if (parsed.data.bdnsId) seenBdns.add(parsed.data.bdnsId);
-      out.push(withCanonicalCallFields(parsed.data));
+      out.push(withCanonicalCallFields(withLiveStatus(parsed.data)));
     }
   }
   // Until WP-05 lands data/calls/calls.json the app runs on clearly-labelled fictional fixtures.

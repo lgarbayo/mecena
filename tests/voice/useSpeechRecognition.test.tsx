@@ -143,4 +143,13 @@ describe("useSpeechRecognition", () => {
       "Cinco: tienda online y contratar a una persona.",
     ]);
   });
+  it("Next (flush) mid-phrase: the engine's late final of that same phrase is not queued a second time", () => {
+    const t = setup();
+    act(() => t.speech.start());
+    act(() => FakeRecognition.latest.interim("hago cerámica en lugo"));
+    act(() => t.speech.flush());
+    act(() => FakeRecognition.latest.final("Hago cerámica en Lugo."));
+    act(() => FakeRecognition.latest.final("Busco una residencia."));
+    expect(t.finals).toEqual(["hago cerámica en lugo", "Busco una residencia."]);
+  });
 });
