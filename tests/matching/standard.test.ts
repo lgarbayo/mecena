@@ -49,4 +49,58 @@ describe("matching agrees with evaluateEligibility on data/calls/calls.json", ()
     expect(Math.min(...mine)).toBeGreaterThan(Math.max(...other));
     for (const s of other) expect(fitLabel(s)).toBe("bajo");
   });
+
+  it("differentiates business calls by sector, territory, legal form and funding needs instead of returning the same list for every pyme", () => {
+    const rankFor = (p: typeof fixtureBusiness) =>
+      calls
+        .map((c) => ({ c, r: evaluate(p, c, { now }) }))
+        .filter(({ c, r }) => !r.excluded && r.match.eligible && (c.beneficiaryKinds.includes("business") || r.match.score >= 60))
+        .sort((a, b) => b.r.match.score - a.r.match.score)
+        .slice(0, 3)
+        .map(({ c }) => c.id);
+
+    // 1. Galician restaurant SL seeking energy efficiency
+    const restaurantGalicia = {
+      ...fixtureBusiness,
+      displayName: "Restaurante O Porto",
+      city: "Santiago de Compostela",
+      province: "A Coruña",
+      region: "Galicia",
+      territory: undefined,
+      legalForm: "sl" as const,
+      beneficiaryTypes: [],
+      cnae: undefined,
+      sector: "hostelería",
+      employees: 6,
+      fundingNeeds: ["eficiencia energética", "placas solares"],
+      projectIdea: "Instalar placas solares y aerotermia en el restaurante.",
+    };
+    // 2. Valencian audiovisual production SL seeking film production aid
+    const audiovisualValencia = {
+      ...fixtureBusiness,
+      displayName: "Llum Films S.L.",
+      city: "Valencia",
+      province: "Valencia",
+      region: "Comunitat Valenciana",
+      territory: undefined,
+      legalForm: "sl" as const,
+      beneficiaryTypes: [],
+      cnae: undefined,
+      sector: "audiovisual",
+      employees: 5,
+      fundingNeeds: ["producción de cortometraje", "distribución en festivales"],
+      projectIdea: "Producir un cortometraje de ficción y distribuirlo en festivales.",
+    };
+    // 3. Galician ceramics autónomo (fixtureBusiness)
+    const topCeramics = rankFor(fixtureBusiness);
+    const topRestaurant = rankFor(restaurantGalicia);
+    const topAudiovisual = rankFor(audiovisualValencia);
+
+    expect(topRestaurant[0]).toBe("turismo-galicia-eficiencia-energetica-tu986b-2026");
+    expect(topCeramics).not.toContain("turismo-galicia-eficiencia-energetica-tu986b-2026");
+    expect(topAudiovisual).toContain("icaa-cortometrajes-realizados-2027");
+    expect(topAudiovisual).not.toContain("igape-re-acciona-2026");
+    expect(topCeramics).not.toEqual(topRestaurant);
+    expect(topCeramics).not.toEqual(topAudiovisual);
+  });
 });

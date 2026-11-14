@@ -58,6 +58,8 @@ export const OnboardingTurnRequest = z.object({
   profileId: z.string().optional(),
   text: z.string().min(1),
   source: z.enum(["voice", "text"]),
+  stepKey: z.string().optional(),
+  reset: z.boolean().optional(),
 });
 export const OnboardingTurnResponse = z.object({
   profile: Profile,
@@ -111,13 +113,40 @@ export const WorksResponse = z.object({ works: z.array(Work) });
 export const DossierResponse = z.object({ dossier: Dossier, profile: Profile, works: z.array(Work) });
 
 // /api/calls
+export const CallsDiagnostics = z.object({
+  totalEvaluated: z.number().int(),
+  discardedByEligibility: z.number().int(),
+  discardedByDiscipline: z.number().int(),
+  matchedCount: z.number().int(),
+  profileSummary: z.object({
+    displayName: z.string(),
+    kind: ProfileKind,
+    disciplines: z.array(z.string()),
+    sector: z.string().optional(),
+    location: z.string().optional(),
+    legalForm: z.string().optional(),
+    fundingNeeds: z.array(z.string()),
+    projectIdea: z.string().optional(),
+    isComplete: z.boolean(),
+  }),
+});
+export type CallsDiagnostics = z.infer<typeof CallsDiagnostics>;
+
 export const CallsResponse = z.object({
-  results: z.array(z.object({ call: Call, match: MatchResult })),
+  results: z.array(
+    z.object({
+      call: Call,
+      match: MatchResult,
+      // How the score was built (caps in matching/labels SCORE_MAX).
+      breakdown: z.object({ base: z.number(), affinity: z.number(), documents: z.number(), amount: z.number(), timing: z.number() }).optional(),
+    }),
+  ),
   lockedCount: z.number().int(), // matches hidden behind the free limit
   mode: ProfileKind,
   pro: z.boolean().optional(),
   // Background BDNS search for this profile (step 2): the feed reloads when it finishes.
   liveSearch: z.object({ searching: z.boolean(), found: z.number().int(), lastRunAt: z.string().optional() }).optional(),
+  diagnostics: CallsDiagnostics.optional(),
 });
 export type CallsResponse = z.infer<typeof CallsResponse>;
 // /api/calls/research (Pro deep research: unverified private calls found on the web)

@@ -21,6 +21,7 @@ import {
   normalizeCall,
   normalizeDiscipline,
   normalizeProfile,
+  normalizeTerritory,
   territoryCheck,
   territoryName,
   type CanonicalCall,
@@ -46,6 +47,7 @@ export interface RuleResult {
   match: MatchResult;
   breakdown: ScoreBreakdown;
   excluded: boolean; // closed / past deadline: never shown in the feed
+  fit: Fit; // discipline/sector fit: "none" = the call is made for other disciplines/sectors
 }
 
 export { fitLabel, daysLeft, SCORE_MAX, type FitLabel } from "./labels";
@@ -81,16 +83,16 @@ const madridDay = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Eur
 
 const discNames = (ids: readonly string[]) => ids.slice(0, 3).map((id) => (isDisciplineId(id) ? disciplineLabel(id).toLowerCase() : id));
 
-type Fit = "exact" | "within" | "related" | "any" | "general" | "none" | "sector" | "sector-unknown";
+export type Fit = "exact" | "within" | "related" | "any" | "general" | "none" | "sector" | "sector-unknown";
 
-/** How the profile's discipline (creators) or sector (businesses) meets the call. Soft signal, never a filter. */
-function fitOf(raw: Profile, p: CanonicalProfile, c: CanonicalCall, call: Call): { fit: Fit; matched: string[] } {
+/** How the profile's discipline (creators) or sector (businesses) meets the call. */
+export function fitOf(raw: Profile, p: CanonicalProfile, c: CanonicalCall, call?: Call): { fit: Fit; matched: string[] } {
   if (p.kind === "business" && c.sectors.length) return { fit: cnaeCheck(p.cnae, c.sectors) === "pass" ? "sector" : "sector-unknown", matched: [] };
   // A business rarely lists disciplines; its sector text ("artesanía / cerámica") is read against the same taxonomy.
   const mine = p.disciplines.length || !raw.sector ? p.disciplines : normalizeDiscipline(raw.sector).ids;
   const fit = disciplineFit(mine, c.disciplines);
   // General aid for autónomos/pymes (no discipline, no sector list) is made for any business: a real fit for a pyme.
-  if (fit.fit === "any" && p.kind === "business" && call.beneficiaryKinds.includes("business")) return { fit: "general", matched: [] };
+  if (fit.fit === "any" && p.kind === "business" && (!call || call.beneficiaryKinds.includes("business"))) return { fit: "general", matched: [] };
   return fit;
 }
 
@@ -159,6 +161,7 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
     },
     breakdown,
     excluded,
+    fit: fit.fit,
   };
 }
 
@@ -171,6 +174,18 @@ const FIT_POINTS: Record<Fit, number> = { exact: 25, within: 25, sector: 25, gen
 const WORD_POINTS = 4;
 const WORDS_MAX = 20;
 
+const INTENT_GROUPS: [RegExp, RegExp, string][] = [
+  [/\b(tienda online|web|comercio electronico|digitaliz\w*|software|app|ia|inteligencia artificial|ciberseguridad|crm|factura electronica)\b/, /\b(digital\w*|tienda online|software|ia|inteligencia artificial|ciberseguridad|web|innov\w*)\b/, "digitalización e innovación"],
+  [/\b(innov\w*|patente|marca|diseno de producto|prototipo|i\+d|certificaci\w*)\b/, /\b(innov\w*|patentes?|marcas?|diseno|propuestas europeas)\b/, "innovación y diseño"],
+  [/\b(horno|maquinaria|herramientas?|equipamiento|reforma|local|taller|mobiliario|invertir|inversion\w*|vehiculo|furgoneta)\b/, /\b(inversion\w*|equipamiento|reforma|modernizaci\w*|maquinaria)\b/, "inversión en el negocio"],
+  [/\b(eficiencia energetica|energia|placas solares|solar|fotovoltaica|aerotermia|climatizacion|aislamiento|iluminacion)\b/, /\b(eficiencia energetica|renovables|solar|aerotermia|envolvente termica|iluminacion eficiente)\b/, "eficiencia energética"],
+  [/\b(exportar|internacional\w*|ferias internacionales|vender fuera|europa|mercados exteriores)\b/, /\b(export\w*|internacional\w*|exterior)\b/, "internacionalización"],
+  [/\b(consultoria|estrategia|finanzas|profesionaliz\w*|procesos|organizacion)\b/, /\b(consultoria|profesionalizacion|desarrollo estrategico)\b/, "consultoría y mejora de gestión"],
+  [/\b(contratar|empleo|ayudante|emplead\w*|trabajador\w*|ampliar equipo|plantilla)\b/, /\b(empleo|contrat\w*|talento)\b/, "contratación y equipo"],
+  [/\b(relevo|traspaso|jubilacion)\b/, /\b(relevo|traspaso|jubilacion)\b/, "relevo del negocio"],
+  [/\b(darme de alta|darse de alta|empezar como autonom|emprender|iniciar actividad)\b/, /\b(darte de alta|inicio de actividad|empleo autonomo)\b/, "inicio de actividad como autónomo"],
+];
+
 /** 0-45: discipline/sector fit (0-25) + the profile's own words (statement, project, needs, achievements) found in the call (0-20). */
 function affinity(raw: Profile, call: Call, p: CanonicalProfile, c: CanonicalCall, fit: { fit: Fit; matched: string[] }, why: string[], miss: string[]): number {
   let pts = FIT_POINTS[fit.fit];
@@ -181,6 +196,32 @@ function affinity(raw: Profile, call: Call, p: CanonicalProfile, c: CanonicalCal
   else if (fit.fit === "sector") why.push("Tu actividad está entre los sectores de la convocatoria");
 
   pts += Math.min(WORDS_MAX, ownWords(raw, call).length * WORD_POINTS);
+
+  if (biz) {
+    const profileText = [raw.statement, raw.bio, raw.projectIdea ?? "", ...raw.fundingNeeds, ...raw.achievements, raw.sector ?? ""].join(" ");
+    const callText = [call.title, call.summary, ...call.criteria.flatMap((k) => [k.name, k.description]), ...call.allowedExpenses].join(" ");
+    const pNorm = norm(profileText);
+    const cNorm = norm(`${callText} ${call.eligibility.other.join(" ")}`);
+    if (/\b(relevo|traspaso)\b/.test(norm(call.title)) && !/\b(relevo|traspaso|jubilacion)\b/.test(pNorm)) {
+      pts = Math.max(2, pts - 8);
+    }
+    if (/\b(darte de alta|demandante de empleo|en paro)\b/.test(cNorm) && !/\b(alta|emprender|empezar|nuevo)\b/.test(pNorm)) {
+      if (raw.foundedYear !== undefined && raw.foundedYear < new Date().getFullYear()) pts = Math.max(2, pts - 7);
+      else pts = Math.max(4, pts - 4);
+    }
+    const intentSource = norm([raw.projectIdea ?? "", ...raw.fundingNeeds, raw.sector ?? ""].join(" ").trim() || profileText);
+    if (/\b(icex|exportacion|internacionalizacion)\b/.test(norm(call.title)) && !/\b(export\w*|internacional\w*|exterior|europa|ferias internacionales)\b/.test(intentSource)) {
+      pts = Math.max(4, pts - 6);
+    }
+    const matchedIntents: string[] = [];
+    for (const [pRe, cRe, label] of INTENT_GROUPS) {
+      if (pRe.test(intentSource) && cRe.test(cNorm)) matchedIntents.push(label);
+    }
+    if (matchedIntents.length) {
+      pts += Math.min(6, matchedIntents.length * 4);
+      why.push(`Encaja con lo que queréis financiar (${matchedIntents.slice(0, 2).join(", ")})`);
+    }
+  }
   return Math.min(SCORE_MAX.affinity, pts);
 }
 
@@ -241,7 +282,7 @@ function documents(p: Profile, c: Call, ctx: MatchContext, why: string[], miss: 
 /** 0-8: concrete money is more useful than visibility-only calls. */
 function amount(c: CanonicalCall): number {
   const cents = c.amount.maxCents ?? c.amount.minCents;
-  if (cents === undefined) return 3;
+  if (cents === undefined) return c.amount.totalCents && c.amount.totalCents >= 10_000_000 ? 6 : 3;
   if (cents >= 300_000) return 8;
   if (cents >= 100_000) return 6;
   return 5;
@@ -264,7 +305,7 @@ function timing(p: CanonicalProfile, c: CanonicalCall, call: Call, daysLeft: num
   else pts = 6;
   const local = c.territories.filter((t) => t !== "ES" && t !== "WORLD");
   if (local.length && territoryCheck(p.territory, local) === "pass") {
-    pts += 3;
+    pts += 4;
     why.push(`Es de tu zona (${local.map(territoryName).join(", ")})`);
   }
   return Math.min(10, pts);

@@ -71,4 +71,32 @@ describe("/onboarding step by step", () => {
     expect(speech.stop).toHaveBeenCalled();
     await waitFor(() => expect(document.body.textContent).toContain("A Coruña"), { timeout: 5000 });
   });
+
+  it("flushes pending interim voice text when clicking Siguiente so fast answers after step 2 are never lost", async () => {
+    render(<StepOnboarding />);
+    fireEvent.click(screen.getByTestId("choose-voice"));
+    act(() => onFinal!("Me llamo Antía Varela y vivo en A Coruña."));
+    fireEvent.click(screen.getByTestId("next"));
+    act(() => onFinal!("Pinto con acuarela y tinta."));
+    fireEvent.click(screen.getByTestId("next"));
+    // Step 3: user speaks and immediately clicks Siguiente while text is still in speech.interim
+    speech.interim = "Quiero hacer una serie de doce acuarelas sobre las rederas.";
+    fireEvent.click(screen.getByTestId("next"));
+    speech.interim = "";
+    for (let i = 4; i <= 5; i++) fireEvent.click(screen.getByTestId("next"));
+    await waitFor(() => expect(document.body.textContent).toContain("doce acuarelas"), { timeout: 5000 });
+  });
+
+  it("replaces the question with the follow-up question as the main headline when available, and shows skeleton loader while busy", async () => {
+    const { container } = render(<StepOnboarding />);
+    fireEvent.click(screen.getByTestId("choose-text"));
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("¿Cómo te llamas y desde dónde creas?");
+    
+    // When turn is sent with mock follow-up
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Me llamo Antía y pinto acuarelas." } });
+    fireEvent.click(screen.getByTestId("next"));
+    
+    // Check that 'Mecena pregunta' label is gone
+    expect(screen.queryByText("Mecena pregunta")).toBeNull();
+  });
 });

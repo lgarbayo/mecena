@@ -9,9 +9,9 @@
 import { useEffect, useRef } from "react";
 
 const POINTS = 120;
-/** Android and iOS/iPadOS: one capture at a time, and the dictation must win. */
+/** Android, iOS/iPadOS and macOS: one capture at a time, and the dictation must win. */
 export function micSharingUnsafe(nav: Pick<Navigator, "userAgent" | "maxTouchPoints"> = navigator): boolean {
-  return /Android|iPhone|iPad|iPod/i.test(nav.userAgent) || (/Macintosh/.test(nav.userAgent) && nav.maxTouchPoints > 1);
+  return /Android|iPhone|iPad|iPod|Macintosh|Mac OS X/i.test(nav.userAgent);
 }
 
 const PALETTE: [number, number, number][] = [

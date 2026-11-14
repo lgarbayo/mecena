@@ -11,7 +11,7 @@ import type { ImportDossierResponse, OnboardingTurnResponse } from "@/contracts/
 import { useApp } from "@/components/shell/AppProvider";
 import { useSpeechRecognition } from "@/components/voice/useSpeechRecognition";
 import { apiGet, apiSend } from "@/lib/api-client";
-import { FIELD_LABELS, HOME, ONBOARDING } from "../copy";
+import { FIELD_LABELS, HOME, LEGAL_FORM_LABELS, ONBOARDING } from "../copy";
 import { STEPS_COPY as C, stepsFor } from "../steps";
 import { TurnQueue, type QueuedTurn } from "../turnQueue";
 import { MicIcon } from "./icons";
@@ -32,6 +32,30 @@ const filled = (p: Profile | null, fields: string[]) =>
     return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== null && v !== "";
   });
 
+function extractLiveTags(p: Profile | null): { label: string; value: string }[] {
+  if (!p) return [];
+  const tags: { label: string; value: string }[] = [];
+  if (p.displayName) tags.push({ label: p.kind === "business" ? "Empresa" : "Nombre", value: p.displayName });
+  if (p.city || p.region) tags.push({ label: "Ciudad", value: p.city || p.region || "" });
+  if (p.kind === "creator" && p.disciplines.length > 0) {
+    tags.push({ label: "Disciplina", value: p.disciplines.slice(0, 2).join(", ") });
+  }
+  if (p.kind === "business" && p.sector) {
+    tags.push({ label: "Sector", value: p.sector });
+  }
+  if (p.legalForm) {
+    tags.push({ label: "Forma", value: LEGAL_FORM_LABELS[p.legalForm] ?? p.legalForm });
+  }
+  if (p.fundingNeeds.length > 0) {
+    const need = p.fundingNeeds[0];
+    tags.push({ label: "Necesidad", value: need.length > 34 ? `${need.slice(0, 32)}…` : need });
+  } else if (p.projectIdea) {
+    const idea = p.projectIdea;
+    tags.push({ label: "Proyecto", value: idea.length > 34 ? `${idea.slice(0, 32)}…` : idea });
+  }
+  return tags;
+}
+
 function PenIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -47,10 +71,19 @@ export function StepOnboarding() {
   appRef.current = app;
   const kind: ProfileKind = app.profile?.kind ?? "creator";
   const steps = useMemo(() => stepsFor(kind), [kind]);
+  const stepsRef = useRef(steps);
+  stepsRef.current = steps;
 
   const [phase, setPhase] = useState<Phase>({ at: "choose" });
   const [mode, setMode] = useState<Mode>("voice");
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [liveProfile, setLiveProfile] = useState<Profile | null>(null);
+  const [, setIsFirstTurn] = useState(true);
+  const firstTurnRef = useRef(false);
+  const stepKeyQueueRef = useRef<(string | undefined)[]>([]);
+  const stepIndexRef = useRef(0);
+  stepIndexRef.current = phase.at === "step" ? phase.i : 0;
+
   const [turns, setTurns] = useState<QueuedTurn[]>([]);
   const [followUp, setFollowUp] = useState<string>();
   const [noted, setNoted] = useState<{ text: string; key: number } | null>(null);
@@ -64,6 +97,11 @@ export function StepOnboarding() {
   const pidRef = useRef(profileId);
   pidRef.current = profileId;
 
+  const stepKeyFor = useCallback((idx: number): string | undefined => {
+    const st = stepsRef.current[idx] as ((typeof steps)[number] & { key?: string }) | undefined;
+    return st?.key ?? st?.fields[0] ?? `step-${idx + 1}`;
+  }, []);
+
   useEffect(() => {
     const w = window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown };
     setVoiceOk(Boolean(w.SpeechRecognition ?? w.webkitSpeechRecognition));
@@ -72,13 +110,46 @@ export function StepOnboarding() {
 
   useEffect(() => {
     if (!profileId) return;
-    apiGet<{ profile: Profile }>(`${ONBOARDING_STATE_API}?profileId=${encodeURIComponent(profileId)}`)
-      .then((st) => setProfile(st.profile))
+    apiGet<{ profile: Profile; transcript?: unknown[] }>(`${ONBOARDING_STATE_API}?profileId=${encodeURIComponent(profileId)}`)
+      .then((st) => {
+        const untouchedBusinessSeed =
+          st.profile.kind === "business" &&
+          st.profile.displayName === "Cerámica Mareira" &&
+          st.profile.cnae === "2341" &&
+          Array.isArray(st.transcript) &&
+          st.transcript.length === 0;
+        if (untouchedBusinessSeed) {
+          setProfile({
+            ...st.profile,
+            displayName: "",
+            city: undefined,
+            province: undefined,
+            region: undefined,
+            territory: undefined,
+            legalForm: undefined,
+            cnae: undefined,
+            sector: undefined,
+            employees: undefined,
+            foundedYear: undefined,
+            annualRevenueEur: undefined,
+            bio: "",
+            statement: "",
+            achievements: [],
+            education: [],
+            links: [],
+            fundingNeeds: [],
+            projectIdea: undefined,
+          });
+        } else {
+          setProfile(st.profile);
+        }
+      })
       .catch(() => undefined);
   }, [profileId]);
 
   const onResult = useCallback((res: OnboardingTurnResponse) => {
     setProfile(res.profile);
+    setLiveProfile(res.profile);
     if (res.followUpQuestion) setFollowUp(res.followUpQuestion);
     const labels = res.changedProfileFields.map((f) => FIELD_LABELS[f]).filter(Boolean);
     if (labels.length) setNoted({ text: ONBOARDING.noted(labels.join(", ")), key: Date.now() });
@@ -86,14 +157,41 @@ export function StepOnboarding() {
   }, []);
 
   const queue = useMemo(
-    () => new TurnQueue((t, signal) => apiSend<OnboardingTurnResponse>(API.onboardingTurn, { ...t, profileId: pidRef.current }, "POST", signal), { change: setTurns, result: onResult }),
-    [onResult],
+    () =>
+      new TurnQueue(
+        (t, signal) => {
+          const stepKey = stepKeyQueueRef.current.shift() ?? stepKeyFor(stepIndexRef.current);
+          const reset = firstTurnRef.current;
+          if (reset) {
+            firstTurnRef.current = false;
+            setIsFirstTurn(false);
+          }
+          return apiSend<OnboardingTurnResponse>(
+            API.onboardingTurn,
+            { ...t, profileId: pidRef.current, stepKey, reset },
+            "POST",
+            signal,
+          );
+        },
+        { change: setTurns, result: onResult },
+      ),
+    [onResult, stepKeyFor],
+  );
+
+  const send = useCallback(
+    (stepKey: string | undefined, raw: string, source: "voice" | "text") => {
+      const clean = raw.trim();
+      if (!clean) return;
+      stepKeyQueueRef.current.push(stepKey);
+      queue.enqueue(clean, source);
+    },
+    [queue],
   );
 
   const speech = useSpeechRecognition({
     onFinal: (text) => {
       if (!text) return;
-      queue.enqueue(text, "voice");
+      send(stepKeyFor(stepIndexRef.current), text, "voice");
       setHeard(text);
       setPulse((p) => p + 1);
     },
@@ -108,16 +206,31 @@ export function StepOnboarding() {
   const total = steps.length;
   const stepIndex = phase.at === "step" ? phase.i : phase.at === "done" ? total : 0;
 
+  const chooseKind = (k: ProfileKind) => {
+    firstTurnRef.current = true;
+    setIsFirstTurn(true);
+    setLiveProfile(null);
+    void app.setMode(k);
+  };
+
   const start = (m: Mode) => {
+    firstTurnRef.current = true;
+    setIsFirstTurn(true);
+    setLiveProfile(null);
     setMode(m);
     setPhase({ at: "step", i: 0 });
     if (m === "voice") speech.start();
   };
 
   const go = (i: number) => {
+    const currentKey = stepKeyFor(stepIndexRef.current);
     if (mode === "text" && draft.trim()) {
-      queue.enqueue(draft.trim(), "text");
+      send(currentKey, draft.trim(), "text");
       setDraft("");
+    } else if (mode === "voice") {
+      const maybeFlush = (speech as { flush?: () => void }).flush;
+      if (maybeFlush) maybeFlush();
+      else if (speech.interim.trim()) send(currentKey, speech.interim.trim(), "voice");
     }
     setHeard("");
     setFollowUp(undefined);
@@ -127,7 +240,10 @@ export function StepOnboarding() {
     } else if (i < 0) {
       speech.stop();
       setPhase({ at: "choose" });
-    } else setPhase({ at: "step", i });
+    } else {
+      setPhase({ at: "step", i });
+      if (mode === "voice") speech.start();
+    }
   };
 
   const onImported = (res: ImportDossierResponse) => {
@@ -136,6 +252,8 @@ export function StepOnboarding() {
   };
 
   const micError = speech.error && !/no-speech|aborted/.test(speech.error) ? speech.error : null;
+  const activeProfile = liveProfile ?? profile;
+  const liveTags = useMemo(() => extractLiveTags(activeProfile), [activeProfile]);
 
   return (
     <Stage label="Cuéntanos">
@@ -161,7 +279,7 @@ export function StepOnboarding() {
               </div>
               <div className={s.dots} aria-hidden>
                 {steps.map((st, i) => (
-                  <span key={st.question} className={`${s.dotStep} ${i === stepIndex && phase.at === "step" ? s.dotNow : filled(profile, st.fields) ? s.dotDone : ""}`} />
+                  <span key={st.question} className={`${s.dotStep} ${i === stepIndex && phase.at === "step" ? s.dotNow : filled(activeProfile, st.fields) ? s.dotDone : ""}`} />
                 ))}
               </div>
             </>
@@ -175,7 +293,7 @@ export function StepOnboarding() {
             <p className={s.example}>{C.chooseLede}</p>
             <div className={s.kinds} role="group" aria-label="Perfil">
               {(["creator", "business"] as const).map((k) => (
-                <button key={k} type="button" className={s.kind} aria-pressed={kind === k} onClick={() => app.setMode(k)}>
+                <button key={k} type="button" className={s.kind} aria-pressed={kind === k} onClick={() => chooseKind(k)}>
                   {C.kind[k]}
                 </button>
               ))}
@@ -209,16 +327,20 @@ export function StepOnboarding() {
         )}
 
         {phase.at === "step" && (
-          <section className={s.body} key={`step-${phase.i}`}>
-            <h1 className={s.question}>{steps[phase.i].question}</h1>
-            {followUp ? (
-              <p className={`${g.glass} ${s.asks}`}>
-                <b>{C.mecenaAsks}</b>
-                {followUp}
-              </p>
-            ) : (
+          <section className={s.body}>
+            <div key={`step-${phase.i}`}>
+              {followUp ? (
+                <h1 className={`${s.question} ${s.questionLoaded}`}>{followUp}</h1>
+              ) : busy ? (
+                <div className={s.questionSkeleton} aria-busy="true" aria-label="Cargando pregunta…">
+                  <div className={s.skeletonLine} style={{ width: "85%" }} />
+                  <div className={s.skeletonLine} style={{ width: "60%" }} />
+                </div>
+              ) : (
+                <h1 className={s.question}>{steps[phase.i].question}</h1>
+              )}
               <p className={s.example}>{steps[phase.i].example}</p>
-            )}
+            </div>
 
             {mode === "voice" ? (
               <div className={s.voice}>
@@ -254,6 +376,22 @@ export function StepOnboarding() {
                 }}
               />
             )}
+
+            {(busy || liveTags.length > 0) && (
+              <div className={`${g.glass} ${s.liveStrip}`} aria-live="polite" data-testid="live-profile-strip">
+                {busy && <span className={s.liveAnalyzing}>Analizando respuesta…</span>}
+                {liveTags.length > 0 && (
+                  <div className={s.liveTags}>
+                    <span className={s.livePrefix}>Detectado:</span>
+                    {liveTags.map((t) => (
+                      <span key={`${t.label}-${t.value}`} className={s.liveChip}>
+                        <b>{t.label}:</b> {t.value}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </section>
         )}
 
@@ -270,11 +408,30 @@ export function StepOnboarding() {
             ) : (
               <p className={s.example}>{busy ? (slow ? ONBOARDING.slow : ONBOARDING.sending) : C.doneLede}</p>
             )}
+
+            <div className={`${g.glass} ${s.fitProcess}`} data-testid="fitting-pipeline">
+              <div className={s.fitSteps}>
+                <span className={`${s.fitStep} ${s.fitStepDone}`}>1. Perfil extraído</span>
+                <span className={`${s.fitStep} ${busy ? s.fitStepActive : s.fitStepDone}`}>2. Filtrando requisitos y territorio</span>
+                <span className={`${s.fitStep} ${busy ? "" : s.fitStepDone}`}>3. Calculando afinidad artística/sectorial</span>
+              </div>
+              {liveTags.length > 0 && (
+                <div className={s.liveTags}>
+                  <span className={s.livePrefix}>Detectado:</span>
+                  {liveTags.map((t) => (
+                    <span key={`${t.label}-${t.value}`} className={s.liveChip}>
+                      <b>{t.label}:</b> {t.value}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <dl className={`${g.glass} ${s.summary}`}>
               {Object.entries(FIELD_LABELS)
-                .filter(([f]) => filled(profile, [f]))
+                .filter(([f]) => filled(activeProfile, [f]))
                 .map(([f, label]) => {
-                  const v = (profile as Record<string, unknown>)[f];
+                  const v = (activeProfile as Record<string, unknown>)[f];
                   return (
                     <div key={f} className={s.row}>
                       <dt>{label}</dt>
@@ -282,19 +439,39 @@ export function StepOnboarding() {
                     </div>
                   );
                 })}
-              {!Object.keys(FIELD_LABELS).some((f) => filled(profile, [f])) && <p className={s.example}>{C.doneEmpty}</p>}
+              {!Object.keys(FIELD_LABELS).some((f) => filled(activeProfile, [f])) && <p className={s.example}>{C.doneEmpty}</p>}
             </dl>
-            {kind === "business" && (
-              <div className={s.importBox}>
-                <MatchesPanel profileId={profile?.id ?? profileId} appUserId={app.appUserId || undefined} refreshKey={turns.filter((t) => t.status === "done").length} knowsEnough={Boolean(profile?.sector && profile?.city)} />
-              </div>
-            )}
+
+            <div className={s.importBox}>
+              <MatchesPanel
+                profileId={profileId}
+                appUserId={app.appUserId || undefined}
+                refreshKey={turns.filter((t) => t.status === "done").length}
+                knowsEnough={Boolean((activeProfile?.sector || activeProfile?.disciplines?.length) && (activeProfile?.city || activeProfile?.region))}
+              />
+            </div>
+
             <div className={s.ctas}>
-              <Link className={`${g.btn} ${g.btnPrimary}`} href={kind === "creator" ? ROUTES.works : ROUTES.dossier} data-testid="finish-cta">
-                {ONBOARDING.finish[kind].cta}
+              <Link
+                className={`${g.btn} ${g.btnPrimary} ${busy ? s.ctaDisabled : ""}`}
+                href={kind === "creator" ? ROUTES.works : ROUTES.calls}
+                aria-disabled={busy}
+                onClick={(e) => {
+                  if (busy) e.preventDefault();
+                }}
+                data-testid="finish-cta"
+              >
+                {busy ? "Calculando tu encaje…" : ONBOARDING.finish[kind].cta}
               </Link>
-              <Link className={g.btn} href={ROUTES.calls}>
-                {C.toCalls}
+              <Link
+                className={`${g.btn} ${busy ? s.ctaDisabled : ""}`}
+                href={ROUTES.calls}
+                aria-disabled={busy}
+                onClick={(e) => {
+                  if (busy) e.preventDefault();
+                }}
+              >
+                {busy ? "Calculando tu encaje…" : C.toCalls}
               </Link>
             </div>
           </section>

@@ -1,8 +1,9 @@
 // Owned by WP-06. Eligibility and score are deterministic (./rules); Claude only explains (./ai), cached in matchCache.
 import { FREE_MATCHES_PER_MONTH, type Call, type MatchResult, type PastAward, type Profile, type ProfileKind } from "@/contracts";
+import type { CallsDiagnostics } from "@/contracts/api";
 import { resolveEntitlement } from "@/features/purchases/server";
 import { winnerShareFor } from "@/features/history/history";
-import { mapProfileKind, normalizeCall, normalizeDiscipline, profileBeneficiaryTypes } from "@/features/normalize";
+import { disciplineLabel, isDisciplineId, mapProfileKind, normalizeCall, normalizeDiscipline, profileBeneficiaryTypes } from "@/features/normalize";
 import { getAi } from "@/server/ai";
 import { getCall, getCallHistory, getDossier, getProfile, listAwards, listCalls, listWorks, readDb, updateDb } from "@/server/store";
 import { getProfileSearch, scheduleProfileSearch } from "@/features/calls-ingest/live";
@@ -19,24 +20,66 @@ export function ruleMatch(profile: Profile, call: Call, ctx?: MatchContext): Mat
   return evaluate(profile, call, ctx ?? contextFor(profile)).match;
 }
 
-export async function searchCalls(input: { profileId: string; query?: string; kind?: ProfileKind; limit?: number; now?: Date }): Promise<{ call: Call; match: MatchResult }[]> {
+export interface FeedStats {
+  totalEvaluated: number; // open/upcoming calls for this kind of profile (after the text query)
+  discardedByEligibility: number; // requirements, territory or legal form rule them out
+  discardedByDiscipline: number; // made for other disciplines/sectors than the profile's
+}
+
+type Ranked = { call: Call; match: MatchResult; breakdown: ScoreBreakdown };
+
+/** Ranks the calls for a profile and reports the funnel (evaluated → discarded → matched). */
+export function rankCalls(input: { profileId: string; query?: string; kind?: ProfileKind; limit?: number; now?: Date }): { results: Ranked[]; stats: FeedStats } {
   const profile = getProfile(input.profileId);
   const ctx: MatchContext = { ...contextFor(profile), ...(input.now ? { now: input.now } : {}) };
   const q = input.query?.trim().toLowerCase();
   // A pyme only sees aid open to businesses: artist becas/premios are for someone else. Creators keep business-tagged
   // calls (an autónomo artist can apply for autónomo aid). An explicit `kind` (agent/MCP) still wins.
   const forBusinessOnly = !input.kind && profile.kind === "business";
-  return listCalls()
+  const pool = listCalls()
     .filter((c) => !input.kind || c.beneficiaryKinds.includes(input.kind))
     .filter((c) => !forBusinessOnly || openToCompanies(c))
-    .filter((c) => !q || `${c.title} ${c.summary} ${c.disciplines.join(" ")} ${c.sectors.join(" ")}`.toLowerCase().includes(q))
+    .filter((c) => !q || `${c.title} ${c.summary} ${c.disciplines.join(" ")} ${c.sectors.join(" ")} ${c.organizer}`.toLowerCase().includes(q))
     .map((call) => ({ call, r: evaluate(profile, call, ctx) }))
-    .filter(({ r }) => !r.excluded && r.match.eligible)
+    .filter(({ r }) => !r.excluded);
+  const eligible = pool.filter(({ r }) => r.match.eligible);
+  // Once a creator has known disciplines, calls explicitly restricted to other disciplines are noise.
+  // For business or calls open to companies, keep eligible calls so general business aid and open calls stay accessible.
+  const dropNoise = profile.kind === "creator" && profile.disciplines.length > 0;
+  const onTopic = dropNoise ? eligible.filter(({ r }) => r.fit !== "none") : eligible;
+  const kept = onTopic.length ? onTopic : eligible;
+  const results = kept
     // The personal score decides the order; status (open → upcoming → recurring) and the soonest deadline only break
     // ties. Whether you can apply now is part of the score (timing), so with the same fit an open call ranks first.
     .sort((a, b) => b.r.match.score - a.r.match.score || STATUS_RANK[a.call.status] - STATUS_RANK[b.call.status] || (a.call.deadline ?? "9999").localeCompare(b.call.deadline ?? "9999"))
     .slice(0, input.limit ?? 25)
-    .map(({ call, r }) => ({ call, match: r.match }));
+    .map(({ call, r }) => ({ call, match: r.match, breakdown: r.breakdown }));
+  return {
+    results,
+    stats: { totalEvaluated: pool.length, discardedByEligibility: pool.length - eligible.length, discardedByDiscipline: eligible.length - kept.length },
+  };
+}
+
+export async function searchCalls(input: { profileId: string; query?: string; kind?: ProfileKind; limit?: number; now?: Date }): Promise<Ranked[]> {
+  return rankCalls(input).results;
+}
+
+function profileSummary(profile: Profile): CallsDiagnostics["profileSummary"] {
+  const location = [...new Set([profile.city, profile.province, profile.region].filter((v): v is string => Boolean(v)))].join(", ");
+  const disciplines = profile.disciplines.map((d) => (isDisciplineId(d) ? disciplineLabel(d).toLowerCase() : d));
+  const what = profile.kind === "creator" ? disciplines.length > 0 : Boolean(profile.sector || profile.cnae);
+  return {
+    displayName: profile.displayName ?? "",
+    kind: profile.kind,
+    disciplines,
+    ...(profile.sector ? { sector: profile.sector } : {}),
+    ...(location ? { location } : {}),
+    ...(profile.legalForm ? { legalForm: profile.legalForm } : {}),
+    fundingNeeds: profile.fundingNeeds ?? [],
+    ...(profile.projectIdea ? { projectIdea: profile.projectIdea } : {}),
+    // Enough to personalise: what you do plus where you are or what you want to fund.
+    isComplete: what && Boolean(location || profile.projectIdea || profile.fundingNeeds?.length),
+  };
 }
 
 /**
@@ -93,7 +136,7 @@ export async function callsFeed(input: { profileId: string; appUserId: string; q
   // Search BDNS for this profile in the background when its searches are new or a day old (never blocks the feed).
   const scheduled = scheduleProfileSearch({ profileId: profile.id, appUserId });
   const search = getProfileSearch(profile.id, appUserId);
-  const all = await searchCalls({ profileId: profile.id, query: input.query });
+  const { results: all, stats } = rankCalls({ profileId: profile.id, query: input.query });
   const { pro } = await resolveEntitlement(appUserId);
   const results = pro ? all : all.slice(0, FREE_MATCHES_PER_MONTH);
   const liveSearch = {
@@ -101,7 +144,8 @@ export async function callsFeed(input: { profileId: string; appUserId: string; q
     found: search?.callIds.length ?? 0,
     ...(search?.lastRunAt ? { lastRunAt: search.lastRunAt } : {}),
   };
-  return { results, lockedCount: all.length - results.length, mode: profile.kind, pro, liveSearch };
+  const diagnostics: CallsDiagnostics = { ...stats, matchedCount: all.length, profileSummary: profileSummary(profile) };
+  return { results, lockedCount: all.length - results.length, mode: profile.kind, pro, liveSearch, diagnostics };
 }
 
 /**

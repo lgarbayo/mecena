@@ -6,6 +6,7 @@
  * (only unambiguous typos are fixed, see wording.ts) and are routed to the dossier section keys of the profile kind.
  */
 import type { DossierSection, OnboardingTurnInput, OnboardingTurnResult, Profile, ProfileKind, ProfilePatch } from "@/contracts";
+import { extractTerritories, territoryAncestors, territoryNode } from "@/features/normalize";
 import { fixWording, polishProse } from "@/server/ai/wording";
 import { familyInterview, sectionTitles } from "./copy";
 import { onboardingFamily } from "./family";
@@ -110,6 +111,7 @@ const DISCIPLINES: [RegExp, string][] = [
   [/\b(poeta|poesia|poemas|poemario)\b/, "poesía"],
   [/\b(novelista|novela|novelas|relatos|cuentos)\b/, "narrativa"],
   [/\b(comic|comics|historietista|novela grafica)\b/, "cómic"],
+  [/\b(fanzine|fanzines|fotolibro|fotolibros|autoedicion|libro de artista)\b/, "edición"],
   [/\b(animacion|animador|animadora)\b/, "animación"],
   [/\b(muralista|muralismo|murales|arte urbano|grafiti)\b/, "arte urbano"],
   [/\b(cine|cineasta|cortometraje|cortometrajes|largometraje|pelicula|peliculas|realizador|realizadora)\b/, "cine"],
@@ -123,20 +125,25 @@ const DISCIPLINES: [RegExp, string][] = [
 ];
 
 const SECTORS: [RegExp, string][] = [
-  [/\b(ceramica|alfareria|ceramista)\b/, "artesanía / cerámica"],
-  [/\b(restaurante|hosteleria|bar|cafeteria)\b/, "hostelería"],
-  [/\b(software|aplicacion|app|desarrollo web|programacion)\b/, "tecnología"],
-  [/\b(conserva|conservas|pesca|marisco|mariscadora)\b/, "pesca y conservas"],
-  [/\b(vino|vinos|bodega|vinedo|queso|quesos|agricola|granja)\b/, "agroalimentario"],
-  [/\b(casa rural|hotel|turismo|albergue)\b/, "turismo"],
-  [/\b(carpinteria|muebles|ebanisteria)\b/, "carpintería / mueble"],
-  [/\b(moda|ropa|confeccion)\b/, "moda / textil"],
-  [/\b(editorial|libreria|libros)\b/, "editorial / libros"],
-  [/\b(consultoria|asesoria|gestoria)\b/, "consultoría"],
-  [/\b(peluqueria|estetica)\b/, "estética"],
-  [/\b(tienda|comercio)\b/, "comercio"],
-  [/\b(reformas|construccion)\b/, "construcción"],
-  [/\b(diseno|estudio creativo|agencia)\b/, "diseño y comunicación"],
+  [/\b(ceramica|alfareria|ceramista|artesania|artesan[oa]s?|taller artesanal|orfebreria|joyeria|vidrio|cesteria|marroquineria)\b/, "artesanía / cerámica"],
+  [/\b(restaurante|hosteleria|bar|cafeteria|taberna|meson|gastrobar|catering|pizzeria|asador|cerveceria)\b/, "hostelería"],
+  [/\b(software|aplicacion|app|desarrollo web|programacion|informatica|tecnologia|saas|inteligencia artificial|ciberseguridad|videojuegos)\b/, "tecnología"],
+  [/\b(conserva|conservas|pesca|marisco|mariscadora|acuicultura)\b/, "pesca y conservas"],
+  [/\b(vino|vinos|bodega|vinedo|queso|quesos|agricola|agricultura|ganaderia|granja|panaderia|pasteleria|obrador|reposteria|miel|aceite|alimentacion|agroalimentari\w*)\b/, "agroalimentario"],
+  [/\b(casa rural|hotel|turismo|albergue|hostal|pension|camping|apartamentos? turistic\w*)\b/, "turismo"],
+  [/\b(carpinteria|muebles|ebanisteria|madera|tapiceria)\b/, "carpintería / mueble"],
+  [/\b(moda|ropa|confeccion|costura|sastreria|calzado|textil)\b/, "moda / textil"],
+  [/\b(editorial|libreria|libros|edicion|imprenta|revistas)\b/, "editorial / libros"],
+  [/\b(productora|audiovisual|cine|cortometrajes|largometrajes|rodaje|postproduccion|estudio de grabacion|discografica)\b/, "audiovisual / cine"],
+  [/\b(arquitectura|arquitect[oa]s?|ingenieria|urbanismo|interiorismo)\b/, "arquitectura e ingeniería"],
+  [/\b(consultoria|asesoria|gestoria|auditoria|abogad\w*|juridic\w*|contabilidad)\b/, "consultoría"],
+  [/\b(academia|formacion|ensenanza|escuela|centro educativo)\b/, "educación / formación"],
+  [/\b(clinica|fisioterapia|dental|odontologia|psicologia|nutricion|optica|farmacia|veterinaria|gimnasio)\b/, "salud y bienestar"],
+  [/\b(peluqueria|estetica|barberia|salon de belleza|cosmetica|spa)\b/, "estética"],
+  [/\b(tienda(?!\s+online|\s+virtual|\s+web)|comercio|minorista|retail|boutique|floristeria|ferreteria|papeleria|supermercado)\b/, "comercio"],
+  [/\b(reformas|construccion|albanileria|fontaneria|electricidad|instalaciones|climatizacion|rehabilitacion)\b/, "construcción"],
+  [/\b(transporte|logistica|reparto|mensajeria|mudanzas|distribucion)\b/, "transporte y logística"],
+  [/\b(diseno|estudio creativo|agencia|publicidad|branding|comunicacion|estudio fotografico)\b/, "diseño y comunicación"],
 ];
 
 const LANGUAGES: [RegExp, string][] = [
@@ -154,6 +161,10 @@ const LANGUAGES: [RegExp, string][] = [
 const NUMBER_WORDS: Record<string, number> = { un: 1, una: 1, uno: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11, doce: 12, quince: 15, veinte: 20 };
 
 const WANT = /\b(quiero|queria|quisiera|me gustaria|necesito|busco|queremos|necesitamos|buscamos|nos gustaria|mi idea es|el proyecto es)\b/;
+const DIRECT_NEED =
+  /^(?:pues |bueno |ahora )?(?:una? |el |la |unos |unas )?(?:beca|ayuda|ayudas|subvencion|financiacion|residencia|dinero|apoyo|premio|comprar|contratar|abrir|lanzar|producir|editar|publicar|exponer|rodar|grabar|financiar|digitalizar|internacionalizar|ampliar|reformar|montar|tienda online|una web|maquinaria|equipo)\b/;
+const DIRECT_IDEA =
+  /\b(estoy con|estamos con|trabajando en|trabajo en una?|acabo de|preparo|preparando|estoy desarrollando|desarrollando|una serie|un proyecto|una instalacion|un fotolibro|un libro|un disco|un fanzine|una pelicula|un corto|un documental|una obra|un espectaculo)\b/;
 const ACHIEVEMENT = /\b(expuse|he expuesto|expuesto|exposicion|exposiciones|expongo|premio|premios|premiad[oa]|finalista|seleccionad[oa]|residencia|residencias|publique|he publicado|publicado|gane|ganamos|ganador|ganadora|mencion|festival|bienal|feria|ferias|carta artesana|clientes|colaboramos|colabore|encargo|encargos|pedidos|concierto|conciertos|he tocado|hemos tocado|toque en|tocamos en|actuado|actuamos|actue|estrene|estrenamos|estreno|estrenado|estrenada|gira|giras|girado|editorial|sello|proyectado|proyectada|seleccion oficial|accesit|grabamos|grabe|he grabado|hemos grabado)\b/;
 const EDUCATION = /\b(estudie|estudio bellas|grado en|graduad[oa]|licenciad[oa]|master|doctorad[oa]|bellas artes|escuela de arte|me forme|formacion en|conservatorio|escuela de musica|arte dramatico|esad|resad|escuela de cine|escuela de circo|escuela de danza|filologia|taller de escritura)\b/;
 const STATEMENT = /\b(porque|me interesa|me interesan|mi obra|mi trabajo|trabajo con|trabajo sobre|hablo de|exploro|investigo|retrato|pinto|dibujo|fotografio|me inspira|me inspiran|quiero que|compongo|escribo sobre|mis canciones|mis poemas|mis piezas|hablan de|cuento historias|(?:piezas|canciones|poemas|obras|peliculas|libros) sobre)\b/;
@@ -173,6 +184,40 @@ function findPlace(n: string): { place: Place; index: number } | undefined {
     if (m) return { place: p, index: m.index };
   }
   return undefined;
+}
+
+/**
+ * Any Spanish province or comunidad autónoma the short list above misses ("Teruel", "Soria", "Navarra"), read from the
+ * national territory taxonomy. Municipalities are skipped: too many of them are also ordinary words ("Barro").
+ */
+function findRegion(text: string): { province?: string; region: string } | undefined {
+  for (const id of extractTerritories(text)) {
+    const node = territoryNode(id);
+    if (!node || (node.level !== "province" && node.level !== "ccaa")) continue;
+    const chain = territoryAncestors(id).map((a) => territoryNode(a));
+    const ccaa = chain.find((x) => x?.level === "ccaa");
+    if (!ccaa) continue;
+    return node.level === "province" ? { province: node.name, region: ccaa.name } : { region: ccaa.name };
+  }
+  return undefined;
+}
+
+/** Words that open a sentence about something else, never a name ("Vivo en…", "Una beca…", "Hago cerámica"). */
+const NOT_A_NAME = /^(hola|buenas|soy|me|mi|mis|nuestr\w*|somos|estoy|estamos|vivo|trabajo|trabajamos|hago|hacemos|pinto|escribo|toco|dirijo|tengo|tenemos|busco|buscamos|necesito|necesitamos|quiero|queremos|desde|en|de|un|una|unos|unas|el|la|los|las|no|si|sí|ahora|pues|bueno|autonom\w*|sociedad|empresa|negocio|estudio|taller|tienda|beca|ayuda|premio|proyecto|serie|llevo|llevamos|nos|con|para|por|sobre)$/i;
+
+/** Answer to "¿Cómo te llamas…?" with just the name: "LUCHO DIAZ", "Lucho Díaz, desde Cáceres", "Taller Barro Vivo". */
+function bareName(text: string): string | undefined {
+  const head = stripEnd(text.split(/[,.;:!?\n]| y | desde | de (?=[A-ZÁÉÍÓÚÑ])| en (?=[A-ZÁÉÍÓÚÑ])/)[0] ?? "");
+  const words = head.split(/\s+/).filter(Boolean);
+  if (words.length < 1 || words.length > 4) return undefined;
+  if (NOT_A_NAME.test(words[0]) && !/^(taller|estudio|tienda)$/i.test(words[0])) return undefined;
+  if (/^(taller|estudio|tienda)$/i.test(words[0]) && words.length < 2) return undefined;
+  if (/\d|€|\b(euros?|años|personas?|emplead\w*)\b/i.test(head)) return undefined;
+  // Every word looks like a name word (letters only) and the first one is capitalised as typed or spoken.
+  if (!words.every((w) => /^[A-Za-zÁÉÍÓÚÑÜáéíóúñü'-]+$/.test(w))) return undefined;
+  if (!/^[A-ZÁÉÍÓÚÑ]/.test(words[0])) return undefined;
+  const allCaps = head === head.toUpperCase();
+  return titleCase(allCaps ? head.toLowerCase() : head);
 }
 
 function extractName(text: string, kind: ProfileKind): string | undefined {
@@ -228,16 +273,26 @@ export function extractProfilePatch(rawText: string, kind: ProfileKind, current:
   const n = norm(text);
   const sentences = splitSentences(text);
 
-  const name = extractName(text, kind);
-  if (name) patch.displayName = name;
+  const name = extractName(text, kind) ?? (!current.displayName ? bareName(text) : undefined);
+  if (name && !findPlace(norm(name)) && !findRegion(name)) patch.displayName = name;
 
-  // City: first mention fills an empty profile; an explicit move/correction can override it.
-  const explicitCity = /\b(vivo en|me mude a|me he mudado a|estamos en|no,? soy de|en realidad soy de|soy de)\b/.exec(n);
+  // City: first mention fills an empty profile; an explicit move/location statement can override it.
+  const explicitCity =
+    /\b(vivo en|me mude a|me he mudado a|estamos en|tenemos (?:el|la|un|una) (?:taller|tienda|local|estudio|oficina|sede|empresa|negocio) en|nuestra sede esta en|trabajamos en|trabajamos desde|ubicados en|no,? soy de|en realidad soy de|soy de)\b|^en\s+/.exec(
+      n,
+    );
   const hit = explicitCity ? findPlace(n.slice(explicitCity.index)) : findPlace(n);
   if (hit && (!current.city || explicitCity)) {
     patch.city = hit.place.city;
     patch.province = hit.place.province;
     patch.region = hit.place.region;
+  } else if (!hit && (!current.region || explicitCity)) {
+    const r = findRegion(text);
+    if (r) {
+      if (r.province) patch.province = r.province;
+      patch.region = r.region;
+      if (r.province && (!current.city || explicitCity)) patch.city = r.province;
+    }
   }
 
   const birth = /\bnaci (?:en [a-z ]+? )?(?:en |el (?:ano )?)?(19[4-9]\d|200\d)\b/.exec(n);
@@ -249,9 +304,10 @@ export function extractProfilePatch(rawText: string, kind: ProfileKind, current:
     const ds = DISCIPLINES.filter(([re]) => re.test(noVenues)).map(([, d]) => d);
     if (ds.length) patch.disciplines = ds;
   } else {
-    // Sector: first mention fills it; later mentions ("tienda online") only override when explicit.
+    // Sector: first mention fills it; later mentions override when describing the company's own identity (not client lists).
+    const ownActivity = /\b(somos|tenemos|nos dedicamos|me dedico|mi empresa|nuestra empresa|mi negocio|nuestro negocio|mi taller|nuestro taller)\b/.test(n);
     const sector = SECTORS.find(([re]) => re.test(n));
-    if (sector && (!current.sector || /\b(nos dedicamos|me dedico)\b/.test(n))) patch.sector = sector[1];
+    if (sector && (!current.sector || ownActivity)) patch.sector = sector[1];
     const founded = /\b(?:desde|fundad[oa] en|abrimos en|abri en|empece en|empezamos en|en marcha desde)(?: el(?: ano)?)? (19[5-9]\d|20[0-3]\d)\b/.exec(n);
     const ago = /\b(?:llevamos|llevo|hace) (\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte) anos\b/.exec(n);
     const bareYear = /^(?:en |desde )?(?:el )?(19[5-9]\d|20[0-3]\d)\b/.exec(n.trim());
@@ -261,7 +317,7 @@ export function extractProfilePatch(rawText: string, kind: ProfileKind, current:
       const k = wordNumber(ago[1]);
       if (k !== undefined) patch.foundedYear = new Date().getFullYear() - k;
     }
-    const team = /\b(?:somos|tengo|tenemos|hay) (\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte) (?:personas|trabajador\w*|emplead\w*)/.exec(n);
+    const team = /\b(?:somos|tengo|tenemos|hay) (\d+|un|una|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte) (?:personas?|trabajador\w*|emplead\w*)/.exec(n);
     if (team) {
       const k = wordNumber(team[1]);
       // "tengo dos empleados" = me + 2 employees; "somos dos personas" = 2 in total.
@@ -269,11 +325,14 @@ export function extractProfilePatch(rawText: string, kind: ProfileKind, current:
     } else if (/\btrabajo sol[oa]\b|\bsolo yo\b/.test(n)) patch.employees = 1;
     else {
       // Bare answer to "¿Cuántas personas trabajáis?": "somos tres", "tres", "5 contándome".
-      const bare = /^(?:somos )?(\d+|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte)(?: (?:personas|en total|contandome|conmigo))?[.!]?$/.exec(n.trim());
-      const k = bare && (current.legalForm || current.city) ? wordNumber(bare[1]) : undefined;
+      const bare = /^(?:somos )?(\d+|un|una|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte)(?: (?:personas?|en total|contandome|conmigo))?[.!]?$/.exec(n.trim());
+      const k = bare && (current.legalForm || current.city || patch.city) ? wordNumber(bare[1]) : undefined;
       if (k !== undefined && k > 0 && k < 500) patch.employees = k;
     }
-    if (FIGURES.test(n) && /factur|ingres|ventas|vendemos/.test(n)) {
+    if (
+      FIGURES.test(n) &&
+      (/factur|ingres|ventas|vendemos|al ano|anual/.test(n) || (!WANT.test(n) && /^(?:unos |aproximadamente |sobre |cerca de |alrededor de |mas o menos )?\d/.test(n.trim())))
+    ) {
       const eur = parseEuros(n);
       if (eur) patch.annualRevenueEur = eur;
     }
@@ -291,6 +350,16 @@ export function extractProfilePatch(rawText: string, kind: ProfileKind, current:
   let idea: string | undefined;
   for (const s of sentences) {
     const sn = norm(s);
+    // Direct answer to "¿Qué buscas ahora?": "Una beca para producir la serie", "Comprar un horno nuevo".
+    if (!WANT.test(sn) && DIRECT_NEED.test(sn)) {
+      needs.push(fixWording(stripEnd(s)));
+      idea ??= polishProse(stripEnd(s));
+      continue;
+    }
+    // Direct answer to "Háblanos de un proyecto": "Estoy con una serie sobre la despoblación".
+    if (!WANT.test(sn) && DIRECT_IDEA.test(sn)) {
+      idea ??= polishProse(stripEnd(s));
+    }
     if (WANT.test(sn)) {
       const clause = clauseAfter(WANT, s);
       if (clause) {

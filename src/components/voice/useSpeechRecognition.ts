@@ -40,6 +40,7 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
   /** The live session, from start() until its onend. */
   const rec = useRef<Rec | null>(null);
   const wanted = useRef(false);
+  const interimRef = useRef("");
   const onFinal = useRef(opts.onFinal);
   onFinal.current = opts.onFinal;
   const lang = opts.lang ?? "es-ES";
@@ -52,28 +53,49 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
       r.lang = lang;
       r.continuous = true;
       r.interimResults = true;
-      let emitted = 0; // finals of this session already handed out (Android re-sends them with resultIndex 0)
+      // Track emitted finals per result index (Android re-sends earlier finals with resultIndex 0,
+      // while WebKit/desktop may reuse index 0 after internal compaction or emit empty final tokens).
+      const emittedAt = new Map<number, string>();
       r.onresult = (e) => {
+        if (e.results.length < emittedAt.size) {
+          for (const k of [...emittedAt.keys()]) {
+            if (k >= e.results.length) emittedAt.delete(k);
+          }
+        }
         let partial = "";
         for (let i = e.resultIndex; i < e.results.length; i++) {
           const res = e.results[i];
-          if (!res.isFinal) partial += res[0].transcript;
-          else if (i >= emitted) {
-            emitted = i + 1;
+          if (!res.isFinal) {
+            partial += res[0].transcript;
+          } else {
             const text = res[0].transcript.trim();
-            if (text) onFinal.current(text);
+            if (!text) continue;
+            const prev = emittedAt.get(i);
+            if (prev === text) continue;
+            emittedAt.set(i, text);
+            const delta = prev && text.startsWith(prev) ? text.slice(prev.length).trim() : text;
+            if (delta) onFinal.current(delta);
           }
         }
-        if (rec.current === r) setInterim(partial);
+        if (rec.current === r) {
+          interimRef.current = partial;
+          setInterim(partial);
+          setError(null);
+        }
       };
       r.onerror = (e) => {
-        if (FATAL.has(e.error) && rec.current === r) wanted.current = false;
+        if (rec.current !== r) return;
+        if (FATAL.has(e.error)) wanted.current = false;
+        if (e.error === "no-speech" || e.error === "aborted") return;
         setError(e.error === "not-allowed" || e.error === "service-not-allowed" ? "Permite el micrófono para hablar con Mecena." : `Dictado: ${e.error}`);
       };
       r.onend = () => {
         if (rec.current !== r) return; // a replaced session never restarts (it would fight the live one)
         rec.current = null;
+        const pending = interimRef.current.trim();
+        interimRef.current = "";
         setInterim("");
+        if (pending && wanted.current) onFinal.current(pending);
         // Chrome stops after silence: a fresh session while the user still wants to talk.
         if (wanted.current) open(Ctor);
         else setListening(false);
@@ -91,6 +113,14 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
     [lang],
   );
 
+  const flush = useCallback(() => {
+    const pending = interimRef.current.trim();
+    if (!pending) return;
+    interimRef.current = "";
+    setInterim("");
+    onFinal.current(pending);
+  }, []);
+
   const start = useCallback(() => {
     const Ctor = getCtor();
     if (!Ctor) return setError("Tu navegador no permite dictado. Escribe tu respuesta.");
@@ -104,6 +134,7 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
   const stop = useCallback(() => {
     wanted.current = false;
     rec.current?.stop();
+    interimRef.current = "";
     setListening(false);
     setInterim("");
   }, []);
@@ -113,5 +144,5 @@ export function useSpeechRecognition(opts: { onFinal: (text: string) => void; la
     rec.current?.stop();
   }, []);
 
-  return { supported, listening, interim, error, start, stop };
+  return { supported, listening, interim, error, start, stop, flush };
 }

@@ -1,7 +1,7 @@
 /** Profile → CanonicalProfile + data-quality warnings. */
 import type { Profile } from "@/contracts/domain";
 import { profileBeneficiaryTypes } from "./beneficiary";
-import { normalizeCnae } from "./cnae";
+import { inferCnaeFromSector, normalizeCnae } from "./cnae";
 import { normalizeDiscipline } from "./disciplines";
 import { isWithin, normalizeTerritory, territoryName, territoryNode } from "./territory";
 import { type CanonicalProfile, type DataWarning, type Normalized, warn } from "./types";
@@ -61,6 +61,8 @@ export function normalizeProfile(profile: Profile): Normalized<CanonicalProfile>
     cnae = c.ref;
     if (!c.ref) warnings.push(warn("unmapped-cnae", "cnae", `Código CNAE no reconocido: «${profile.cnae}»`, profile.cnae));
     else if (c.legacy) warnings.push(warn("legacy-cnae", "cnae", `CNAE-2009 ${profile.cnae} traducido a CNAE-2025 ${c.ref.code}`, profile.cnae, "info"));
+  } else if (profile.sector) {
+    cnae = inferCnaeFromSector(profile.sector);
   }
 
   return {
