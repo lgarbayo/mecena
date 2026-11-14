@@ -1,46 +1,99 @@
-/* Mecena design tokens — Dark Immersive Glassmorphism (Stage) + Editorial Typography + Mobile-First */
+/* Mecena design system — light, monochrome, warm grays, Inter, pill controls (docs/design-system.md).
+   The only colour moment is the gradient orb (.orb, --orb), reserved for voice/agent moments.
+   The dossier document (src/features/dossier/ui/dossier.css) keeps its own tokens and is not styled here. */
 :root {
-  --g-ink: #f7f2ea;
-  --g-ink-2: rgba(247, 242, 234, 0.74);
-  --g-ink-3: rgba(247, 242, 234, 0.52);
-  --g-glass: rgba(255, 255, 255, 0.07);
-  --g-glass-2: rgba(255, 255, 255, 0.12);
-  --g-line: rgba(255, 255, 255, 0.16);
-  --g-line-strong: rgba(255, 255, 255, 0.28);
-  --g-accent: #ff8a5c;
-  --g-accent-2: #b38cff;
-  --g-accent-3: #4fd1c5;
+  /* ---- Warm gray scale ---- */
+  --gray-25: #fdfcfc;
+  --gray-50: #faf8f8;
+  --gray-100: #f5f3f1;
+  --gray-200: #ebe8e4;
+  --gray-300: #d7d2cc;
+  --gray-400: #a59f97;
+  --gray-500: #777169;
+  --gray-600: #59544f;
+  --gray-700: #44403b;
+  --gray-800: #292524;
+  --gray-900: #1c1917;
+  --gray-950: #0c0a09;
 
-  --paper: #0d0b10;
-  --paper-2: rgba(255, 255, 255, 0.08);
-  --ink: #f7f2ea;
-  --ink-2: rgba(247, 242, 234, 0.74);
-  --ink-3: rgba(247, 242, 234, 0.52);
-  --line: rgba(255, 255, 255, 0.16);
-  --accent: #ff8a5c;
-  --accent-ink: #1a0d06;
-  --ok: #4fd1c5;
-  --warn: #ffb38a;
-  --radius: 22px;
-  /* next/font/local exposes the self-hosted families as --font-dossier-* (src/features/dossier/ui/fonts.ts) */
-  --serif: var(--font-dossier-serif, "Newsreader"), "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  --sans: var(--font-dossier-sans, "Schibsted Grotesk"), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --gutter: clamp(16px, 4.5vw, 24px);
-  --maxw: 760px;
+  /* ---- Semantic ---- */
+  --bg: var(--gray-25);
+  --surface: #fff;
+  --surface-2: var(--gray-50);
+  --surface-3: var(--gray-100);
+  --text-1: #000;
+  --text-2: var(--gray-600);
+  --text-3: var(--gray-500);
+  --border: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --shadow-sm: 0 1px 1px rgb(0 0 0 / 0.04), 0 2px 4px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 2px 4px rgb(0 0 0 / 0.04), 0 6px 16px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 4px 8px rgb(0 0 0 / 0.04), 0 16px 40px rgb(0 0 0 / 0.08);
+  --radius-card: 16px;
+  --radius-card-sm: 12px;
+  --radius-input: 12px;
+  --radius-pill: 9999px;
+  --focus: #2b7fff;
+  --ok-bg: #ecfdf3;
+  --ok-fg: #067647;
+  --warn-bg: #fffaeb;
+  --warn-fg: #b54708;
+  --err-bg: #fef3f2;
+  --err-fg: #b42318;
+  --info-bg: #eff6ff;
+  --info-fg: #1d4ed8;
+  --font-sans: var(--font-inter, "Inter"), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Soft pastel gradient orb: voice/agent moments only. */
+  --orb:
+    radial-gradient(60% 60% at 30% 30%, #a5c8ff 0%, transparent 70%),
+    radial-gradient(55% 55% at 72% 34%, #9ee7f2 0%, transparent 70%),
+    radial-gradient(60% 60% at 62% 74%, #c9b6ff 0%, transparent 72%),
+    radial-gradient(55% 55% at 28% 72%, #ffd2bd 0%, transparent 70%),
+    #eef2fb;
+
+  --gutter: clamp(16px, 4.5vw, 24px);
+  --maxw: 760px;
+
+  /* ---- Legacy names (older feature CSS), remapped to the light palette ---- */
+  --g-ink: var(--text-1);
+  --g-ink-2: var(--text-2);
+  --g-ink-3: var(--text-3);
+  --g-glass: var(--surface);
+  --g-glass-2: var(--surface-3);
+  --g-line: var(--border);
+  --g-line-strong: var(--border-strong);
+  --g-accent: var(--gray-950);
+  --g-accent-2: var(--gray-700);
+  --g-accent-3: var(--gray-500);
+  --paper: var(--bg);
+  --paper-2: var(--surface-2);
+  --ink: var(--text-1);
+  --ink-2: var(--text-2);
+  --ink-3: var(--text-3);
+  --line: var(--border);
+  --accent: var(--gray-950);
+  --accent-ink: #fff;
+  --ok: var(--ok-fg);
+  --warn: var(--warn-fg);
+  --radius: var(--radius-card);
+  --serif: var(--font-sans);
+  --sans: var(--font-sans);
+
   /* Line icons for CSS pseudo-elements (mask-image + background: currentColor). Same set as components/ui/icons.tsx. */
   --icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
   --icon-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.5v5.5M12 16.4v.1'/%3E%3C/svg%3E");
   --icon-shield: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5 5 6v5.5c0 4.3 3 7.6 7 9 4-1.4 7-4.7 7-9V6z'/%3E%3Cpath d='m9 12 2.2 2.2L15.5 10'/%3E%3C/svg%3E");
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * {
   box-sizing: border-box;
 }
 
-/* Zero italics rule across the entire application */
+/* No italics anywhere in the app UI */
 em, i, cite, dfn, address, var {
   font-style: normal;
 }
@@ -68,70 +121,63 @@ button, [role="button"], summary {
 body {
   position: relative;
   min-height: 100dvh;
-  background: #0d0b10;
-  color: var(--g-ink);
-  font: 16px/1.55 var(--sans);
+  background: var(--bg);
+  color: var(--text-1);
+  font: 400 16px/1.6 var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* Global atmospheric color fields (matching Stage.tsx across every route) */
-body::before {
-  content: "";
-  position: fixed;
-  inset: -12%;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(42vw 42vw at 12% 8%, rgba(255, 122, 69, 0.28), transparent 68%),
-    radial-gradient(48vw 48vw at 88% 42%, rgba(139, 92, 246, 0.24), transparent 70%),
-    radial-gradient(44vw 44vw at 26% 88%, rgba(20, 184, 166, 0.2), transparent 70%);
-  filter: blur(48px) saturate(135%);
-  animation: mecenaAmbientDrift 24s ease-in-out infinite alternate;
+:focus-visible {
+  outline: 1.5px solid var(--focus);
+  outline-offset: 2px;
 }
 
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.038) 1px, transparent 1px);
-  background-size: 3px 3px;
-  opacity: 0.5;
-}
-
-@keyframes mecenaAmbientDrift {
-  0% { transform: translate3d(0, 0, 0) scale(1); }
-  100% { transform: translate3d(2vw, -2vh, 0) scale(1.06); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
+::selection {
+  background: var(--gray-200);
 }
 
 h1, h2, h3, .brand {
-  font-family: var(--serif);
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-weight: 300;
   font-style: normal;
-  letter-spacing: -0.02em;
-  line-height: 1.12;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
   text-wrap: balance;
+  color: var(--text-1);
 }
 
 h1 {
-  font-size: clamp(2rem, 6.2vw, 3rem);
+  font-size: clamp(2.25rem, 7vw, 3rem);
   margin: 0 0 0.5rem;
 }
 
 h2 {
-  font-size: clamp(1.25rem, 3.8vw, 1.55rem);
-  margin: 1.35rem 0 0.5rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  margin: 1.5rem 0 0.5rem;
+  line-height: 1.1;
+}
+
+h3 {
+  font-size: clamp(1.375rem, 3.4vw, 1.75rem);
+  margin: 1.25rem 0 0.4rem;
+  line-height: 1.1;
 }
 
 p {
   text-wrap: pretty;
+}
+
+label {
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  color: var(--text-2);
+}
+
+code, pre, kbd {
+  font-family: var(--font-mono);
 }
 
 /* Inline icons (components/ui/icons.tsx) sit on the text's optical centre and never shrink in flex rows */
@@ -148,13 +194,19 @@ a {
   transition: color 160ms var(--ease-out), opacity 160ms var(--ease-out);
 }
 
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+
 main.app-main {
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 20px var(--gutter) calc(112px + env(safe-area-inset-bottom));
+  padding: 24px var(--gutter) calc(112px + env(safe-area-inset-bottom));
 }
 
-/* When full-screen Stage is active (/ and /onboarding), hide outer shell bars so they never overlap Stage controls */
+/* Full-screen screens (/ and /onboarding) carry their own controls: hide the shell bars so they never overlap */
 body:has([aria-label="Cuéntanos"]) .app-header,
 body:has([aria-label="Cuéntanos"]) .bottom-nav,
 body:has([aria-label="Mecena"]) .app-header,
@@ -162,7 +214,20 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   display: none;
 }
 
-/* ---- Frosted glass header ---- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Header ---- */
 .app-header {
   position: sticky;
   top: 0;
@@ -171,67 +236,55 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: calc(10px + env(safe-area-inset-top)) var(--gutter) 10px;
-  background: rgba(13, 11, 16, 0.72);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+  min-height: 56px;
+  padding: calc(8px + env(safe-area-inset-top)) var(--gutter) 8px;
+  background: rgb(253 252 252 / 0.92);
+  border-bottom: 1px solid var(--border);
 }
 
 .brand {
-  font-size: 1.55rem;
+  font-size: 1.375rem;
   font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
   text-decoration: none;
-  letter-spacing: -0.025em;
-  background: linear-gradient(95deg, #fffaf3 15%, #ffb38a 65%, #c9a8ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text-1);
 }
 
+/* ---- Segmented control ---- */
 .mode-switch {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  border: 1px solid var(--g-line);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 3px;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: var(--surface-3);
 }
 
 .mode-switch button {
   border: 0;
   background: transparent;
-  min-height: 36px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font: 600 0.82rem var(--sans);
-  color: var(--g-ink-2);
+  min-height: 32px;
+  padding: 4px 14px;
+  border-radius: var(--radius-pill);
+  font: 500 13px/1 var(--font-sans);
+  color: var(--text-2);
   cursor: pointer;
   touch-action: manipulation;
-  transition:
-    background 180ms var(--ease-out),
-    color 180ms var(--ease-out),
-    transform 140ms var(--ease-out),
-    box-shadow 180ms var(--ease-out);
+  transition: background 160ms var(--ease-out), color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
 }
 
-.mode-switch button:active {
-  transform: scale(0.97);
+.mode-switch button:hover {
+  color: var(--text-1);
 }
 
 .mode-switch button[aria-pressed="true"] {
-  background: linear-gradient(135deg, #ff9966, #ff6b4a);
-  color: #1a0d06;
-  font-weight: 700;
-  box-shadow: 0 4px 16px rgba(255, 115, 75, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: var(--shadow-sm);
 }
 
-/* ---- Frosted glass bottom navigation ---- */
+/* ---- Bottom navigation ---- */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -243,11 +296,8 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   grid-auto-columns: minmax(0, 1fr);
   gap: 2px;
   padding: 6px max(4px, calc((100% - var(--maxw)) / 2)) calc(6px + env(safe-area-inset-bottom));
-  background: rgba(13, 11, 16, 0.78);
-  backdrop-filter: blur(24px) saturate(165%);
-  -webkit-backdrop-filter: blur(24px) saturate(165%);
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.42);
+  background: rgb(255 255 255 / 0.96);
+  border-top: 1px solid var(--border);
 }
 
 .bottom-nav a {
@@ -260,18 +310,14 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   min-width: 0;
   min-height: 52px;
   padding: 6px 0;
-  border: 1px solid transparent;
-  border-radius: 16px;
+  border-radius: var(--radius-card-sm);
   text-decoration: none;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--g-ink-3);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text-3);
   touch-action: manipulation;
-  transition:
-    color 160ms var(--ease-out),
-    background 160ms var(--ease-out),
-    transform 140ms var(--ease-out);
+  transition: color 160ms var(--ease-out), background 160ms var(--ease-out);
 }
 
 .bottom-nav a span {
@@ -282,171 +328,322 @@ body:has([aria-label="Mecena"]) .bottom-nav {
 }
 
 .bottom-nav a:hover {
-  color: var(--g-ink);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.bottom-nav a:active {
-  transform: scale(0.96);
+  color: var(--text-1);
+  background: var(--surface-2);
 }
 
 .bottom-nav a.active {
-  color: #fffaf3;
-  font-weight: 700;
-  background: linear-gradient(135deg, rgba(255, 138, 92, 0.2), rgba(179, 140, 255, 0.12));
-  border-color: rgba(255, 138, 92, 0.36);
+  color: var(--text-1);
 }
 
-.bottom-nav a.active svg {
-  color: var(--g-accent);
+.bottom-nav a.active::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  width: 20px;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--text-1);
 }
 
 /* ---- Page titles & kickers ---- */
 .page-title {
-  margin: 12px 0 22px;
+  margin: 16px 0 28px;
+}
+
+.page-title h1 {
+  margin: 0;
 }
 
 .kicker {
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.72rem;
-  color: var(--g-accent);
-  font-weight: 700;
-  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text-3);
+  margin: 0 0 10px;
 }
 
-/* ---- Frosted glass cards ---- */
+/* ---- Cards ---- */
 .card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.06));
-  border: 1px solid var(--g-line);
-  border-radius: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
   padding: clamp(18px, 4vw, 24px);
-  margin: 14px 0;
-  color: var(--g-ink);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  margin: 16px 0;
+  color: var(--text-1);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-sm {
+  border-radius: var(--radius-card-sm);
+  padding: 14px 16px;
 }
 
 .card.pending {
   border-style: dashed;
-  color: var(--g-ink-2);
+  box-shadow: none;
+  background: var(--surface-2);
+  color: var(--text-2);
 }
 
-/* ---- Tactile buttons ---- */
+/* ---- Buttons ---- */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 48px;
-  padding: 12px 22px;
-  border-radius: 999px;
-  font: 700 0.96rem var(--sans);
-  letter-spacing: -0.005em;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--radius-pill);
+  font: 500 14px/1 var(--font-sans);
+  letter-spacing: 0;
   cursor: pointer;
   border: 1px solid transparent;
   text-decoration: none;
+  white-space: nowrap;
   touch-action: manipulation;
   transition:
-    transform 150ms var(--ease-out),
-    box-shadow 180ms var(--ease-out),
-    background 180ms var(--ease-out),
-    border-color 180ms var(--ease-out);
-}
-
-.btn:hover:not(:disabled) {
-  transform: translateY(-1px);
+    transform 120ms var(--ease-out),
+    background 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    color 160ms var(--ease-out);
 }
 
 .btn:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
-.btn:disabled {
-  opacity: 0.45;
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.4;
   cursor: default;
 }
 
+.btn-sm {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
 .btn-primary {
-  background: linear-gradient(135deg, #ff9966, #ff6b4a);
-  color: #1a0d06;
-  box-shadow:
-    0 10px 30px rgba(255, 115, 75, 0.38),
-    inset 0 1px 0 rgba(255, 255, 255, 0.42);
+  background: var(--gray-950);
+  color: #fff;
 }
 
 .btn-primary:hover:not(:disabled) {
-  box-shadow:
-    0 14px 36px rgba(255, 115, 75, 0.48),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: var(--gray-600);
 }
 
+.btn-secondary {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-1);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+/* .btn-ghost is the secondary (outlined) action in existing screens; it keeps a hairline so it reads as a button. */
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--g-line-strong);
-  color: var(--g-ink);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-1);
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.13);
-  border-color: rgba(255, 255, 255, 0.38);
+  background: var(--surface-2);
 }
 
 .btn-quiet {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: var(--g-ink-2);
+  background: transparent;
+  color: var(--text-2);
 }
 
 .btn-quiet:hover:not(:disabled) {
-  color: var(--g-ink);
-  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-1);
+  background: var(--surface-2);
 }
 
-/* ---- Glass tags ---- */
+.btn-icon {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* ---- Inputs ---- */
+.input,
+:where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]), select, textarea):where(:not([class])) {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  color: var(--text-1);
+  font: 400 15px/1.4 var(--font-sans);
+  transition: border-color 140ms var(--ease-out), box-shadow 140ms var(--ease-out);
+}
+
+textarea.input {
+  min-height: 96px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.input::placeholder {
+  color: var(--gray-400);
+}
+
+.input:hover {
+  border-color: var(--border-strong);
+}
+
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border-color: var(--gray-950);
+  box-shadow: 0 0 0 3px rgb(43 127 255 / 0.18);
+}
+
+/* ---- Tags ---- */
 .tag {
   display: inline-flex;
   align-items: center;
-  font-size: 0.76rem;
-  font-weight: 700;
-  padding: 4px 11px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.09);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: var(--g-ink-2);
+  gap: 4px;
+  min-height: 24px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--gray-700);
+  white-space: nowrap;
 }
 
 .tag-ok {
-  background: rgba(79, 209, 197, 0.16);
-  border-color: rgba(79, 209, 197, 0.42);
-  color: #7ee7dc;
+  background: var(--ok-bg);
+  color: var(--ok-fg);
 }
 
 .tag-warn {
-  background: rgba(255, 138, 92, 0.18);
-  border-color: rgba(255, 138, 92, 0.45);
-  color: #ffb38a;
+  background: var(--warn-bg);
+  color: var(--warn-fg);
 }
 
-.tag-accent {
-  background: linear-gradient(135deg, #ff9966, #ff6b4a);
-  border-color: transparent;
-  color: #1a0d06;
+.tag-err {
+  background: var(--err-bg);
+  color: var(--err-fg);
+}
+
+.tag-accent,
+.tag-info {
+  background: var(--info-bg);
+  color: var(--info-fg);
 }
 
 .spinner {
-  color: var(--g-ink-2);
-  font-style: normal;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 400;
 }
 
-/* ---- Frosted glass bottom sheet ---- */
+.spinner::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gray-300);
+  border-top-color: var(--gray-950);
+  animation: mecenaSpin 800ms linear infinite;
+}
+
+@keyframes mecenaSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Skeletons ---- */
+.skeleton {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--gray-100) 0%, var(--gray-50) 50%, var(--gray-100) 100%);
+  background-size: 200% 100%;
+  animation: mecenaShimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-text {
+  display: grid;
+  gap: 10px;
+}
+
+.skeleton-card {
+  display: grid;
+  gap: 14px;
+}
+
+.skeleton-list {
+  display: grid;
+  gap: 12px;
+}
+
+@keyframes mecenaShimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+/* ---- Gradient orb (voice/agent moments only) ---- */
+.orb {
+  position: relative;
+  width: var(--orb-size, 96px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  isolation: isolate;
+}
+
+.orb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--orb);
+  filter: blur(6px) saturate(115%);
+  animation: mecenaOrb 14s linear infinite;
+}
+
+.orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.6), var(--shadow-md);
+}
+
+@keyframes mecenaOrb {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .orb::before,
+  .spinner::before {
+    animation: none;
+  }
+}
+
+/* ---- Bottom sheet ---- */
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: rgb(0 0 0 / 0.24);
+}
+
 .sheet {
   position: fixed;
   left: 0;
@@ -455,13 +652,11 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   z-index: 50;
   max-height: 92dvh;
   overflow-y: auto;
-  background: rgba(18, 15, 23, 0.88);
-  backdrop-filter: blur(28px) saturate(165%);
-  -webkit-backdrop-filter: blur(28px) saturate(165%);
-  border-top: 1px solid var(--g-line-strong);
-  border-top-left-radius: 26px;
-  border-top-right-radius: 26px;
-  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  background: var(--surface);
+  color: var(--text-1);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: var(--shadow-lg), 0 -8px 32px rgb(0 0 0 / 0.08);
   padding: 22px var(--gutter) calc(22px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
@@ -472,14 +667,14 @@ body:has([aria-label="Mecena"]) .bottom-nav {
 .header-end {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
 .account {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -490,17 +685,17 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   width: 32px;
   height: 32px;
   flex: none;
-  border-radius: 999px;
-  background: var(--g-glass-2);
-  border: 1px solid var(--g-line);
-  font: 700 0.85rem var(--sans);
-  color: var(--g-ink);
+  border-radius: 50%;
+  background: var(--surface-3);
+  font: 500 13px/1 var(--font-sans);
+  color: var(--text-1);
+  transition: background 160ms var(--ease-out);
 }
 
 .account-email {
   display: none;
-  font-size: 0.85rem;
-  color: var(--g-ink-2);
+  font-size: 13px;
+  color: var(--text-2);
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -511,31 +706,39 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   display: inline-flex;
   align-items: center;
   min-width: 0;
+  min-height: 36px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
   color: inherit;
   text-decoration: none;
 }
 
-.account-link:hover .account-initial,
+.account-link:hover .account-initial {
+  background: var(--gray-200);
+}
+
 .account-link:hover .account-email {
-  border-color: var(--g-accent);
-  color: var(--g-ink);
+  color: var(--text-1);
 }
 
 .account-out {
-  border: 0;
-  background: transparent;
-  min-height: 36px;
-  padding: 6px 4px;
-  font: 600 0.85rem var(--sans);
-  color: var(--g-ink-2);
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  font: 500 13px/1 var(--font-sans);
+  color: var(--text-1);
+  text-decoration: none;
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
   touch-action: manipulation;
+  transition: background 160ms var(--ease-out);
 }
 
 .account-out:hover {
-  color: var(--g-accent);
+  background: var(--surface-2);
 }
 
 @media (min-width: 640px) {

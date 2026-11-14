@@ -28,7 +28,7 @@ export function BottomNav() {
         const active = path?.startsWith(href) ?? false;
         return (
           <Link key={i.key} href={href} className={active ? "active" : ""} aria-current={active ? "page" : undefined}>
-            <Icon name={kind === "business" && i.key === "onboarding" ? "building" : NAV_ICONS[i.key]} size={22} />
+            <Icon name={kind === "business" && i.key === "onboarding" ? "building" : NAV_ICONS[i.key]} size={20} />
             <span>{i.label}</span>
           </Link>
         );
