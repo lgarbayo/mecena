@@ -141,6 +141,9 @@ export function OnboardingClient() {
   };
 
   const finish = () => {
+    const maybeFlush = (speech as { flush?: () => void }).flush;
+    if (maybeFlush) maybeFlush();
+    else if (speech.interim.trim()) queue.enqueue(speech.interim.trim(), "voice");
     speech.stop();
     finishRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   };

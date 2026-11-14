@@ -115,6 +115,15 @@ const ARRAY_FIELDS = ["disciplines", "achievements", "education", "links", "fund
 /** Merge a patch: scalars overwrite when non-empty, arrays are unioned (case-insensitive dedupe). */
 export function mergeProfile(p: Profile, patch: ProfilePatch): Profile {
   const next: Profile = { ...p };
+  // If the sector changes without an explicit CNAE, clear any previous CNAE so it is re-derived from the new sector.
+  if (patch.sector && patch.sector.trim() && patch.sector !== p.sector && !patch.cnae) {
+    delete next.cnae;
+  }
+  // If city changes without explicit province/region, clear stale broader fields so territory resolution stays consistent.
+  if (patch.city && patch.city.trim() && patch.city !== p.city) {
+    if (!patch.province) delete next.province;
+    if (!patch.region) delete next.region;
+  }
   for (const [k, v] of Object.entries(patch)) {
     if (v === undefined || v === null || v === "") continue;
     if (k === "id" || k === "ownerId" || k === "kind") continue; // identity and ownership never change through a patch

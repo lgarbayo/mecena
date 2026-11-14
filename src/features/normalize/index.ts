@@ -42,7 +42,7 @@ export {
   beneficiaryLabel,
   type BeneficiaryResult,
 } from "./beneficiary";
-export { normalizeCnae, cnaeCheck, cnaeLabel, sectionOfDivision, type CnaeResult } from "./cnae";
+export { normalizeCnae, inferCnaeFromSector, cnaeCheck, cnaeLabel, sectionOfDivision, type CnaeResult } from "./cnae";
 export { parseAmount, parseAmountRange, findAmounts, parseSpanishNumber, eurosToCents, centsToEuros, formatCents } from "./money";
 export {
   resolveDeadline,

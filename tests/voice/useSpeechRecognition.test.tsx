@@ -116,4 +116,31 @@ describe("useSpeechRecognition", () => {
     expect(FakeRecognition.running).toHaveLength(0);
     expect(t.speech.listening).toBe(false);
   });
+
+  it("receives 5+ consecutive answers even when the engine compacts results or closes while interim text is pending", () => {
+    const t = setup();
+    act(() => t.speech.start());
+    act(() => FakeRecognition.latest.final("Uno: taller de cerámica desde 2019."));
+    act(() => FakeRecognition.latest.final("Dos: estamos en Lugo y somos una persona."));
+    // Engine compacts results back to index 0 within the same session (WebKit / Safari behavior)
+    act(() => {
+      FakeRecognition.latest.onresult?.({
+        resultIndex: 0,
+        results: [{ isFinal: true, 0: { transcript: "Tres: hacemos vajilla para restaurantes." }, length: 1 }],
+      });
+    });
+    // Browser closes session on silence while the 4th answer is still in interim
+    act(() => FakeRecognition.latest.interim("Cuatro: unos 48.000 euros al año."));
+    act(() => FakeRecognition.latest.end());
+    // User speaks 5th answer in interim and clicks Next (flush) before silence timeout
+    act(() => FakeRecognition.latest.interim("Cinco: tienda online y contratar a una persona."));
+    act(() => t.speech.flush());
+    expect(t.finals).toEqual([
+      "Uno: taller de cerámica desde 2019.",
+      "Dos: estamos en Lugo y somos una persona.",
+      "Tres: hacemos vajilla para restaurantes.",
+      "Cuatro: unos 48.000 euros al año.",
+      "Cinco: tienda online y contratar a una persona.",
+    ]);
+  });
 });

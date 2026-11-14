@@ -64,7 +64,8 @@ describe("spoken onboarding", () => {
     act(() => FakeRecognition.latest.final("Me llamo Antía Varela y soy ilustradora de A Coruña."));
     await screen.findByText(ONBOARDING.slow);
     fireEvent.click(await screen.findByRole("button", { name: ONBOARDING.retry }, { timeout: 5000 }));
-    await waitFor(() => expect(document.body.textContent).toContain("Mecena pregunta"), { timeout: 5000 });
+    // The follow-up question replaces the question as the main headline without the "Mecena pregunta" kicker
+    await waitFor(() => expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/¿Qué serie o proyecto/), { timeout: 5000 });
     expect(sent).toEqual(["Me llamo Antía Varela y soy ilustradora de A Coruña."]);
 
     // While the follow-up is read, Chrome ends the silent session; the person pauses and talks again at once.
