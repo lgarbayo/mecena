@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Call, Profile } from "@/contracts";
 import { DEMO_CREATOR_ID, FIXTURE_NOW, fixtureBusiness, fixtureCalls, fixtureCreator } from "@/fixtures";
-import { evaluate, fitLabel } from "@/features/matching/rules";
+import { evaluate, fitLabel, ownWords, SCORE_MAX } from "@/features/matching/rules";
 import { explainCall, searchCalls } from "@/features/matching/service";
 import { readDb, saveProfile } from "@/server/store";
 
@@ -64,12 +64,14 @@ describe("hard filters", () => {
 });
 
 describe("score", () => {
-  it("is 40 + breakdown, bounded to 100, and deterministic", () => {
+  // Was "is 40 + breakdown": the fixed base dropped from 40 to 25 so the personal part (affinity, now 0-45) weighs more.
+  it("is base 25 + breakdown, bounded to 100, and deterministic", () => {
     const a = evaluate(creator(), beca(), { now, worksCount: 2 });
     const b = evaluate(creator(), beca(), { now, worksCount: 2 });
     expect(a).toEqual(b);
     const { base, affinity, documents, amount, timing } = a.breakdown;
-    expect(base).toBe(40);
+    expect(base).toBe(SCORE_MAX.base);
+    expect(Object.values(SCORE_MAX).reduce((x, y) => x + y, 0)).toBe(100);
     expect(base + affinity + documents + amount + timing).toBe(a.match.score);
     expect(a.match.score).toBeLessThanOrEqual(100);
   });
@@ -84,6 +86,20 @@ describe("score", () => {
   it("a call closing in 2 days is flagged as urgent", () => {
     const r = evaluate(creator(), { ...beca(), deadline: "2026-11-15" }, { now });
     expect(r.match.whatYouMiss.join(" ")).toMatch(/Cierra en 2 días/);
+  });
+
+  it("the profile's own words count 0-20 inside affinity; place names and generic call words do not", () => {
+    const silent = { ...creator(), statement: "", bio: "", projectIdea: undefined, fundingNeeds: [], achievements: [] };
+    const words = { ...beca(), summary: `${beca().summary} Acuarelas sobre rederas y mariscadoras, fanzine, memoria de las mujeres del mar.` };
+    const full = evaluate(creator(), words, { now }).breakdown.affinity;
+    const none = evaluate(silent, words, { now }).breakdown.affinity;
+    expect(full - none).toBeGreaterThan(0);
+    expect(full - none).toBeLessThanOrEqual(20);
+    expect(ownWords(silent, words)).toEqual([]);
+    // the profile's city and words every call uses ("exposición", "trabajo") are not personal
+    const generic = { ...beca(), summary: "Exposición en A Coruña para trabajos de artistas." };
+    expect(ownWords({ ...creator(), statement: "Mi trabajo se expone en A Coruña" }, generic)).toEqual([]);
+    expect(evaluate({ ...creator(), statement: words.summary.repeat(3) }, words, { now }).breakdown.affinity).toBeLessThanOrEqual(SCORE_MAX.affinity);
   });
 
   it("discipline overlap outranks an unrelated discipline", () => {

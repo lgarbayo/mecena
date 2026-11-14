@@ -6,7 +6,7 @@ import { API, ROUTES, type Call, type MatchResult, type PastAward } from "@/cont
 import { useApp } from "@/components/shell/AppProvider";
 import { Card, PageTitle, Spinner, Tag } from "@/components/ui";
 import { apiGet } from "@/lib/api-client";
-import { daysLeft, fitLabel } from "../labels";
+import { daysLeft, fitLabel, SCORE_MAX } from "../labels";
 import type { CallHistory } from "@/features/history/history";
 import type { ScoreBreakdown } from "../rules";
 import s from "./calls.module.css";
@@ -27,11 +27,11 @@ const pct = (x: number) => `${Math.round(x * 100)} %`;
 const pts = (x: number) => x.toLocaleString("es-ES");
 
 const PARTS: { key: keyof ScoreBreakdown; label: string; max: number }[] = [
-  { key: "base", label: "Cumples los requisitos", max: 40 },
-  { key: "affinity", label: "Afinidad con tu obra o actividad", max: 25 },
-  { key: "documents", label: "Documentos que ya tienes", max: 15 },
-  { key: "amount", label: "Importe", max: 10 },
-  { key: "timing", label: "Plazo y cercanía", max: 10 },
+  { key: "base", label: "Cumples los requisitos", max: SCORE_MAX.base },
+  { key: "affinity", label: "Afinidad con tu obra o actividad", max: SCORE_MAX.affinity },
+  { key: "documents", label: "Documentos que ya tienes", max: SCORE_MAX.documents },
+  { key: "amount", label: "Importe", max: SCORE_MAX.amount },
+  { key: "timing", label: "Plazo y cercanía", max: SCORE_MAX.timing },
 ];
 
 export function CallDetail({ id }: { id: string }) {
