@@ -19,6 +19,8 @@ export const AI_ROUTE_LIMITS = {
   "call-detail": { attempts: 200, windowMs: HOUR }, // "why you fit" wording (cached per profile × call version)
   "dossier-variant": { attempts: 120, windowMs: HOUR }, // call-adapted dossier (Pro, cached)
   "dossier-design": { attempts: 40, windowMs: HOUR },
+  "dossier-layout": { attempts: 25, windowMs: HOUR }, // free layout: one change of the chosen layout (one reasoning model call); also capped per profile per day
+  "dossier-layout-batch": { attempts: 6, windowMs: HOUR }, // free layout: a batch of N proposals (N + 1 reasoning model calls); also capped per profile per day
   draft: { attempts: 15, windowMs: HOUR },
   jury: { attempts: 20, windowMs: HOUR },
   "jury-improve": { attempts: 20, windowMs: HOUR },
