@@ -216,6 +216,7 @@ export function StepOnboarding() {
   // enough to go on; a visual artist without photos yet gets them when the dossier opens.
   const [composing, setComposing] = useState<number | null>(null);
   const autoAsked = useRef<string | undefined>(undefined);
+  useEffect(() => setComposing(null), [profileId]); // a creator <-> pyme switch: the notice was the other profile's
   useEffect(() => {
     if (phase.at !== "done" || kind !== "creator" || busy || failed || !profileId || autoAsked.current === profileId) return;
     autoAsked.current = profileId;

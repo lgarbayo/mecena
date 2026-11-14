@@ -69,7 +69,6 @@ export async function processTurn(input: { profileId: string; text: string; sour
   if (input.reset) profile = await resetProfile(profile);
   // A new artist's first design is the free layout: its entry exists before any template design is saved.
   ensureLayoutEntry(profile.id);
-  if (input.stepKey === DOSSIER_LOOK_STEP) saveLayoutWish({ profileId: profile.id, text: input.text });
   // If a business profile is still holding the untouched fixtureBusiness seed ("Cerámica Mareira") with zero transcript
   // segments, clear the pre-seeded fields before the user's first onboarding turn so their company starts fresh.
   if (
@@ -96,6 +95,9 @@ export async function processTurn(input: { profileId: string; text: string; sour
     });
   }
   const segment = await segmentFor(profile.id, input.text.trim(), input.source);
+  // The answer to "¿cómo te imaginas tu dossier?" is a brief for the designers, not about the artist: it never reaches
+  // the profile or the dossier text (nor a follow-up question that would replace the step).
+  if (input.stepKey === DOSSIER_LOOK_STEP) return lookTurn(profile, segment, input.text);
   const dossier = getDossier(profile.id);
   const sections: DossierSection[] = dossier?.sections ?? [];
   const result = await runAi({
@@ -143,7 +145,7 @@ export async function processTurn(input: { profileId: string; text: string; sour
     variant: latest?.variant,
     generatedAt: nowIso(),
   });
-  redesignFromInterview(profile.id, segment, input.stepKey === DOSSIER_LOOK_STEP);
+  redesignFromInterview(profile.id, segment);
   return {
     profile: nextProfile,
     sections: nextSections,
@@ -152,6 +154,13 @@ export async function processTurn(input: { profileId: string; text: string; sour
     followUpQuestion: result.followUpQuestion,
     segmentId: segment.id,
   };
+}
+
+function lookTurn(profile: Profile, segment: TranscriptSegment, text: string): OnboardingTurnResponse {
+  saveLayoutWish({ profileId: profile.id, text, segmentId: segment.id });
+  // a typed answer is always a direction ("Oscuro."); a voice fragment ("pues…") only once it says something
+  if (segment.source === "text" || text.trim().split(/\s+/).length >= 3) redesignFromInterview(profile.id, segment, true);
+  return { profile, sections: getDossier(profile.id)?.sections ?? [], changedSectionKeys: [], changedProfileFields: [], segmentId: segment.id };
 }
 
 /** Design requests started by the interview and not finished yet (tests await them). */

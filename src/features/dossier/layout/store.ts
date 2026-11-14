@@ -15,6 +15,9 @@ const Entry = z.object({
   proposals: z.array(z.object({ id: z.string(), layout: FreeLayout, direction: z.string(), at: z.string() })).default([]), // the last batch, waiting for the artist to choose
   shown: z.array(z.string()).default([]), // art directions already proposed (not repeated in the next batch)
   wish: z.string().optional(), // how the artist imagines their dossier (onboarding question), for every batch
+  wishSegments: z.array(z.string()).default([]), // transcript segments that are the wish: never quoted as the artist's words
+  wishAt: z.string().optional(), // when the wish was last added to (a later answer starts it over)
+  batchId: z.string().optional(), // the job in flight (batch or change): a job whose entry was reset meanwhile keeps nothing
   autoKey: z.string().optional(), // content + wish the last automatic batch was made from (never twice for the same)
   batchDay: z.string().default(""),
   batches: z.number().default(0), // proposal batches today (cost cap per profile)
@@ -43,7 +46,7 @@ export function readAll(): Store {
   return out;
 }
 
-export const emptyEntry = (): LayoutEntry => ({ enabled: false, history: [], proposals: [], shown: [], batchDay: "", batches: 0, day: "", requests: 0 });
+export const emptyEntry = (): LayoutEntry => ({ enabled: false, history: [], proposals: [], shown: [], wishSegments: [], batchDay: "", batches: 0, day: "", requests: 0 });
 export const readEntry = (profileId: string): LayoutEntry => readAll()[profileId] ?? emptyEntry();
 
 export function saveEntry(profileId: string, entry: LayoutEntry): void {

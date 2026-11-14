@@ -34,3 +34,32 @@ export function missingContent(layout: FreeLayout, catalog: Catalog, opts: { req
   if (shown.size < need) return `Enseña al menos ${need} obras distintas (ahora hay ${shown.size}); el dossier es para ver la obra.`;
   return undefined;
 }
+
+/**
+ * Editorial problems of a proposal that a good designer would not leave, but that never make it less of a dossier:
+ * a work repeated on several pages (the dossier is a sequence, each work once) and a work's caption over its own
+ * full-bleed photo, which the guard could only keep legible with a band that hides the work (`captionBands`, from
+ * prepareLayout: what is really painted, after rotation, contain and veils). They earn the model a second try; if that
+ * try is no better, the first proposal is kept. Proposals only: a change may ask for either.
+ * Pure. Returns the problem in Spanish, or undefined.
+ */
+export function editorialProblems(layout: FreeLayout, catalog: Catalog, captionBands: { page: number; work: number }[] = []): string | undefined {
+  const known = new Set(catalog.works.map((w) => w.n));
+  const pagesOf = new Map<number, number[]>();
+  layout.pages.forEach((p, i) => {
+    for (const e of p.elements) {
+      if (e.type !== "image" || !known.has(e.work)) continue;
+      const seen = pagesOf.get(e.work) ?? [];
+      if (!seen.includes(i + 1)) pagesOf.set(e.work, [...seen, i + 1]);
+    }
+  });
+  if (catalog.works.length >= 2) {
+    const repeated = [...pagesOf.entries()].find(([, pages]) => pages.length > 1);
+    if (repeated)
+      return `Repites la obra ${repeated[0]} en las páginas ${repeated[1].join(" y ")}: en un dossier cada obra sale una sola vez (tampoco en la portada y luego otra vez). Si te sobran páginas, haz menos páginas o usa páginas de aire o de texto.`;
+  }
+  const band = captionBands[0];
+  if (band)
+    return `El pie de la obra ${band.work} va encima de una foto a sangre (página ${band.page}) y tapa la obra. Ponlo en la página de enfrente (la anterior o la siguiente) o en un margen sin foto, siempre en el mismo sitio en todas las obras.`;
+  return undefined;
+}

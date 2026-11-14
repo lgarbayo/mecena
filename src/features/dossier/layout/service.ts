@@ -12,11 +12,11 @@ import { TooManyRequestsError } from "@/contracts";
 import { getDossier, getProfile, getTranscript, listWorks, nowIso } from "@/server/store";
 import { dossierLookRequests } from "@/features/onboarding/interview";
 import { isVisualFamily, onboardingFamily } from "@/features/onboarding/family";
-import { AiError } from "@/server/ai/llm";
+import { AiError, isMockAi } from "@/server/ai/llm";
 import { buildCatalog, type Catalog } from "./catalog";
 import { designLayout, layoutCount, layoutModel, planDirections, type Direction } from "./agent";
 import { ensureLayoutFonts } from "./fonts-server";
-import { missingContent } from "./completeness";
+import { MIN_WORKS_SHOWN, editorialProblems, missingContent } from "./completeness";
 import { LayoutError, prepareLayout, type PrepareResult } from "./prepare";
 import { renderPreparedLayoutPdf } from "./pdf-render";
 import { emptyEntry, readAll, saveEntry, type LayoutEntry } from "./store";
@@ -95,7 +95,12 @@ async function loadCatalog(profileId: string, wantThumbs: boolean): Promise<{ ca
     if (l.colors) colors[w.id] = l.colors;
     if (l.thumb) thumbs.push(l.thumb);
   });
-  const said = getTranscript(profile.id).map((t) => t.text);
+  // What the artist said about the dossier's look is a brief for the designer, never a quote on the page.
+  const entry = readAll()[profile.id];
+  const transcript = getTranscript(profile.id);
+  const look = new Set([...(entry?.wishSegments ?? []), ...dossierLookRequests(transcript).map((s) => s.id)]);
+  const wish = entry?.wish ?? "";
+  const said = transcript.filter((t) => !look.has(t.id) && !(t.text.trim() && wish.includes(t.text.trim()))).map((t) => t.text);
   return { catalog: buildCatalog(view, { said, ratios, colors }), thumbs };
 }
 
@@ -251,6 +256,9 @@ export async function setFreeLayout(input: { profileId: string; enabled: boolean
 // ---------------------------------------------------------------- the artist's wish and the automatic first batch
 
 const WISH_MAX = 600;
+/** Answers to the look question closer than this add up (voice chunks, going back to add a detail after photographing
+ * the works); a later one, from another session, starts the wish over. */
+const WISH_SESSION_MS = 2 * 60 * 60_000;
 
 /** How the artist imagines their dossier: the answer to the onboarding question, or what they said about it in the interview. */
 export function wishOf(profileId: string, entry: LayoutEntry = loadEntry(profileId)): string | undefined {
@@ -269,28 +277,31 @@ export function ensureLayoutEntry(profileId: string): void {
 }
 
 /** Saves (adds to) the artist's answer to "¿cómo te imaginas tu dossier?". `reset` starts it over (a new onboarding). */
-export function saveLayoutWish(input: { profileId: string; text: string; reset?: boolean }): void {
+export function saveLayoutWish(input: { profileId: string; text: string; reset?: boolean; segmentId?: string }): void {
   const text = input.text.trim();
   const entry = loadEntry(input.profileId);
-  if (input.reset) entry.wish = undefined;
+  const stale = !entry.wishAt || Date.now() - Date.parse(entry.wishAt) > WISH_SESSION_MS;
+  if (input.reset || stale) entry.wish = undefined;
+  if (input.segmentId && !entry.wishSegments.includes(input.segmentId)) entry.wishSegments = [...entry.wishSegments, input.segmentId].slice(-40);
   if (!text) return saveEntry(input.profileId, entry);
   const joined = entry.wish && !entry.wish.includes(text) ? `${entry.wish} ${text}` : (entry.wish ?? text);
   entry.wish = joined.slice(-WISH_MAX);
+  entry.wishAt = nowIso();
   saveEntry(input.profileId, entry);
 }
 
-/** What an automatic batch is made from: the confirmed works, the sections there are and the wish. A new key means new proposals. */
-function autoKeyOf(profileId: string, entry: LayoutEntry): { key: string; works: number; hasContent: boolean } {
-  const works = listWorks(profileId)
-    .filter((w) => w.confirmed !== false)
-    .map((w) => w.id)
-    .sort();
-  const sections = (getDossier(profileId)?.sections ?? [])
-    .filter((x) => x.body.trim())
-    .map((x) => x.key)
-    .sort();
-  const statement = !!getProfile(profileId).statement?.trim();
-  return { key: JSON.stringify([works, sections, statement, wishOf(profileId, entry) ?? ""]), works: works.length, hasContent: works.length > 0 || sections.length > 0 || statement };
+/**
+ * What an automatic batch is made from: how many works it can show (up to what a proposal must show), whether there
+ * is a statement, and the wish. A new key means new proposals; editing texts or swapping a photo does not (the layout
+ * points at the texts and works, so it follows them), so confirming works one by one costs at most a few batches.
+ */
+function autoKeyOf(profileId: string, entry: LayoutEntry): { key: string; works: number; pending: number; hasContent: boolean } {
+  const all = listWorks(profileId);
+  const works = all.filter((w) => w.confirmed !== false).length;
+  const pending = all.length - works;
+  const sections = (getDossier(profileId)?.sections ?? []).filter((x) => x.body.trim());
+  const statement = !!getProfile(profileId).statement?.trim() || sections.some((x) => x.key === "statement");
+  return { key: JSON.stringify([Math.min(works, MIN_WORKS_SHOWN), statement, wishOf(profileId, entry) ?? ""]), works, pending, hasContent: works > 0 || sections.length > 0 || statement };
 }
 
 /**
@@ -302,26 +313,34 @@ function autoKeyOf(profileId: string, entry: LayoutEntry): { key: string; works:
 export async function autoProposals(input: { profileId: string; from: "onboarding" | "dossier"; charge?: () => void }): Promise<LayoutState & { started: boolean }> {
   const skip = async () => ({ ...(await layoutState({ profileId: input.profileId })), started: false });
   try {
-    if (running(input.profileId)) return skip();
+    // No model, no free layout (the batch would only fail and spend the day's budget): the template stays.
+    if (running(input.profileId) || isMockAi()) return skip();
     const profile = getProfile(input.profileId);
     if (profile.kind !== "creator") return skip();
     const entry = loadEntry(input.profileId);
     if (!entry.enabled || entry.current) return skip();
-    const { key, works, hasContent } = autoKeyOf(input.profileId, entry);
+    const { key, works, pending, hasContent } = autoKeyOf(input.profileId, entry);
     if (!hasContent || entry.autoKey === key) return skip();
-    // A visual artist finishing the interview is about to photograph their work: wait for it (the dossier screen starts it).
-    if (input.from === "onboarding" && works === 0 && isVisualFamily(onboardingFamily(profile.disciplines))) return skip();
+    // A key saved in the first format (before 2026-11-14 16:00) already proposed from this content: adopt it, no surprise batch.
+    if (entry.autoKey?.startsWith("[[") && entry.proposals.length) {
+      entry.autoKey = key;
+      saveEntry(input.profileId, entry);
+      return skip();
+    }
+    // A visual artist without confirmed photos is about to have them: wait (finishing the interview, or photos still to review).
+    if (works === 0 && isVisualFamily(onboardingFamily(profile.disciplines)) && (input.from === "onboarding" || pending > 0)) return skip();
     // Proposals asked for by hand before: they stay until the content changes.
     if (entry.proposals.length && !entry.autoKey) {
       entry.autoKey = key;
       saveEntry(input.profileId, entry);
       return skip();
     }
+    chargeDay(entry, "batch"); // first the profile's day (not saved if the user's own limit then says no)
     input.charge?.();
-    chargeDay(entry, "batch");
     entry.autoKey = key;
+    const batchId = (entry.batchId = id());
     saveEntry(input.profileId, entry);
-    start(input.profileId, "batch", () => runBatch(input.profileId));
+    start(input.profileId, "batch", () => runBatch(input.profileId, batchId));
     return { ...(await layoutState({ profileId: input.profileId })), started: true };
   } catch (e) {
     if (!(e instanceof TooManyRequestsError)) console.error("[dossier] automatic layout batch not started", e);
@@ -371,9 +390,14 @@ function chargeDay(entry: LayoutEntry, what: "batch" | "change") {
 
 const id = () => Math.random().toString(36).slice(2, 10);
 
-/** A proposal that passes the guard and can really be painted; at most two model calls (the second hears what the guard rejected). */
+/**
+ * A proposal that passes the guard and can really be painted; at most two model calls (the second hears what the guard
+ * rejected). Editorial slips (a work repeated, a caption over a full-bleed photo) also earn a second try, but the first
+ * proposal stays as the fallback: they never cost the artist a proposal.
+ */
 async function composeOne(input: { catalog: Catalog; thumbs: NonNullable<WorkLook["thumb"]>[]; wish?: string; direction: Direction; others: string[]; avoid: string[]; usage: Usage; request?: string; current?: FreeLayout; history?: string[] }): Promise<{ layout: FreeLayout; adjustments: string[] } | undefined> {
   let problem: string | undefined;
+  let fallback: { layout: FreeLayout; adjustments: string[] } | undefined;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const layout = await designLayout({
@@ -407,14 +431,23 @@ async function composeOne(input: { catalog: Catalog; thumbs: NonNullable<WorkLoo
         problem = "No se pudo pintar: simplifica la página que falla.";
         continue;
       }
-      return { layout, adjustments: r.ok.adjustments };
+      const made = { layout, adjustments: r.ok.adjustments };
+      const slip = input.request ? undefined : editorialProblems(layout, input.catalog, r.ok.captionBands);
+      if (slip && attempt === 0) {
+        console.info("[dossier] proposal retried for an editorial slip:", slip);
+        fallback = made;
+        problem = slip;
+        continue;
+      }
+      // a second try that slips again is no better: the first one stays
+      return slip && fallback ? fallback : made;
     } catch (e) {
       console.error("[dossier] layout agent failed", e instanceof Error ? e.message : e);
-      if (e instanceof AiError && (e.reason === "budget" || e.reason === "api" || e.reason === "refusal")) return undefined;
+      if (e instanceof AiError && (e.reason === "budget" || e.reason === "api" || e.reason === "refusal")) return fallback;
       problem = "La respuesta no tenía el formato esperado.";
     }
   }
-  return undefined;
+  return fallback;
 }
 
 /** Starts a batch of N proposals (each with its own art direction). Returns the state at once; poll `busy`. */
@@ -423,12 +456,13 @@ export async function requestProposals(input: { profileId: string }): Promise<La
   const entry = loadEntry(input.profileId);
   chargeDay(entry, "batch");
   entry.enabled = true;
+  const batchId = (entry.batchId = id());
   saveEntry(input.profileId, entry);
-  start(input.profileId, "batch", () => runBatch(input.profileId));
+  start(input.profileId, "batch", () => runBatch(input.profileId, batchId));
   return layoutState(input);
 }
 
-async function runBatch(profileId: string): Promise<LayoutOutcome> {
+async function runBatch(profileId: string, batchId: string): Promise<LayoutOutcome> {
   const t0 = Date.now();
   const usage = new Usage();
   const count = layoutCount();
@@ -450,6 +484,11 @@ async function runBatch(profileId: string): Promise<LayoutOutcome> {
   console.info(`[dossier] layout batch: ${kept.length}/${count} kept, ${usage.calls} calls, ${usage.inputTokens} in / ${usage.outputTokens} out tokens, ${m.ms} ms, model ${m.model}`);
   if (!kept.length) return { ok: false, notice: TEMPLATE_NOTICE, adjustments: [], metrics: m };
   const entry = loadEntry(profileId);
+  // The artist started over (or this batch was superseded) while it ran: its proposals belong to what is gone.
+  if (entry.batchId !== batchId) {
+    console.info("[dossier] layout batch dropped: the profile's layout was reset while it ran");
+    return { ok: false, adjustments: [], metrics: m };
+  }
   entry.enabled = true;
   entry.proposals = kept;
   entry.shown = [...entry.shown, ...directions.map((d) => d.name)].slice(-12);
@@ -479,12 +518,13 @@ export async function requestChange(input: { profileId: string; request: string 
   if (!entry.current) return { ...(await layoutState(input)), notice: "Primero elige una de las propuestas y luego dime qué quieres cambiar." };
   chargeDay(entry, "change");
   entry.enabled = true;
+  const jobId = (entry.batchId = id());
   saveEntry(input.profileId, entry);
-  start(input.profileId, "change", () => runChange(input.profileId, input.request));
+  start(input.profileId, "change", () => runChange(input.profileId, input.request, jobId));
   return layoutState(input);
 }
 
-async function runChange(profileId: string, request: string): Promise<LayoutOutcome> {
+async function runChange(profileId: string, request: string, jobId: string): Promise<LayoutOutcome> {
   const t0 = Date.now();
   const usage = new Usage();
   const { catalog, thumbs } = await loadCatalog(profileId, true);
@@ -495,6 +535,11 @@ async function runChange(profileId: string, request: string): Promise<LayoutOutc
   console.info(`[dossier] layout change: ${made ? "ok" : "failed"}, ${usage.calls} calls, ${usage.inputTokens} in / ${usage.outputTokens} out tokens, ${m.ms} ms`);
   if (!made) return { ok: false, notice: "No he podido hacer ese cambio y dejo la maquetación como estaba. Prueba a pedirlo de otra manera.", adjustments: [], metrics: m };
   const latest = loadEntry(profileId);
+  // The artist started over while it ran: the change belongs to the layout that is gone.
+  if (latest.batchId !== jobId) {
+    console.info("[dossier] layout change dropped: the profile's layout was reset while it ran");
+    return { ok: false, adjustments: [], metrics: m };
+  }
   latest.enabled = true;
   latest.current = made.layout;
   latest.history = [...latest.history, { request, layout: made.layout, at: nowIso() }].slice(-HISTORY_LIMIT);

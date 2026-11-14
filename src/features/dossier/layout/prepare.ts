@@ -51,7 +51,14 @@ export interface PrepareResult {
   layout: PreparedLayout;
   adjustments: string[]; // Spanish: what the guard changed and why
   missingWorks: boolean; // the layout asked for works the artist has not uploaded
+  /** Captions of a work that ended up over a full-bleed photo and needed a band (an editorial slip, see completeness.ts). */
+  captionBands: { page: number; work: number }[];
 }
+
+const CAPTION_REF = /^obra\.(\d+)\.(ficha|titulo)$/;
+/** A photo this large fills the page: a caption on it hides the work. */
+const BLEED_W = 90;
+const BLEED_H = 85;
 
 type Box = { x: number; y: number; w: number; h: number };
 type Item = { z: number; seq: number; el: PreparedElement; col?: string };
@@ -160,6 +167,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
   const adjustments = new Set<string>();
   const note = (s: string) => adjustments.add(s);
   let missingWorks = false;
+  const captionBands: PrepareResult["captionBands"] = [];
   let seq = 0;
   let textsSeen = 0;
   let textsDropped = 0;
@@ -254,6 +262,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
       uppercase: el.uppercase,
       tracking: el.tracking,
       rotate: rot,
+      ...(el.ref && catalog.texts[el.ref] ? { ref: el.ref } : {}),
     };
     if (base.size > el.size + 0.05) note("He subido el tamaño de un texto que no se habría leído bien impreso.");
     if (rot) return { ...base, ...safeRotatedBox(el, rot) };
@@ -438,7 +447,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
     resolveOverlaps(page, pi + 1);
     // D: paint order, contrast, bands over photos
     const ordered = [...page.items].sort((a, b) => a.z - b.z || a.seq - b.seq).map((i) => i.el);
-    out.push({ background: page.background, elements: finishPage(page.background, ordered) });
+    out.push({ background: page.background, elements: finishPage(page.background, ordered, out.length + 1) });
   }
 
   // ---------------------------------------------------------------- F: whole-layout checks
@@ -448,7 +457,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
   if (kept.length > MAX_PAGES) throw new LayoutError(`Demasiadas páginas (máximo ${MAX_PAGES}).`);
   if (textsSeen && textsDropped / textsSeen > 0.4) throw new LayoutError("Demasiados textos no se podían sacar de lo que me contaste.");
 
-  return { layout: { name: parsed.data.name, rationale: parsed.data.rationale, pages: kept }, adjustments: [...adjustments], missingWorks };
+  return { layout: { name: parsed.data.name, rationale: parsed.data.rationale, pages: kept }, adjustments: [...adjustments], missingWorks, captionBands };
 
   // ---------------------------------------------------------------- helpers (hoisted)
 
@@ -552,7 +561,7 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
     }
   }
 
-  function finishPage(background: string, ordered: PreparedElement[]): PreparedElement[] {
+  function finishPage(background: string, ordered: PreparedElement[], pageNo: number): PreparedElement[] {
     const out: PreparedElement[] = [];
     const lineColor = lum(background) > 0.4 ? "#1a1a1a" : "#e8e8e8";
     ordered.forEach((el, idx) => {
@@ -620,6 +629,9 @@ export function prepareLayout(input: FreeLayout, catalog: Catalog): PrepareResul
         const band: PreparedRect = { type: "rect", x: r2(Math.max(0, ext.x - 1.5)), y: r2(Math.max(0, ext.y - 0.8)), w: r2(Math.min(100 - Math.max(0, ext.x - 1.5), ext.w + 3)), h: r2(Math.min(100, ext.h + 1.6)), fill: bandFill, opacity: 0.62, radiusPct: 0, strokeWidth: 0 };
         out.push(band);
         bg = blend(bandFill, "#808080", 0.62);
+        const photo = ordered[photoIdx];
+        const caption = t.ref ? CAPTION_REF.exec(t.ref) : null;
+        if (caption && photo.type === "image" && photo.w >= BLEED_W && photo.h >= BLEED_H) captionBands.push({ page: pageNo, work: Number(caption[1]) });
         note("He puesto una banda tras el texto que va sobre una foto, para que se lea.");
       }
       const min = t.size >= 24 ? 3 : 4.5;

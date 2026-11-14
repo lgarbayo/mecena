@@ -8,7 +8,7 @@ import { LayoutError, prepareLayout, SAFE_X, SAFE_Y } from "@/features/dossier/l
 import { textsOutgrewLayout } from "@/features/dossier/layout/notes";
 import { FreeLayout, MAX_PAGES, type FreeLayout as Layout, type PreparedText } from "@/features/dossier/layout/schema";
 import { DAILY_LAYOUT_BATCHES, autoProposals, catalogFor, saveLayoutWish, chooseProposal, layoutIdle, layoutState, requestChange, requestProposals, setFreeLayout, undoLayout } from "@/features/dossier/layout/service";
-import { MIN_WORKS_SHOWN, missingContent } from "@/features/dossier/layout/completeness";
+import { MIN_WORKS_SHOWN, editorialProblems, missingContent } from "@/features/dossier/layout/completeness";
 import { renderDossierPdf, countPages } from "@/features/dossier/service";
 import { GET as layoutGet, POST as layoutPost } from "@/app/api/dossier/layout/route";
 import { req, seedOnboardedCreator, loginDemo } from "../helpers";
@@ -611,7 +611,23 @@ describe("catalog: untitled works", () => {
   });
 });
 
+
+/** The automatic batch needs a model; these tests play it (the agent is mocked), so they say a key is there. */
+function withRealModel() {
+  const saved = { mock: process.env.MECENA_AI_MOCK, key: process.env.ANTHROPIC_API_KEY };
+  beforeEach(() => {
+    process.env.MECENA_AI_MOCK = "0";
+    process.env.ANTHROPIC_API_KEY = saved.key || "test-key-not-used";
+  });
+  afterEach(() => {
+    process.env.MECENA_AI_MOCK = saved.mock;
+    if (saved.key === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = saved.key;
+  });
+}
 describe("the free layout is the first design", () => {
+  withRealModel();
+
   it("proposes two layouts per batch by default", () => {
     delete process.env.MECENA_LAYOUT_COUNT;
     expect(agent.layoutCount()).toBe(2);
@@ -677,5 +693,220 @@ describe("the free layout is the first design", () => {
     await layoutIdle(DEMO_CREATOR_ID);
     const other = await layoutPost(req("/api/dossier/layout", { method: "POST", body: { auto: "dossier", profileId: "someone-elses" } }));
     expect(other.status).toBeGreaterThanOrEqual(400);
+  });
+});
+
+describe("editorial slips: a work twice, a caption over its full-bleed photo", () => {
+  it("names a repeated work and a caption laid over a full-bleed photo; a clean proposal passes", async () => {
+    await seed(3);
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    expect(editorialProblems(mockComposition(cat, 0), cat)).toBeUndefined();
+    const twice = layout(page(text("nombre", 8, 70, 84, 12, { size: 40 }), image(1, 8, 5, 84, 60)), page(image(2, 0, 0, 100, 100)), page(image(1, 0, 0, 100, 100)));
+    expect(editorialProblems(twice, cat)).toMatch(/Repites la obra 1 en las páginas 1 y 3/);
+    // the caption check follows what is painted (prepareLayout's bands), not the raw boxes
+    const slipOf = (l: Layout) => editorialProblems(l, cat, prepareLayout(l, cat).captionBands);
+    const cover = page(text("nombre", 8, 70, 84, 12, { size: 40 }), image(1, 8, 5, 84, 60));
+    const over = layout(cover, page(image(2, 0, 0, 100, 100, { fit: "cover" }), text("obra.2.ficha", 8, 92, 84, 3, { size: 8 })));
+    expect(slipOf(over)).toMatch(/pie de la obra 2 va encima de una foto a sangre \(página 2\)/);
+    // on a page of its own, or vertical in a margin the photo leaves free, it is fine
+    expect(slipOf(layout(cover, page(image(2, 0, 0, 100, 100)), page(text("obra.2.ficha", 8, 10, 84, 3, { size: 8 }))))).toBeUndefined();
+    expect(slipOf(layout(cover, page(image(2, 12, 0, 88, 100, { fit: "cover" }), text("obra.2.ficha", -34, 50, 80, 2.5, { size: 8, rotate: -90 }))))).toBeUndefined();
+    // a short title on a veil over the photo is a deliberate choice, not a band that hides the work
+    const veil = { type: "rect", x: 0, y: 70, w: 100, h: 30, fill: "#000000", opacity: 0.75 } as const;
+    expect(slipOf(layout(cover, page(image(2, 0, 0, 100, 100, { fit: "cover" }), veil, text("obra.2.titulo", 8, 80, 84, 8, { size: 30, color: "#ffffff" }))))).toBeUndefined();
+  });
+
+  it("retries a proposal that repeats a work, telling the model why, and keeps the better one", async () => {
+    await seed(3);
+    vi.spyOn(agent, "planDirections").mockResolvedValue(mockDirections(1));
+    const spy = vi.spyOn(agent, "designLayout").mockImplementation(async (input) => {
+      const base = mockComposition(input.catalog, 0, input.direction!.name);
+      if (input.problem) return base; // the second try listens
+      return { ...base, pages: [...base.pages, { background: "#ffffff", elements: [image(1, 0, 0, 100, 100)] }] };
+    });
+    await requestProposals({ profileId: DEMO_CREATOR_ID });
+    await layoutIdle(DEMO_CREATOR_ID);
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy.mock.calls[1][0].problem).toMatch(/Repites la obra 1/);
+    const s = await layoutState({ profileId: DEMO_CREATOR_ID });
+    expect(s.proposals).toHaveLength(1);
+    const clean = prepareLayout(mockComposition(await catalogFor(DEMO_CREATOR_ID), 0), await catalogFor(DEMO_CREATOR_ID)).layout;
+    expect(s.proposals[0].prepared.pages).toHaveLength(clean.pages.length); // the second, without the repeated page
+  });
+
+  it("keeps the first proposal when the second try slips again", async () => {
+    await seed(3);
+    vi.spyOn(agent, "planDirections").mockResolvedValue(mockDirections(1));
+    let call = 0;
+    vi.spyOn(agent, "designLayout").mockImplementation(async (input) => {
+      call++;
+      const base = mockComposition(input.catalog, 0, input.direction!.name);
+      const extra = call === 1 ? [image(1, 0, 0, 100, 100)] : [image(1, 0, 0, 100, 100), text("lema", 8, 8, 84, 6)];
+      return { ...base, pages: [...base.pages, { background: "#ffffff", elements: extra }] };
+    });
+    await requestProposals({ profileId: DEMO_CREATOR_ID });
+    await layoutIdle(DEMO_CREATOR_ID);
+    const p = (await layoutState({ profileId: DEMO_CREATOR_ID })).proposals[0];
+    expect(p.prepared.pages.at(-1)!.elements.filter((e) => e.type === "text")).toHaveLength(0); // the first one
+  });
+
+  it("never loses a proposal over a slip: if the second try breaks, the first one stays", async () => {
+    await seed(3);
+    vi.spyOn(agent, "planDirections").mockResolvedValue(mockDirections(1));
+    vi.spyOn(agent, "designLayout").mockImplementation(async (input) => {
+      if (input.problem) throw new AiError("boom", "parse");
+      const base = mockComposition(input.catalog, 0, input.direction!.name);
+      return { ...base, pages: [...base.pages, { background: "#ffffff", elements: [image(1, 0, 0, 100, 100)] }] };
+    });
+    await requestProposals({ profileId: DEMO_CREATOR_ID });
+    await layoutIdle(DEMO_CREATOR_ID);
+    expect((await layoutState({ profileId: DEMO_CREATOR_ID })).proposals).toHaveLength(1);
+  });
+});
+
+describe("automatic batches: restarts, pending photos, wishes over time", () => {
+  withRealModel();
+
+  it("never starts with the simulated AI (it could only fail and spend the day's budget)", async () => {
+    await seed(2);
+    process.env.MECENA_AI_MOCK = "1";
+    const plan = vi.spyOn(agent, "planDirections");
+    const s = await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" });
+    expect(s.started).toBe(false);
+    expect(s.batchesLeft).toBe(DAILY_LAYOUT_BATCHES);
+    expect(plan).not.toHaveBeenCalled();
+  });
+
+  it("drops a batch whose profile started over while it ran", async () => {
+    await seed(3);
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    vi.spyOn(agent, "planDirections").mockImplementation(async () => {
+      await gate;
+      return mockDirections(2);
+    });
+    vi.spyOn(agent, "designLayout").mockImplementation(async (input) => mockComposition(input.catalog, 0, input.direction!.name));
+    await requestProposals({ profileId: DEMO_CREATOR_ID });
+    const { forgetLayouts } = await import("@/features/dossier/layout/store");
+    forgetLayouts([DEMO_CREATOR_ID]); // "Empezar de cero"
+    release();
+    await layoutIdle(DEMO_CREATOR_ID);
+    expect((await layoutState({ profileId: DEMO_CREATOR_ID })).proposals).toEqual([]);
+  });
+
+  it("waits while a visual artist's photos are still to be reviewed, and does not re-propose for every edit", async () => {
+    await seed(0);
+    const { updateDb } = await import("@/server/store");
+    await updateDb((db) => {
+      for (const w of db.works) if (w.profileId === DEMO_CREATOR_ID) w.confirmed = false;
+    });
+    fakeModel();
+    expect((await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" })).started).toBe(false);
+    await updateDb((db) => {
+      for (const w of db.works) if (w.profileId === DEMO_CREATOR_ID) w.confirmed = true;
+    });
+    expect((await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" })).started).toBe(true);
+    await layoutIdle(DEMO_CREATOR_ID);
+    // a text edit is followed by the layout itself (it points at the texts): no new batch
+    await updateDb((db) => {
+      const p = db.profiles.find((x) => x.id === DEMO_CREATOR_ID)!;
+      p.bio = `${p.bio} Otra frase.`;
+    });
+    expect((await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" })).started).toBe(false);
+  });
+
+  it("adds voice chunks of one answer to the wish, but a later answer starts it over", async () => {
+    await seed(1);
+    saveLayoutWish({ profileId: DEMO_CREATOR_ID, text: "Sobrio," });
+    saveLayoutWish({ profileId: DEMO_CREATOR_ID, text: "en blanco y negro." });
+    expect((await layoutState({ profileId: DEMO_CREATOR_ID })).wish).toBe("Sobrio, en blanco y negro.");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(Date.now() + 3 * 60 * 60_000);
+    try {
+      saveLayoutWish({ profileId: DEMO_CREATOR_ID, text: "Colorido, como un fanzine." });
+      expect((await layoutState({ profileId: DEMO_CREATOR_ID })).wish).toBe("Colorido, como un fanzine.");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("the look answer is a brief, not content", () => {
+  it("never reaches the profile, the dossier text, a follow-up or a quote; it becomes the wish", async () => {
+    await seed(2);
+    const { processTurn } = await import("@/features/onboarding/service");
+    const { getProfile, getDossier, getTranscript } = await import("@/server/store");
+    const before = { profile: getProfile(DEMO_CREATOR_ID), sections: getDossier(DEMO_CREATOR_ID)?.sections ?? [] };
+    const text = "Sobrio, con las fotos grandes a sangre y muy poco texto, como un fotolibro de los setenta.";
+    const res = await processTurn({ profileId: DEMO_CREATOR_ID, text, source: "text", stepKey: "dossierLook" });
+    expect(res.changedProfileFields).toEqual([]);
+    expect(res.changedSectionKeys).toEqual([]);
+    expect(res.followUpQuestion).toBeUndefined();
+    const after = getProfile(DEMO_CREATOR_ID);
+    expect({ ...after, updatedAt: "" }).toEqual({ ...before.profile, updatedAt: "" });
+    expect(getDossier(DEMO_CREATOR_ID)?.sections ?? []).toEqual(before.sections);
+    expect(getTranscript(DEMO_CREATOR_ID).some((t) => t.text === text)).toBe(true); // what they said stays on record
+    expect((await layoutState({ profileId: DEMO_CREATOR_ID })).wish).toBe(text);
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    expect(Object.values(cat.texts).some((t) => t.paragraphs.some((p) => p.includes("fotolibro de los setenta")))).toBe(false);
+  });
+});
+
+describe("PR #67 review: changes and resets, short answers, older entries", () => {
+  withRealModel();
+
+  it("drops a layout change that was running when the artist started over", async () => {
+    await seed(3);
+    fakeModel();
+    await requestProposals({ profileId: DEMO_CREATOR_ID });
+    await layoutIdle(DEMO_CREATOR_ID);
+    const st = await layoutState({ profileId: DEMO_CREATOR_ID });
+    await chooseProposal({ profileId: DEMO_CREATOR_ID, proposalId: st.proposals[0].id });
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    vi.mocked(agent.designLayout).mockImplementation(async (input) => {
+      await gate;
+      return mockChange(input);
+    });
+    await requestChange({ profileId: DEMO_CREATOR_ID, request: "fondo negro" });
+    const { forgetLayouts } = await import("@/features/dossier/layout/store");
+    forgetLayouts([DEMO_CREATOR_ID]);
+    release();
+    await layoutIdle(DEMO_CREATOR_ID);
+    const after = await layoutState({ profileId: DEMO_CREATOR_ID });
+    expect(after.mode).toBe("plantilla");
+    expect(after.history).toEqual([]);
+  });
+
+  it("a short typed look answer still reaches the template design", async () => {
+    await seed(1);
+    const { processTurn, pendingDesigns } = await import("@/features/onboarding/service");
+    const { hasSavedDesign } = await import("@/features/dossier/designs");
+    await processTurn({ profileId: DEMO_CREATOR_ID, text: "Oscuro.", source: "text", stepKey: "dossierLook" });
+    await Promise.all([...pendingDesigns]);
+    expect(hasSavedDesign(DEMO_CREATOR_ID)).toBe(true);
+  });
+
+  it("adopts an automatic key saved in the first format instead of starting a surprise batch", async () => {
+    await seed(2);
+    fakeModel();
+    await requestProposals({ profileId: DEMO_CREATOR_ID });
+    await layoutIdle(DEMO_CREATOR_ID);
+    const { readEntry, saveEntry } = await import("@/features/dossier/layout/store");
+    const e = readEntry(DEMO_CREATOR_ID);
+    saveEntry(DEMO_CREATOR_ID, { ...e, autoKey: JSON.stringify([["w1", "w2"], ["bio"], true, ""]) });
+    expect((await autoProposals({ profileId: DEMO_CREATOR_ID, from: "dossier" })).started).toBe(false);
+    expect(readEntry(DEMO_CREATOR_ID).autoKey?.startsWith("[[")).toBe(false);
+  });
+
+  it("never quotes what is already the wish, even from before look segments were tagged", async () => {
+    await seed(1);
+    const { appendSegment } = await import("@/server/store");
+    const text = "Colorido, como un fanzine, con mucho collage y letras recortadas a mano.";
+    await appendSegment(DEMO_CREATOR_ID, text, "text");
+    const { readEntry, saveEntry } = await import("@/features/dossier/layout/store");
+    saveEntry(DEMO_CREATOR_ID, { ...readEntry(DEMO_CREATOR_ID), enabled: true, wish: text, wishSegments: [] });
+    const cat = await catalogFor(DEMO_CREATOR_ID);
+    expect(Object.values(cat.texts).some((t) => t.paragraphs.some((p) => p.includes("letras recortadas")))).toBe(false);
   });
 });
