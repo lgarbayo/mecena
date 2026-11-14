@@ -33,6 +33,8 @@ Principios:
 - Debe leerse impreso en A4 y proyectado: contraste alto entre ink y paper, textos secundarios legibles.
 - Tipografías: cualquier familia de Google Fonts, escrita exactamente como en Google Fonts. Evita las de siempre (Inter, Roboto, Poppins, Montserrat, Open Sans, Lato, Playfair Display). Busca carácter: p. ej. Fraunces, Instrument Serif, Cormorant Garamond, Libre Caslon Text, EB Garamond, Spectral, Young Serif, Bricolage Grotesque, Familjen Grotesk, Hanken Grotesk, Space Grotesk, Syne, Unbounded, Archivo, IBM Plex Mono, DM Mono, Space Mono, Caveat, Gloock, Bodoni Moda, Anybody. "category" debe corresponder a la familia.
 - Nada de degradados, brillos ni adornos de plantilla. Un solo acento que signifique algo.
+- Imágenes: el dossier solo muestra la obra del propio artista (sus fotos, portadas, carteles); tú no añades fotos ni ilustraciones de otros. Si pide imágenes ("con imágenes de jazz", "fotos de conciertos"), lleva ese ambiente a la paleta, las letras y la textura, y en "rationale" dile en una frase que suba sus propias fotos (portadas, conciertos, ensayos) en Obra para que aparezcan.
+- Si pide un fondo concreto ("fondo negro", "que predomine el negro"), paper y wall son ese fondo y ink el contraste; backPaper/backInk pueden invertirse.
 - titles: solo cuando ayuden (por ejemplo si el artista habla de sus "piezas" en vez de "obra", o pide un tono más personal). Máximo 3-4 palabras, en español o gallego si el artista lo usa. Si no, déjalos vacíos.
 - Vale para cualquier arte (familia en "perfil.familia"): pintura, música, danza, teatro, cine, literatura, diseño, artesanía… Piensa en cómo se presenta ese arte: una compañía de danza no es una galería, un disco no es un cuadro.
 - structure: también decides el contenido entre portada y contraportada, si el artista lo pide o si su forma de hablar lo pide.
@@ -83,6 +85,9 @@ const COLOURS: Record<string, string> = {
   terracota: "#a65a3a", teja: "#a65a3a", gris: "#6b7075", negro: "#1a1a1a", dorado: "#a8873a", liquen: "#a3a05a",
 };
 
+/** The design never adds pictures that are not the artist's: it says so and points to where theirs go. */
+const IMAGES_NOTE = " Las imágenes del dossier son siempre tuyas: sube fotos de tus portadas, conciertos o ensayos en Obra y aparecerán aquí.";
+
 const has = (text: string, ...words: string[]) => words.some((w) => text.includes(w));
 
 export function mockDesign(input: DesignDossierInput): Design {
@@ -103,7 +108,9 @@ export function mockDesign(input: DesignDossierInput): Design {
     d.palette = { ...d.palette, paper: "#f6efe3", ink: "#2b2520", muted: "#6c6258", rule: "#d8cebf", wall: "#ddd2c0", ground: "#ece3d3" };
     done.push("papel cálido");
   }
-  const named = Object.keys(COLOURS).find((c) => req.includes(c));
+  // "negro de fondo" is the page, not an accent: on a dark page the accent must stay visible.
+  const dark = d.palette.paper === "#16191d";
+  const named = Object.keys(COLOURS).find((c) => req.includes(c) && !(dark && (c === "negro" || c === "gris")));
   if (named) {
     d.palette.accent = COLOURS[named];
     done.push(`acento ${named}`);
@@ -205,10 +212,12 @@ export function mockDesign(input: DesignDossierInput): Design {
   }
   d.structure = st;
 
+  const images = has(req, "imagen", "foto", "ilustracion");
+
   const words = input.request.trim().split(/\s+/).slice(0, 4).join(" ");
   d.name = done.length ? (input.request.trim().length <= 40 ? capital(input.request.trim()) : `${capital(words)}…`) : d.name;
   d.rationale = done.length
-    ? `He aplicado lo que pedías: ${done.join(", ")}.${input.call ? " Lo he mantenido legible para el jurado de la convocatoria." : ""}`
+    ? `He aplicado lo que pedías: ${done.join(", ")}.${input.call ? " Lo he mantenido legible para el jurado de la convocatoria." : ""}${images ? IMAGES_NOTE : ""}`.slice(0, 600)
     : "No he entendido qué cambiar. Prueba con un color, un ambiente («más oscuro», «como un libro», «tipo fanzine») o cómo quieres ver la obra («a sangre», «en rejilla»).";
   return d;
 }

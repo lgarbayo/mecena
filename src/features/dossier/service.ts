@@ -13,7 +13,8 @@ import { orderWorks, toDossierView, type DossierView } from "./model";
 import { planVariant } from "./variant";
 import { adaptVariant } from "./adapt";
 import { designTokens } from "./design";
-import { currentDesign } from "./designs";
+import { isDossierStyle } from "./style";
+import { currentDesign, ensureDesign } from "./designs";
 import type { PdfTokens } from "./pdf/DossierPdf";
 import type { PdfFaces } from "./pdf/fonts";
 
@@ -145,6 +146,8 @@ export function pdfTokens(data: DossierData, look: PdfLook = {}): PdfTokens {
 /** Returns PDF bytes. Never throws for a known profile: renderer errors fall back to a minimal PDF. */
 export async function renderDossierPdf(input: { profileId: string; callId?: string; adapt?: boolean } & PdfLook): Promise<Buffer> {
   const data = await loadDossierData(input);
+  // No design yet (the artist never opened /dossier): design it from the interview, so the PDF honours what they asked for.
+  if (!isDossierStyle(input.style)) await ensureDesign({ profileId: data.profile.id, callId: input.callId });
   try {
     const tokens = pdfTokens(data, input);
     const { loadDesignFonts } = await import("./pdf/fonts");

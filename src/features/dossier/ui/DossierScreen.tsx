@@ -108,7 +108,7 @@ export function DossierScreen() {
 
   // Nobody asks the artist how the dossier should look: the first design comes by itself, from the interview
   // and the colours of their work, as soon as there is something to design. Asking for changes is optional.
-  const hasContent = !!data && (data.works.length > 0 || !!data.profile.statement);
+  const hasContent = !!data && (data.works.length > 0 || !!data.profile.statement || data.dossier.sections.length > 0);
   const coloursReady = !imageKey || workColors.length > 0;
   useEffect(() => {
     if (!data || designSaved !== false || !hasContent || autoTried.current) return;
