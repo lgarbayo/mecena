@@ -1,11 +1,12 @@
 "use client";
 /** /entrar: email + password, "Entrar" or "Crear cuenta". After success, back to ?next (or home) with a full reload. */
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { API, ROUTES, safeNext } from "@/contracts";
 import type { MeResponse } from "@/contracts/api";
 import { Button, Card, PageTitle } from "@/components/ui";
 import { ApiClientError, apiSend } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import styles from "./auth.module.css";
 
 type Mode = "login" | "signup";
@@ -26,22 +27,41 @@ export function LoginScreen({
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [leaving, setLeaving] = useState(false); // signed in: the button stays locked until the page reloads
   const signup = mode === "signup";
+  // sign-up carries an Idempotency-Key (a double tap never creates the account twice); login is just guarded
+  const lastError = useRef<unknown>(null);
+  const send = useAction(async (idempotencyKey: string, url: string, body: Record<string, string>) => {
+    try {
+      return await apiSend<MeResponse>(url, body, "POST", undefined, { idempotencyKey });
+    } catch (e) {
+      lastError.current = e;
+      throw e;
+    }
+  });
+  const busy = send.pending || leaving;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (busy) return;
     if (signup && password.length < 8) return setError("La contraseña necesita al menos 8 caracteres.");
-    setBusy(true);
+    lastError.current = null;
+    let ok = false;
+    let failure: unknown = null;
     try {
-      const body = signup ? { email, password, ...(signupCodeAccepted && code.trim() ? { code } : {}) } : { email, password };
-      await apiSend<MeResponse>(signup ? API.authSignup : API.authLogin, body);
-      window.location.assign(safeNext(next)); // checked again here: never leave the site after signing in
+      const body: Record<string, string> = signup ? { email, password, ...(signupCodeAccepted && code.trim() ? { code } : {}) } : { email, password };
+      ok = !!(await send.run(signup ? API.authSignup : API.authLogin, body));
     } catch (err) {
-      setError(err instanceof ApiClientError ? friendly(err) : "No hemos podido conectar. Revisa tu conexión y prueba otra vez.");
-      setBusy(false);
+      failure = err;
     }
+    if (ok) {
+      setLeaving(true);
+      window.location.assign(safeNext(next)); // checked again here: never leave the site after signing in
+      return;
+    }
+    const err = failure ?? lastError.current;
+    setError(err instanceof ApiClientError ? friendly(err) : "No hemos podido conectar. Revisa tu conexión y prueba otra vez.");
   };
 
   const choose = (m: Mode) => {
@@ -53,7 +73,7 @@ export function LoginScreen({
     <div className={styles.wrap}>
       <PageTitle kicker="Tu cuenta">{signup ? "Crea tu cuenta" : "Entra en Mecena"}</PageTitle>
       <p className={styles.lead}>{signup ? "Tu perfil, tus obras y tus solicitudes son solo tuyos." : "Sigue donde lo dejaste."}</p>
-      <Card>
+      <Card className={styles.card}>
         <div className={styles.tabs} role="tablist" aria-label="Entrar o crear cuenta">
           <button type="button" role="tab" aria-selected={!signup} onClick={() => choose("login")}>
             Entrar

@@ -3,28 +3,45 @@
  * "Borrar mi cuenta", with a confirmation step. Shown only signed in (on /confianza, which is also public).
  * DELETE /api/auth/me removes the account and everything it owns, photos included, then signs out.
  */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { API, ROUTES } from "@/contracts";
 import { useOptionalApp } from "@/components/shell/AppProvider";
 import { ApiClientError, apiSend } from "@/lib/api-client";
+import { useAction } from "@/lib/use-action";
 import styles from "./auth.module.css";
 
 export function DeleteAccount() {
   const app = useOptionalApp();
   const [step, setStep] = useState<"idle" | "confirm" | "busy">("idle");
   const [error, setError] = useState<string>();
+  const lastError = useRef<unknown>(null);
+  const del = useAction(async (idempotencyKey: string) => {
+    try {
+      await apiSend(API.authMe, { confirm: true }, "DELETE", undefined, { idempotencyKey });
+      return true;
+    } catch (e) {
+      lastError.current = e;
+      throw e;
+    }
+  });
   if (!app?.user) return null;
 
   const remove = async () => {
+    if (step === "busy") return;
     setStep("busy");
     setError(undefined);
+    lastError.current = null;
+    let failure: unknown = null;
+    let ok = false;
     try {
-      await apiSend(API.authMe, { confirm: true }, "DELETE");
-      window.location.assign(ROUTES.home);
+      ok = !!(await del.run());
     } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : "No hemos podido borrar tu cuenta. Prueba otra vez.");
-      setStep("confirm");
+      failure = e;
     }
+    if (ok) return window.location.assign(ROUTES.home);
+    const e = failure ?? lastError.current;
+    setError(e instanceof ApiClientError ? e.message : "No hemos podido borrar tu cuenta. Prueba otra vez.");
+    setStep("confirm");
   };
 
   return (

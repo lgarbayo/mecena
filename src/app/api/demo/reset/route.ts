@@ -4,11 +4,14 @@ import { DemoResetRequest } from "@/contracts/api";
 import { resetUserDemo } from "@/features/demo/service";
 import { requireUser } from "@/server/auth";
 import { body, json, route } from "@/server/http";
+import { idempotent } from "@/server/idempotency";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export const POST = route(async (req: Request) => {
-  const user = requireUser(req);
-  return json(await resetUserDemo(user, await body(req, DemoResetRequest)));
-});
+export const POST = route(
+  idempotent(async (req: Request) => {
+    const user = requireUser(req);
+    return json(await resetUserDemo(user, await body(req, DemoResetRequest)));
+  }),
+);
