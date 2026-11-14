@@ -27,6 +27,9 @@ describe("GET /api/calls", () => {
     expect(body.mode).toBe("creator");
     expect(body.results).toHaveLength(FREE_MATCHES_PER_MONTH);
     expect(body.lockedCount).toBe(3); // 6 eligible - 3 visible
+    // The locked cards show their score (rank order) and nothing else of the call.
+    expect(body.lockedScores).toHaveLength(3);
+    expect(body.lockedScores.every((n: unknown) => typeof n === "number")).toBe(true);
     expect(body.results.every((r: { match: { eligible: boolean } }) => r.match.eligible)).toBe(true);
     const ids = body.results.map((r: { call: { id: string } }) => r.call.id);
     expect(ids).not.toContain("fixture-digitalizacion-pymes");
@@ -38,6 +41,7 @@ describe("GET /api/calls", () => {
     const body = await (await getCalls(req(`/api/calls?profileId=${DEMO_CREATOR_ID}&appUserId=${DEMO_APP_USER_ID}`))).json();
     expect(body.results).toHaveLength(6);
     expect(body.lockedCount).toBe(0);
+    expect(body.lockedScores).toEqual([]);
   });
 
   it("business mode ranks business calls first; creator calls an autónomo may enter rank low", async () => {

@@ -47,12 +47,15 @@ function firstLines(body: string): string {
 
 export function LiveDossier({ kind, profile, sections, changedSections, changedFields, version, works = [], freshWorkId }: LiveDossierProps) {
   const [open, setOpen] = useState(false);
-  const titles = sectionTitles(kind);
-  const byKey = new Map(sections.filter((x) => x.body.trim()).map((x) => [x.key as string, x]));
+  // A pyme sees only its company card grow: the capability memoria adds nothing to its onboarding.
+  const memoria = kind === "creator";
+  const panelTitle = memoria ? ONBOARDING.dossierPanel[kind] : ONBOARDING.profilePanel[kind];
+  const titles = memoria ? sectionTitles(kind) : {};
+  const byKey = new Map(memoria ? sections.filter((x) => x.body.trim()).map((x) => [x.key as string, x]) : []);
   const total = Object.keys(titles).length;
   // The section to show in full: the one this turn changed, else the most recently written.
   const latest =
-    sections.find((x) => changedSections.has(x.key) && x.body.trim()) ??
+    (memoria && sections.find((x) => changedSections.has(x.key) && x.body.trim())) ||
     [...byKey.values()].sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0))[0];
   const rows = filledRows(kind, profile);
   const chips = rows.flatMap((r) => r.values.map((v) => ({ field: r.field, label: r.label, value: v }))).slice(0, MAX_CHIPS);
@@ -85,34 +88,38 @@ export function LiveDossier({ kind, profile, sections, changedSections, changedF
       <section className={s.live} aria-labelledby="live-dossier-title" data-testid="live-dossier">
         <header className={s.liveHead}>
           <h2 id="live-dossier-title" className={s.liveTitle}>
-            {ONBOARDING.dossierPanel[kind]}
+            {panelTitle}
           </h2>
-          <span className={s.counter} data-testid="live-count">
-            {byKey.size}/{total}
-          </span>
+          {memoria && (
+            <span className={s.counter} data-testid="live-count">
+              {byKey.size}/{total}
+            </span>
+          )}
           <button type="button" className={s.textBtn} onClick={() => setOpen(true)} aria-haspopup="dialog" data-testid="live-open">
             {C.liveOpen}
           </button>
         </header>
 
-        <ol className={s.pills} aria-label="Secciones">
-          {Object.entries(titles).map(([key, title]) => {
-            const filled = byKey.has(key);
-            const isNew = changedSections.has(key);
-            return (
-              <li
-                key={isNew ? `${key}-${version}` : key}
-                className={`${s.pill} ${filled ? s.pillOn : ""} ${isNew ? s.pillNew : ""}`}
-                data-section={key}
-                data-filled={filled || undefined}
-                data-changed={isNew || undefined}
-              >
-                {filled ? <Icon name="check" size={14} /> : null}
-                {title}
-              </li>
-            );
-          })}
-        </ol>
+        {memoria && (
+          <ol className={s.pills} aria-label="Secciones">
+            {Object.entries(titles).map(([key, title]) => {
+              const filled = byKey.has(key);
+              const isNew = changedSections.has(key);
+              return (
+                <li
+                  key={isNew ? `${key}-${version}` : key}
+                  className={`${s.pill} ${filled ? s.pillOn : ""} ${isNew ? s.pillNew : ""}`}
+                  data-section={key}
+                  data-filled={filled || undefined}
+                  data-changed={isNew || undefined}
+                >
+                  {filled ? <Icon name="check" size={14} /> : null}
+                  {title}
+                </li>
+              );
+            })}
+          </ol>
+        )}
 
         {empty && <p className={s.liveEmpty}>{C.liveEmpty[kind]}</p>}
 
@@ -154,7 +161,7 @@ export function LiveDossier({ kind, profile, sections, changedSections, changedF
         <div className={s.sheetBackdrop} onClick={() => setOpen(false)}>
           <div className={s.sheet} role="dialog" aria-modal="true" aria-labelledby="live-sheet-title" onClick={(e) => e.stopPropagation()} data-testid="live-sheet">
             <header className={s.sheetHead}>
-              <h2 id="live-sheet-title">{ONBOARDING.dossierPanel[kind]}</h2>
+              <h2 id="live-sheet-title">{panelTitle}</h2>
               <button type="button" className={s.sheetClose} onClick={() => setOpen(false)} aria-label={C.close}>
                 <Icon name="close" size={18} />
               </button>
@@ -180,7 +187,7 @@ export function LiveDossier({ kind, profile, sections, changedSections, changedF
                   </ul>
                 </section>
               )}
-              <DossierPanel kind={kind} sections={sections} changed={changedSections} version={version} />
+              {memoria && <DossierPanel kind={kind} sections={sections} changed={changedSections} version={version} />}
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 "use client";
-// WP-06 feed: ranked matches for the active profile; the free plan sees 3, the rest are blurred behind the paywall.
+// WP-06 feed: ranked matches for the active profile; the free plan sees 3, the rest only their score, blurred behind the paywall.
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API, ROUTES } from "@/contracts";
@@ -95,24 +95,41 @@ export function CallCard({ call, match, breakdown }: Result) {
   );
 }
 
-function LockedCard({ onOpen, business }: { onOpen(): void; business?: boolean }) {
+/** A match beyond the free quota: its score is visible, the call itself stays blurred behind the paywall. */
+function LockedCard({ onOpen, business, score }: { onOpen(): void; business?: boolean; score?: number }) {
+  const label = score === undefined ? null : fitLabel(score);
+  const what = business ? "ayuda" : "convocatoria";
   return (
     <button
       type="button"
       className={s.locked}
       onClick={onOpen}
       data-testid="locked-banner"
-      aria-label={business ? "Ver más ayudas con Mecena Pro" : "Ver más convocatorias con Mecena Pro"}
+      aria-label={`${label ? `Otra ${what} con encaje ${label} (${score} de 100). ` : ""}Ver más ${business ? "ayudas" : "convocatorias"} con Mecena Pro`}
     >
-      <div className={s.lockedBody} aria-hidden>
-        <div className={s.lockedBar} style={{ width: "70%" }} />
-        <div className={s.lockedBar} style={{ width: "45%" }} />
-        <div className={s.lockedBar} style={{ width: "85%" }} />
+      <div className={s.top} aria-hidden>
+        <div className={s.lockedTitle}>
+          <div className={s.lockedBar} style={{ width: "80%" }} />
+          <div className={s.lockedBar} style={{ width: "50%" }} />
+        </div>
+        {label && (
+          <span className={`${s.fitTag} ${s[`fit-${label}`]}`} data-testid="locked-score">
+            <b>{score}</b>
+            {label}
+          </span>
+        )}
       </div>
-      <span className={s.lockedOverlay}>
-        <strong>{business ? "Otra ayuda encaja con tu empresa" : "Otra convocatoria encaja contigo"}</strong>
-        <span>Desbloquéala con Mecena Pro</span>
-      </span>
+      <div className={s.lockedContent}>
+        <div className={s.lockedBody} aria-hidden>
+          <div className={s.lockedBar} style={{ width: "70%" }} />
+          <div className={s.lockedBar} style={{ width: "45%" }} />
+          <div className={s.lockedBar} style={{ width: "85%" }} />
+        </div>
+        <span className={s.lockedOverlay}>
+          <strong>{business ? "Otra ayuda encaja con tu empresa" : "Otra convocatoria encaja contigo"}</strong>
+          <span>Desbloquéala con Mecena Pro</span>
+        </span>
+      </div>
     </button>
   );
 }
@@ -203,6 +220,9 @@ export function CallsFeed() {
   if (!data || !diagnostics) return <CallsFeedSkeleton label={business ? "Buscando ayudas para tu empresa…" : "Buscando convocatorias para ti…"} />;
 
   const total = data.results.length + data.lockedCount;
+  // Locked cards carry their score, so "Encaje alto" filters them too (by score only: nothing else of the call is known).
+  const lockedScores: (number | undefined)[] = Array.from({ length: data.lockedCount }, (_, i) => data.lockedScores?.[i]);
+  const shownLocked = quickFilter === "high" ? lockedScores.filter((n) => n !== undefined && fitLabel(n) === "alto") : lockedScores;
   const { profileSummary } = diagnostics;
   const discardedTotal = diagnostics.discardedByEligibility + diagnostics.discardedByDiscipline;
   const dynamicFilterChips: string[] = [
@@ -312,7 +332,7 @@ export function CallsFeed() {
 
       <DeadlineAlert pro={Boolean(data.pro)} results={data.results} />
       {searching && <p className={s.liveLine}>Buscando en la BDNS convocatorias públicas para tu perfil…</p>}
-      {filteredResults.length === 0 && data.lockedCount === 0 && (
+      {filteredResults.length === 0 && shownLocked.length === 0 && (
         <p className={s.empty}>
           {appliedQuery || quickFilter !== "all" ? (
             <>
@@ -348,8 +368,8 @@ export function CallsFeed() {
           <CallCardSkeleton />
         </LoadingRegion>
       )}
-      {Array.from({ length: data.lockedCount }, (_, i) => (
-        <LockedCard key={i} business={business} onOpen={() => setPaywall(true)} />
+      {shownLocked.map((score, i) => (
+        <LockedCard key={i} score={score} business={business} onOpen={() => setPaywall(true)} />
       ))}
       {data.editions && data.editions.length > 0 && (
         <section className={s.editions} aria-labelledby="editions-title" data-testid="editions">

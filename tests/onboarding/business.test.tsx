@@ -83,9 +83,22 @@ describe("/onboarding in pyme mode", () => {
     const panel = await screen.findByTestId("matches-panel", undefined, { timeout: 5000 });
     await waitFor(() => expect(within(panel).getByTestId("matches-count").textContent).toBe("1"));
     expect(panel.textContent).toContain("[FIXTURE] Ayudas a la digitalización de pequeños negocios");
-    // The live "memoria" grows next to the company card; the artist's dossier wording never shows up.
-    expect(document.body.textContent).toContain("Memoria de tu empresa");
+    // Only the company card: no capability memoria in the pyme onboarding, and never the artist's dossier wording.
+    expect(document.body.textContent).not.toContain("Memoria de tu empresa");
     expect(document.body.textContent).not.toMatch(/dossier/i);
+    // One way to the aid: the finish CTA, not a second "convocatorias para mí" link to the same page.
+    expect(screen.queryByTestId("calls-cta")).toBeNull();
+  });
+
+  it("the live panel is the company card only, and there is no 'Ya tengo dossier' import", async () => {
+    render(<StepOnboarding />);
+    expect(screen.queryByTestId("import-open")).toBeNull();
+    fireEvent.click(screen.getByTestId("choose-text"));
+    const live = screen.getByTestId("live-dossier");
+    expect(live.textContent).toContain("Ficha de tu empresa");
+    expect(live.querySelectorAll("[data-section]")).toHaveLength(0);
+    expect(screen.queryByTestId("live-count")).toBeNull();
+    expect(document.body.textContent).not.toMatch(/memoria/i);
   });
 
   it("the matches refresh while the owner talks, and the finish CTA goes to the aid", async () => {

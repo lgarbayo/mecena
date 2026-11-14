@@ -161,6 +161,7 @@ export const CallsResponse = z.object({
     }),
   ),
   lockedCount: z.number().int(), // matches hidden behind the free limit
+  lockedScores: z.array(z.number()).optional(), // their scores, in rank order: shown on the blurred cards, nothing else of the call
   // Closed editions of recurring calls ("Próximas ediciones"): never in the top, free plan sees them as a preview.
   editions: z.array(z.object({ call: Call, match: MatchResult })).default([]),
   mode: ProfileKind,

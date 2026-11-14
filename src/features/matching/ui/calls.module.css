@@ -223,10 +223,33 @@
   transform: scale(0.99);
 }
 
+/* Title placeholder next to the visible score; the body below stays under the overlay. */
+.lockedTitle {
+  flex: 1;
+  min-width: 0;
+  filter: blur(3px);
+  opacity: 0.7;
+}
+
+.lockedTitle .lockedBar:first-child {
+  height: 16px;
+  margin-top: 4px;
+}
+
+/* The overlay sets the height (its text may wrap on a narrow phone); the blurred bars sit behind it. */
+.lockedContent {
+  position: relative;
+  margin-top: 8px;
+}
+
 .lockedBody {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
   user-select: none;
   pointer-events: none;
   opacity: 0.6;
+  filter: blur(3px);
 }
 
 .lockedBar {
@@ -237,15 +260,15 @@
 }
 
 .lockedOverlay {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  min-height: 96px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
   text-align: center;
-  padding: 18px;
+  padding: 8px 18px;
   background: color-mix(in srgb, var(--surface-2) 72%, transparent);
 }
 

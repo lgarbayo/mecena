@@ -78,7 +78,7 @@ export const STEPS_COPY = {
   turnStatus: { queued: "En cola", sending: "Anotando…", done: "Anotado", failed: "Sin guardar" },
   liveOpen: "Ver entero",
   livePending: "Pendiente",
-  liveEmpty: { creator: "Empieza a hablar y verás crecer aquí tu dossier, sección a sección.", business: "Empieza a hablar y verás crecer aquí la memoria de tu empresa." },
+  liveEmpty: { creator: "Empieza a hablar y verás crecer aquí tu dossier, sección a sección.", business: "Empieza a hablar y verás crecer aquí la ficha de tu empresa." },
   worksTitle: "Obras fotografiadas",
   /** Leaving while answers are still being saved. */
   saving: "Guardando lo último…",
