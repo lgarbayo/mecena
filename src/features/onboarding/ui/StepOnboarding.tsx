@@ -177,7 +177,7 @@ export function StepOnboarding() {
           const reset = freshRef.current;
           freshRef.current = false;
           const stepKey = t.step === undefined ? undefined : (stepsRef.current[t.step]?.fields[0] ?? `step-${t.step + 1}`);
-          return apiSend<OnboardingTurnResponse>(API.onboardingTurn, { ...t, profileId: pidRef.current, stepKey, reset }, "POST", signal);
+          return apiSend<OnboardingTurnResponse>(API.onboardingTurn, { text: t.text, source: t.source, profileId: pidRef.current, stepKey, reset }, "POST", signal);
         },
         { change: setTurns, result: onResult },
       ),
@@ -252,7 +252,12 @@ export function StepOnboarding() {
     if (mode === "text" && draft.trim() && phase.at === "step") {
       queue.enqueue(draft.trim(), "text", phase.i);
       setDraft("");
-    } else if (mode === "voice" && phase.at === "step") speech.flush(); // what is still being said is not lost
+    } else if (mode === "voice" && phase.at === "step") {
+      // What is still being said is not lost: the hook hands it out, or we queue the interim text ourselves.
+      const flush = (speech as { flush?: () => void }).flush;
+      if (flush) flush();
+      else if (speech.interim.trim()) queue.enqueue(speech.interim.trim(), "voice", phase.i);
+    }
     setFollowUp(undefined);
     if (i >= total) {
       speech.stop();

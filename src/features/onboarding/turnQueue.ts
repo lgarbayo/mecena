@@ -28,7 +28,7 @@ export interface QueuedTurn {
   slow?: boolean;
 }
 
-export type SendTurn = (turn: { text: string; source: TurnSource }, signal: AbortSignal) => Promise<OnboardingTurnResponse>;
+export type SendTurn = (turn: { text: string; source: TurnSource; step?: number }, signal: AbortSignal) => Promise<OnboardingTurnResponse>;
 
 /**
  * The server bounds a turn: 20 s per Claude attempt, one retry, a 45 s hard deadline, then the deterministic
@@ -148,7 +148,7 @@ export class TurnQueue {
         const kill = setTimeout(() => ctl.abort(), this.timing.timeoutMs);
         try {
           // Race the abort too: a send that ignores the signal still cannot hold the queue.
-          const res = await Promise.race([this.send({ text: next.text, source: next.source }, ctl.signal), timedOut]);
+          const res = await Promise.race([this.send({ text: next.text, source: next.source, ...(next.step === undefined ? {} : { step: next.step }) }, ctl.signal), timedOut]);
           this.patch(next.id, { status: "done", slow: false, segmentId: res.segmentId });
           this.events.result(res, { ...next, status: "done", slow: false, segmentId: res.segmentId });
         } catch (e) {
