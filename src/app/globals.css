@@ -290,13 +290,13 @@ body:has([aria-label="Mecena"]) .bottom-nav {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: 30;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
   gap: 2px;
   padding: 6px max(4px, calc((100% - var(--maxw)) / 2)) calc(6px + env(safe-area-inset-bottom));
-  background: rgb(255 255 255 / 0.96);
+  background: var(--surface);
   border-top: 1px solid var(--border);
 }
 
