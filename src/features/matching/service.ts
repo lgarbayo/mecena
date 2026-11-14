@@ -130,7 +130,7 @@ const STATUS_RANK: Record<Call["status"], number> = { open: 0, upcoming: 1, recu
 
 const cacheKey = (profile: Profile, call: Call) => `${profile.id}|${profile.updatedAt}|${call.id}|${call.verifiedAt}`;
 
-/** Rule match + AI explanation (cached per profile version × call version). Eligibility and score stay the rules'. */
+/** Rule match + AI explanation (cached per profile version × call version). Eligibility, score and the list of what is missing stay the rules'. */
 export async function explainCall(input: { callId: string; profileId: string }): Promise<{ call: Call; match: MatchResult; checklist: string[] }> {
   const profile = getProfile(input.profileId);
   const call = getCall(input.callId);
@@ -141,13 +141,14 @@ export async function explainCall(input: { callId: string; profileId: string }):
   if (cached) {
     // Only the wording is cached: score and eligibility always come from the current rules.
     const { cacheKey: _k, ...match } = cached;
-    return { call, match: { ...match, score: base.score, eligible: base.eligible }, checklist: call.requiredDocuments };
+    return { call, match: { ...match, score: base.score, eligible: base.eligible, whatYouMiss: base.whatYouMiss }, checklist: call.requiredDocuments };
   }
 
   let match: MatchResult = base;
   try {
     const fit = await getAi().explainFit({ profile, call, ruleReasons: base.whyYouFit, ruleMissing: base.whatYouMiss });
-    match = { ...base, ...fit, score: base.score, eligible: base.eligible, generatedBy: getAi().mode === "mock" ? "rules" : "ai" };
+    // What is missing or to confirm is the rules' list, word for word: the model only words the "why" and the summary.
+    match = { ...base, ...fit, score: base.score, eligible: base.eligible, whatYouMiss: base.whatYouMiss, generatedBy: getAi().mode === "mock" ? "rules" : "ai" };
   } catch (e) {
     console.warn("[matching] explainFit failed, using rule output:", e instanceof Error ? e.message : e);
     return { call, match: base, checklist: call.requiredDocuments };

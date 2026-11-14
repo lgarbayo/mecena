@@ -103,7 +103,9 @@ describe("personal ranking on the real dataset", () => {
     const uxia = await top(escritora, 5);
     expect(shared(antia.ids.slice(0, 3), uxia.ids.slice(0, 3))).toEqual([]);
     expect(shared(antia.good, uxia.good)).toEqual([]);
-    expect(uxia.ids.slice(0, 3)).toEqual(expect.arrayContaining(["fornelos-premio-poesia-lueiro-rey-2026"]));
+    // Fornelos lists three requirements the engine cannot check (residence, in Galician, not a past winner): it no
+    // longer reads as a sure thing (see unconfirmed.test.ts), but it is still a poetry prize in her top 5.
+    expect(uxia.ids).toEqual(expect.arrayContaining(["fornelos-premio-poesia-lueiro-rey-2026"]));
   });
 
   // Mostly the kind filter (a pyme only sees aid open to businesses); the score then orders what is left.

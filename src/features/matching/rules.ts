@@ -111,6 +111,29 @@ export function fitOf(raw: Profile, p: CanonicalProfile, c: CanonicalCall, call?
   return fit;
 }
 
+// ---------- unconfirmed requirements ----------
+/**
+ * The score measures fit (discipline, own words, zone, money), not that the bases are met: a requirement the engine
+ * cannot check against the profile ("Confírmalo") is still open. So a call that carries many of them never reads as a
+ * sure thing: 3 or more cap it at "medio" and 5 or more at "bajo" (fitLabel: alto >= 70, medio >= 55).
+ */
+const CONFIRM_CAPS: readonly (readonly [number, number])[] = [
+  [5, 54],
+  [3, 69],
+];
+/** Takes the excess out of the "requisitos" then the "afinidad" part, so the parts still add up to the score. */
+function capByUnconfirmed(b: ScoreBreakdown, unconfirmed: number) {
+  const cap = CONFIRM_CAPS.find(([n]) => unconfirmed >= n)?.[1];
+  if (cap === undefined) return;
+  let excess = Object.values(b).reduce((s, x) => s + x, 0) - cap;
+  for (const part of ["base", "affinity"] as const) {
+    if (excess <= 0) break;
+    const cut = Math.min(b[part], excess);
+    b[part] -= cut;
+    excess -= cut;
+  }
+}
+
 // ---------- main ----------
 export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): RuleResult {
   const now = ctx.now ?? new Date();
@@ -157,7 +180,8 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
   const others = call.eligibility.other.filter(
     (o) => !(ruled.has("age") && Object.keys(parseAgeRange(o)).length) && !(ruled.has("employees") && parseMinEmployees(o) !== undefined),
   );
-  for (const o of others.slice(0, 2)) miss.push(`Confírmalo: ${o}`);
+  // Every one is listed: any of them can be the requirement that leaves this profile out.
+  for (const o of others) miss.push(`Confírmalo: ${o}`);
 
   const fit = fitOf(profile, p, c, call);
   const breakdown: ScoreBreakdown = { base: 0, affinity: 0, documents: 0, amount: 0, timing: 0 };
@@ -170,6 +194,7 @@ export function evaluate(profile: Profile, call: Call, ctx: MatchContext = {}): 
     breakdown.amount = amount(c, call, why, miss);
     breakdown.timing = timing(p, c, call, call.deadline ? daysUntil(call.deadline, now) : undefined, why, miss);
   }
+  if (eligible) capByUnconfirmed(breakdown, miss.filter((m) => m.startsWith("Confírmalo")).length);
   const score = Object.values(breakdown).reduce((s, x) => s + x, 0);
 
   return {

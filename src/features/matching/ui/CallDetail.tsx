@@ -95,10 +95,14 @@ export function CallDetail({ id }: { id: string }) {
       <Card>
         <div className={s.top}>
           <h2 className={s.title}>Tu encaje</h2>
-          <span className={`${s.fitTag} ${s[`fit-${label}`]}`}>
-            <b>{match.score}</b>
-            {label}
-          </span>
+          {call.status === "recurring" ? (
+            <span className={`${s.fitTag} ${s["fit-bajo"]}`}>Edición cerrada</span>
+          ) : (
+            <span className={`${s.fitTag} ${s[`fit-${label}`]}`}>
+              <b>{match.score}</b>
+              {label}
+            </span>
+          )}
         </div>
         <div className={s.breakdown}>
           {PARTS.map((p) => (
