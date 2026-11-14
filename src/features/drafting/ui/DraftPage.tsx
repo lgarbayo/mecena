@@ -14,6 +14,7 @@ import { useApp } from "@/components/shell/AppProvider";
 import { Button, Card, PageTitle, Spinner } from "@/components/ui";
 import { Paywall } from "@/features/purchases/ui/Paywall";
 import { ApiClientError, apiGet, apiSend } from "@/lib/api-client";
+import { closedEdition, draftAsText } from "./export";
 import s from "./draft.module.css";
 
 type Sources = Record<string, TranscriptSegment>;
@@ -28,7 +29,24 @@ const STEPS = [
   "Ajustando el presupuesto…",
   "Preparando la lista de documentos…",
 ];
-const euros = (n: number) => `${n.toLocaleString("es-ES")} €`;
+const euros = (n: number) => `${n.toLocaleString("es-ES", { useGrouping: "always" })} €`;
+
+/** Spanish text for a failed request (server 4xx messages are already Spanish; AI and 5xx details never shown). */
+function errorText(e: unknown, fallback: string): string {
+  if (e instanceof ApiClientError && [400, 404, 409, 429].includes(e.status)) return e.message;
+  return fallback;
+}
+
+function download(name: string, text: string) {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 /** Body text with "[Completa: …]" gaps highlighted. */
 function WithGaps({ text }: { text: string }) {
@@ -83,7 +101,11 @@ export function DraftPage({ callId }: { callId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
   const savedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // last version the server accepted: blur only saves what really changed
+  const serverApp = useRef<Application | null>(null);
+  const prewarmed = useRef<string | null>(null);
 
   useEffect(() => {
     if (!profile) return;
@@ -97,10 +119,11 @@ export function DraftPage({ callId }: { callId: string }) {
       .then(([c, a]) => {
         setCall(c.call);
         setApp(a.application);
+        serverApp.current = a.application;
         setSources(a.sources);
       })
       .catch((e) =>
-        setError(e instanceof Error ? e.message : "No se pudo cargar"),
+        setError(errorText(e, "No hemos podido cargar la solicitud. Recarga la página.")),
       )
       .finally(() => setLoaded(true));
   }, [callId, profile]);
@@ -116,17 +139,11 @@ export function DraftPage({ callId }: { callId: string }) {
         appUserId,
       });
       setApp(r.application);
+      serverApp.current = r.application;
       setSources(r.sources);
     } catch (e) {
       if (e instanceof ApiClientError && e.paymentRequired) setPaywall(true);
-      else
-        setError(
-          e instanceof ApiClientError && e.status === 502
-            ? "Claude no ha podido redactar ahora mismo."
-            : e instanceof Error
-              ? e.message
-              : "Error",
-        );
+      else setError(errorText(e, "No hemos podido redactar la solicitud ahora mismo. Inténtalo de nuevo."));
     } finally {
       setDrafting(false);
     }
@@ -139,6 +156,8 @@ export function DraftPage({ callId }: { callId: string }) {
       if (!app) return;
       const optimistic = { ...app, ...patch };
       setApp(optimistic);
+      const last = serverApp.current;
+      if (last && (Object.keys(patch) as (keyof typeof patch)[]).every((k) => JSON.stringify(patch[k]) === JSON.stringify(last[k]))) return;
       try {
         const r = await apiSend<AppRes>(
           API.application(app.id),
@@ -146,20 +165,42 @@ export function DraftPage({ callId }: { callId: string }) {
           "PATCH",
         );
         setApp(r.application);
+        serverApp.current = r.application;
         setSources(r.sources);
+        setError(null);
         setSaved(true);
         clearTimeout(savedTimer.current);
         savedTimer.current = setTimeout(() => setSaved(false), 1500);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "No se pudo guardar");
+        setError(errorText(e, "No hemos podido guardar el cambio. Inténtalo de nuevo."));
       }
     },
     [app],
   );
 
+  // Prewarm the jury while the user reads the draft: the score is usually ready when they open the tribunal.
+  // The server shares one scoring per version, so opening the jury meanwhile joins it instead of paying twice.
+  useEffect(() => {
+    if (!app || prewarmed.current === app.id) return;
+    prewarmed.current = app.id;
+    fetch(API.jury, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ applicationId: app.id }) }).catch(() => {});
+  }, [app]);
+
+  const copy = async (key: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(key);
+      setTimeout(() => setCopied((c) => (c === key ? null : c)), 1500);
+    } catch {
+      setError("No hemos podido copiar: selecciona el texto en Editar y cópialo a mano.");
+    }
+  };
+
   if (!loaded) return <Spinner />;
   if (!call)
-    return <p className={s.error}>{error ?? "Convocatoria no encontrada"}</p>;
+    return <p className={s.error}>{error ?? "No encontramos esta convocatoria."}</p>;
+
+  const edition = closedEdition(call);
 
   const header = (
     <>
@@ -178,12 +219,17 @@ export function DraftPage({ callId }: { callId: string }) {
           <Progress />
         ) : (
           <Card>
+            {edition && (
+              <p className={s.closed} role="note">
+                <b>La edición {edition.year} está cerrada.</b> Puedes dejar la solicitud preparada para la edición {edition.next}: cuando se publiquen las bases nuevas, revisa plazos, importes y criterios. Prepararla cuenta como una solicitud de tu plan (Pro o Solicitud premium).
+              </p>
+            )}
             <p>
               {profile?.kind === "business"
                 ? "Mecena redacta la presentación de tu empresa, la memoria del proyecto, los objetivos y el presupuesto con lo que nos has contado, siguiendo los criterios de las bases. Tú revisas y tienes la última palabra."
                 : "Mecena redacta la memoria, tu declaración y el presupuesto con lo que nos has contado, siguiendo los criterios de las bases. Tú revisas y tienes la última palabra."}
             </p>
-            <Button onClick={draft}>Prepárame la solicitud</Button>
+            <Button onClick={draft}>{edition ? `Prepárala para la edición ${edition.next}` : "Prepárame la solicitud"}</Button>
             {error && (
               <p className={s.error}>
                 {error}{" "}
@@ -229,12 +275,17 @@ export function DraftPage({ callId }: { callId: string }) {
           <Card key={sec.key}>
             <div className={s.sectionHead}>
               <h2>{sec.title}</h2>
-              <Button
-                variant="quiet"
-                onClick={() => setEditing(editing === sec.key ? null : sec.key)}
-              >
-                {editing === sec.key ? "Listo" : "Editar"}
-              </Button>
+              <span className={s.sectionTools}>
+                <Button variant="quiet" onClick={() => copy(sec.key, sec.body)}>
+                  {copied === sec.key ? "Copiado" : "Copiar"}
+                </Button>
+                <Button
+                  variant="quiet"
+                  onClick={() => setEditing(editing === sec.key ? null : sec.key)}
+                >
+                  {editing === sec.key ? "Listo" : "Editar"}
+                </Button>
+              </span>
             </div>
             {editing === sec.key ? (
               <textarea
@@ -347,6 +398,9 @@ export function DraftPage({ callId }: { callId: string }) {
           >
             + Añadir partida
           </Button>
+          {app.budget.some((l) => l.amountEur === 0) && (
+            <p className={s.note}>Hay partidas a 0 €: pon su importe o quítalas.</p>
+          )}
           <p className={`${s.total} ${cap && total > cap ? s.over : ""}`}>
             <span>Total</span>
             <span>
@@ -388,6 +442,14 @@ export function DraftPage({ callId }: { callId: string }) {
       <p className={s.footer}>
         Mecena prepara; tú presentas con tu certificado digital.
       </p>
+      <Button
+        variant="quiet"
+        onClick={() =>
+          download(`solicitud-${call.id}.txt`, draftAsText(call, app))
+        }
+      >
+        Descargar la solicitud (.txt)
+      </Button>
       <div className={s.actions}>
         <Link href={ROUTES.jury(app.id)} className="btn btn-primary">
           Pasar el tribunal simulado

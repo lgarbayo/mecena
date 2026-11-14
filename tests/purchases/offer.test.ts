@@ -85,12 +85,17 @@ describe("jury routes: Pro, or the runs included with a premium application", ()
     const body = { applicationId: application.id };
     const first = await (await postJury(req("/api/jury", { body }))).json();
     expect((await postImprove(req("/api/jury/improve", { body: { ...body, scoreId: first.score.id } }))).status).toBe(200);
-    for (let i = 2; i < JURY_RUNS_PER_APPLICATION; i++) expect((await postJury(req("/api/jury", { body }))).status).toBe(200);
-    const blocked = await postJury(req("/api/jury", { body }));
+    // a repeated POST on the same version reuses the saved score for free: only `force` asks for a new pass
+    const again = await postJury(req("/api/jury", { body }));
+    expect(again.status).toBe(200);
+    expect(getEntitlement(DEMO_APP_USER_ID).juryRuns?.[application.id]).toBe(2);
+    const forced = { applicationId: application.id, force: true };
+    for (let i = 2; i < JURY_RUNS_PER_APPLICATION; i++) expect((await postJury(req("/api/jury", { body: forced }))).status).toBe(200);
+    const blocked = await postJury(req("/api/jury", { body: forced }));
     expect(blocked.status).toBe(402);
     expect((await blocked.json()).message).toContain("Mecena Pro");
     expect(getEntitlement(DEMO_APP_USER_ID).juryRuns?.[application.id]).toBe(JURY_RUNS_PER_APPLICATION);
     await syncEntitlement({ appUserId: DEMO_APP_USER_ID, purchasedProductId: "mecena_pro_monthly" });
-    expect((await postJury(req("/api/jury", { body }))).status).toBe(200);
+    expect((await postJury(req("/api/jury", { body: forced }))).status).toBe(200);
   });
 });

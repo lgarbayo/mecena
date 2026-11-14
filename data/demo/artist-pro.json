@@ -22,6 +22,11 @@
         "sourceSegmentIds": ["seg-demo-5", "seg-demo-6"]
       }
     ],
-    "budget": []
+    "budget": [
+      { "concept": "Papel de algodón y pigmentos para la serie", "amountEur": 1800, "expenseType": "materiales" },
+      { "concept": "Producción de las acuarelas de gran formato", "amountEur": 3200, "expenseType": "producción" },
+      { "concept": "Honorarios propios (6 meses de trabajo)", "amountEur": 1800, "expenseType": "honorarios propios" },
+      { "concept": "Edición de un catálogo con las doce piezas", "amountEur": 1200, "expenseType": "edición" }
+    ]
   }
 }

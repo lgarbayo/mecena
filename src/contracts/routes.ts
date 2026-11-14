@@ -74,8 +74,9 @@ export const API = {
   callsResearch: "/api/calls/research", // Pro deep research: GET ?profileId state + results, POST { profileId? } start
   applications: "/api/applications", // POST { callId, profileId? }
   application: (id: string) => `/api/applications/${encodeURIComponent(id)}`,
-  jury: "/api/jury", // POST { applicationId }
-  juryImprove: "/api/jury/improve", // POST { applicationId, scoreId }
+  jury: "/api/jury", // POST { applicationId, force? } (Accept: application/x-ndjson streams one event per judge)
+  juryImprove: "/api/jury/improve", // POST { applicationId, scoreId, fixes?, facts?, stage? }
+  juryUndo: "/api/jury/undo", // POST { applicationId } -> restores the draft from before "Aplicar mejoras"
   entitlements: "/api/entitlements", // GET the user's entitlement, POST sync after a purchase
   agent: "/api/agent", // POST { message, history }
   demoReset: "/api/demo/reset", // POST { scenario }: resets the signed-in user's own data only (and loads a scenario)

@@ -67,6 +67,42 @@ describe("simulated jury (mock)", () => {
     expect(s.criteria.length).toBe(3);
     expect(s.total).toBe(61);
     expect(s.disclaimer).toMatch(/criterios estimados/);
+    expect(s.estimated).toBe(true);
+  });
+
+  it("criteria marked estimated in the call data are never presented as the bases' official ones", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const guessed: Call = { ...fixtureCalls[0], id: "fixture-estimados", criteriaSource: "estimated" };
+    fs.writeFileSync(path.join(process.env.MECENA_CALLS_DIR!, "calls.json"), JSON.stringify([...fixtureCalls, guessed]));
+    await seedOnboardedCreator();
+    const app = await draft("fixture-estimados", DEMO_CREATOR_ID);
+    const s = await scoreApplication(app.id);
+    expect(s.criteria.map((c) => c.criterionId)).toEqual(guessed.criteria.map((c) => c.id)); // its own (estimated) criteria
+    expect(s.estimated).toBe(true);
+    expect(s.disclaimer).toMatch(/criterios estimados/);
+    expect(s.disclaimer).not.toMatch(/publicados en las bases/);
+
+    const official = await scoreApplication((await draft("fixture-premio-ilustracion", DEMO_CREATOR_ID)).id);
+    expect(official.estimated).toBe(false);
+    expect(official.disclaimer).toMatch(/publicados en las bases/);
+  });
+
+  it("judges differ a little per criterion but the panel average still hits 61 and 84 exactly", async () => {
+    await seedOnboardedCreator();
+    const app = await draft("fixture-beca-artes-plasticas", DEMO_CREATOR_ID);
+    const s1 = await scoreApplication(app.id);
+    expect(s1.criteria.some((c) => new Set(c.byJudge.map((j) => j.points)).size > 1)).toBe(true);
+    for (const c of s1.criteria) for (const j of c.byJudge) expect(j.points).toBeGreaterThanOrEqual(0), expect(j.points).toBeLessThanOrEqual(c.maxPoints);
+    expect(s1.total).toBe(61);
+  });
+
+  it("visual criteria are flagged as judged from the written application", async () => {
+    await seedOnboardedCreator();
+    const s = await scoreApplication((await draft("fixture-premio-ilustracion", DEMO_CREATOR_ID)).id);
+    expect(s.criteria.find((c) => c.criterionId === "originalidad")?.writtenOnly).toBe(true);
+    const beca = await scoreApplication((await draft("fixture-beca-artes-plasticas", DEMO_CREATOR_ID)).id);
+    expect(beca.criteria.find((c) => c.criterionId === "territorio")?.writtenOnly).toBeUndefined();
   });
 });
 

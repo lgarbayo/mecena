@@ -160,3 +160,138 @@
 @media (prefers-reduced-motion: reduce) {
   .fill { transition: none; }
 }
+
+/* F: progress by phase and by judge, signed delta, written-only criteria, full diff, optional facts per fix */
+.progress {
+  list-style: none;
+  margin: 0 0 16px;
+  display: grid;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--g-line);
+  border-radius: 20px;
+  padding: 16px 18px;
+}
+
+.progress li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--g-ink-2);
+}
+
+.progress li.done {
+  color: var(--g-ink);
+}
+
+.progress li.active {
+  color: var(--g-accent);
+  font-weight: 700;
+}
+
+.judgeLine {
+  padding-left: 20px;
+  font-size: 0.92rem;
+}
+
+.judgeLine b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--g-line);
+  flex: none;
+}
+
+.done .dot {
+  background: var(--g-accent-3);
+}
+
+.active .dot {
+  background: var(--g-accent);
+  animation: pulse 900ms ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
+
+.deltaFlat {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--g-line);
+  color: var(--g-ink);
+}
+
+.written {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--g-ink-2);
+}
+
+.note {
+  color: var(--g-ink-2);
+  font-size: 0.88rem;
+  margin: 4px 0 8px;
+}
+
+.change {
+  margin: 12px 0;
+}
+
+.changeHead {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--g-ink-2);
+}
+
+.removed {
+  white-space: pre-wrap;
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 255, 255, 0.35);
+  color: var(--g-ink-2);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin: 6px 0;
+  font-size: 0.9rem;
+}
+
+.fixRow {
+  border-bottom: 1px solid var(--g-line);
+  padding-bottom: 8px;
+}
+
+.fixRow:last-child {
+  border-bottom: 0;
+}
+
+.fixRow .fix {
+  border-bottom: 0;
+}
+
+.fact {
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--g-line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--g-ink);
+  font: inherit;
+  font-size: 0.92rem;
+}
+
+.fact:focus {
+  outline: 2px solid var(--g-accent);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active .dot { animation: none; }
+}
